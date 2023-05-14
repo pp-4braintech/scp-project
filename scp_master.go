@@ -1,234 +1,304 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 	"strings"
-	"time"
 )
 
-const scp_escape = '\x1b'
 const scp_ack = "ACK"
-const scp_cmd = "CMD"
 const scp_err = "ERR"
-const scp_join = "JOIN"
-const scp_ping = "PING"
-const scp_destroy = "DESTROY"
-const scp_state_JOIN0 = 10
-const scp_state_JOIN1 = 11
-const scp_state_TCP0 = 20
-const scp_state_TCPFAIL = 29
-const scp_max_len = 512
-const scp_keepalive_time = 10
-const scp_timeout = 5
-const scp_buff_size = 512
+const scp_get = "GET"
+const scp_put = "PUT"
+const scp_dev_pump = "PUMP"
+const scp_dev_aero = "AERO"
+const scp_dev_valve = "VALVE"
+const scp_bioreactor = "BIOREACTOR"
+const scp_ibc = "IBC"
+const scp_orch_addr = ":7007"
+const scp_ipc_name = "/tmp/scp_master.sock"
 
-type scp_slave_map struct {
-	slave_udp_addr  string
-	slave_tcp_addr  string
-	slave_scp_addr  string
-	slave_scp_state uint8
-	go_chan         chan string
+// const scp_join = "JOIN"
+
+const bio_nonexist = "NULL"
+const bio_cip = "CIP"
+const bio_loading = "CARREGANDO"
+const bio_unloading = "ESVAZIANDO"
+const bio_producting = "PRODUZINDO"
+const bio_empty = "VAZIO"
+const bio_done = "CONCLUIDO"
+const bio_error = "ERRO"
+const bio_max_valves = 8
+
+type Bioreact struct {
+	BioreactorID string
+	Status       string
+	Organism     string
+	Volume       uint32
+	Level        uint8
+	Pumpstatus   bool
+	Aerator      bool
+	Valvs        [8]int
+	Temperature  float32
+	PH           float32
+	Step         [2]int
+	Timeleft     [2]int
+	Timetotal    [2]int
 }
 
-var scp_slaves map[string]scp_slave_map
+type IBC struct {
+	IBCID      string
+	Status     string
+	Organism   string
+	Volume     uint32
+	Level      uint8
+	Pumpstatus bool
+	Valvs      [4]int
+}
+
+var bio = []Bioreact{
+	{"BIOR001", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
+	{"BIOR002", bio_cip, "Bacillus Megaterium", 200, 5, false, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
+	{"BIOR003", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
+	{"BIOR004", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
+	{"BIOR005", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
+	{"BIOR006", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
+}
+
+var ibc = []IBC{
+	{"IBC01", bio_done, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}},
+	{"IBC02", bio_done, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}},
+	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 0, 0}},
+	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 0}},
+	{"IBC05", bio_done, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}},
+	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 0, 0, 0}},
+	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}},
+}
 
 func checkErr(err error) {
 	if err != nil {
-		log.Println("[SCP ERROR]", err)
+		log.Fatal(err)
 	}
 }
 
-func scp_splitparam(param string) []string {
-	scp_data := strings.Split(param, "/")
+func scp_splitparam(param string, separator string) []string {
+	scp_data := strings.Split(param, separator)
 	if len(scp_data) < 1 {
 		return nil
 	}
 	return scp_data
 }
 
-func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, error) {
-	if len(scp_message) > scp_buff_size {
-		scp_message = scp_message[0 : scp_buff_size-2]
-	}
-	msg := scp_message + string(scp_escape)
-	_, err := scp_con.Write([]byte(msg))
-	checkErr(err)
-	if wait_ack {
-		err = scp_con.SetReadDeadline(time.Now().Add(time.Duration(scp_timeout) * time.Second))
-		checkErr(err)
-		var ret = make([]byte, scp_max_len)
-		_, err := scp_con.Read(ret)
-		checkErr(err)
-		//fmt.Println("tcp recebido", string(ret))
-		return string(ret), err
-	}
-	return scp_ack, err
-}
-
-func scp_master_tcp_client(scp_slave *scp_slave_map) {
-
-	slave_data := *scp_slave
-	slave_addr := slave_data.slave_tcp_addr
-	fmt.Println("TCP con ", slave_addr)
-	slave_tcp_con, err := net.Dial("tcp", slave_addr)
-	checkErr(err)
-	defer slave_tcp_con.Close()
-
-	if err == nil {
-		fmt.Println("Conexao TCP estabelecida com slave")
-		slave_data.slave_scp_state = scp_state_TCP0
-		*scp_slave = slave_data
-	} else {
-		fmt.Println("ERRO Conexao TCP com slave")
-		checkErr(err)
-		slave_data.slave_scp_state = scp_state_TCPFAIL
-		*scp_slave = slave_data
-		return
-	}
-
-	begin_time := time.Now().Unix()
-	for {
-		select {
-		case chan_msg := <-slave_data.go_chan:
-			if chan_msg == scp_destroy {
-				fmt.Println("TCP destroy recebido")
-				slave_data.go_chan <- scp_ack
-				return
+func get_bio_index(bio_id string) int {
+	if len(bio_id) > 0 {
+		for i, v := range bio {
+			if v.BioreactorID == bio_id {
+				return i
 			}
-			fmt.Println("TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
-			ret, err := scp_sendtcp(slave_tcp_con, chan_msg, true)
-			if err == nil {
-				slave_data.go_chan <- ret
-			} else {
-				slave_data.go_chan <- scp_err
-			}
-			begin_time = time.Now().Unix()
-		default:
-			current_time := time.Now().Unix()
-			elapsed_seconds := current_time - begin_time
-			if elapsed_seconds > scp_keepalive_time {
-				fmt.Println("Enviando PING para", scp_slave.slave_scp_addr)
-				ret, err := scp_sendtcp(slave_tcp_con, scp_ping, true)
-				fmt.Println("ret =", ret)
-				if err != nil {
-					fmt.Println("ERR ao tratar PING")
-				}
-				begin_time = current_time
-			}
-			time.Sleep(100 * time.Millisecond)
 		}
 	}
+	return -1
 }
 
-func scp_master_udp() {
+func get_ibc_index(ibc_id string) int {
+	if len(ibc_id) > 0 {
+		for i, v := range ibc {
+			if v.IBCID == ibc_id {
+				return i
+			}
+		}
+	}
+	return -1
+}
 
-	con, err := net.ListenPacket("udp", ":7007")
-	checkErr(err)
+func scp_sendmsg_orch(cmd string) string {
+
+	con, err := net.Dial("udp", scp_orch_addr)
+	if err != nil {
+		checkErr(err)
+		return scp_err
+	}
 	defer con.Close()
 
-	for {
-		reply := make([]byte, 1024)
-		p_size, net_addr, err := con.ReadFrom(reply)
+	_, err = con.Write([]byte(cmd))
+	if err != nil {
 		checkErr(err)
+		return scp_err
+	}
+	fmt.Println("Enviado:", cmd, len(cmd))
 
-		fmt.Println("msg recebida:", string(reply))
-		fmt.Println("origem:", net_addr)
+	ret := make([]byte, 1024)
+	_, err = con.Read(ret)
+	if err != nil {
+		checkErr(err)
+		return scp_err
+	}
+	fmt.Println("Recebido:", string(ret))
+	return string(ret)
+}
 
-		params := scp_splitparam(string(reply[0:p_size]))
-		scp_command := params[0]
-		fmt.Println("SCP comm", scp_command, " / SCP data", params[1:])
-
-		switch scp_command {
-		case scp_join:
-			scp_msg_data := params[1]
-			fmt.Println("JOIN recebido de", scp_msg_data, len(scp_msg_data))
-			slave_data, ok := scp_slaves[scp_msg_data]
-			if ok {
-				fmt.Println("JOIN recebido de slave já existente", slave_data)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
+func scp_process_conn(conn net.Conn) {
+	buf := make([]byte, 512)
+	n, err := conn.Read(buf)
+	if err != nil {
+		checkErr(err)
+		return
+	}
+	fmt.Printf("msg: %s\n", buf[:n])
+	params := scp_splitparam(string(buf[:n]), "/")
+	fmt.Println(params)
+	scp_command := params[0]
+	switch scp_command {
+	case scp_get:
+		scp_object := params[1]
+		switch scp_object {
+		case scp_bioreactor:
+			if params[2] == "END" {
+				buf, err := json.Marshal(bio)
 				checkErr(err)
-				fmt.Println("Destruindo SCP TCP")
-				slave_data.go_chan <- scp_destroy
-				ret := <-slave_data.go_chan
-				if ret == scp_ack {
-					close(slave_data.go_chan)
-					delete(scp_slaves, scp_msg_data)
-				} else {
-					fmt.Println("Falha ao destruir SCP TCP")
-				}
+				conn.Write([]byte(buf))
 			} else {
-				udp_addr := net_addr.String()
-				tmp_addr := strings.Split(udp_addr, ":")
-				if len(params) >= 3 {
-					tcp_addr := tmp_addr[0] + ":" + params[2]
-					process_chan := make(chan string)
-					scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan}
-					fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
-					_, err = con.WriteTo([]byte(scp_ack), net_addr)
+				ind := get_bio_index(params[2])
+				if ind >= 0 {
+					buf, err := json.Marshal(bio[ind])
 					checkErr(err)
+					conn.Write([]byte(buf))
 				} else {
-					fmt.Println("JOIN com parametros incorretos", params)
+					conn.Write([]byte(scp_err))
 				}
 			}
 
-		case scp_ack:
-			scp_msg_data := params[1]
-			fmt.Println("ACK recebido de", scp_msg_data, len(scp_msg_data))
-			slave_data, ok := scp_slaves[scp_msg_data]
-			if !ok {
-				fmt.Println("Slave fora da tabela", scp_msg_data, slave_data, ok)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
+		case scp_ibc:
+			if params[2] == "END" {
+				buf, err := json.Marshal(ibc)
 				checkErr(err)
+				conn.Write([]byte(buf))
 			} else {
-				if slave_data.slave_scp_state == scp_state_JOIN0 {
-					fmt.Println("JOIN confirmado")
-					slave_data.slave_scp_state = scp_state_JOIN1
-					scp_slaves[scp_msg_data] = slave_data
-					_, err = con.WriteTo([]byte(scp_ack), net_addr)
+				ind := get_ibc_index(params[2])
+				if ind >= 0 {
+					buf, err := json.Marshal(ibc[ind])
 					checkErr(err)
-					go scp_master_tcp_client(&slave_data)
-					scp_slaves[scp_msg_data] = slave_data
-					//slave_data.go_chan <- "PUT/5/1/END"
-					//slave_data.go_chan <- "GET/1/END"
+					conn.Write([]byte(buf))
+				} else {
+					conn.Write([]byte(scp_err))
 				}
 			}
 
-		case scp_cmd:
-			scp_msg_slaveaddr := params[1]
-			slave_data, ok := scp_slaves[scp_msg_slaveaddr]
-			if !ok {
-				fmt.Println("CMD para Slave fora da tabela", scp_msg_slaveaddr, slave_data, ok)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
-				checkErr(err)
-			} else {
-				cmd := params[2]
-				tam := len(cmd)
-				for _, v := range params[3:] {
-					cmd += "/" + v
-					tam += 1 + len(v)
-					//fmt.Println(i, v, len(v))
-				}
-				scp_msg_slavecmd := cmd[0:tam]
-				fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
-				slave_data.go_chan <- scp_msg_slavecmd
-				ret := <-slave_data.go_chan
-				fmt.Println("CMD ret=", ret)
-				_, err = con.WriteTo([]byte(ret), net_addr)
-				checkErr(err)
-			}
-
+		default:
+			conn.Write([]byte(scp_err))
 		}
-		fmt.Println()
-		fmt.Println("scp slave", scp_slaves)
-		fmt.Println()
+	case scp_put:
+		scp_object := params[1]
+		switch scp_object {
+		case scp_bioreactor:
+			ind := get_bio_index(params[2])
+			if ind < 0 {
+				conn.Write([]byte(scp_err))
+			} else {
+				scp_device := params[3]
+				subparams := scp_splitparam(params[4], ",")
+				fmt.Println("subparams=", subparams)
+				switch scp_device {
+				case scp_dev_pump:
+					value, err := strconv.ParseBool(subparams[0])
+					checkErr(err)
+					bio[ind].Pumpstatus = value
+					conn.Write([]byte(scp_ack))
+
+				case scp_dev_aero:
+					value, err := strconv.ParseBool(subparams[0])
+					checkErr(err)
+					bio[ind].Aerator = value
+					conn.Write([]byte(scp_ack))
+
+				case scp_dev_valve:
+					value_valve, err := strconv.Atoi(subparams[0])
+					checkErr(err)
+					value_status, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					fmt.Println(value_valve, value_status)
+					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						bio[ind].Valvs[value_valve] = value_status
+						conn.Write([]byte(scp_ack))
+					}
+				default:
+					conn.Write([]byte(scp_err))
+				}
+			}
+
+		case scp_ibc:
+			ind := get_ibc_index(params[2])
+			if ind < 0 {
+				conn.Write([]byte(scp_err))
+			} else {
+				scp_device := params[3]
+				subparams := scp_splitparam(params[4], ",")
+				switch scp_device {
+				case scp_dev_pump:
+					value, err := strconv.ParseBool(subparams[0])
+					checkErr(err)
+					ibc[ind].Pumpstatus = value
+					conn.Write([]byte(scp_ack))
+
+				case scp_dev_valve:
+					value_valve, err := strconv.Atoi(subparams[0])
+					checkErr(err)
+					value_status, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					fmt.Println(value_valve, value_status)
+					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						ibc[ind].Valvs[value_valve] = value_status
+						conn.Write([]byte(scp_ack))
+					}
+				default:
+					conn.Write([]byte(scp_err))
+				}
+			}
+
+		default:
+			conn.Write([]byte(scp_err))
+		}
+
+	default:
+		conn.Write([]byte(scp_err))
+	}
+
+	// scp_sendmsg_orch(string(buf[:n]))
+	// conn.Write([]byte(scp_ack))
+	conn.Close()
+}
+
+func scp_master_ipc() {
+	_, f_exist := os.Stat(scp_ipc_name)
+	if f_exist == nil {
+		f_delete := os.Remove(scp_ipc_name)
+		if f_delete != nil {
+			checkErr(f_delete)
+			return
+		}
+	}
+	ipc, err := net.Listen("unix", scp_ipc_name)
+	if err != nil {
+		checkErr(err)
+		return
+	}
+	defer ipc.Close()
+
+	for {
+		conn, err := ipc.Accept()
+		if err != nil {
+			checkErr(err)
+		}
+
+		go scp_process_conn(conn)
+
 	}
 }
 
 func main() {
-	fmt.Println("SCP Master iniciando")
-	scp_slaves = make(map[string]scp_slave_map)
-	scp_master_udp()
-
+	scp_master_ipc()
 }
