@@ -26,50 +26,31 @@ const bio_error = "ERRO"
 const bio_max_valves = 8
 const max_buf = 8192
 
-type Bioreact struct {
-	BioreactorID string
-	Status       string
-	Organism     string
-	Volume       uint32
-	Level        uint8
-	Pumpstatus   bool
-	Aerator      bool
-	Valvs        [8]int
-	Temperature  float32
-	PH           float32
-	Step         [2]int
-	Timeleft     [2]int
-	Timetotal    [2]int
-}
+// type Bioreact struct {
+// 	BioreactorID string
+// 	Status       string
+// 	Organism     string
+// 	Volume       uint32
+// 	Level        uint8
+// 	Pumpstatus   bool
+// 	Aerator      bool
+// 	Valvs        [8]int
+// 	Temperature  float32
+// 	PH           float32
+// 	Step         [2]int
+// 	Timeleft     [2]int
+// 	Timetotal    [2]int
+// }
 
-type IBC struct {
-	IBCID      string
-	Status     string
-	Organism   string
-	Volume     uint32
-	Level      uint8
-	Pumpstatus bool
-	Valvs      [4]int
-}
-
-var bio = []Bioreact{
-	{"BIOR001", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
-	{"BIOR002", bio_cip, "Bacillus Megaterium", 200, 5, false, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
-	{"BIOR003", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
-	{"BIOR004", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
-	{"BIOR005", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
-	{"BIOR006", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
-}
-
-var ibc = []IBC{
-	{"IBC01", bio_done, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}},
-	{"IBC02", bio_done, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}},
-	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 0, 0}},
-	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 0}},
-	{"IBC05", bio_done, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}},
-	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 0, 0, 0}},
-	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}},
-}
+// type IBC struct {
+// 	IBCID      string
+// 	Status     string
+// 	Organism   string
+// 	Volume     uint32
+// 	Level      uint8
+// 	Pumpstatus bool
+// 	Valvs      [4]int
+// }
 
 func checkErr(err error) {
 	if err != nil {
@@ -101,17 +82,6 @@ func scp_sendmsg_master(cmd string) string {
 	return string(buf[:n])
 }
 
-func get_bio_index(bio_id string) int {
-	if len(bio_id) > 0 {
-		for i, v := range bio {
-			if v.BioreactorID == bio_id {
-				return i
-			}
-		}
-	}
-	return -1
-}
-
 func ibc_view(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -132,6 +102,40 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 		}
 		os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
+
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		fmt.Println("Post Data", r.Form)
+		// for i, d := range r.Form {
+		// 	fmt.Println(i, d)
+		// }
+		ibc_id := r.FormValue("Id")
+		if len(ibc_id) >= 0 {
+			pump := r.FormValue("Pumpstatus")
+			valve := r.FormValue("Valve")
+			valve_status := r.FormValue("Status")
+			fmt.Println("IBC_id = ", ibc_id)
+			fmt.Println("Pump = ", pump)
+			fmt.Println("Valve = ", valve)
+			fmt.Println("Status = ", valve_status)
+			if pump != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_pump + "," + pump + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+			if valve != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+
+			}
+		}
+
 	default:
 
 	}
@@ -169,8 +173,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 		// 	fmt.Println(i, d)
 		// }
 		bio_id := r.FormValue("Id")
-		ind := get_bio_index(bio_id)
-		if ind >= 0 {
+		if len(bio_id) >= 0 {
 			pump := r.FormValue("Pumpstatus")
 			aero := r.FormValue("Aerator")
 			valve := r.FormValue("Valve")

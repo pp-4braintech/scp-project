@@ -36,6 +36,7 @@ const bio_max_valves = 8
 
 type Bioreact struct {
 	BioreactorID string
+	Deviceaddr   string
 	Status       string
 	Organism     string
 	Volume       uint32
@@ -61,12 +62,12 @@ type IBC struct {
 }
 
 var bio = []Bioreact{
-	{"BIOR001", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
-	{"BIOR002", bio_cip, "Bacillus Megaterium", 200, 5, false, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
-	{"BIOR003", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
-	{"BIOR004", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
-	{"BIOR005", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
-	{"BIOR006", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
+	{"BIOR001", "55:3A7D80", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
+	{"BIOR002", "55:3A7D80", bio_cip, "Bacillus Megaterium", 200, 5, false, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
+	{"BIOR003", "42:A8AB4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
+	{"BIOR004", "55:3A7D80", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
+	{"BIOR005", "55:3A7D80", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
+	{"BIOR006", "42:A8AB4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
 }
 
 var ibc = []IBC{
@@ -195,34 +196,42 @@ func scp_process_conn(conn net.Conn) {
 		scp_object := params[1]
 		switch scp_object {
 		case scp_bioreactor:
+			fmt.Println("obj=", scp_object)
 			ind := get_bio_index(params[2])
 			if ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
-				scp_device := params[3]
-				subparams := scp_splitparam(params[4], ",")
+				subparams := scp_splitparam(params[3], ",")
+				scp_device := subparams[0]
 				fmt.Println("subparams=", subparams)
 				switch scp_device {
 				case scp_dev_pump:
-					value, err := strconv.ParseBool(subparams[0])
+					var cmd string
+					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Pumpstatus = value
+					if value {
+						cmd = "CMD/" + bio[ind].Deviceaddr + "/PUT/D5,1/END"
+					} else {
+						cmd = "CMD/" + bio[ind].Deviceaddr + "/PUT/D5,0/END"
+					}
+					scp_sendmsg_orch(cmd)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_aero:
-					value, err := strconv.ParseBool(subparams[0])
+					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Aerator = value
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					value_valve, err := strconv.Atoi(subparams[0])
+					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
-					value_status, err := strconv.Atoi(subparams[1])
+					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
-					fmt.Println(value_valve, value_status)
+					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
-						bio[ind].Valvs[value_valve] = value_status
+						bio[ind].Valvs[value_valve-1] = value_status
 						conn.Write([]byte(scp_ack))
 					}
 				default:
@@ -235,23 +244,23 @@ func scp_process_conn(conn net.Conn) {
 			if ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
-				scp_device := params[3]
-				subparams := scp_splitparam(params[4], ",")
+				subparams := scp_splitparam(params[3], ",")
+				scp_device := subparams[0]
 				switch scp_device {
 				case scp_dev_pump:
-					value, err := strconv.ParseBool(subparams[0])
+					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					ibc[ind].Pumpstatus = value
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					value_valve, err := strconv.Atoi(subparams[0])
+					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
-					value_status, err := strconv.Atoi(subparams[1])
+					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
-					fmt.Println(value_valve, value_status)
+					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
-						ibc[ind].Valvs[value_valve] = value_status
+						ibc[ind].Valvs[value_valve-1] = value_status
 						conn.Write([]byte(scp_ack))
 					}
 				default:
