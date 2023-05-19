@@ -31,12 +31,14 @@ const bio_unloading = "ESVAZIANDO"
 const bio_producting = "PRODUZINDO"
 const bio_empty = "VAZIO"
 const bio_done = "CONCLUIDO"
+const bio_storing = "ARMAZENANDO"
 const bio_error = "ERRO"
 const bio_max_valves = 8
 
 type Bioreact struct {
 	BioreactorID string
 	Deviceaddr   string
+	Screenaddr   string
 	Status       string
 	Organism     string
 	Volume       uint32
@@ -59,25 +61,26 @@ type IBC struct {
 	Level      uint8
 	Pumpstatus bool
 	Valvs      [4]int
+	Timetotal  [2]int
 }
 
 var bio = []Bioreact{
-	{"BIOR001", "55:3A7D80", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
-	{"BIOR002", "55:3A7D80", bio_cip, "Bacillus Megaterium", 200, 5, false, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
-	{"BIOR003", "42:A8AB4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
-	{"BIOR004", "55:3A7D80", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
-	{"BIOR005", "55:3A7D80", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
-	{"BIOR006", "42:A8AB4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
+	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
+	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
+	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
+	{"BIOR004", "55:3A7D80", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
+	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
+	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_done, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}},
-	{"IBC02", bio_done, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}},
-	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 0, 0}},
-	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 0}},
-	{"IBC05", bio_done, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}},
-	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 0, 0, 0}},
-	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}},
+	{"IBC01", bio_storing, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}},
+	{"IBC02", bio_storing, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}},
+	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 1, 0}, [2]int{0, 30}},
+	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 1}, [2]int{4, 50}},
+	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}},
+	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}},
+	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}},
 }
 
 func checkErr(err error) {
@@ -118,6 +121,7 @@ func get_ibc_index(ibc_id string) int {
 
 func scp_sendmsg_orch(cmd string) string {
 
+	fmt.Println("TO ORCH:", cmd)
 	con, err := net.Dial("udp", scp_orch_addr)
 	if err != nil {
 		checkErr(err)
@@ -206,33 +210,77 @@ func scp_process_conn(conn net.Conn) {
 				fmt.Println("subparams=", subparams)
 				switch scp_device {
 				case scp_dev_pump:
-					var cmd string
+					var cmd1, cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Pumpstatus = value
 					if value {
-						cmd = "CMD/" + bio[ind].Deviceaddr + "/PUT/D5,1/END"
+						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D14,1/END"
+						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S270,1/END"
 					} else {
-						cmd = "CMD/" + bio[ind].Deviceaddr + "/PUT/D5,0/END"
+						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D14,0/END"
+						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S270,0/END"
 					}
-					scp_sendmsg_orch(cmd)
+					ret1 := scp_sendmsg_orch(cmd1)
+					fmt.Println("RET CMD1 =", ret1)
+					ret2 := scp_sendmsg_orch(cmd2)
+					fmt.Println("RET CMD2 =", ret2)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_aero:
+					var cmd1, cmd2, cmd3 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Aerator = value
+					if value {
+                                                cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,1/END"
+                                                cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,1/END"
+                                                cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,127/END"
+
+                                        } else {
+                                                cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,0/END"
+                                                cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,0/END"
+						cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,0/END"
+                                        }
+                                        ret1 := scp_sendmsg_orch(cmd1)
+                                        fmt.Println("RET CMD1 =", ret1)
+                                        ret2 := scp_sendmsg_orch(cmd2)
+                                        fmt.Println("RET CMD2 =", ret2)
+                                        ret3 := scp_sendmsg_orch(cmd3)
+                                        fmt.Println("RET CMD2 =", ret3)
+
+
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
+					var cmd1, cmd2 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
-						bio[ind].Valvs[value_valve-1] = value_status
+						bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
+						var valve_str1, valve_str2 string
+						if value_valve < 7 {
+							valve_str1 = fmt.Sprintf("%d", value_valve+7)
+						} else {
+							valve_str1 = "16"
+						}
+						valve_str2 = fmt.Sprintf("%d", value_valve+201)
+						if value_status > 0 {
+                                                	cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",1/END"
+                                                	cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",1/END"
+                                        	} else {
+                                                	cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",0/END"
+                                                	cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",0/END"
+                                        	}
+                                        ret1 := scp_sendmsg_orch(cmd1)
+                                        fmt.Println("RET CMD1 =", ret1)
+                                        ret2 := scp_sendmsg_orch(cmd2)
+                                        fmt.Println("RET CMD2 =", ret2)
+
 					}
 				default:
 					conn.Write([]byte(scp_err))
@@ -260,7 +308,7 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
-						ibc[ind].Valvs[value_valve-1] = value_status
+						ibc[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
 					}
 				default:
