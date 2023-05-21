@@ -55,7 +55,7 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 	msg := scp_message + string(scp_escape)
 	_, err := scp_con.Write([]byte(msg))
 	checkErr(err)
-	if (err != nil) {
+	if err != nil {
 		return scp_err, err
 	}
 	if wait_ack {
@@ -164,7 +164,7 @@ func scp_master_udp() {
 					if ret == scp_ack {
 						fmt.Println("fechando chain")
 						close(slave_data.go_chan)
-						fmt.Println("deletando dados na tabela") 
+						fmt.Println("deletando dados na tabela")
 						delete(scp_slaves, scp_msg_data)
 					} else {
 						fmt.Println("Falha ao destruir SCP TCP")
@@ -205,7 +205,7 @@ func scp_master_udp() {
 					checkErr(err)
 					go scp_master_tcp_client(&slave_data)
 					ret := <-slave_data.go_chan
-					if (ret == scp_err) {
+					if ret == scp_err {
 						fmt.Println("ERRO ao criar conexao TCP com cliente")
 						slave_data.slave_scp_state = scp_state_JOIN0
 					}
@@ -247,7 +247,7 @@ func scp_master_udp() {
 }
 
 func main() {
-	fmt.Println("SCP Master iniciando")
+	fmt.Println("SCP Orchestrator iniciando")
 	scp_slaves = make(map[string]scp_slave_map)
 	scp_master_udp()
 

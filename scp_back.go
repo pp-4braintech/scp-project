@@ -1,11 +1,16 @@
 package main
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/rs/cors"
 )
@@ -25,6 +30,10 @@ const bio_done = "CONCLUIDO"
 const bio_error = "ERRO"
 const bio_max_valves = 8
 const max_buf = 8192
+
+const vol_bioreactor = 2000
+const vol_ibc = 4000
+const overhead = 1.1
 
 // type Bioreact struct {
 // 	BioreactorID string
@@ -52,10 +61,84 @@ const max_buf = 8192
 // 	Valvs      [4]int
 // }
 
+type Organism struct {
+	Orgname    string
+	Lifetime   int
+	Prodvol    int
+	Cultmedium string
+	Timetotal  int
+	Aero       [3]int
+	PH         [3]string
+}
+
+type BioList struct {
+	OrganismName string
+	Selected     bool
+}
+
+var orgs []Organism
+
 func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
 	}
+}
+
+func load_organisms(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	orgs = make([]Organism, len(records))
+	for k, r := range records {
+		name := r[0]
+		lifetime, _ := strconv.Atoi(strings.Replace(r[1], " ", "", -1))
+		volume, _ := strconv.Atoi(strings.Replace(r[2], " ", "", -1))
+		medium := strings.Replace(r[3], " ", "", -1)
+		tottime, _ := strconv.Atoi(strings.Replace(r[4], " ", "", -1))
+		aero1, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[6], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
+		ph1 := strings.Replace(r[8], " ", "", -1)
+		ph2 := strings.Replace(r[9], " ", "", -1)
+		ph3 := strings.Replace(r[10], " ", "", -1)
+		org := Organism{name, lifetime, volume, medium, tottime, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		orgs[k] = org
+		totalrecords = k
+	}
+	return totalrecords
+}
+
+func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
+	var total int
+	var o, ot, totalorg, totaltime uint32
+	total = 0
+	totalorg = 0
+	totaltime = 0
+	for k, r := range orglist {
+		if r.Selected {
+			o = uint32(orgs[k].Prodvol * farmarea)
+			totalorg += o
+			ot = o * uint32(orgs[k].Timetotal)
+			totaltime += ot
+			fmt.Println(orgs[k].Orgname, o, ot)
+		}
+	}
+	fmt.Println("Volume total =", totalorg)
+	fmt.Println("Tempo total =", totaltime)
+	ndias := int(farmarea / dailyarea)
+	fmt.Println("Numero dias =", ndias)
+	total = int(math.Ceil(float64((float64(totaltime) * overhead) / float64(ndias*24*vol_bioreactor))))
+	fmt.Println("Numero bioreatores =", total)
+	return ndias, total
 }
 
 func scp_sendmsg_master(cmd string) string {
@@ -167,8 +250,8 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
-		fmt.Println("Post Data", r.Form)
+		fmt.Println("Put from website! r.PostFrom = ", r.PostForm)
+		fmt.Println("Put Data", r.Form)
 		// for i, d := range r.Form {
 		// 	fmt.Println(i, d)
 		// }
@@ -208,19 +291,86 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	fmt.Println()
 }
 
-func scp_bio_init() {
-	fmt.Println("Iniciando MOD")
-	for i := 2; i < 11; i++ {
-		scp_msg := fmt.Sprintf("CMD/55:3A7D80/MOD/%d,1/END", i)
-		fmt.Println("CMD=", scp_msg)
-		scp_sendmsg_master(scp_msg)
-	}
+func biofactory_sim(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	orgdata := make([]BioList, len(orgs))
+	for k, r := range orgs {
+		orgdata[k].OrganismName = r.Orgname
+		orgdata[k].Selected = false
+	}
+	// fmt.Println("bio", bio)
+	switch r.Method {
+	case "GET":
+		var jsonStr []byte
+		jsonStr, err := json.Marshal(orgdata)
+		checkErr(err)
+		//os.Stdout.Write(jsonStr)
+		w.Write([]byte(jsonStr))
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		fmt.Println("Post Data", r.Form)
+
+		farm_area_form := r.FormValue("Farmarea")
+		farm_area, _ := strconv.Atoi(farm_area_form)
+		daily_area_form := r.FormValue("Dailyarea")
+		daily_area, _ := strconv.Atoi(daily_area_form)
+		org_sel_form := r.FormValue("Organismsel")
+		fmt.Println(farm_area, daily_area, org_sel_form)
+		sels := []int{}
+		err = json.Unmarshal([]byte(org_sel_form), &sels)
+		fmt.Println(sels)
+		if (len(sels) >= 0) && (farm_area > daily_area) {
+			for i, r := range sels {
+				if r < len(orgdata) {
+					orgdata[r].Selected = true
+				} else {
+					fmt.Println("Invalid Organism index")
+				}
+				fmt.Println(i, r)
+			}
+			fmt.Println("orgdata =", orgdata)
+			ndias, numbios := min_bio_sim(farm_area, daily_area, orgdata)
+			type Result struct {
+				Totaldays        int
+				Totalbioreactors int
+			}
+			var ret = Result{ndias, numbios}
+			jsonStr, err := json.Marshal(ret)
+			checkErr(err)
+			w.Write([]byte(jsonStr))
+		}
+
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
+	fmt.Println()
+	fmt.Println()
 }
+
+// func scp_bio_init() {
+// 	fmt.Println("Iniciando MOD")
+// 	for i := 2; i < 11; i++ {
+// 		scp_msg := fmt.Sprintf("CMD/55:3A7D80/MOD/%d,1/END", i)
+// 		fmt.Println("CMD=", scp_msg)
+// 		scp_sendmsg_master(scp_msg)
+// 	}
+
+// }
 
 func main() {
 
-	scp_bio_init()
+	//scp_bio_init()
+	if load_organisms("organismos.csv") < 0 {
+		fmt.Println("Não foi possivel ler o arquivo de organismos")
+		return
+	}
+	//fmt.Println(orgs)
 	mux := http.NewServeMux()
 	cors := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -236,6 +386,8 @@ func main() {
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
 	mux.HandleFunc("/ibc_view", ibc_view)
+
+	mux.HandleFunc("/simulator", biofactory_sim)
 
 	handler := cors.Handler(mux)
 

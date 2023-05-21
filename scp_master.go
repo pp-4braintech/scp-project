@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const scp_ack = "ACK"
@@ -21,6 +22,7 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
+const scp_refreshwait = 5000
 
 // const scp_join = "JOIN"
 
@@ -68,7 +70,7 @@ var bio = []Bioreact{
 	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
 	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
 	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
-	{"BIOR004", "55:3A7D80", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
+	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
 	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
 	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
 }
@@ -134,7 +136,7 @@ func scp_sendmsg_orch(cmd string) string {
 		checkErr(err)
 		return scp_err
 	}
-	fmt.Println("Enviado:", cmd, len(cmd))
+	//fmt.Println("Enviado:", cmd, len(cmd))
 
 	ret := make([]byte, 1024)
 	_, err = con.Read(ret)
@@ -144,6 +146,34 @@ func scp_sendmsg_orch(cmd string) string {
 	}
 	fmt.Println("Recebido:", string(ret))
 	return string(ret)
+}
+
+func scp_get_alldata() {
+	for {
+		for k, b := range bio {
+			cmd1 := "CMD/" + b.Deviceaddr + "/GET/D14/END"
+			ret1 := scp_sendmsg_orch(cmd1)
+			params := scp_splitparam(ret1, "/")
+			if params[0] == scp_ack {
+				if params[1] == "0" {
+					bio[k].Pumpstatus = false
+				} else {
+					bio[k].Pumpstatus = true
+				}
+			}
+			cmd2 := "CMD/" + b.Deviceaddr + "/GET/A7/END"
+			ret2 := scp_sendmsg_orch(cmd2)
+			params = scp_splitparam(ret2, "/")
+			if params[0] == scp_ack {
+				if params[1] == "0" {
+					bio[k].Aerator = false
+				} else {
+					bio[k].Aerator = true
+				}
+			}
+		}
+		time.Sleep(scp_refreshwait * time.Millisecond)
+	}
 }
 
 func scp_process_conn(conn net.Conn) {
@@ -233,23 +263,21 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					bio[ind].Aerator = value
 					if value {
-                                                cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,1/END"
-                                                cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,1/END"
-                                                cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,127/END"
+						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,1/END"
+						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,1/END"
+						cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,127/END"
 
-                                        } else {
-                                                cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,0/END"
-                                                cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,0/END"
+					} else {
+						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,0/END"
+						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,0/END"
 						cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,0/END"
-                                        }
-                                        ret1 := scp_sendmsg_orch(cmd1)
-                                        fmt.Println("RET CMD1 =", ret1)
-                                        ret2 := scp_sendmsg_orch(cmd2)
-                                        fmt.Println("RET CMD2 =", ret2)
-                                        ret3 := scp_sendmsg_orch(cmd3)
-                                        fmt.Println("RET CMD2 =", ret3)
-
-
+					}
+					ret1 := scp_sendmsg_orch(cmd1)
+					fmt.Println("RET CMD1 =", ret1)
+					ret2 := scp_sendmsg_orch(cmd2)
+					fmt.Println("RET CMD2 =", ret2)
+					ret3 := scp_sendmsg_orch(cmd3)
+					fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
@@ -270,17 +298,17 @@ func scp_process_conn(conn net.Conn) {
 						}
 						valve_str2 = fmt.Sprintf("%d", value_valve+201)
 						if value_status > 0 {
-                                                	cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",1/END"
-                                                	cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",1/END"
-                                        	} else {
-                                                	cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",0/END"
-                                                	cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",0/END"
-                                        	}
-                                        ret1 := scp_sendmsg_orch(cmd1)
-                                        fmt.Println("RET CMD1 =", ret1)
-                                        ret2 := scp_sendmsg_orch(cmd2)
-                                        fmt.Println("RET CMD2 =", ret2)
-
+							cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",1/END"
+							cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",1/END"
+						} else {
+							cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",0/END"
+							cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",0/END"
+						}
+						ret1 := scp_sendmsg_orch(cmd1)
+						fmt.Println("RET CMD1 =", ret1)
+						ret2 := scp_sendmsg_orch(cmd2)
+						fmt.Println("RET CMD2 =", ret2)
+						conn.Write([]byte(scp_ack))
 					}
 				default:
 					conn.Write([]byte(scp_err))
@@ -357,5 +385,6 @@ func scp_master_ipc() {
 }
 
 func main() {
+	go scp_get_alldata()
 	scp_master_ipc()
 }
