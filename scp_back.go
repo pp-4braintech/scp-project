@@ -147,9 +147,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	total = int(math.Ceil(float64((float64(totaltime) * overhead) / float64(ndias*24*vol_bioreactor))))
 	fmt.Println("Numero bioreatores =", total)
 
-	var prodm [][]int
+	var prodm map[int]map[int]int
 
-	prodm = make([][]int, total, ndias)
+	prodm = make(map[int]map[int]int)
 	i := 0
 	d := 0
 	for b := 0; b < total; b++ {
