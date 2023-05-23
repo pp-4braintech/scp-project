@@ -158,7 +158,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	haschange := true
 	for d < ndias && haschange {
 		for b := 0; b < total; b++ {
-			fmt.Println("bio=", b, "dia=", d, "org=", i)
+			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			//fmt.Println(prodm)
 			haschange = false
 			for {
