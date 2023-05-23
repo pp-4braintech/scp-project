@@ -169,9 +169,11 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 			for {
 				if op[o[n]] > 0 {
 					for i := 0; i < (orgs[o[n]].Timetotal / 24); i++ {
-						fmt.Println("org=", n, "time=", orgs[o[n]].Timetotal, "prod=", op[o[n]])
+						fmt.Print("org=", n, "time=", orgs[o[n]].Timetotal, "prod=", op[o[n]])
 						prodm[b][d] = o[n]
-						op[o[n]] -= uint32(math.Ceil(vol_bioreactor / (24.0 / float64(orgs[o[n]].Timetotal))))
+						proday := uint32(math.Ceil(vol_bioreactor / (24.0 / float64(orgs[o[n]].Timetotal))))
+						fmt.Println("proday=", proday)
+						op[o[n]] -= proday
 						d++
 						haschange = true
 					}
