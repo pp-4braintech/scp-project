@@ -231,13 +231,20 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	}
 
 	//fmt.Println(prodm)
+	type Prodlist struct {
+		Values []int
+	}
 	max := 0
+	v := make([]Prodlist, total)
 	for k, x := range prodm {
+		var tmp []int
+		tmp = []int{}
 		if k < total {
 			fmt.Printf("Bio%02d  ", k)
 			for j, y := range x {
 				if y >= 0 {
 					fmt.Printf("%2d ", y)
+					tmp = append(tmp, y)
 					if j > max {
 						max = j
 					}
@@ -245,17 +252,16 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 			}
 			fmt.Println()
 		}
+		v = append(v, Prodlist{tmp})
 	}
 	fmt.Println("Dias de Producao =", max+1)
 	var jsonStr []byte
 	//jsonStr, err := json.Marshal(prodm)
 	//checkErr(err)
 	fmt.Println(prodm)
+	fmt.Println(v)
 	//fmt.Println(jsonStr)
-	type Prodlist struct {
-		Values [8]uint8
-	}
-	v := []Prodlist{{Values: [8]uint8{0, 1, 2, 3, 4, 5, 6, 7}}}
+
 	jsonStr, err := json.Marshal(v)
 	checkErr(err)
 	fmt.Println(jsonStr)
