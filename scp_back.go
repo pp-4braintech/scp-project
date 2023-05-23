@@ -151,12 +151,13 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 
 	prodm = make([][]int, total, ndias)
 	i := 0
-	for d := 0; d < ndias; d++ {
-		for b := 0; b < total; b++ {
-			for n := 0; op[o[i]] > 0; n++ {
-				prodm[b][d] = o[i]
-				op[o[i]] -= uint32(math.Ceil(vol_bioreactor / (24.0 / float64(orgs[o[i]].Timetotal))))
-			}
+	d := 0
+	for b := 0; b < total; b++ {
+		fmt.Println("bio=", b, "dia=", d, "org=", i)
+		for n := 0; op[o[i]] > 0; n++ {
+			prodm[b][d] = o[i]
+			op[o[i]] -= uint32(math.Ceil(vol_bioreactor / (24.0 / float64(orgs[o[i]].Timetotal))))
+			d++
 		}
 		i++
 		if i == len(o) {
