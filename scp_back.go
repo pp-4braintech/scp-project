@@ -78,6 +78,11 @@ type BioList struct {
 	Selected     bool
 }
 
+type Prodlist struct {
+	Bioid  string
+	Values []int
+}
+
 var orgs []Organism
 
 func checkErr(err error) {
@@ -135,7 +140,7 @@ func load_organisms(filename string) int {
 	return totalrecords
 }
 
-func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int, []byte) {
+func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int, []Prodlist) {
 	var total int
 	var totalorg, totaltime int32
 	var op, ot map[int]int32
@@ -231,10 +236,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	}
 
 	//fmt.Println(prodm)
-	type Prodlist struct {
-		Bioid  string
-		Values []int
-	}
+
 	max := 0
 	v := make([]Prodlist, 0)
 	for k, x := range prodm {
@@ -258,17 +260,17 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	}
 	prodias := max + 1
 	fmt.Println("Dias de Producao =", prodias)
-	var jsonStr []byte
+	//var jsonStr []byte
 	//jsonStr, err := json.Marshal(prodm)
 	//checkErr(err)
 	//fmt.Println(prodm)
 	//fmt.Println(v)
 	//fmt.Println(jsonStr)
 
-	jsonStr, err := json.Marshal(v)
-	checkErr(err)
-	os.Stdout.Write(jsonStr)
-	return ndias, total, prodias, jsonStr
+	// jsonStr, err := json.Marshal(v)
+	// checkErr(err)
+	// os.Stdout.Write(jsonStr)
+	return ndias, total, prodias, v
 }
 
 func scp_sendmsg_master(cmd string) string {
@@ -470,7 +472,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				Totaldays        int
 				Totalbioreactors int
 				Totalprod        int
-				Scheduler        []byte
+				Scheduler        []Prodlist
 			}
 			var ret = Result{ndias, numbios, diasprod, sched}
 			jsonStr, err := json.Marshal(ret)
