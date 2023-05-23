@@ -200,7 +200,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 
 	//fmt.Println(prodm)
 	for k, x := range prodm {
-		fmt.Println(k, x)
+		if k < total {
+			fmt.Println(k, x)
+		}
 	}
 	return ndias, total
 }
