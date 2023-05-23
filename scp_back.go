@@ -170,54 +170,54 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	//	prodm = make(map[int][int]int)
 	// i := 0
 	d := 0
-	d0 := 0
+	b := 0
+	// d0 := 0
 	n := 0
 	haschange := true
 	for d < ndias && haschange {
-		for b := 0; b < total; b++ {
-			//fmt.Println(prodm)
-			haschange = false
+		//fmt.Println(prodm)
+		haschange = false
 
-			d = 0
-			for d0 = 0; d0 < ndias; d0++ {
-				if prodm[b][d0] == 0 {
-					d = d0
+		// d = 0
+		// for d0 = 0; d0 < ndias; d0++ {
+		// 	if prodm[b][d0] == 0 {
+		// 		d = d0
+		// 		break
+		// 	}
+		// }
+		b, d = get_first_bio_available(prodm, total, ndias)
+		if b < 0 || d < 0 {
+			fmt.Println("Nao ha slot de producao disponivel")
+			break
+		}
+		fmt.Println("bio=", b, "dia=", d, "org=", n)
+		for {
+			if op[o[n]] > 0 {
+				for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
+					fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
+					prodm[b][d] = o[n]
+					proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
+					fmt.Println(" proday=", proday)
+					op[o[n]] -= proday
+					d++
+					haschange = true
+				}
+			}
+			n++
+			if n == len(o) {
+				n = 0
+				if !haschange {
 					break
 				}
 			}
-			b, d = get_first_bio_available(prodm, total, ndias)
-			if b < 0 || d < 0 {
-				fmt.Println("Nao ha slot de producao disponivel")
-				break
-			}
-			fmt.Println("bio=", b, "dia=", d, "org=", n)
-			for {
-				if op[o[n]] > 0 {
-					for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
-						fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
-						prodm[b][d] = o[n]
-						proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
-						fmt.Println(" proday=", proday)
-						op[o[n]] -= proday
-						d++
-						haschange = true
-					}
-				}
-				n++
-				if n == len(o) {
-					n = 0
-					if !haschange {
-						break
-					}
-				}
-				if haschange {
-					break
-				}
-			}
-			if d >= ndias {
+			if haschange {
 				break
 			}
 		}
+		if d >= ndias {
+			break
+		}
+
 	}
 
 	//fmt.Println(prodm)
