@@ -433,7 +433,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(farm_area, daily_area, org_sel_form)
 		sels := []int{}
 		err = json.Unmarshal([]byte(org_sel_form), &sels)
-		fmt.Println(sels)
+		//fmt.Println(sels)
 		if (len(sels) >= 0) && (farm_area > daily_area) {
 			for i, r := range sels {
 				if r < len(orgdata) {
@@ -443,7 +443,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				}
 				fmt.Println(i, r)
 			}
-			fmt.Println("orgdata =", orgdata)
+			//fmt.Println("orgdata =", orgdata)
 			ndias, numbios := min_bio_sim(farm_area, daily_area, orgdata)
 			type Result struct {
 				Totaldays        int
