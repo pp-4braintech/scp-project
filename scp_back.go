@@ -247,6 +247,10 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 		}
 	}
 	fmt.Println("Dias de Producao =", max+1)
+	var jsonStr []byte
+	jsonStr, err := json.Marshal(prodm)
+	checkErr(err)
+	fmt.Println(jsonStr)
 	return ndias, total
 }
 
