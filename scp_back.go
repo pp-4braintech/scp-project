@@ -266,7 +266,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 
 	jsonStr, err := json.Marshal(v)
 	checkErr(err)
-	fmt.Println([]byte(jsonStr))
+	os.Stdout.Write(jsonStr)
 	return ndias, total
 }
 
