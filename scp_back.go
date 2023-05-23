@@ -121,22 +121,22 @@ func load_organisms(filename string) int {
 
 func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	var total int
-	var totalorg, totaltime uint32
-	var op, ot map[int]uint32
+	var totalorg, totaltime int32
+	var op, ot map[int]int32
 	var o []int
 	total = 0
 	totalorg = 0
 	totaltime = 0
 	o = []int{}
-	op = make(map[int]uint32)
-	ot = make(map[int]uint32)
+	op = make(map[int]int32)
+	ot = make(map[int]int32)
 
 	for k, r := range orglist {
 		if r.Selected {
 			o = append(o, k)
-			op[k] = uint32(orgs[k].Prodvol * farmarea)
+			op[k] = int32(orgs[k].Prodvol * farmarea)
 			totalorg += op[k]
-			ot[k] = op[k] * uint32(orgs[k].Timetotal)
+			ot[k] = op[k] * int32(orgs[k].Timetotal)
 			totaltime += ot[k]
 			fmt.Println(orgs[k].Orgname, op[k], ot[k])
 		}
@@ -174,7 +174,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 					for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
 						fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
 						prodm[b][d] = o[n]
-						proday := uint32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
+						proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
 						fmt.Println(" proday=", proday)
 						op[o[n]] -= proday
 						d++
