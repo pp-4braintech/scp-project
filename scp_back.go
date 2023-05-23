@@ -186,6 +186,10 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 				}
 			}
 			b, d = get_first_bio_available(prodm, total, ndias)
+			if ndias < 0 {
+				fmt.Println("Nao ha slot de producao disponivel")
+				break
+			}
 			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			for {
 				if op[o[n]] > 0 {
