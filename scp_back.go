@@ -162,14 +162,17 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 			//fmt.Println(prodm)
 			haschange = false
 			d = 0
-			for d0 = 0; d0 < ndias && prodm[b][d0] != 0; d0++ {
-				d = d0
+			for d0 = 0; d0 < ndias; d0++ {
+				if prodm[b][d0] == 0 {
+					d = d0
+					break
+				}
 			}
 			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			for {
 				if op[o[n]] > 0 {
-					for i := 0; i < (orgs[o[n]].Timetotal / 24); i++ {
-						fmt.Print("org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
+					for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
+						fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
 						prodm[b][d] = o[n]
 						proday := uint32(vol_bioreactor)
 						fmt.Println("proday=", proday)
