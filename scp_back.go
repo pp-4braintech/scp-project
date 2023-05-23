@@ -34,6 +34,8 @@ const max_buf = 8192
 const vol_bioreactor = 2000
 const vol_ibc = 4000
 const overhead = 1.1
+const max_bios = 36
+const max_days = 30
 
 // type Bioreact struct {
 // 	BioreactorID string
@@ -147,9 +149,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	total = int(math.Ceil(float64((float64(totaltime) * overhead) / float64(ndias*24*vol_bioreactor))))
 	fmt.Println("Numero bioreatores =", total)
 
-	var prodm map[int]map[int]int
+	var prodm [max_bios][max_days]int
 
-	prodm = make(map[int]map[int]int)
+	//	prodm = make(map[int][int]int)
 	i := 0
 	d := 0
 	for b := 0; b < total; b++ {
