@@ -235,7 +235,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 		Values []int
 	}
 	max := 0
-	v := make([]Prodlist, total)
+	v := make([]Prodlist, 0)
 	for k, x := range prodm {
 		var tmp []int
 		tmp = []int{}
