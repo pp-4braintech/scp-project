@@ -126,6 +126,8 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	totalorg = 0
 	totaltime = 0
 	o = []int{}
+	op = make(map[int]uint32)
+	ot = make(map[int]uint32)
 
 	for k, r := range orglist {
 		if r.Selected {
