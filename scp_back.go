@@ -236,7 +236,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 		if k < total {
 			fmt.Printf("Bio%02d  ", k)
 			for j, y := range x {
-				if y > 0 {
+				if y >= 0 {
 					fmt.Printf("%2d ", y)
 					if j > max {
 						max = j
