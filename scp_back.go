@@ -253,7 +253,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	fmt.Println(prodm)
 	fmt.Println(jsonStr)
 	type Prodlist struct {
-		values [8]int
+		Values [8]int
 	}
 	v := Prodlist{[8]int{0, 1, 2, 3, 4, 5, 6, 7}}
 	jsonStr, err = json.Marshal(v)
