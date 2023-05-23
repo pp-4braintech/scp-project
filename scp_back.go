@@ -181,6 +181,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 				n++
 				if n == len(o) {
 					n = 0
+					if !haschange {
+						break
+					}
 				}
 				if haschange {
 					break
