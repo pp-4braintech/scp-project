@@ -199,17 +199,22 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	}
 
 	//fmt.Println(prodm)
+	max := 0
 	for k, x := range prodm {
 		if k < total {
 			fmt.Printf("Bio %2d  ", k)
 			for j, y := range x {
 				if y > 0 {
 					fmt.Printf("%2d ", y)
+					if j > max {
+						max = j
+					}
 				}
 			}
 			// fmt.Println(k, x)
 		}
 	}
+	fmt.Println("Dias de Producao =", max+1)
 	return ndias, total
 }
 
