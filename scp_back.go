@@ -87,7 +87,7 @@ func checkErr(err error) {
 }
 
 func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday int) (int, int) {
-	nbio := 0
+	nbio := -1
 	nday := -1
 	for i := 0; i < maxbio; i++ {
 		for j := 0; j < maxday; j++ {
@@ -186,7 +186,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 				}
 			}
 			b, d = get_first_bio_available(prodm, total, ndias)
-			if ndias < 0 {
+			if b < 0 || d < 0 {
 				fmt.Println("Nao ha slot de producao disponivel")
 				break
 			}
