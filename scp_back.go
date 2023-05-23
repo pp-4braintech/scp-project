@@ -86,7 +86,7 @@ func checkErr(err error) {
 	}
 }
 
-func get_first_bio_available(prod [][]int, maxbio int, maxday int) int {
+func get_first_bio_available(prod [][]int, maxbio int, maxday int) (int, int) {
 	nbio := 0
 	nday := -1
 	for i := 0; i < maxbio; i++ {
