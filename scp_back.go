@@ -86,7 +86,7 @@ func checkErr(err error) {
 	}
 }
 
-func get_first_bio_available(prod [][]int, maxbio int, maxday int) (int, int) {
+func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday int) (int, int) {
 	nbio := 0
 	nday := -1
 	for i := 0; i < maxbio; i++ {
@@ -185,7 +185,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 					break
 				}
 			}
-			b, d = get_first_bio_available(prodm)
+			b, d = get_first_bio_available(prodm, total, ndias)
 			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			for {
 				if op[o[n]] > 0 {
