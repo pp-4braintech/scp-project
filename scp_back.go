@@ -120,21 +120,24 @@ func load_organisms(filename string) int {
 func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	var total int
 	var totalorg, totaltime uint32
-	var o, ot uint32
+	var op, ot map[int]uint32
+	var o []int
 	total = 0
 	totalorg = 0
 	totaltime = 0
-	//
+	o = []int{}
 
 	for k, r := range orglist {
 		if r.Selected {
-			o = uint32(orgs[k].Prodvol * farmarea)
-			totalorg += o
-			ot = o * uint32(orgs[k].Timetotal)
-			totaltime += ot
-			fmt.Println(orgs[k].Orgname, o, ot)
+			o = append(o, k)
+			op[k] = uint32(orgs[k].Prodvol * farmarea)
+			totalorg += op[k]
+			ot[k] = op[k] * uint32(orgs[k].Timetotal)
+			totaltime += ot[k]
+			fmt.Println(orgs[k].Orgname, op[k], ot[k])
 		}
 	}
+	fmt.Println("Organismos:", o)
 	fmt.Println("Volume total =", totalorg)
 	fmt.Println("Tempo total =", totaltime)
 	ndias := int(farmarea / dailyarea)
@@ -142,6 +145,23 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	total = int(math.Ceil(float64((float64(totaltime) * overhead) / float64(ndias*24*vol_bioreactor))))
 	fmt.Println("Numero bioreatores =", total)
 
+	var prodm [][]int
+
+	prodm = make([][]int, total, ndias)
+	i := 0
+	for d := 0; d < ndias; d++ {
+		for b := 0; b < total; b++ {
+			for n := 0; op[o[i]] > 0; n++ {
+				prodm[b][d] = o[i]
+				op[o[i]] -= uint32(math.Ceil(vol_bioreactor / (24.0 / float64(orgs[o[i]].Timetotal))))
+			}
+		}
+		i++
+		if i == len(o) {
+			i = 0
+		}
+	}
+	fmt.Println(prodm)
 	return ndias, total
 }
 
