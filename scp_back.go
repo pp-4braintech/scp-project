@@ -119,10 +119,13 @@ func load_organisms(filename string) int {
 
 func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	var total int
-	var o, ot, totalorg, totaltime uint32
+	var totalorg, totaltime uint32
+	var o, ot uint32
 	total = 0
 	totalorg = 0
 	totaltime = 0
+	//
+
 	for k, r := range orglist {
 		if r.Selected {
 			o = uint32(orgs[k].Prodvol * farmarea)
@@ -138,6 +141,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	fmt.Println("Numero dias =", ndias)
 	total = int(math.Ceil(float64((float64(totaltime) * overhead) / float64(ndias*24*vol_bioreactor))))
 	fmt.Println("Numero bioreatores =", total)
+
 	return ndias, total
 }
 
