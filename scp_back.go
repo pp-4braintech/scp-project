@@ -168,7 +168,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 
 	if ndias > max_days || total > max_bios {
 		fmt.Println("numero maximo de dias ou bio excedido")
-		return ndias, total
+		return ndias, total, 0, nil
 	}
 	var prodm [max_bios][max_days]int
 
