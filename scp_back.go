@@ -91,7 +91,7 @@ func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday in
 	nday := -1
 	for i := 0; i < maxbio; i++ {
 		for j := 0; j < maxday; j++ {
-			if prod[i][j] == 0 {
+			if prod[i][j] < 0 {
 				if nday < 0 || j < nday {
 					nday = j
 					nbio = i
@@ -172,6 +172,11 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 	}
 	var prodm [max_bios][max_days]int
 
+	for i := 0; i < max_bios; i++ {
+		for j := 0; j < max_days; j++ {
+			prodm[i][j] = -1
+		}
+	}
 	//	prodm = make(map[int][int]int)
 	// i := 0
 	d := 0
