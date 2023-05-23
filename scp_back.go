@@ -232,6 +232,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 
 	//fmt.Println(prodm)
 	type Prodlist struct {
+		Bioid  string
 		Values []int
 	}
 	max := 0
@@ -251,8 +252,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 				}
 			}
 			fmt.Println()
+			bioid := fmt.Sprintf("Bio%02d", k)
+			v = append(v, Prodlist{bioid, tmp})
 		}
-		v = append(v, Prodlist{tmp})
 	}
 	fmt.Println("Dias de Producao =", max+1)
 	var jsonStr []byte
