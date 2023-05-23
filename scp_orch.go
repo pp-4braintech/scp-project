@@ -21,7 +21,7 @@ const scp_state_TCP0 = 20
 const scp_state_TCPFAIL = 29
 const scp_max_len = 512
 const scp_keepalive_time = 10
-const scp_timeout_ms = 1500
+const scp_timeout_ms = 2000
 const scp_buff_size = 512
 
 type scp_slave_map struct {
