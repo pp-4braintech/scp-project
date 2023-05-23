@@ -86,6 +86,22 @@ func checkErr(err error) {
 	}
 }
 
+func get_first_bio_available (prod [][]int, maxbio int, maxday int) int {
+	nbio := 0
+	nday := -1
+	for i:=0; i<maxbio; i++ {
+		for j:=; j<maxday; j++ {
+			if prod[i][j] == 0 {
+				if nday < 0 || j<nday{
+					nday = j
+					nbio = i
+				}
+			}
+		}
+	}
+	return nbio, nday
+}
+
 func load_organisms(filename string) int {
 	var totalrecords int
 	file, err := os.Open(filename)
@@ -161,6 +177,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 		for b := 0; b < total; b++ {
 			//fmt.Println(prodm)
 			haschange = false
+
 			d = 0
 			for d0 = 0; d0 < ndias; d0++ {
 				if prodm[b][d0] == 0 {
@@ -168,6 +185,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int) {
 					break
 				}
 			}
+			b,d = get_first_bio_available(prodm)
 			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			for {
 				if op[o[n]] > 0 {
