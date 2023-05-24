@@ -216,6 +216,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	// d0 := 0
 	n := 0
 	haschange := true
+	op_tot := int32(0)
 	for d < ndias && haschange {
 		//fmt.Println(prodm)
 		haschange = false
@@ -232,9 +233,11 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			fmt.Println("Nao ha slot de producao disponivel")
 			break
 		}
+		op_tot = 0
 		for {
 			n = get_worst_prodbio(ot)
 			fmt.Println("bio=", b, "dia=", d, "org=", n, " op=", op[n])
+			op_tot += op[n]
 			if op[n] > 0 { // era o[n]
 				for i := 0; i < int(orgs[n].Timetotal/24); i++ {
 					fmt.Print("dia=", d, " org=", n, " time=", orgs[n].Timetotal, " prod=", op[n], " ot=", ot[n])
@@ -257,6 +260,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			if haschange {
 				break
 			}
+		}
+		if op_tot == 0 {
+			break
 		}
 		if d >= ndias {
 			break
