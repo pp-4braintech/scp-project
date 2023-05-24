@@ -81,6 +81,7 @@ type BioList struct {
 type Prodlist struct {
 	Bioid  string
 	Values []int
+	Codes  []string
 }
 
 var orgs []Organism
@@ -89,6 +90,19 @@ func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
 	}
+}
+
+func bio_to_code(bioname string) string {
+	n := len(bioname)
+	if n < 1 {
+		return ""
+	}
+	biosplit := string.Split(bioname, " ")
+	nick := ""
+	for _, k := range biosplit {
+		nick += k[0]
+	}
+	return nick
 }
 
 func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday int) (int, int) {
@@ -240,22 +254,25 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	max := 0
 	v := make([]Prodlist, 0)
 	for k, x := range prodm {
-		var tmp []int
-		tmp = []int{}
+		var tmpcode []string
+		tmpcode = []string{}
+		var tmpnum []int
+		tmpnum = []int{}
 		if k < total {
 			fmt.Printf("Bio%02d  ", k+1)
 			for j, y := range x {
 				if y >= 0 {
 					fmt.Printf("%2d ", y)
-					tmp = append(tmp, y)
+					tmpcode = append(tmpcode, bio_to_code(orgs[y].Orgname))
+					tmpnum = append(tmpnum, y)
 					if j > max {
 						max = j
 					}
 				}
 			}
 			fmt.Println()
-			bioid := fmt.Sprintf("Bio%02d", k)
-			v = append(v, Prodlist{bioid, tmp})
+			bioid := fmt.Sprintf("Bio%02d", k+1)
+			v = append(v, Prodlist{bioid, tmpnum, tmpcode})
 		}
 	}
 	prodias := max + 1
