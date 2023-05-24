@@ -23,6 +23,7 @@ const scp_max_len = 512
 const scp_keepalive_time = 10
 const scp_timeout_ms = 2000
 const scp_buff_size = 512
+tmp = append(tmp, y)
 
 type scp_slave_map struct {
 	slave_udp_addr  string
