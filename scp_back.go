@@ -121,6 +121,19 @@ func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday in
 	return nbio, nday
 }
 
+func get_worst_prodbio(ops map[int]int32) int {
+	var w int32
+	i := -1
+	w = 0
+	for j, v := range ops {
+		if i < 0 || v > w {
+			w = v
+			i = j
+		}
+	}
+	return i
+}
+
 func load_organisms(filename string) int {
 	var totalrecords int
 	file, err := os.Open(filename)
@@ -221,24 +234,25 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 		}
 		fmt.Println("bio=", b, "dia=", d, "org=", n)
 		for {
-			if op[o[n]] > 0 {
-				for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
-					fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
-					prodm[b][d] = o[n]
-					proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
+			n = get_worst_prodbio(ot)
+			if op[n] > 0 { // era o[n]
+				for i := 0; i < int(orgs[n].Timetotal/24); i++ {
+					fmt.Print("dia=", d, " org=", n, " time=", orgs[n].Timetotal, " prod=", op[n])
+					prodm[b][d] = n
+					proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[n].Timetotal)))
 					fmt.Println(" proday=", proday)
-					op[o[n]] -= proday
+					op[n] -= proday
 					d++
 					haschange = true
 				}
 			}
-			n++
-			if n == len(o) {
-				n = 0
-				if !haschange {
-					break
-				}
-			}
+			// n++
+			// if n == len(o) {
+			// 	n = 0
+			// 	if !haschange {
+			// 		break
+			// 	}
+			// }
 			if haschange {
 				break
 			}
