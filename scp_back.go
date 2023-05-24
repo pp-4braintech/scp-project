@@ -121,19 +121,6 @@ func get_first_bio_available(prod [max_bios][max_days]int, maxbio int, maxday in
 	return nbio, nday
 }
 
-func get_worst_prodbio(ops map[int]int32) int {
-	var w int32
-	i := -1
-	w = 0
-	for j, v := range ops {
-		if i < 0 || v > w {
-			w = v
-			i = j
-		}
-	}
-	return i
-}
-
 func load_organisms(filename string) int {
 	var totalrecords int
 	file, err := os.Open(filename)
@@ -216,8 +203,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	// d0 := 0
 	n := 0
 	haschange := true
-	op_tot := int32(0)
-	for haschange {
+	for d < ndias && haschange {
 		//fmt.Println(prodm)
 		haschange = false
 
@@ -233,37 +219,34 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			fmt.Println("Nao ha slot de producao disponivel")
 			break
 		}
-		op_tot = 0
+		fmt.Println("bio=", b, "dia=", d, "org=", n)
 		for {
-			n = get_worst_prodbio(ot)
-			fmt.Println("bio=", b, "dia=", d, "org=", n, " op=", op[n], op_tot)
-			op_tot += op[n]
-			if op[n] > 0 { // era o[n]
-				for i := 0; i < int(orgs[n].Timetotal/24); i++ {
-					fmt.Print("dia=", d, " org=", n, " time=", orgs[n].Timetotal, " prod=", op[n], " ot=", ot[n])
-					prodm[b][d] = n
-					proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[n].Timetotal)))
+			if op[o[n]] > 0 {
+				for i := 0; i < int(orgs[o[n]].Timetotal/24); i++ {
+					fmt.Print("dia=", d, " org=", n, " time=", orgs[o[n]].Timetotal, " prod=", op[o[n]])
+					prodm[b][d] = o[n]
+					proday := int32(math.Ceil(float64(vol_bioreactor*24) / float64(orgs[o[n]].Timetotal)))
 					fmt.Println(" proday=", proday)
-					op[n] -= proday
-					ot[n] -= proday * int32(orgs[n].Timetotal)
+					op[o[n]] -= proday
 					d++
 					haschange = true
 				}
 			}
-			// n++
-			// if n == len(o) {
-			// 	n = 0
-			// 	if !haschange {
-			// 		break
-			// 	}
-			// }
-			if haschange || op_tot <= 0 {
+			n++
+			if n == len(o) {
+				n = 0
+				if !haschange {
+					break
+				}
+			}
+			if haschange {
 				break
 			}
 		}
-		if op_tot <= 0 {
+		if d >= ndias {
 			break
 		}
+
 	}
 
 	//fmt.Println(prodm)
