@@ -97,10 +97,10 @@ func bio_to_code(bioname string) string {
 	if n < 1 {
 		return ""
 	}
-	biosplit := string.Split(bioname, " ")
+	biosplit := strings.Split(bioname, " ")
 	nick := ""
 	for _, k := range biosplit {
-		nick += k[0]
+		nick += string(k[0])
 	}
 	return nick
 }
