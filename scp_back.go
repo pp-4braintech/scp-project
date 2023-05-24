@@ -243,7 +243,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 		var tmp []int
 		tmp = []int{}
 		if k < total {
-			fmt.Printf("Bio%02d  ", k)
+			fmt.Printf("Bio%02d  ", k+1)
 			for j, y := range x {
 				if y >= 0 {
 					fmt.Printf("%2d ", y)
