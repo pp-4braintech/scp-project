@@ -232,9 +232,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			fmt.Println("Nao ha slot de producao disponivel")
 			break
 		}
-		fmt.Println("bio=", b, "dia=", d, "org=", n)
 		for {
 			n = get_worst_prodbio(ot)
+			fmt.Println("bio=", b, "dia=", d, "org=", n)
 			if op[n] > 0 { // era o[n]
 				for i := 0; i < int(orgs[n].Timetotal/24); i++ {
 					fmt.Print("dia=", d, " org=", n, " time=", orgs[n].Timetotal, " prod=", op[n], " ot=", ot[n])
