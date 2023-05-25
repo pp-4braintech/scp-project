@@ -479,7 +479,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(org_sel_form), &sels)
 		//fmt.Println(sels)
 		if (len(sels) >= 0) && (farm_area > daily_area) {
-			for i, r := range sels {
+			for _, r := range sels {
 				if r < len(orgdata) {
 					orgdata[r].Selected = true
 				} else {
