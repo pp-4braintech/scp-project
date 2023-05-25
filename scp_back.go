@@ -202,7 +202,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	b := 0
 	// d0 := 0
 	n := 0
-	fday := 0
+	fday := -1
 	haschange := true
 	for d < ndias && haschange {
 		//fmt.Println(prodm)
@@ -235,7 +235,9 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			}
 			n++
 			if n == len(o) {
-				fday = d
+				if fday < 0 {
+					fday = d
+				}
 				n = 0
 				if !haschange {
 					break
