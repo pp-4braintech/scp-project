@@ -467,9 +467,8 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
-		fmt.Println("Post Data", r.Form)
-
+		//fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		//fmt.Println("Post Data", r.Form)
 		farm_area_form := r.FormValue("Farmarea")
 		farm_area, _ := strconv.Atoi(farm_area_form)
 		daily_area_form := r.FormValue("Dailyarea")
@@ -486,7 +485,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				} else {
 					fmt.Println("Invalid Organism index")
 				}
-				fmt.Println(i, r)
+				//fmt.Println(i, r)
 			}
 			//fmt.Println("orgdata =", orgdata)
 			ndias, numbios, diasprod, primdia, sched := min_bio_sim(farm_area, daily_area, orgdata)
