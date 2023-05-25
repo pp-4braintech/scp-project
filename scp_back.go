@@ -202,6 +202,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	b := 0
 	// d0 := 0
 	n := 0
+	fday := 0
 	haschange := true
 	for d < ndias && haschange {
 		//fmt.Println(prodm)
@@ -234,6 +235,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 			}
 			n++
 			if n == len(o) {
+				fday = d
 				n = 0
 				if !haschange {
 					break
@@ -277,6 +279,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 	}
 	prodias := max + 1
 	fmt.Println("Dias de Producao =", prodias)
+	fmt.Println("Primeiro dia =", fday)
 	//var jsonStr []byte
 	//jsonStr, err := json.Marshal(prodm)
 	//checkErr(err)
