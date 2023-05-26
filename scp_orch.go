@@ -147,20 +147,21 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			fmt.Println("Destruindo SCP TCP")
 			slave_data.go_chan <- scp_destroy
 			fmt.Println("...saindo do channel")
-			time.Sleep(60 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			select {
 			case ret := <-slave_data.go_chan:
 				if ret == scp_ack {
-					fmt.Println("fechando chain")
-					close(slave_data.go_chan)
-					fmt.Println("deletando dados na tabela")
-					delete(scp_slaves, scp_msg_data)
+					fmt.Println("SCP TCP destroy ACK")
 				} else {
 					fmt.Println("Falha ao destruir SCP TCP")
 				}
 			default:
 				fmt.Println("SCP TCP nao respondeu")
 			}
+			fmt.Println("fechando chain")
+			close(slave_data.go_chan)
+			fmt.Println("deletando dados na tabela")
+			delete(scp_slaves, scp_msg_data)
 
 		} else {
 			udp_addr := net_addr.String()
