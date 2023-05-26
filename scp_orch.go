@@ -23,7 +23,6 @@ const scp_max_len = 512
 const scp_keepalive_time = 10
 const scp_timeout_ms = 2000
 const scp_buff_size = 512
-tmp = append(tmp, y)
 
 type scp_slave_map struct {
 	slave_udp_addr  string
@@ -246,7 +245,7 @@ func scp_master_udp() {
 		fmt.Println("origem:", net_addr)
 
 		go scp_process_udp(reply, net_addr)
-		
+
 		// params := scp_splitparam(string(reply[0:p_size]))
 		// scp_command := params[0]
 		// fmt.Println("SCP comm", scp_command, " / SCP data", params[1:])
