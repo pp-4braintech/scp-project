@@ -129,6 +129,108 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	}
 }
 
+func scp_process_udp(msg []byte, net_addr net.Addr) {
+
+	params := scp_splitparam(string(msg[0:p_size]))
+	scp_command := params[0]
+	fmt.Println("SCP comm", scp_command, " / SCP data", params[1:])
+
+	switch scp_command {
+	case scp_join:
+		scp_msg_data := params[1]
+		fmt.Println("JOIN recebido de", scp_msg_data, len(scp_msg_data))
+		slave_data, ok := scp_slaves[scp_msg_data]
+		if ok {
+			fmt.Println("JOIN recebido de slave já existente", slave_data)
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
+			fmt.Println("Destruindo SCP TCP")
+			slave_data.go_chan <- scp_destroy
+			fmt.Println("...saindo do channel")
+			time.Sleep(60 * time.Millisecond)
+			select {
+			case ret := <-slave_data.go_chan:
+				if ret == scp_ack {
+					fmt.Println("fechando chain")
+					close(slave_data.go_chan)
+					fmt.Println("deletando dados na tabela")
+					delete(scp_slaves, scp_msg_data)
+				} else {
+					fmt.Println("Falha ao destruir SCP TCP")
+				}
+			default:
+				fmt.Println("SCP TCP nao respondeu")
+			}
+
+		} else {
+			udp_addr := net_addr.String()
+			tmp_addr := strings.Split(udp_addr, ":")
+			if len(params) >= 3 {
+				tcp_addr := tmp_addr[0] + ":" + params[2]
+				process_chan := make(chan string)
+				scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan}
+				fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
+				_, err = con.WriteTo([]byte(scp_ack), net_addr)
+				checkErr(err)
+			} else {
+				fmt.Println("JOIN com parametros incorretos", params)
+			}
+		}
+
+	case scp_ack:
+		scp_msg_data := params[1]
+		fmt.Println("ACK recebido de", scp_msg_data, len(scp_msg_data))
+		slave_data, ok := scp_slaves[scp_msg_data]
+		if !ok {
+			fmt.Println("Slave fora da tabela", scp_msg_data, slave_data, ok)
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
+		} else {
+			if slave_data.slave_scp_state == scp_state_JOIN0 {
+				fmt.Println("JOIN confirmado")
+				slave_data.slave_scp_state = scp_state_JOIN1
+				scp_slaves[scp_msg_data] = slave_data
+				_, err = con.WriteTo([]byte(scp_ack), net_addr)
+				checkErr(err)
+				go scp_master_tcp_client(&slave_data)
+				ret := <-slave_data.go_chan
+				if ret == scp_err {
+					fmt.Println("ERRO ao criar conexao TCP com cliente")
+					slave_data.slave_scp_state = scp_state_JOIN0
+				}
+				scp_slaves[scp_msg_data] = slave_data
+				//slave_data.go_chan <- "PUT/5/1/END"
+				//slave_data.go_chan <- "GET/1/END"
+			}
+		}
+
+	case scp_cmd:
+		scp_msg_slaveaddr := params[1]
+		slave_data, ok := scp_slaves[scp_msg_slaveaddr]
+		if !ok {
+			fmt.Println("CMD para Slave fora da tabela", scp_msg_slaveaddr, slave_data, ok)
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
+		} else {
+			cmd := params[2]
+			tam := len(cmd)
+			for _, v := range params[3:] {
+				cmd += "/" + v
+				tam += 1 + len(v)
+				//fmt.Println(i, v, len(v))
+			}
+			scp_msg_slavecmd := cmd[0:tam]
+			fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
+			slave_data.go_chan <- scp_msg_slavecmd
+			ret := <-slave_data.go_chan
+			fmt.Println("CMD ret=", ret)
+			_, err = con.WriteTo([]byte(ret), net_addr)
+			checkErr(err)
+		}
+
+	}
+}
+
 func scp_master_udp() {
 
 	con, err := net.ListenPacket("udp", ":7007")
@@ -143,104 +245,106 @@ func scp_master_udp() {
 		fmt.Println("msg recebida:", string(reply))
 		fmt.Println("origem:", net_addr)
 
-		params := scp_splitparam(string(reply[0:p_size]))
-		scp_command := params[0]
-		fmt.Println("SCP comm", scp_command, " / SCP data", params[1:])
+		go scp_process_udp(reply, net_addr)
+		
+		// params := scp_splitparam(string(reply[0:p_size]))
+		// scp_command := params[0]
+		// fmt.Println("SCP comm", scp_command, " / SCP data", params[1:])
 
-		switch scp_command {
-		case scp_join:
-			scp_msg_data := params[1]
-			fmt.Println("JOIN recebido de", scp_msg_data, len(scp_msg_data))
-			slave_data, ok := scp_slaves[scp_msg_data]
-			if ok {
-				fmt.Println("JOIN recebido de slave já existente", slave_data)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
-				checkErr(err)
-				fmt.Println("Destruindo SCP TCP")
-				slave_data.go_chan <- scp_destroy
-				fmt.Println("...saindo do channel")
-				time.Sleep(60 * time.Millisecond)
-				select {
-				case ret := <-slave_data.go_chan:
-					if ret == scp_ack {
-						fmt.Println("fechando chain")
-						close(slave_data.go_chan)
-						fmt.Println("deletando dados na tabela")
-						delete(scp_slaves, scp_msg_data)
-					} else {
-						fmt.Println("Falha ao destruir SCP TCP")
-					}
-				default:
-					fmt.Println("SCP TCP nao respondeu")
-				}
+		// switch scp_command {
+		// case scp_join:
+		// 	scp_msg_data := params[1]
+		// 	fmt.Println("JOIN recebido de", scp_msg_data, len(scp_msg_data))
+		// 	slave_data, ok := scp_slaves[scp_msg_data]
+		// 	if ok {
+		// 		fmt.Println("JOIN recebido de slave já existente", slave_data)
+		// 		_, err = con.WriteTo([]byte(scp_err), net_addr)
+		// 		checkErr(err)
+		// 		fmt.Println("Destruindo SCP TCP")
+		// 		slave_data.go_chan <- scp_destroy
+		// 		fmt.Println("...saindo do channel")
+		// 		time.Sleep(60 * time.Millisecond)
+		// 		select {
+		// 		case ret := <-slave_data.go_chan:
+		// 			if ret == scp_ack {
+		// 				fmt.Println("fechando chain")
+		// 				close(slave_data.go_chan)
+		// 				fmt.Println("deletando dados na tabela")
+		// 				delete(scp_slaves, scp_msg_data)
+		// 			} else {
+		// 				fmt.Println("Falha ao destruir SCP TCP")
+		// 			}
+		// 		default:
+		// 			fmt.Println("SCP TCP nao respondeu")
+		// 		}
 
-			} else {
-				udp_addr := net_addr.String()
-				tmp_addr := strings.Split(udp_addr, ":")
-				if len(params) >= 3 {
-					tcp_addr := tmp_addr[0] + ":" + params[2]
-					process_chan := make(chan string)
-					scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan}
-					fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
-					_, err = con.WriteTo([]byte(scp_ack), net_addr)
-					checkErr(err)
-				} else {
-					fmt.Println("JOIN com parametros incorretos", params)
-				}
-			}
+		// 	} else {
+		// 		udp_addr := net_addr.String()
+		// 		tmp_addr := strings.Split(udp_addr, ":")
+		// 		if len(params) >= 3 {
+		// 			tcp_addr := tmp_addr[0] + ":" + params[2]
+		// 			process_chan := make(chan string)
+		// 			scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan}
+		// 			fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
+		// 			_, err = con.WriteTo([]byte(scp_ack), net_addr)
+		// 			checkErr(err)
+		// 		} else {
+		// 			fmt.Println("JOIN com parametros incorretos", params)
+		// 		}
+		// 	}
 
-		case scp_ack:
-			scp_msg_data := params[1]
-			fmt.Println("ACK recebido de", scp_msg_data, len(scp_msg_data))
-			slave_data, ok := scp_slaves[scp_msg_data]
-			if !ok {
-				fmt.Println("Slave fora da tabela", scp_msg_data, slave_data, ok)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
-				checkErr(err)
-			} else {
-				if slave_data.slave_scp_state == scp_state_JOIN0 {
-					fmt.Println("JOIN confirmado")
-					slave_data.slave_scp_state = scp_state_JOIN1
-					scp_slaves[scp_msg_data] = slave_data
-					_, err = con.WriteTo([]byte(scp_ack), net_addr)
-					checkErr(err)
-					go scp_master_tcp_client(&slave_data)
-					ret := <-slave_data.go_chan
-					if ret == scp_err {
-						fmt.Println("ERRO ao criar conexao TCP com cliente")
-						slave_data.slave_scp_state = scp_state_JOIN0
-					}
-					scp_slaves[scp_msg_data] = slave_data
-					//slave_data.go_chan <- "PUT/5/1/END"
-					//slave_data.go_chan <- "GET/1/END"
-				}
-			}
+		// case scp_ack:
+		// 	scp_msg_data := params[1]
+		// 	fmt.Println("ACK recebido de", scp_msg_data, len(scp_msg_data))
+		// 	slave_data, ok := scp_slaves[scp_msg_data]
+		// 	if !ok {
+		// 		fmt.Println("Slave fora da tabela", scp_msg_data, slave_data, ok)
+		// 		_, err = con.WriteTo([]byte(scp_err), net_addr)
+		// 		checkErr(err)
+		// 	} else {
+		// 		if slave_data.slave_scp_state == scp_state_JOIN0 {
+		// 			fmt.Println("JOIN confirmado")
+		// 			slave_data.slave_scp_state = scp_state_JOIN1
+		// 			scp_slaves[scp_msg_data] = slave_data
+		// 			_, err = con.WriteTo([]byte(scp_ack), net_addr)
+		// 			checkErr(err)
+		// 			go scp_master_tcp_client(&slave_data)
+		// 			ret := <-slave_data.go_chan
+		// 			if ret == scp_err {
+		// 				fmt.Println("ERRO ao criar conexao TCP com cliente")
+		// 				slave_data.slave_scp_state = scp_state_JOIN0
+		// 			}
+		// 			scp_slaves[scp_msg_data] = slave_data
+		// 			//slave_data.go_chan <- "PUT/5/1/END"
+		// 			//slave_data.go_chan <- "GET/1/END"
+		// 		}
+		// 	}
 
-		case scp_cmd:
-			scp_msg_slaveaddr := params[1]
-			slave_data, ok := scp_slaves[scp_msg_slaveaddr]
-			if !ok {
-				fmt.Println("CMD para Slave fora da tabela", scp_msg_slaveaddr, slave_data, ok)
-				_, err = con.WriteTo([]byte(scp_err), net_addr)
-				checkErr(err)
-			} else {
-				cmd := params[2]
-				tam := len(cmd)
-				for _, v := range params[3:] {
-					cmd += "/" + v
-					tam += 1 + len(v)
-					//fmt.Println(i, v, len(v))
-				}
-				scp_msg_slavecmd := cmd[0:tam]
-				fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
-				slave_data.go_chan <- scp_msg_slavecmd
-				ret := <-slave_data.go_chan
-				fmt.Println("CMD ret=", ret)
-				_, err = con.WriteTo([]byte(ret), net_addr)
-				checkErr(err)
-			}
+		// case scp_cmd:
+		// 	scp_msg_slaveaddr := params[1]
+		// 	slave_data, ok := scp_slaves[scp_msg_slaveaddr]
+		// 	if !ok {
+		// 		fmt.Println("CMD para Slave fora da tabela", scp_msg_slaveaddr, slave_data, ok)
+		// 		_, err = con.WriteTo([]byte(scp_err), net_addr)
+		// 		checkErr(err)
+		// 	} else {
+		// 		cmd := params[2]
+		// 		tam := len(cmd)
+		// 		for _, v := range params[3:] {
+		// 			cmd += "/" + v
+		// 			tam += 1 + len(v)
+		// 			//fmt.Println(i, v, len(v))
+		// 		}
+		// 		scp_msg_slavecmd := cmd[0:tam]
+		// 		fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
+		// 		slave_data.go_chan <- scp_msg_slavecmd
+		// 		ret := <-slave_data.go_chan
+		// 		fmt.Println("CMD ret=", ret)
+		// 		_, err = con.WriteTo([]byte(ret), net_addr)
+		// 		checkErr(err)
+		// 	}
 
-		}
+		// }
 		fmt.Println()
 		fmt.Println("scp slave", scp_slaves)
 		fmt.Println()
