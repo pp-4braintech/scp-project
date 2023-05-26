@@ -82,7 +82,13 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 		fmt.Println("Conexao TCP estabelecida com slave")
 		slave_data.slave_scp_state = scp_state_TCP0
 		*scp_slave = slave_data
-		slave_data.go_chan <- scp_ack
+		if len(slave_data.go_chan) > 0 {
+			slave_data.go_chan <- scp_ack
+		} else {
+			fmt.Println("*** ERRO NO CHANNEL")
+			return
+		}
+
 	} else {
 		fmt.Println("ERRO Conexao TCP com slave")
 		checkErr(err)
@@ -106,6 +112,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			fmt.Println("TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
 			ret, err := scp_sendtcp(slave_tcp_con, chan_msg, true)
 			if len(slave_data.go_chan) == 0 {
+				fmt.Println("*** ERRO NO CHANNEL")
 				return
 			}
 			if err == nil {
