@@ -153,7 +153,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 				if ret == scp_ack {
 					fmt.Println("SCP TCP destroy ACK")
 				} else {
-					fmt.Println("Falha ao destruir SCP TCP")
+					fmt.Println("Falha ao destruir SCP TCP =", ret)
 				}
 			default:
 				fmt.Println("SCP TCP nao respondeu")
