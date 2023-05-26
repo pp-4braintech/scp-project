@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const demo false
+const demo = false
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
