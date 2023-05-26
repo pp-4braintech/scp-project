@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const demo false
+
 const scp_ack = "ACK"
 const scp_err = "ERR"
 const scp_get = "GET"
@@ -123,6 +125,9 @@ func get_ibc_index(ibc_id string) int {
 
 func scp_sendmsg_orch(cmd string) string {
 
+	if demo {
+		return scp_ack
+	}
 	fmt.Println("TO ORCH:", cmd)
 	con, err := net.Dial("udp", scp_orch_addr)
 	if err != nil {
