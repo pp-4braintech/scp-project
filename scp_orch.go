@@ -99,6 +99,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	for {
 		select {
 		case chan_msg := <-slave_data.go_chan:
+			fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
 			if chan_msg == scp_destroy {
 				fmt.Println("TCP destroy recebido")
 				slave_data.go_chan <- scp_ack
