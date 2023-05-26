@@ -89,7 +89,7 @@ var ibc = []IBC{
 
 func checkErr(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Println("[SCP ERROR]", err)
 	}
 }
 
