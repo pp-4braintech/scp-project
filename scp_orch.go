@@ -128,7 +128,8 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	}
 }
 
-func scp_process_udp(msg []byte, net_addr net.Addr) {
+func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Addr) {
+	var err error
 
 	params := scp_splitparam(string(msg[0:p_size]))
 	scp_command := params[0]
@@ -244,7 +245,7 @@ func scp_master_udp() {
 		fmt.Println("msg recebida:", string(reply))
 		fmt.Println("origem:", net_addr)
 
-		go scp_process_udp(reply, net_addr)
+		go scp_process_udp(con, reply, p_size, net_addr)
 
 		// params := scp_splitparam(string(reply[0:p_size]))
 		// scp_command := params[0]
