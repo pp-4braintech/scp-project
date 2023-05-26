@@ -154,6 +154,9 @@ func scp_sendmsg_orch(cmd string) string {
 }
 
 func scp_get_alldata() {
+	if demo {
+		return
+	}
 	for {
 		for k, b := range bio {
 			cmd1 := "CMD/" + b.Deviceaddr + "/GET/D14/END"
