@@ -315,7 +315,7 @@ func scp_sendmsg_master(cmd string) string {
 	if errf != nil {
 		checkErr(err)
 	}
-	fmt.Printf("recebido: %s\n", buf[:n])
+	//fmt.Printf("recebido: %s\n", buf[:n])
 	return string(buf[:n])
 }
 
