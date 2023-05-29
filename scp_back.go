@@ -35,7 +35,7 @@ const vol_bioreactor = 2000
 const vol_ibc = 4000
 const overhead = 1.1
 const max_bios = 36
-const max_days = 30
+const max_days = 60
 
 // type Bioreact struct {
 // 	BioreactorID string
