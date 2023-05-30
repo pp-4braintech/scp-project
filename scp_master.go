@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -71,6 +72,18 @@ type IBC struct {
 	Withdraw   uint32
 }
 
+type IBC_cfg struct {
+	IBCID      string
+	Deviceaddr string
+	Screenaddr string
+	Maxvolume  uint32
+	Pump_dev   string
+	Valv_devs  [4]string
+	Vol_devs   [2]string
+}
+
+var ibc_cfg map[string]IBC_cfg
+
 var bio = []Bioreact{
 	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
 	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
@@ -94,6 +107,39 @@ func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
 	}
+}
+
+func load_ibcs_conf(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	ibc_cfg = make(map[string]IBC_cfg, len(records))
+	for k, r := range records {
+		id := r[0]
+		dev_addr := r[1]
+		screen_addr := r[2]
+		voltot, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
+		pumpdev := r[4]
+		vdev1 := r[5]
+		vdev2 := r[6]
+		vdev3 := r[7]
+		vdev4 := r[8]
+		voldev1 := r[9]
+		voldev2 := r[10]
+		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
+			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}}
+		totalrecords = k
+	}
+	return totalrecords
 }
 
 func scp_splitparam(param string, separator string) []string {
@@ -410,6 +456,10 @@ func scp_master_ipc() {
 }
 
 func main() {
+	nbiocfg := load_ibcs_conf("ibcs_conf.csv")
+	if nbiocfg < 1 {
+		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
+	}
 	go scp_get_alldata()
 	scp_master_ipc()
 }
