@@ -20,7 +20,7 @@ const scp_put = "PUT"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
-const scp_par_withdraw = -"WITHDRAW"
+const scp_par_withdraw = "WITHDRAW"
 const scp_bioreactor = "BIOREACTOR"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
@@ -254,7 +254,7 @@ func scp_process_conn(conn net.Conn) {
 					vol, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					if err == nil {
-						bio[ind].Withdraw = vol
+						bio[ind].Withdraw = uint32(vol)
 					}
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
@@ -345,7 +345,7 @@ func scp_process_conn(conn net.Conn) {
 					vol, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					if err == nil {
-						ibc[ind].Withdraw = vol
+						ibc[ind].Withdraw = uint32(vol)
 					}
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
