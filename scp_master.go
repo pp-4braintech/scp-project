@@ -72,6 +72,22 @@ type IBC struct {
 	Withdraw   uint32
 }
 
+type Bioreact_cfg struct {
+	IBCID      string
+	Deviceaddr string
+	Screenaddr string
+	Maxvolume  uint32
+	Pump_dev   string
+	Aero_dev   string
+	Peris_dev  [5]string
+	Valv_devs  [8]string
+	Vol_devs   [2]string
+	PH_dev     string
+	Temp_dev   string
+	Levelhigh  string
+	Levellow   string
+	Emergency  string
+}
 type IBC_cfg struct {
 	IBCID      string
 	Deviceaddr string
@@ -83,6 +99,7 @@ type IBC_cfg struct {
 }
 
 var ibc_cfg map[string]IBC_cfg
+var bio_cfg map[string]Bioreact_cfg
 
 var bio = []Bioreact{
 	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
@@ -138,6 +155,62 @@ func load_ibcs_conf(filename string) int {
 		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
 			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}}
 		totalrecords = k
+	}
+	return totalrecords
+}
+
+func load_bios_conf(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	bio_cfg = make(map[string]Bioreact_cfg, len(records))
+	totalrecords = 0
+	for _, r := range records {
+		if !strings.Contains(r[0], "#") && len(r) == 26 {
+			id := r[0]
+			dev_addr := r[1]
+			screen_addr := r[2]
+			voltot, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
+			pumpdev := r[4]
+			aerodev := r[5]
+			perdev1 := r[6]
+			perdev2 := r[7]
+			perdev3 := r[8]
+			perdev4 := r[9]
+			perdev5 := r[10]
+			vdev1 := r[11]
+			vdev2 := r[12]
+			vdev3 := r[13]
+			vdev4 := r[14]
+			vdev5 := r[15]
+			vdev6 := r[16]
+			vdev7 := r[17]
+			vdev8 := r[18]
+			voldev1 := r[19]
+			voldev2 := r[20]
+			phdev := r[21]
+			tempdev := r[22]
+			lhigh := r[23]
+			llow := r[24]
+			emerg := r[25]
+
+			bio_cfg[id] = Bioreact_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev, aerodev,
+				[5]string{perdev1, perdev2, perdev3, perdev4, perdev5},
+				[8]string{vdev1, vdev2, vdev3, vdev4, vdev5, vdev6, vdev7, vdev8},
+				[2]string{voldev1, voldev2}, phdev, tempdev, lhigh, llow, emerg}
+			totalrecords += 1
+		} else if len(r) != 26 {
+			fmt.Println("ERROR BIO CFG: numero de parametros invalido", r)
+		}
 	}
 	return totalrecords
 }
@@ -456,11 +529,16 @@ func scp_master_ipc() {
 }
 
 func main() {
-	nbiocfg := load_ibcs_conf("ibcs_conf.csv")
-	if nbiocfg < 1 {
+	nibccfg := load_ibcs_conf("ibc_conf.csv")
+	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
 	fmt.Println("IBC cfg", ibc_cfg)
+	nbiocfg := load_bios_conf("bio_conf.csv")
+	if nbiocfg < 1 {
+		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
+	}
+	fmt.Println("BIO cfg", bio_cfg)
 	go scp_get_alldata()
 	scp_master_ipc()
 }
