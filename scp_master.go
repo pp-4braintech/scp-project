@@ -460,6 +460,7 @@ func main() {
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
+	fmt.Println("IBC cfg", ibc_cfg)
 	go scp_get_alldata()
 	scp_master_ipc()
 }
