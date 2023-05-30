@@ -86,7 +86,7 @@ var ibc = []IBC{
 	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 1, 0}, [2]int{0, 30}, 0},
 	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 1}, [2]int{4, 50}, 0},
 	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
-	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
+	{"IBC06", bio_cip, "Tricoderma harzianum", 250, 1, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
 	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
 }
 
