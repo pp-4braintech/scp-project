@@ -20,6 +20,7 @@ const scp_put = "PUT"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
+const scp_par_withdraw = -"WITHDRAW"
 const scp_bioreactor = "BIOREACTOR"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
@@ -55,6 +56,7 @@ type Bioreact struct {
 	Step         [2]int
 	Timeleft     [2]int
 	Timetotal    [2]int
+	Withdraw     uint32
 }
 
 type IBC struct {
@@ -66,25 +68,26 @@ type IBC struct {
 	Pumpstatus bool
 	Valvs      [4]int
 	Timetotal  [2]int
+	Withdraw   uint32
 }
 
 var bio = []Bioreact{
-	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}},
-	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}},
-	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}},
-	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}},
-	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}},
-	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}},
+	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
+	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
+	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
+	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
+	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{2, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
+	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_storing, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}},
-	{"IBC02", bio_storing, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}},
-	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 1, 0}, [2]int{0, 30}},
-	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 1}, [2]int{4, 50}},
-	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}},
-	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}},
-	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}},
+	{"IBC01", bio_storing, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0},
+	{"IBC02", bio_storing, "Bacillus Megaterium", 200, 1, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0},
+	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 1, 0}, [2]int{0, 30}, 0},
+	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 1}, [2]int{4, 50}, 0},
+	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
+	{"IBC06", bio_cip, "Tricoderma harzianum", 2000, 5, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
+	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
 }
 
 func checkErr(err error) {
@@ -247,6 +250,13 @@ func scp_process_conn(conn net.Conn) {
 				scp_device := subparams[0]
 				fmt.Println("subparams=", subparams)
 				switch scp_device {
+				case scp_par_withdraw:
+					vol, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					if err == nil {
+						bio[ind].Withdraw = vol
+					}
+					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					var cmd1, cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
@@ -331,6 +341,13 @@ func scp_process_conn(conn net.Conn) {
 				subparams := scp_splitparam(params[3], ",")
 				scp_device := subparams[0]
 				switch scp_device {
+				case scp_par_withdraw:
+					vol, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					if err == nil {
+						ibc[ind].Withdraw = vol
+					}
+					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
