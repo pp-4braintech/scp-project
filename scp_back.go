@@ -329,8 +329,8 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		var jsonStr []byte
 		ibc_id := r.URL.Query().Get("Id")
-		fmt.Println("ibc_id =", ibc_id)
-		fmt.Println()
+		//fmt.Println("ibc_id =", ibc_id)
+		//fmt.Println()
 		if len(ibc_id) > 0 {
 			cmd := "GET/IBC/" + ibc_id + "/END"
 			jsonStr = []byte(scp_sendmsg_master(cmd))
@@ -362,6 +362,7 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Pump = ", pump)
 			fmt.Println("Valve = ", valve)
 			fmt.Println("Status = ", valve_status)
+			fmt.Println("Withdraw = ", withdraw)
 			if pump != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -393,8 +394,8 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		var jsonStr []byte
 		bio_id := r.URL.Query().Get("Id")
-		fmt.Println("bio_id =", bio_id)
-		fmt.Println()
+		//fmt.Println("bio_id =", bio_id)
+		//fmt.Println()
 		if len(bio_id) > 0 {
 			cmd := "GET/BIOREACTOR/" + bio_id + "/END"
 			jsonStr = []byte(scp_sendmsg_master(cmd))
@@ -427,6 +428,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Aero = ", aero)
 			fmt.Println("Valve = ", valve)
 			fmt.Println("Status = ", valve_status)
+			fmt.Println("Withdraw = ", withdraw)
 			if pump != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
