@@ -16,6 +16,7 @@ import (
 )
 
 const scp_err = "ERR"
+const scp_par_withdraw = "WITHDRAW"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -356,6 +357,7 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			pump := r.FormValue("Pumpstatus")
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
+			withdraw := r.FormValue("Withdraw")
 			fmt.Println("IBC_id = ", ibc_id)
 			fmt.Println("Pump = ", pump)
 			fmt.Println("Valve = ", valve)
@@ -369,7 +371,11 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
-
+			}
+			if withdraw != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
 			}
 		}
 
@@ -415,6 +421,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			aero := r.FormValue("Aerator")
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
+			withdraw := r.FormValue("Withdraw")
 			fmt.Println("Bio_id = ", bio_id)
 			fmt.Println("Pump = ", pump)
 			fmt.Println("Aero = ", aero)
@@ -435,6 +442,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 
+			}
+			if withdraw != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
 			}
 		}
 
