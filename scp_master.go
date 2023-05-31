@@ -359,7 +359,8 @@ func scp_process_conn(conn net.Conn) {
 		switch scp_object {
 		case scp_bioreactor:
 			fmt.Println("obj=", scp_object)
-			ind := get_bio_index(params[2])
+			bioid := params[2]
+			ind := get_bio_index(bioid)
 			if ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
@@ -378,13 +379,16 @@ func scp_process_conn(conn net.Conn) {
 					var cmd1, cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
+					biodev := bio_cfg[bioid].Deviceaddr
+					bioscr := bio_cfg[bioid].Screenaddr
+					pumpdev := bio_cfg[bioid].Pump_dev
 					bio[ind].Pumpstatus = value
 					if value {
-						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D14,1/END"
-						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S270,1/END"
+						cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
+						cmd2 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
-						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D14,0/END"
-						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S270,0/END"
+						cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
+						cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
@@ -425,19 +429,22 @@ func scp_process_conn(conn net.Conn) {
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
-						var valve_str1, valve_str2 string
-						if value_valve < 7 {
-							valve_str1 = fmt.Sprintf("%d", value_valve+7)
-						} else {
-							valve_str1 = "16"
-						}
-						valve_str2 = fmt.Sprintf("%d", value_valve+201)
+						// var valve_str1, valve_str2 string
+						// if value_valve < 7 {
+						// 	valve_str1 = fmt.Sprintf("%d", value_valve+7)
+						// } else {
+						// 	valve_str1 = "16"
+						// }
+						valve_str2 := fmt.Sprintf("%d", value_valve+201)
+						biodev := bio_cfg[bioid].Deviceaddr
+						bioscr := bio_cfg[bioid].Screenaddr
+						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
 						if value_status > 0 {
-							cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",1/END"
-							cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",1/END"
+							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
+							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
 						} else {
-							cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D" + valve_str1 + ",0/END"
-							cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S" + valve_str2 + ",0/END"
+							cmd1 = "CMD/" + biodev + "/PUT/D" + valvaddr + ",0/END"
+							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
 						}
 						ret1 := scp_sendmsg_orch(cmd1)
 						fmt.Println("RET CMD1 =", ret1)
