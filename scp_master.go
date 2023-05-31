@@ -282,25 +282,22 @@ func scp_get_alldata() {
 	for {
 		for k, b := range bio {
 			bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-			cmd1 := "CMD/" + bioaddr + "/GET/D14/END"
+			tempdev := bio_cfg[b.BioreactorID].Temp_dev
+			phdev := bio_cfg[b.BioreactorID].PH_dev
+
+			cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 			ret1 := scp_sendmsg_orch(cmd1)
 			params := scp_splitparam(ret1, "/")
 			if params[0] == scp_ack {
-				if params[1] == "0" {
-					bio[k].Pumpstatus = false
-				} else {
-					bio[k].Pumpstatus = true
-				}
+				tempint, _ := strconv.Atoi(params[1])
+				bio[k].Temperature = float32(tempint)
 			}
-			cmd2 := "CMD/" + b.Deviceaddr + "/GET/A7/END"
+			cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 			ret2 := scp_sendmsg_orch(cmd2)
 			params = scp_splitparam(ret2, "/")
 			if params[0] == scp_ack {
-				if params[1] == "0" {
-					bio[k].Aerator = false
-				} else {
-					bio[k].Aerator = true
-				}
+				phint, _ := strconv.Atoi(params[1])
+				bio[k].PH = float32(phint)
 			}
 		}
 		time.Sleep(scp_refreshwait * time.Millisecond)
