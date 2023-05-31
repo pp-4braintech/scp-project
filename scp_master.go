@@ -276,6 +276,7 @@ func scp_sendmsg_orch(cmd string) string {
 }
 
 func scp_get_alldata() {
+	return
 	if demo {
 		return
 	}
