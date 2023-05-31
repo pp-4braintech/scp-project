@@ -419,6 +419,7 @@ func scp_process_conn(conn net.Conn) {
 						cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
 
 					} else {
+						cmd0 = "CMD/" + biodev + "/MOD/27,3/END"
 						cmd1 = "CMD/" + biodev + "/PUT/D27,0/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",0/END"
 						cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
