@@ -281,23 +281,26 @@ func scp_get_alldata() {
 	}
 	for {
 		for k, b := range bio {
-			bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-			tempdev := bio_cfg[b.BioreactorID].Temp_dev
-			phdev := bio_cfg[b.BioreactorID].PH_dev
+			if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
 
-			cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-			ret1 := scp_sendmsg_orch(cmd1)
-			params := scp_splitparam(ret1, "/")
-			if params[0] == scp_ack {
-				tempint, _ := strconv.Atoi(params[1])
-				bio[k].Temperature = float32(tempint)
-			}
-			cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-			ret2 := scp_sendmsg_orch(cmd2)
-			params = scp_splitparam(ret2, "/")
-			if params[0] == scp_ack {
-				phint, _ := strconv.Atoi(params[1])
-				bio[k].PH = float32(phint)
+				bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
+				tempdev := bio_cfg[b.BioreactorID].Temp_dev
+				phdev := bio_cfg[b.BioreactorID].PH_dev
+
+				cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
+				ret1 := scp_sendmsg_orch(cmd1)
+				params := scp_splitparam(ret1, "/")
+				if params[0] == scp_ack {
+					tempint, _ := strconv.Atoi(params[1])
+					bio[k].Temperature = float32(tempint)
+				}
+				cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
+				ret2 := scp_sendmsg_orch(cmd2)
+				params = scp_splitparam(ret2, "/")
+				if params[0] == scp_ack {
+					phint, _ := strconv.Atoi(params[1])
+					bio[k].PH = float32(phint)
+				}
 			}
 		}
 		time.Sleep(scp_refreshwait * time.Millisecond)
