@@ -423,7 +423,7 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					var cmd1, cmd2 string
+					var cmd1, cmd2, cmd3 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
@@ -444,16 +444,19 @@ func scp_process_conn(conn net.Conn) {
 						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
 						if value_status > 0 {
 							cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr[1:] + ",3/END"
-							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
-							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
+							cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
+							cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
 						} else {
-							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
-							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
+							cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr[1:] + ",3/END"
+							cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
+							cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
 						}
 						ret1 := scp_sendmsg_orch(cmd1)
 						fmt.Println("RET CMD1 =", ret1)
 						ret2 := scp_sendmsg_orch(cmd2)
 						fmt.Println("RET CMD2 =", ret2)
+						ret3 := scp_sendmsg_orch(cmd3)
+						fmt.Println("RET CMD3 =", ret3)
 						conn.Write([]byte(scp_ack))
 					}
 				default:
