@@ -408,15 +408,18 @@ func scp_process_conn(conn net.Conn) {
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Aerator = value
+					biodev := bio_cfg[bioid].Deviceaddr
+					bioscr := bio_cfg[bioid].Screenaddr
+					aerodev := bio_cfg[bioid].Aero_dev
 					if value {
-						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,1/END"
-						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,1/END"
-						cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,127/END"
+						cmd1 = "CMD/" + biodev + "/PUT/D27,1/END"
+						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",255/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
 
 					} else {
-						cmd1 = "CMD/" + bio[ind].Deviceaddr + "/PUT/D6,0/END"
-						cmd2 = "CMD/" + bio[ind].Screenaddr + "/PUT/S271,0/END"
-						cmd3 = "CMD/" + bio[ind].Deviceaddr + "/PUT/A7,0/END"
+						cmd1 = "CMD/" + biodev + "/PUT/D27,0/END"
+						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",0/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
 					}
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
