@@ -26,7 +26,8 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
-const scp_refreshwait = 5000
+const scp_refreshwait = 1000
+const scp_refreshsleep = 10000
 
 // const scp_join = "JOIN"
 
@@ -276,7 +277,6 @@ func scp_sendmsg_orch(cmd string) string {
 }
 
 func scp_get_alldata() {
-	return
 	if demo {
 		return
 	}
@@ -303,8 +303,9 @@ func scp_get_alldata() {
 					bio[k].PH = float32(phint)
 				}
 			}
+			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
-		time.Sleep(scp_refreshwait * time.Millisecond)
+		time.Sleep(scp_refreshsleep * time.Millisecond)
 	}
 }
 
