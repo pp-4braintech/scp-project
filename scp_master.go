@@ -379,7 +379,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
-					var cmd1, cmd2 string
+					var cmd1, cmd2, cmd3 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					biodev := bio_cfg[bioid].Deviceaddr
@@ -387,16 +387,20 @@ func scp_process_conn(conn net.Conn) {
 					pumpdev := bio_cfg[bioid].Pump_dev
 					bio[ind].Pumpstatus = value
 					if value {
-						cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
-						cmd2 = "CMD/" + bioscr + "/PUT/S270,1/END"
+						cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
-						cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
-						cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
+						cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
+					ret3 := scp_sendmsg_orch(cmd3)
+					fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_aero:
