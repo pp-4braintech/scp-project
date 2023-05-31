@@ -443,7 +443,7 @@ func scp_process_conn(conn net.Conn) {
 						bioscr := bio_cfg[bioid].Screenaddr
 						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
 						if value_status > 0 {
-							cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr + ",3/END"
+							cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr[1:] + ",3/END"
 							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
 							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
 						} else {
