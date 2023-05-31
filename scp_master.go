@@ -281,7 +281,8 @@ func scp_get_alldata() {
 	}
 	for {
 		for k, b := range bio {
-			cmd1 := "CMD/" + b.Deviceaddr + "/GET/D14/END"
+			bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
+			cmd1 := "CMD/" + bioaddr + "/GET/D14/END"
 			ret1 := scp_sendmsg_orch(cmd1)
 			params := scp_splitparam(ret1, "/")
 			if params[0] == scp_ack {
