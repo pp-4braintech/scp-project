@@ -443,7 +443,7 @@ func scp_process_conn(conn net.Conn) {
 							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
 							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
 						} else {
-							cmd1 = "CMD/" + biodev + "/PUT/D" + valvaddr + ",0/END"
+							cmd1 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
 							cmd2 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
 						}
 						ret1 := scp_sendmsg_orch(cmd1)
