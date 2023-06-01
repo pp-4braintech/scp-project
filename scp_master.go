@@ -177,7 +177,7 @@ func load_bios_conf(filename string) int {
 	bio_cfg = make(map[string]Bioreact_cfg, len(records))
 	totalrecords = 0
 	for _, r := range records {
-		if !strings.Contains(r[0], "#") && len(r) == 26 {
+		if !strings.Contains(r[0], "#") && len(r) == 27 {
 			id := r[0]
 			dev_addr := r[1]
 			screen_addr := r[2]
