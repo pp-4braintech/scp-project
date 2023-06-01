@@ -310,6 +310,28 @@ func scp_setup_devices() {
 			}
 		}
 	}
+	for _, ib := range ibc_cfg {
+		if len(ib.Deviceaddr) > 0 {
+			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
+			var cmd []string
+			ibcaddr := ib.Deviceaddr
+			cmd = make([]string, 0)
+			cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Pump_dev[1:]+",3/END")
+			for i := 0; i < len(ib.Valv_devs); i++ {
+				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
+			}
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
+
+			for k, c := range cmd {
+				fmt.Print(k, "  ", c, " ")
+				ret := scp_sendmsg_orch(c)
+				fmt.Println(ret)
+				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+		}
+	}
 }
 
 func scp_get_alldata() {
