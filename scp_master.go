@@ -587,13 +587,13 @@ func scp_process_conn(conn net.Conn) {
 						ibc[ind].Valvs[value_valve] = value_status
 
 						ibcdev := ibc_cfg[ibcid].Deviceaddr
-						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
+						valvaddr := bio_cfg[ibcid].Valv_devs[value_valve]
 						//ibcscr := bio_cfg[ibcid].Screenaddr
-						if value {
+						if value_status == 1 {
 							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",1/END"
 							//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
-						} else {
+						} else if value_status == 0 {
 							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
 							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
