@@ -293,14 +293,14 @@ func scp_get_alldata() {
 				params := scp_splitparam(ret1, "/")
 				if params[0] == scp_ack {
 					tempint, _ := strconv.Atoi(params[1])
-					bio[k].Temperature = float32(tempint)
+					bio[k].Temperature = float32(tempint) / 100.0
 				}
 				cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 				ret2 := scp_sendmsg_orch(cmd2)
 				params = scp_splitparam(ret2, "/")
 				if params[0] == scp_ack {
 					phint, _ := strconv.Atoi(params[1])
-					bio[k].PH = float32(phint)
+					bio[k].PH = float32(phint) / 100.0
 				}
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
