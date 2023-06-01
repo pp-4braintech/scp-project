@@ -296,7 +296,7 @@ func scp_setup_devices() {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
 			}
 			for i := 0; i < len(b.Valv_devs); i++ {
-				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Valv_devs[i][1:]+",3/END")
 			}
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",1/END")
