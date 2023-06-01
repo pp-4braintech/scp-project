@@ -599,6 +599,7 @@ func main() {
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
 	}
+	scp_setup_devices()
 	fmt.Println("BIO cfg", bio_cfg)
 	go scp_get_alldata()
 	scp_master_ipc()
