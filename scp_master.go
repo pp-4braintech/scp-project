@@ -74,20 +74,21 @@ type IBC struct {
 }
 
 type Bioreact_cfg struct {
-	IBCID      string
-	Deviceaddr string
-	Screenaddr string
-	Maxvolume  uint32
-	Pump_dev   string
-	Aero_dev   string
-	Peris_dev  [5]string
-	Valv_devs  [8]string
-	Vol_devs   [2]string
-	PH_dev     string
-	Temp_dev   string
-	Levelhigh  string
-	Levellow   string
-	Emergency  string
+	BioreactorID string
+	Deviceaddr   string
+	Screenaddr   string
+	Maxvolume    uint32
+	Pump_dev     string
+	Aero_dev     string
+	Aero_rele    string
+	Peris_dev    [5]string
+	Valv_devs    [8]string
+	Vol_devs     [2]string
+	PH_dev       string
+	Temp_dev     string
+	Levelhigh    string
+	Levellow     string
+	Emergency    string
 }
 type IBC_cfg struct {
 	IBCID      string
@@ -183,28 +184,29 @@ func load_bios_conf(filename string) int {
 			voltot, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
 			pumpdev := r[4]
 			aerodev := r[5]
-			perdev1 := r[6]
-			perdev2 := r[7]
-			perdev3 := r[8]
-			perdev4 := r[9]
-			perdev5 := r[10]
-			vdev1 := r[11]
-			vdev2 := r[12]
-			vdev3 := r[13]
-			vdev4 := r[14]
-			vdev5 := r[15]
-			vdev6 := r[16]
-			vdev7 := r[17]
-			vdev8 := r[18]
-			voldev1 := r[19]
-			voldev2 := r[20]
-			phdev := r[21]
-			tempdev := r[22]
-			lhigh := r[23]
-			llow := r[24]
-			emerg := r[25]
+			aerorele := r[6]
+			perdev1 := r[7]
+			perdev2 := r[8]
+			perdev3 := r[9]
+			perdev4 := r[10]
+			perdev5 := r[11]
+			vdev1 := r[12]
+			vdev2 := r[13]
+			vdev3 := r[14]
+			vdev4 := r[15]
+			vdev5 := r[16]
+			vdev6 := r[17]
+			vdev7 := r[18]
+			vdev8 := r[19]
+			voldev1 := r[20]
+			voldev2 := r[21]
+			phdev := r[22]
+			tempdev := r[23]
+			lhigh := r[24]
+			llow := r[25]
+			emerg := r[26]
 
-			bio_cfg[id] = Bioreact_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev, aerodev,
+			bio_cfg[id] = Bioreact_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev, aerodev, aerorele,
 				[5]string{perdev1, perdev2, perdev3, perdev4, perdev5},
 				[8]string{vdev1, vdev2, vdev3, vdev4, vdev5, vdev6, vdev7, vdev8},
 				[2]string{voldev1, voldev2}, phdev, tempdev, lhigh, llow, emerg}
@@ -274,6 +276,40 @@ func scp_sendmsg_orch(cmd string) string {
 	}
 	fmt.Println("Recebido:", string(ret))
 	return string(ret)
+}
+
+func scp_setup_devices() {
+	if demo {
+		return
+	}
+	fmt.Println("CONFIGURANDO DISPOSITIVOS")
+	for _, b := range bio_cfg {
+		if len(b.Deviceaddr) > 0 {
+			fmt.Println("device:", b.BioreactorID, "-", b.Deviceaddr)
+			var cmd []string
+			bioaddr := b.Deviceaddr
+			cmd = make([]string, 0)
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Pump_dev[1:]+",3/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_dev[1:]+",3/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_rele[1:]+",3/END")
+			for i := 0; i < len(b.Peris_dev); i++ {
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
+			}
+			for i := 0; i < len(b.Valv_devs); i++ {
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
+			}
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",1/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",1/END")
+
+			for k, c := range cmd {
+				fmt.Print(k, "  ", c, " ")
+				ret := scp_sendmsg_orch(c)
+				fmt.Println(ret)
+				time.Sleep(scp_refreshwait * time.Millisecond)
+			}
+		}
+	}
 }
 
 func scp_get_alldata() {
