@@ -100,8 +100,17 @@ type IBC_cfg struct {
 	Vol_devs   [2]string
 }
 
+type Totem_cfg struct {
+	TotemID    string
+	Deviceaddr string
+	Pumpdev    string
+	Peris_dev  [4]string
+	Valv_devs  [2]string
+}
+
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
+var totem_cfg map[string]Totem_cfg
 
 var bio = []Bioreact{
 	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
@@ -214,6 +223,38 @@ func load_bios_conf(filename string) int {
 		} else if len(r) != 26 {
 			fmt.Println("ERROR BIO CFG: numero de parametros invalido", r)
 		}
+	}
+	return totalrecords
+}
+
+func load_totems_conf(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	totem_cfg = make(map[string]Totem_cfg, len(records))
+	for k, r := range records {
+		id := r[0]
+		dev_addr := r[1]
+		pumpdev := r[2]
+		perdev1 := r[3]
+		perdev2 := r[4]
+		perdev3 := r[5]
+		perdev4 := r[6]
+		vdev1 := r[5]
+		vdev2 := r[6]
+		totem_cfg[id] = Totem_cfg{id, dev_addr, pumpdev,
+			[4]string{perdev1, perdev2, perdev3, perdev4},
+			[2]string{vdev1, vdev2}}
+		totalrecords = k
 	}
 	return totalrecords
 }
@@ -503,12 +544,6 @@ func scp_process_conn(conn net.Conn) {
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
-						// var valve_str1, valve_str2 string
-						// if value_valve < 7 {
-						// 	valve_str1 = fmt.Sprintf("%d", value_valve+7)
-						// } else {
-						// 	valve_str1 = "16"
-						// }
 						valve_str2 := fmt.Sprintf("%d", value_valve+201)
 						biodev := bio_cfg[bioid].Deviceaddr
 						bioscr := bio_cfg[bioid].Screenaddr
@@ -660,8 +695,15 @@ func main() {
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
 	}
-	scp_setup_devices()
+	ntotemcfg := load_totems_conf("totem_conf.csv")
+	if ntotemcfg < 1 {
+		log.Fatal("FATAL: Arquivo de configuracao dos Totems nao encontrado")
+	}
 	fmt.Println("BIO cfg", bio_cfg)
+	fmt.Println("IBC cfg", ibc_cfg)
+	fmt.Println("TOTEM cfg", totem_cfg)
+	scp_setup_devices()
+
 	go scp_get_alldata()
 	scp_master_ipc()
 }
