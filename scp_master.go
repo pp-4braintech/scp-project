@@ -421,7 +421,7 @@ func scp_process_conn(conn net.Conn) {
 		scp_object := params[1]
 		switch scp_object {
 		case scp_bioreactor:
-			fmt.Println("obj=", scp_object)
+			//fmt.Println("obj=", scp_object)
 			bioid := params[2]
 			ind := get_bio_index(bioid)
 			if ind < 0 {
@@ -536,7 +536,8 @@ func scp_process_conn(conn net.Conn) {
 			}
 
 		case scp_ibc:
-			ind := get_ibc_index(params[2])
+			ibcid := params[2]
+			ind := get_ibc_index(ibcid)
 			if ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
@@ -551,12 +552,32 @@ func scp_process_conn(conn net.Conn) {
 					}
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
+					var cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					ibc[ind].Pumpstatus = value
+					ibcdev := ibc_cfg[ibcid].Deviceaddr
+					pumpdev := ibc_cfg[ibcid].Pump_dev
+					//ibcscr := bio_cfg[ibcid].Screenaddr
+					if value {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + ibcdev + "/PUT/" + pumpdev + ",1/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+					} else {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + ibcdev + "/PUT/" + pumpdev + ",0/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+					}
+					// ret1 := scp_sendmsg_orch(cmd1)
+					// fmt.Println("RET CMD1 =", ret1)
+					ret2 := scp_sendmsg_orch(cmd2)
+					fmt.Println("RET CMD2 =", ret2)
+					// ret3 := scp_sendmsg_orch(cmd3)
+					// fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
+					var cmd2 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
@@ -564,6 +585,24 @@ func scp_process_conn(conn net.Conn) {
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						ibc[ind].Valvs[value_valve] = value_status
+
+						ibcdev := ibc_cfg[ibcid].Deviceaddr
+						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
+						//ibcscr := bio_cfg[ibcid].Screenaddr
+						if value {
+							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",1/END"
+							//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+						} else {
+							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
+							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+						}
+						// ret1 := scp_sendmsg_orch(cmd1)
+						// fmt.Println("RET CMD1 =", ret1)
+						ret2 := scp_sendmsg_orch(cmd2)
+						fmt.Println("RET CMD2 =", ret2)
+
 						conn.Write([]byte(scp_ack))
 					}
 				default:
