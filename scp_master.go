@@ -253,7 +253,7 @@ func scp_sendmsg_orch(cmd string) string {
 	if demo {
 		return scp_ack
 	}
-	fmt.Println("TO ORCH:", cmd)
+	//fmt.Println("TO ORCH:", cmd)
 	con, err := net.Dial("udp", scp_orch_addr)
 	if err != nil {
 		checkErr(err)
@@ -274,7 +274,7 @@ func scp_sendmsg_orch(cmd string) string {
 		checkErr(err)
 		return scp_err
 	}
-	fmt.Println("Recebido:", string(ret))
+	//fmt.Println("Recebido:", string(ret))
 	return string(ret)
 }
 
@@ -306,7 +306,7 @@ func scp_setup_devices() {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
 				fmt.Println(ret)
-				time.Sleep(scp_refreshwait * time.Millisecond)
+				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 		}
 	}
