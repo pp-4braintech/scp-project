@@ -42,6 +42,8 @@ const bio_storing = "ARMAZENANDO"
 const bio_error = "ERRO"
 const bio_max_valves = 8
 
+const TEMPMAX = 120
+
 type Bioreact struct {
 	BioreactorID string
 	Deviceaddr   string
@@ -98,6 +100,7 @@ type IBC_cfg struct {
 	Pump_dev   string
 	Valv_devs  [4]string
 	Vol_devs   [2]string
+	Levellow   string
 }
 
 type Totem_cfg struct {
@@ -163,8 +166,9 @@ func load_ibcs_conf(filename string) int {
 		vdev4 := r[8]
 		voldev1 := r[9]
 		voldev2 := r[10]
+		llow := r[11]
 		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
-			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}}
+			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}, llow}
 		totalrecords = k
 	}
 	return totalrecords
@@ -392,14 +396,20 @@ func scp_get_alldata() {
 				params := scp_splitparam(ret1, "/")
 				if params[0] == scp_ack {
 					tempint, _ := strconv.Atoi(params[1])
-					bio[k].Temperature = float32(tempint) / 100.0
+					tempfloat := float32(tempint) / 100.0
+					if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
+						bio[k].Temperature = tempfloat
+					}
 				}
 				cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 				ret2 := scp_sendmsg_orch(cmd2)
 				params = scp_splitparam(ret2, "/")
 				if params[0] == scp_ack {
 					phint, _ := strconv.Atoi(params[1])
-					bio[k].PH = float32(phint) / 100.0
+					phfloat := float32(phint) / 100.0
+					if (phfloat >= 0) && (phfloat <= 14) {
+						bio[k].PH = phfloat
+					}
 				}
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
@@ -637,7 +647,6 @@ func scp_process_conn(conn net.Conn) {
 						// fmt.Println("RET CMD1 =", ret1)
 						ret2 := scp_sendmsg_orch(cmd2)
 						fmt.Println("RET CMD2 =", ret2)
-
 						conn.Write([]byte(scp_ack))
 					}
 				default:
