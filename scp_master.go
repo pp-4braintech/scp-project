@@ -587,7 +587,7 @@ func scp_process_conn(conn net.Conn) {
 						ibc[ind].Valvs[value_valve] = value_status
 
 						ibcdev := ibc_cfg[ibcid].Deviceaddr
-						valvaddr := bio_cfg[ibcid].Valv_devs[value_valve]
+						valvaddr := ibc_cfg[ibcid].Valv_devs[value_valve]
 						//ibcscr := bio_cfg[ibcid].Screenaddr
 						if value_status == 1 {
 							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
