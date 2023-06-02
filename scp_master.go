@@ -116,11 +116,11 @@ var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
 
 var bio = []Bioreact{
-	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_producting, "Bacillus Subtilis", 100, 10, false, true, [8]int{1, 1, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
-	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_cip, "Bacillus Megaterium", 200, 5, true, false, [8]int{0, 0, 1, 0, 0, 1, 0, 1}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
-	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, false, [8]int{0, 0, 0, 1, 0, 0, 1, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
-	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_unloading, "Azospirilum brasiliense", 500, 5, true, false, [8]int{0, 0, 0, 0, 1, 1, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
-	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_done, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
+	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_empty, "", 100, 10, false, true, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
+	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_empty, "", 200, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
+	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_empty, "", 1000, 3, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
+	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_empty, "", 500, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
+	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_empty, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
 	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
 }
 
