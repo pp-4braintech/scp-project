@@ -23,6 +23,7 @@ const scp_max_len = 512
 const scp_keepalive_time = 10
 const scp_timeout_ms = 3000
 const scp_buff_size = 512
+const scp_max_err = 7
 
 type scp_slave_map struct {
 	slave_udp_addr  string
@@ -71,7 +72,7 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 }
 
 func scp_master_tcp_client(scp_slave *scp_slave_map) {
-
+	nerr := 0
 	slave_data := *scp_slave
 	slave_addr := slave_data.slave_tcp_addr
 	fmt.Println("TCP con ", slave_addr)
@@ -97,6 +98,9 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 
 	begin_time := time.Now().Unix()
 	for {
+		if nerr > scp_max_err {
+			return
+		}
 		select {
 		case chan_msg := <-slave_data.go_chan:
 			fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
@@ -114,6 +118,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			if err == nil {
 				slave_data.go_chan <- ret
 			} else {
+				nerr++
 				slave_data.go_chan <- scp_err
 			}
 			begin_time = time.Now().Unix()
@@ -125,6 +130,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				ret, err := scp_sendtcp(slave_tcp_con, scp_ping, true)
 				fmt.Println("ret =", ret)
 				if err != nil {
+					nerr++
 					fmt.Println("ERR ao tratar PING")
 				}
 				begin_time = current_time
