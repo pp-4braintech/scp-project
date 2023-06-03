@@ -99,6 +99,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	begin_time := time.Now().Unix()
 	for {
 		if nerr > scp_max_err {
+			fmt.Println("----->>>> TCP CLIENT END por excesso de erros")
 			return
 		}
 		select {
