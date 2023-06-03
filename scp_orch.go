@@ -156,8 +156,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 				fmt.Println("destroy enviado com sucesso")
 				fmt.Println("fechando chain")
 				close(slave_data.go_chan)
-				fmt.Println("deletando dados na tabela")
-				delete(scp_slaves, scp_msg_data)
+				// fmt.Println("deletando dados na tabela")
+				// delete(scp_slaves, scp_msg_data)
 			default:
 				fmt.Println("Falha ao enviar para o channel")
 			}
@@ -173,6 +173,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			// default:
 			// 	fmt.Println("Não houve resposta do chan")
 			// }
+			fmt.Println("deletando dados na tabela")
+			delete(scp_slaves, scp_msg_data)
 
 		} else {
 			udp_addr := net_addr.String()
