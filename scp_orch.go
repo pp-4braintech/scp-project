@@ -102,7 +102,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
 			if chan_msg == scp_destroy {
 				fmt.Println("TCP destroy recebido")
-				slave_data.go_chan <- scp_ack
+				//slave_data.go_chan <- scp_ack
 				return
 			}
 			fmt.Println("TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
@@ -151,17 +151,24 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
 			fmt.Println("Destruindo SCP TCP")
-			slave_data.go_chan <- scp_destroy
-			fmt.Println("...saindo do channel")
-			time.Sleep(100 * time.Millisecond)
 			select {
-			case ret := <-slave_data.go_chan:
-				if ret == scp_ack {
-					fmt.Println("SCP TCP destroy ACK")
-				} else {
-					fmt.Println("Falha ao destruir SCP TCP =", ret)
-				}
+			case slave_data.go_chan <- scp_destroy:
+				fmt.Println("destroy enviado com sucesso")
+			default:
+				fmt.Println("Falha ao enviar parao channel")
 			}
+			// fmt.Println("...saindo do channel")
+			// time.Sleep(100 * time.Millisecond)
+			// select {
+			// case ret := <-slave_data.go_chan:
+			// 	if ret == scp_ack {
+			// 		fmt.Println("SCP TCP destroy ACK")
+			// 	} else {
+			// 		fmt.Println("Falha ao destruir SCP TCP =", ret)
+			// 	}
+			// default:
+			// 	fmt.Println("Não houve resposta do chan")
+			// }
 			fmt.Println("fechando chain")
 			close(slave_data.go_chan)
 			fmt.Println("deletando dados na tabela")
