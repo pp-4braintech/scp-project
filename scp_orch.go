@@ -203,7 +203,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 		fmt.Println("ACK recebido de", scp_msg_data, len(scp_msg_data))
 		slave_data, ok := scp_slaves[scp_msg_data]
 		if !ok {
-			fmt.Println("Slave fora da tabela", scp_msg_data, slave_data, ok)
+			fmt.Println("ACK de Slave fora da tabela", scp_msg_data, slave_data, ok)
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
 		} else {
@@ -243,13 +243,19 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			scp_msg_slavecmd := cmd[0:tam]
 			fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
 			//go func () {
-			slave_data.go_chan <- scp_msg_slavecmd
+			select {
+			case slave_data.go_chan <- scp_msg_slavecmd:
+				fmt.Println("CMD enviado para o CHANNEL")
+				ret := <-slave_data.go_chan
+				fmt.Println("CMD ret=", ret)
+				_, err = con.WriteTo([]byte(ret), net_addr)
+				checkErr(err)
+			default:
+				fmt.Println("FALHA no envio de CMD no CHANNEL")
+				_, err = con.WriteTo([]byte(scp_err), net_addr)
+				checkErr(err)
+			}
 			//}
-			fmt.Println("CMD enviado para o CHANNEL")
-			ret := <-slave_data.go_chan
-			fmt.Println("CMD ret=", ret)
-			_, err = con.WriteTo([]byte(ret), net_addr)
-			checkErr(err)
 		}
 
 	}
