@@ -482,7 +482,7 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		pump := r.FormValue("Pumpstatus")
 		valve := r.FormValue("Valve")
 		valve_status := r.FormValue("Status")
-		fmt.Println("Pump = ", pump)
+		fmt.Println("Pumpwithdraw = ", pump)
 		fmt.Println("Valve = ", valve)
 		fmt.Println("Status = ", valve_status)
 		if pump != "" {
