@@ -20,6 +20,7 @@ const scp_par_withdraw = "WITHDRAW"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
+const scp_biofabrica = "BIOFABRICA"
 
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
@@ -59,7 +60,7 @@ const max_days = 60
 // 	Status     string
 // 	Organism   string
 // 	Volume     uint32
-// 	Level      uint8
+// 	Level      uint8const scp_biofabrica = "BIOFABRICA"
 // 	Pumpstatus bool
 // 	Valvs      [4]int
 // }
@@ -486,12 +487,12 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Valve = ", valve)
 		fmt.Println("Status = ", valve_status)
 		if pump != "" {
-			cmd := "PUT/BIOFABRICA/" + scp_dev_pump + "," + pump + "/END"
+			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_pump + "," + pump + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		}
 		if valve != "" {
-			cmd := "PUT/IBC/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		}
