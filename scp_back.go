@@ -459,6 +459,48 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	fmt.Println()
 }
 
+func biofabrica_view(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case "GET":
+		var jsonStr []byte
+		cmd := "GET/BIOFABRICA/END"
+		jsonStr = []byte(scp_sendmsg_master(cmd))
+		os.Stdout.Write(jsonStr)
+		w.Write([]byte(jsonStr))
+
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		fmt.Println("Post Data", r.Form)
+
+		pump := r.FormValue("Pumpstatus")
+		valve := r.FormValue("Valve")
+		valve_status := r.FormValue("Status")
+		fmt.Println("Pump = ", pump)
+		fmt.Println("Valve = ", valve)
+		fmt.Println("Status = ", valve_status)
+		if pump != "" {
+			cmd := "PUT/BIOFABRICA/" + scp_dev_pump + "," + pump + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			w.Write([]byte(jsonStr))
+		}
+		if valve != "" {
+			cmd := "PUT/IBC/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			w.Write([]byte(jsonStr))
+		}
+
+	default:
+
+	}
+}
+
 func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -556,6 +598,8 @@ func main() {
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
 	mux.HandleFunc("/ibc_view", ibc_view)
+
+	mux.HandleFunc("/biofabrica_view", biofabrica_view)
 
 	mux.HandleFunc("/simulator", biofactory_sim)
 
