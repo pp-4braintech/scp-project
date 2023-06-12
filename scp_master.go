@@ -47,8 +47,8 @@ const TEMPMAX = 120
 
 type Bioreact struct {
 	BioreactorID string
-	Deviceaddr   string
-	Screenaddr   string
+	// Deviceaddr   string
+	// Screenaddr   string
 	Status       string
 	Organism     string
 	Volume       uint32
@@ -130,12 +130,12 @@ var totem_cfg map[string]Totem_cfg
 var biofabrica_cfg map[string]Biofabrica_cfg
 
 var bio = []Bioreact{
-	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_empty, "", 100, 10, false, true, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
-	{"BIOR002", "2F:A2CFF4", "66:FA12F4", bio_empty, "", 200, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
-	{"BIOR003", "42:A8AB4", "66:FA12F4", bio_empty, "", 1000, 3, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
-	{"BIOR004", "8D:A8AB4", "66:FA12F4", bio_empty, "", 500, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
-	{"BIOR005", "55:3A7D80", "66:FA12F4", bio_empty, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
-	{"BIOR006", "42:A8AB4", "66:FA12F4", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
+	{"BIOR001", bio_nonexist, "", 100, 10, false, true, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
+	{"BIOR002", bio_nonexist, "", 200, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
+	{"BIOR003", bio_nonexist, "", 1000, 3, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
+	{"BIOR004", bio_nonexist, "", 500, 5, true, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
+	{"BIOR005", bio_nonexist, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
+	{"BIOR006", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
 }
 
 var ibc = []IBC{
@@ -389,11 +389,23 @@ func scp_setup_devices() {
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",1/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
+			nerr := 0
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
+				if ret == scp_err {
+					nerr++
+				}
 				fmt.Println(ret)
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+			i := get_bio_index(b.BioreactorID)
+			if i >= 0 {
+				if nerr == 0 {
+					bio[i].Status = bio_empty
+				} else {
+					bio[i].Status = bio_error
+				}
 			}
 		}
 	}
@@ -428,31 +440,34 @@ func scp_get_alldata() {
 	for {
 		for k, b := range bio {
 			if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
-
-				bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-				tempdev := bio_cfg[b.BioreactorID].Temp_dev
-				phdev := bio_cfg[b.BioreactorID].PH_dev
-
-				cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-				ret1 := scp_sendmsg_orch(cmd1)
-				params := scp_splitparam(ret1, "/")
-				if params[0] == scp_ack {
-					tempint, _ := strconv.Atoi(params[1])
-					tempfloat := float32(tempint) / 100.0
-					if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
-						bio[k].Temperature = tempfloat
+				i := get_bio_index(b.BioreactorID)
+				if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
+					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
+					tempdev := bio_cfg[b.BioreactorID].Temp_dev
+					phdev := bio_cfg[b.BioreactorID].PH_dev
+	
+					cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
+					ret1 := scp_sendmsg_orch(cmd1)
+					params := scp_splitparam(ret1, "/")
+					if params[0] == scp_ack {
+						tempint, _ := strconv.Atoi(params[1])
+						tempfloat := float32(tempint) / 100.0
+						if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
+							bio[k].Temperature = tempfloat
+						}
+					}
+					cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
+					ret2 := scp_sendmsg_orch(cmd2)
+					params = scp_splitparam(ret2, "/")
+					if params[0] == scp_ack {
+						phint, _ := strconv.Atoi(params[1])
+						phfloat := float32(phint) / 100.0
+						if (phfloat >= 0) && (phfloat <= 14) {
+							bio[k].PH = phfloat
+						}
 					}
 				}
-				cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-				ret2 := scp_sendmsg_orch(cmd2)
-				params = scp_splitparam(ret2, "/")
-				if params[0] == scp_ack {
-					phint, _ := strconv.Atoi(params[1])
-					phfloat := float32(phint) / 100.0
-					if (phfloat >= 0) && (phfloat <= 14) {
-						bio[k].PH = phfloat
-					}
-				}
+
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -542,7 +557,7 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					var cmd2, cmd3 string
-					value, err := strconv.ParseBool(subparams[1])
+					value, err := strconv.ParseBool(subparams[1])"42:A8AB4", "66:FA12F4", 
 					checkErr(err)
 					biodev := bio_cfg[bioid].Deviceaddr
 					bioscr := bio_cfg[bioid].Screenaddr
@@ -767,7 +782,7 @@ func main() {
 	fmt.Println("IBC cfg", ibc_cfg)
 	fmt.Println("TOTEM cfg", totem_cfg)
 	fmt.Println("Biofabrica cfg", biofabrica_cfg)
-	scp_setup_devices()
+	go scp_setup_devices()
 
 	go scp_get_alldata()
 	scp_master_ipc()
