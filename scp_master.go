@@ -722,7 +722,7 @@ func scp_process_conn(conn net.Conn) {
 			}
 
 		case scp_biofabrica:
-			subparams := scp_splitparam(params[1], ",")
+			subparams := scp_splitparam(params[2], ",")
 			fmt.Println("---subparams=", subparams)
 			scp_device := subparams[0]
 			switch scp_device {
