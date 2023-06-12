@@ -23,6 +23,7 @@ const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_par_withdraw = "WITHDRAW"
 const scp_bioreactor = "BIOREACTOR"
+const scp_biofabrica = "BIOFABRICA"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
@@ -145,6 +146,10 @@ var ibc = []IBC{
 	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
 	{"IBC06", bio_cip, "Tricoderma harzianum", 250, 1, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
 	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
+}
+
+var biofabrica = Biofabrica{
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false,
 }
 
 func checkErr(err error) {
@@ -500,6 +505,15 @@ func scp_process_conn(conn net.Conn) {
 				} else {
 					conn.Write([]byte(scp_err))
 				}
+			}
+
+		case scp_biofabrica:
+			if params[2] == "END" {
+				buf, err := json.Marshal(biofabrica)
+				checkErr(err)
+				conn.Write([]byte(buf))
+			} else {
+				conn.Write([]byte(scp_err))
 			}
 
 		default:
