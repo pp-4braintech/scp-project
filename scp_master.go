@@ -523,6 +523,7 @@ func scp_process_conn(conn net.Conn) {
 			}
 
 		case scp_biofabrica:
+			fmt.Println(params)
 			if params[2] == "END" {
 				buf, err := json.Marshal(biofabrica)
 				checkErr(err)
