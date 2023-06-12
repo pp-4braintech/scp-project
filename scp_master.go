@@ -75,6 +75,12 @@ type IBC struct {
 	Withdraw   uint32
 }
 
+type Biofabrica struct {
+	BiofabricaID string
+	Valvs        [9]int
+	Pumpwithdraw bool
+}
+
 type Bioreact_cfg struct {
 	BioreactorID string
 	Deviceaddr   string
@@ -111,9 +117,16 @@ type Totem_cfg struct {
 	Valv_devs  [2]string
 }
 
+type Biofabrica_cfg struct {
+	DeviceID    string
+	Deviceaddr  string
+	Device_port string
+}
+
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
+var biofabrica_cfg map[string]Biofabrica_cfg
 
 var bio = []Bioreact{
 	{"BIOR001", "55:3A7D80", "66:FA12F4", bio_empty, "", 100, 10, false, true, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
@@ -258,6 +271,30 @@ func load_totems_conf(filename string) int {
 		totem_cfg[id] = Totem_cfg{id, dev_addr, pumpdev,
 			[4]string{perdev1, perdev2, perdev3, perdev4},
 			[2]string{vdev1, vdev2}}
+		totalrecords = k
+	}
+	return totalrecords
+}
+
+func load_biofabrica_conf(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	biofabrica_cfg = make(map[string]Biofabrica_cfg, len(records))
+	for k, r := range records {
+		dev_id := r[0]
+		dev_addr := r[1]
+		dev_port := r[2]
+		biofabrica_cfg[dev_id] = Biofabrica_cfg{dev_id, dev_addr, dev_port}
 		totalrecords = k
 	}
 	return totalrecords
@@ -708,9 +745,14 @@ func main() {
 	if ntotemcfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Totems nao encontrado")
 	}
+	nbiofabricacfg := load_biofabrica_conf("biofabrica_conf.csv")
+	if nbiofabricacfg < 1 {
+		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
+	}
 	fmt.Println("BIO cfg", bio_cfg)
 	fmt.Println("IBC cfg", ibc_cfg)
 	fmt.Println("TOTEM cfg", totem_cfg)
+	fmt.Println("Biofabrica cfg", biofabrica_cfg)
 	scp_setup_devices()
 
 	go scp_get_alldata()
