@@ -119,9 +119,9 @@ type Totem_cfg struct {
 }
 
 type Biofabrica_cfg struct {
-	DeviceID    string
-	Deviceaddr  string
-	Device_port string
+	DeviceID   string
+	Deviceaddr string
+	Deviceport string
 }
 
 var ibc_cfg map[string]IBC_cfg
@@ -718,6 +718,67 @@ func scp_process_conn(conn net.Conn) {
 				default:
 					conn.Write([]byte(scp_err))
 				}
+			}
+
+		case scp_biofabrica:
+			subparams := scp_splitparam(params[1], ",")
+			scp_device := subparams[0]
+			switch scp_device {
+			case scp_dev_pump:
+				var cmd2 string
+				value, err := strconv.ParseBool(subparams[1])
+				checkErr(err)
+				biofabrica.Pumpwithdraw = value
+				devaddr := biofabrica_cfg["PBF01"].Deviceaddr
+				devport := biofabrica_cfg["PBF01"].Deviceport
+				//ibcscr := bio_cfg[ibcid].Screenaddr
+				if value {
+					//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+					cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",1/END"
+					//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+				} else {
+					//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+					cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",0/END"
+					//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+				}
+				// ret1 := scp_sendmsg_orch(cmd1)
+				// fmt.Println("RET CMD1 =", ret1)
+				ret2 := scp_sendmsg_orch(cmd2)
+				fmt.Println("RET CMD2 =", ret2)
+				// ret3 := scp_sendmsg_orch(cmd3)
+				// fmt.Println("RET CMD3 =", ret3)
+				conn.Write([]byte(scp_ack))
+
+			case scp_dev_valve:
+				var cmd2 string
+				value_valve, err := strconv.Atoi(subparams[1])
+				checkErr(err)
+				value_status, err := strconv.Atoi(subparams[2])
+				checkErr(err)
+				//fmt.Println(value_valve, value_status)
+				if (value_valve >= 0) && (value_valve < 9) {
+					biofabrica.Valvs[value_valve] = value_status
+					devid := fmt.Sprintf("VBF%02d", value_valve)
+					devaddr := biofabrica_cfg[devid].Deviceaddr
+					devport := biofabrica_cfg[devid].Deviceport
+					//ibcscr := bio_cfg[ibcid].Screenaddr
+					if value_status == 1 {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",1/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+					} else if value_status == 0 {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",0/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+					}
+					// ret1 := scp_sendmsg_orch(cmd1)
+					// fmt.Println("RET CMD1 =", ret1)
+					ret2 := scp_sendmsg_orch(cmd2)
+					fmt.Println("RET CMD2 =", ret2)
+					conn.Write([]byte(scp_ack))
+				}
+			default:
+				conn.Write([]byte(scp_err))
 			}
 
 		default:
