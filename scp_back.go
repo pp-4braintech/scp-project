@@ -489,11 +489,13 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		if pump != "" {
 			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_pump + "," + pump + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
+			os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
 		}
 		if valve != "" {
 			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
+			os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
 		}
 
