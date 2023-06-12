@@ -479,7 +479,7 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
 		fmt.Println("Post Data", r.Form)
 
-		pump := r.FormValue("Pumpstatus")
+		pump := r.FormValue("Pumpwithdraw")
 		valve := r.FormValue("Valve")
 		valve_status := r.FormValue("Status")
 		fmt.Println("Pumpwithdraw = ", pump)
