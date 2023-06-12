@@ -49,19 +49,19 @@ type Bioreact struct {
 	BioreactorID string
 	// Deviceaddr   string
 	// Screenaddr   string
-	Status       string
-	Organism     string
-	Volume       uint32
-	Level        uint8
-	Pumpstatus   bool
-	Aerator      bool
-	Valvs        [8]int
-	Temperature  float32
-	PH           float32
-	Step         [2]int
-	Timeleft     [2]int
-	Timetotal    [2]int
-	Withdraw     uint32
+	Status      string
+	Organism    string
+	Volume      uint32
+	Level       uint8
+	Pumpstatus  bool
+	Aerator     bool
+	Valvs       [8]int
+	Temperature float32
+	PH          float32
+	Step        [2]int
+	Timeleft    [2]int
+	Timetotal   [2]int
+	Withdraw    uint32
 }
 
 type IBC struct {
@@ -445,7 +445,7 @@ func scp_get_alldata() {
 					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 					tempdev := bio_cfg[b.BioreactorID].Temp_dev
 					phdev := bio_cfg[b.BioreactorID].PH_dev
-	
+
 					cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 					ret1 := scp_sendmsg_orch(cmd1)
 					params := scp_splitparam(ret1, "/")
@@ -557,7 +557,7 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					var cmd2, cmd3 string
-					value, err := strconv.ParseBool(subparams[1])"42:A8AB4", "66:FA12F4", 
+					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					biodev := bio_cfg[bioid].Deviceaddr
 					bioscr := bio_cfg[bioid].Screenaddr
