@@ -24,6 +24,7 @@ const scp_dev_valve = "VALVE"
 const scp_par_withdraw = "WITHDRAW"
 const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
+const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
@@ -41,6 +42,7 @@ const bio_empty = "VAZIO"
 const bio_done = "CONCLUIDO"
 const bio_storing = "ARMAZENANDO"
 const bio_error = "ERRO"
+const bio_ready = "PRONTO"
 const bio_max_valves = 8
 
 const TEMPMAX = 120
@@ -74,6 +76,14 @@ type IBC struct {
 	Valvs      [4]int
 	Timetotal  [2]int
 	Withdraw   uint32
+}
+
+type Totem struct {
+	TotemID    string
+	Status     string
+	Pumpstatus bool
+	Valvs      [2]int
+	Perist     [4]int
 }
 
 type Biofabrica struct {
@@ -146,6 +156,11 @@ var ibc = []IBC{
 	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
 	{"IBC06", bio_cip, "Tricoderma harzianum", 250, 1, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
 	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
+}
+
+var totem = []Totem{
+	{"TOTEM01", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM02", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
 }
 
 var biofabrica = Biofabrica{
@@ -328,6 +343,17 @@ func get_ibc_index(ibc_id string) int {
 	if len(ibc_id) > 0 {
 		for i, v := range ibc {
 			if v.IBCID == ibc_id {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func get_totem_index(totem_id string) int {
+	if len(totem_id) > 0 {
+		for i, v := range totem {
+			if v.TotemID == totem_id {
 				return i
 			}
 		}
@@ -530,6 +556,23 @@ func scp_process_conn(conn net.Conn) {
 				conn.Write([]byte(buf))
 			} else {
 				conn.Write([]byte(scp_err))
+			}
+
+		case scp_totem:
+			fmt.Println(params)
+			if params[2] == "END" {
+				buf, err := json.Marshal(totem)
+				checkErr(err)
+				conn.Write([]byte(buf))
+			} else {
+				ind := get_totem_index(params[2])
+				if ind >= 0 {
+					buf, err := json.Marshal(totem[ind])
+					checkErr(err)
+					conn.Write([]byte(buf))
+				} else {
+					conn.Write([]byte(scp_err))
+				}
 			}
 
 		default:

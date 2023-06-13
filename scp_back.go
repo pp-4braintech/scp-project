@@ -21,6 +21,7 @@ const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_biofabrica = "BIOFABRICA"
+const scp_totem = "TOTEM"
 
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
@@ -404,7 +405,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			cmd := "GET/BIOREACTOR/END"
 			jsonStr = []byte(scp_sendmsg_master(cmd))
 		}
-		os.Stdout.Write(jsonStr)
+		//os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
 	case "PUT":
 		err := r.ParseForm()
@@ -412,8 +413,8 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		fmt.Println("Put from website! r.PostFrom = ", r.PostForm)
-		fmt.Println("Put Data", r.Form)
+		//fmt.Println("Put from website! r.PostFrom = ", r.PostForm)
+		//fmt.Println("Put Data", r.Form)
 		// for i, d := range r.Form {
 		// 	fmt.Println(i, d)
 		// }
@@ -458,6 +459,50 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println()
 	fmt.Println()
+}
+
+func totem_view(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case "GET":
+		var jsonStr []byte
+		cmd := "GET/" + scp_totem + "/END"
+		jsonStr = []byte(scp_sendmsg_master(cmd))
+		os.Stdout.Write(jsonStr)
+		w.Write([]byte(jsonStr))
+
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		// fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		// fmt.Println("Post Data", r.Form)
+
+		pump := r.FormValue("Pump")
+		valve := r.FormValue("Valve")
+		valve_status := r.FormValue("Status")
+		fmt.Println("Pump = ", pump)
+		fmt.Println("Valve = ", valve)
+		fmt.Println("Status = ", valve_status)
+		if pump != "" {
+			cmd := "PUT/" + scp_totem + "/" + scp_dev_pump + "," + pump + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+		if valve != "" {
+			cmd := "PUT/" + scp_totem + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+	default:
+
+	}
 }
 
 func biofabrica_view(w http.ResponseWriter, r *http.Request) {
@@ -601,6 +646,8 @@ func main() {
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
 	mux.HandleFunc("/ibc_view", ibc_view)
+
+	mux.HandleFunc("/totem_view", totem_view)
 
 	mux.HandleFunc("/biofabrica_view", biofabrica_view)
 
