@@ -484,6 +484,23 @@ func scp_setup_devices() {
 			}
 		}
 	}
+
+	for _, bf := range biofabrica_cfg {
+		if len(bf.Deviceaddr) > 0 {
+			fmt.Println("device:", bf.DeviceID, "-", bf.Deviceaddr)
+			var cmd []string
+			bfaddr := bf.Deviceaddr
+			cmd = make([]string, 0)
+			cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+
+			for k, c := range cmd {
+				fmt.Print(k, "  ", c, " ")
+				ret := scp_sendmsg_orch(c)
+				fmt.Println(ret)
+				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+		}
+	}
 }
 
 func scp_get_alldata() {
