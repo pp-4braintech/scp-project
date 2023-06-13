@@ -457,6 +457,33 @@ func scp_setup_devices() {
 			}
 		}
 	}
+
+	for _, tot := range totem_cfg {
+		if len(tot.Deviceaddr) > 0 {
+			fmt.Println("device:", tot.TotemID, "-", tot.Deviceaddr)
+			var cmd []string
+			totemaddr := tot.Deviceaddr
+			cmd = make([]string, 0)
+			cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Pumpdev[1:]+",3/END")
+			for i := 0; i < len(tot.Valv_devs); i++ {
+				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Valv_devs[i][1:]+",3/END")
+			}
+			for i := 0; i < len(tot.Peris_dev); i++ {
+				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
+			}
+
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
+			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
+
+			for k, c := range cmd {
+				fmt.Print(k, "  ", c, " ")
+				ret := scp_sendmsg_orch(c)
+				fmt.Println(ret)
+				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+		}
+	}
 }
 
 func scp_get_alldata() {
@@ -751,6 +778,73 @@ func scp_process_conn(conn net.Conn) {
 						} else if value_status == 0 {
 							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
+							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+						}
+						// ret1 := scp_sendmsg_orch(cmd1)
+						// fmt.Println("RET CMD1 =", ret1)
+						ret2 := scp_sendmsg_orch(cmd2)
+						fmt.Println("RET CMD2 =", ret2)
+						conn.Write([]byte(scp_ack))
+					}
+				default:
+					conn.Write([]byte(scp_err))
+				}
+			}
+
+		case scp_totem:
+			totemid := params[2]
+			ind := get_totem_index(totemid)
+			if ind < 0 {
+				conn.Write([]byte(scp_err))
+			} else {
+				subparams := scp_splitparam(params[3], ",")
+				scp_device := subparams[0]
+				switch scp_device {
+				case scp_dev_pump:
+					var cmd2 string
+					value, err := strconv.ParseBool(subparams[1])
+					checkErr(err)
+					totem[ind].Pumpstatus = value
+					totemdev := totem_cfg[totemid].Deviceaddr
+					pumpdev := totem_cfg[totemid].Pumpdev
+					//ibcscr := bio_cfg[ibcid].Screenaddr
+					if value {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+					} else {
+						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+						cmd2 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
+						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+					}
+					// ret1 := scp_sendmsg_orch(cmd1)
+					// fmt.Println("RET CMD1 =", ret1)
+					ret2 := scp_sendmsg_orch(cmd2)
+					fmt.Println("RET CMD2 =", ret2)
+					// ret3 := scp_sendmsg_orch(cmd3)
+					// fmt.Println("RET CMD3 =", ret3)
+					conn.Write([]byte(scp_ack))
+
+				case scp_dev_valve:
+					var cmd2 string
+					value_valve, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					value_status, err := strconv.Atoi(subparams[2])
+					checkErr(err)
+					//fmt.Println(value_valve, value_status)
+					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						totem[ind].Valvs[value_valve] = value_status
+
+						totemdev := totem_cfg[totemid].Deviceaddr
+						valvaddr := totem_cfg[totemid].Valv_devs[value_valve]
+						//ibcscr := bio_cfg[ibcid].Screenaddr
+						if value_status == 1 {
+							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+							cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",1/END"
+							//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+						} else if value_status == 0 {
+							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
+							cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",0/END"
 							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 						}
 						// ret1 := scp_sendmsg_orch(cmd1)
