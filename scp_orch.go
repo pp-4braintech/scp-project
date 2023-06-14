@@ -120,6 +120,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				// }
 				if err == nil {
 					slave_data.go_chan <- ret
+					nerr = 0
 				} else {
 					nerr++
 					slave_data.go_chan <- scp_err
