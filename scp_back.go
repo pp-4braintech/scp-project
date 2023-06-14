@@ -340,7 +340,7 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			cmd := "GET/IBC/END"
 			jsonStr = []byte(scp_sendmsg_master(cmd))
 		}
-		os.Stdout.Write(jsonStr)
+		// os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
 
 	case "PUT":
@@ -349,8 +349,8 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
-		fmt.Println("Post Data", r.Form)
+		// fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		// fmt.Println("Post Data", r.Form)
 		// for i, d := range r.Form {
 		// 	fmt.Println(i, d)
 		// }
@@ -360,11 +360,11 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
-			fmt.Println("IBC_id = ", ibc_id)
-			fmt.Println("Pump = ", pump)
-			fmt.Println("Valve = ", valve)
-			fmt.Println("Status = ", valve_status)
-			fmt.Println("Withdraw = ", withdraw)
+			// fmt.Println("IBC_id = ", ibc_id)
+			// fmt.Println("Pump = ", pump)
+			// fmt.Println("Valve = ", valve)
+			// fmt.Println("Status = ", valve_status)
+			// fmt.Println("Withdraw = ", withdraw)
 			if pump != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
