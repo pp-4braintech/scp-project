@@ -929,6 +929,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					// ret1 := scp_sendmsg_orch(cmd1)
 					// fmt.Println("RET CMD1 =", ret1)
+					fmt.Println("biofabrica valvula", cmd2)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
 					conn.Write([]byte(scp_ack))
