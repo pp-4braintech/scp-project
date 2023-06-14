@@ -286,8 +286,8 @@ func load_totems_conf(filename string) int {
 		perdev2 := r[4]
 		perdev3 := r[5]
 		perdev4 := r[6]
-		vdev1 := r[5]
-		vdev2 := r[6]
+		vdev1 := r[7]
+		vdev2 := r[8]
 		totem_cfg[id] = Totem_cfg{id, dev_addr, pumpdev,
 			[4]string{perdev1, perdev2, perdev3, perdev4},
 			[2]string{vdev1, vdev2}}
