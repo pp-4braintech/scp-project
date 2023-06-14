@@ -914,7 +914,7 @@ func scp_process_conn(conn net.Conn) {
 				//fmt.Println(value_valve, value_status)
 				if (value_valve >= 0) && (value_valve < 9) {
 					biofabrica.Valvs[value_valve] = value_status
-					devid := fmt.Sprintf("VBF%02d", value_valve)
+					devid := fmt.Sprintf("VBF%02d", value_valve+1)
 					devaddr := biofabrica_cfg[devid].Deviceaddr
 					devport := biofabrica_cfg[devid].Deviceport
 					//ibcscr := bio_cfg[ibcid].Screenaddr
