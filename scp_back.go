@@ -478,7 +478,7 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 			jsonStr = []byte(scp_sendmsg_master(cmd))
 		}
 		//os.Stdout.Write(jsonStr)
-		jsonStr = []byte(scp_sendmsg_master(cmd))
+		//jsonStr = []byte(scp_sendmsg_master(cmd))
 		os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
 
