@@ -425,12 +425,12 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
-			fmt.Println("Bio_id = ", bio_id)
-			fmt.Println("Pump = ", pump)
-			fmt.Println("Aero = ", aero)
-			fmt.Println("Valve = ", valve)
-			fmt.Println("Status = ", valve_status)
-			fmt.Println("Withdraw = ", withdraw)
+			// fmt.Println("Bio_id = ", bio_id)
+			// fmt.Println("Pump = ", pump)
+			// fmt.Println("Aero = ", aero)
+			// fmt.Println("Valve = ", valve)
+			// fmt.Println("Status = ", valve_status)
+			// fmt.Println("Withdraw = ", withdraw)
 			if pump != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -457,8 +457,8 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	default:
 		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
 	}
-	fmt.Println()
-	fmt.Println()
+	// fmt.Println()
+	// fmt.Println()
 }
 
 func totem_view(w http.ResponseWriter, r *http.Request) {
@@ -479,7 +479,7 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 		}
 		//os.Stdout.Write(jsonStr)
 		//jsonStr = []byte(scp_sendmsg_master(cmd))
-		os.Stdout.Write(jsonStr)
+		// os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
 
 	case "PUT":
@@ -495,19 +495,19 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 			pump := r.FormValue("Pump")
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
-			fmt.Println("Pump = ", pump)
-			fmt.Println("Valve = ", valve)
-			fmt.Println("Status = ", valve_status)
+			// fmt.Println("Pump = ", pump)
+			// fmt.Println("Valve = ", valve)
+			// fmt.Println("Status = ", valve_status)
 			if pump != "" {
 				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
-				os.Stdout.Write(jsonStr)
+				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
 			if valve != "" {
 				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
-				os.Stdout.Write(jsonStr)
+				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
 		}
@@ -525,7 +525,7 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		var jsonStr []byte
 		cmd := "GET/BIOFABRICA/END"
 		jsonStr = []byte(scp_sendmsg_master(cmd))
-		os.Stdout.Write(jsonStr)
+		// os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
 
 	case "PUT":
@@ -534,25 +534,25 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
-		fmt.Println("Post Data", r.Form)
+		// fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		// fmt.Println("Post Data", r.Form)
 
 		pump := r.FormValue("Pumpwithdraw")
 		valve := r.FormValue("Valve")
 		valve_status := r.FormValue("Status")
-		fmt.Println("Pumpwithdraw = ", pump)
-		fmt.Println("Valve = ", valve)
-		fmt.Println("Status = ", valve_status)
+		// fmt.Println("Pumpwithdraw = ", pump)
+		// fmt.Println("Valve = ", valve)
+		// fmt.Println("Status = ", valve_status)
 		if pump != "" {
 			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_pump + "," + pump + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
-			os.Stdout.Write(jsonStr)
+			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
 		}
 		if valve != "" {
 			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
-			os.Stdout.Write(jsonStr)
+			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
 		}
 
