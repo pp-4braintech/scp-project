@@ -467,7 +467,17 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		var jsonStr []byte
-		cmd := "GET/" + scp_totem + "/END"
+		totem_id := r.URL.Query().Get("Id")
+		//fmt.Println("bio_id =", bio_id)
+		//fmt.Println()
+		if len(totem_id) > 0 {
+			cmd := "GET/" + scp_totem + "/" + totem_id + "/END"
+			jsonStr = []byte(scp_sendmsg_master(cmd))
+		} else {
+			cmd := "GET/" + scp_totem + "/END"
+			jsonStr = []byte(scp_sendmsg_master(cmd))
+		}
+		//os.Stdout.Write(jsonStr)
 		jsonStr = []byte(scp_sendmsg_master(cmd))
 		os.Stdout.Write(jsonStr)
 		w.Write([]byte(jsonStr))
@@ -480,24 +490,26 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 		}
 		// fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
 		// fmt.Println("Post Data", r.Form)
-
-		pump := r.FormValue("Pump")
-		valve := r.FormValue("Valve")
-		valve_status := r.FormValue("Status")
-		fmt.Println("Pump = ", pump)
-		fmt.Println("Valve = ", valve)
-		fmt.Println("Status = ", valve_status)
-		if pump != "" {
-			cmd := "PUT/" + scp_totem + "/" + scp_dev_pump + "," + pump + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
-		}
-		if valve != "" {
-			cmd := "PUT/" + scp_totem + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
+		totem_id := r.FormValue("Id")
+		if len(totem_id) >= 0 {
+			pump := r.FormValue("Pump")
+			valve := r.FormValue("Valve")
+			valve_status := r.FormValue("Status")
+			fmt.Println("Pump = ", pump)
+			fmt.Println("Valve = ", valve)
+			fmt.Println("Status = ", valve_status)
+			if pump != "" {
+				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_pump + "," + pump + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if valve != "" {
+				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 		}
 
 	default:
