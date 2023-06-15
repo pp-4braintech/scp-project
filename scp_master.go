@@ -453,7 +453,7 @@ func scp_setup_devices() {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
 				fmt.Println(ret)
-				if ret == "DIE" {
+				if ret[0:2] == "DIE" {
 					fmt.Println("SLAVE ERROR - DIE")
 					break
 				}
