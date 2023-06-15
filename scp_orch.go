@@ -238,6 +238,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			checkErr(err)
 		} else if slave_data.slave_scp_state == scp_state_TCPFAIL {
 			fmt.Println("ERRO Cliente TCP")
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
 		} else {
 			cmd := params[2]
 			tam := len(cmd)
