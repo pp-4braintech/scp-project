@@ -151,11 +151,11 @@ var bio = []Bioreact{
 var ibc = []IBC{
 	{"IBC01", bio_storing, "Bacillus Subtilis", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0},
 	{"IBC02", bio_storing, "Bacillus Megaterium", 4000, 10, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0},
-	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 1, 0}, [2]int{0, 30}, 0},
-	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 1}, [2]int{4, 50}, 0},
+	{"IBC03", bio_loading, "Bacillus Amyloliquefaciens", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0},
+	{"IBC04", bio_unloading, "Azospirilum brasiliense", 500, 2, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0},
 	{"IBC05", bio_storing, "Tricoderma harzianum", 1000, 3, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
-	{"IBC06", bio_cip, "Tricoderma harzianum", 250, 1, true, [4]int{0, 1, 0, 0}, [2]int{0, 5}, 0},
-	{"IBC07", bio_cip, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
+	{"IBC06", bio_cip, "Tricoderma harzianum", 250, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0},
+	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
 }
 
 var totem = []Totem{
