@@ -50,6 +50,12 @@ func scp_splitparam(param string) []string {
 	return scp_data
 }
 
+func print_scp_slave() {
+	for k, s := range scp_slaves {
+		fmt.Println(k, s)
+	}
+}
+
 func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, error) {
 	if len(scp_message) > scp_buff_size {
 		scp_message = scp_message[0 : scp_buff_size-2]
@@ -284,6 +290,7 @@ func scp_master_udp() {
 	con, err := net.ListenPacket("udp", ":7007")
 	checkErr(err)
 	defer con.Close()
+	nslaves := 0
 
 	for {
 		reply := make([]byte, 1024)
@@ -394,8 +401,12 @@ func scp_master_udp() {
 
 		// }
 		fmt.Println()
-		fmt.Println("scp slave", scp_slaves)
-		fmt.Println()
+		if len(scp_slaves) != nslaves {
+			print_scp_slave()
+			nslaves = len(scp_slaves)
+			fmt.Println()
+		}
+
 	}
 }
 
