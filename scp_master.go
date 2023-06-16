@@ -134,6 +134,7 @@ type Biofabrica_cfg struct {
 	Deviceport string
 }
 
+var finishedsetup = false
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
@@ -505,10 +506,11 @@ func scp_setup_devices() {
 			}
 		}
 	}
+	finishedsetup = true
 }
 
 func scp_get_alldata() {
-	if demo {
+	if demo || !finishedsetup {
 		return
 	}
 	for {
