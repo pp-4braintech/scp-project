@@ -143,7 +143,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				ret, err := scp_sendtcp(slave_tcp_con, scp_ping, true)
 				if err != nil {
 					nerr++
-					fmt.Println(scp_slave.slave_scp_addr, "ERR ao tratar PING")
+					fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING")
 				} else {
 					fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
 					nerr = 0
