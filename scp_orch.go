@@ -141,10 +141,12 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			if (elapsed_seconds > scp_keepalive_time) && (nerr < scp_max_err) {
 				fmt.Println("Enviando PING para", scp_slave.slave_scp_addr)
 				ret, err := scp_sendtcp(slave_tcp_con, scp_ping, true)
-				fmt.Println("ret =", ret)
+				fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
 				if err != nil {
 					nerr++
 					fmt.Println("ERR ao tratar PING")
+				} else {
+					nerr = 0
 				}
 				begin_time = current_time
 			}
