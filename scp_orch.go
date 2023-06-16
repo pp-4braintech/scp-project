@@ -51,9 +51,11 @@ func scp_splitparam(param string) []string {
 }
 
 func print_scp_slave() {
+	fmt.Println("--- SCP Slaves Map")
 	for k, s := range scp_slaves {
 		fmt.Println(k, s)
 	}
+	fmt.Println()
 }
 
 func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, error) {
@@ -404,7 +406,6 @@ func scp_master_udp() {
 		if len(scp_slaves) != nslaves {
 			print_scp_slave()
 			nslaves = len(scp_slaves)
-			fmt.Println()
 		}
 
 	}
