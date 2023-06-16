@@ -135,6 +135,7 @@ type Biofabrica_cfg struct {
 }
 
 var finishedsetup = false
+
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
@@ -510,44 +511,47 @@ func scp_setup_devices() {
 }
 
 func scp_get_alldata() {
-	if demo || !finishedsetup {
+	if demo {
 		return
 	}
 	for {
-		for k, b := range bio {
-			if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
-				i := get_bio_index(b.BioreactorID)
-				if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
-					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-					tempdev := bio_cfg[b.BioreactorID].Temp_dev
-					phdev := bio_cfg[b.BioreactorID].PH_dev
+		if finishedsetup {
+			for k, b := range bio {
+				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
+					i := get_bio_index(b.BioreactorID)
+					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
+						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
+						tempdev := bio_cfg[b.BioreactorID].Temp_dev
+						phdev := bio_cfg[b.BioreactorID].PH_dev
 
-					cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-					ret1 := scp_sendmsg_orch(cmd1)
-					params := scp_splitparam(ret1, "/")
-					if params[0] == scp_ack {
-						tempint, _ := strconv.Atoi(params[1])
-						tempfloat := float32(tempint) / 100.0
-						if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
-							bio[k].Temperature = tempfloat
+						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
+						ret1 := scp_sendmsg_orch(cmd1)
+						params := scp_splitparam(ret1, "/")
+						if params[0] == scp_ack {
+							tempint, _ := strconv.Atoi(params[1])
+							tempfloat := float32(tempint) / 100.0
+							if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
+								bio[k].Temperature = tempfloat
+							}
+						}
+						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
+						ret2 := scp_sendmsg_orch(cmd2)
+						params = scp_splitparam(ret2, "/")
+						if params[0] == scp_ack {
+							phint, _ := strconv.Atoi(params[1])
+							phfloat := float32(phint) / 100.0
+							if (phfloat >= 0) && (phfloat <= 14) {
+								bio[k].PH = phfloat
+							}
 						}
 					}
-					cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-					ret2 := scp_sendmsg_orch(cmd2)
-					params = scp_splitparam(ret2, "/")
-					if params[0] == scp_ack {
-						phint, _ := strconv.Atoi(params[1])
-						phfloat := float32(phint) / 100.0
-						if (phfloat >= 0) && (phfloat <= 14) {
-							bio[k].PH = phfloat
-						}
-					}
+
 				}
-
+				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
-			time.Sleep(scp_refreshwait * time.Millisecond)
+			time.Sleep(scp_refreshsleep * time.Millisecond)
+
 		}
-		time.Sleep(scp_refreshsleep * time.Millisecond)
 	}
 }
 
