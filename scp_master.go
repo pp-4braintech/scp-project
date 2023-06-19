@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"os"
 	"strconv"
@@ -30,6 +31,9 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 1000
 const scp_refreshsleep = 10000
+const bio_diametro = 1430 // em mm
+const bio_v1_zero = 1483  // em mm
+const bio_v2_zero = 1502  // em mm
 
 // const scp_join = "JOIN"
 
@@ -43,6 +47,7 @@ const bio_done = "CONCLUIDO"
 const bio_storing = "ARMAZENANDO"
 const bio_error = "ERRO"
 const bio_ready = "PRONTO"
+const bio_water = "AGUA"
 const bio_max_valves = 8
 
 const TEMPMAX = 120
@@ -161,8 +166,8 @@ var ibc = []IBC{
 }
 
 var totem = []Totem{
-	{"TOTEM01", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
-	{"TOTEM02", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM01", bio_nonexist, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM02", bio_nonexist, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
 }
 
 var biofabrica = Biofabrica{
@@ -416,7 +421,7 @@ func scp_setup_devices() {
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",1/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",1/END")
-
+			cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/200,1/END")
 			nerr := 0
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
@@ -425,6 +430,10 @@ func scp_setup_devices() {
 					nerr++
 				}
 				fmt.Println(ret)
+				if ret[0:2] == "DIE" {
+					fmt.Println("SLAVE ERROR - DIE")
+					break
+				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 			i := get_bio_index(b.BioreactorID)
@@ -491,11 +500,24 @@ func scp_setup_devices() {
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
+			nerr := 0
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
 				fmt.Println(ret)
+				if ret[0:2] == "DIE" {
+					fmt.Println("SLAVE ERROR - DIE")
+					break
+				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+			i := get_totem_index(tot.TotemID)
+			if i >= 0 {
+				if nerr == 0 {
+					totem[i].Status = bio_empty
+				} else {
+					totem[i].Status = bio_error
+				}
 			}
 		}
 	}
@@ -512,6 +534,10 @@ func scp_setup_devices() {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
 				fmt.Println(ret)
+				if ret[0:2] == "DIE" {
+					fmt.Println("SLAVE ERROR - DIE")
+					break
+				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 		}
@@ -532,6 +558,8 @@ func scp_get_alldata() {
 						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 						tempdev := bio_cfg[b.BioreactorID].Temp_dev
 						phdev := bio_cfg[b.BioreactorID].PH_dev
+						v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
+						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
@@ -551,6 +579,20 @@ func scp_get_alldata() {
 							phfloat := float32(phint) / 100.0
 							if (phfloat >= 0) && (phfloat <= 14) {
 								bio[k].PH = phfloat
+							}
+						}
+						cmd3 := "CMD/" + bioaddr + "/GET/" + v1dev + "/END"
+						ret3 := scp_sendmsg_orch(cmd3)
+						params = scp_splitparam(ret3, "/")
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+							dfloat := bio_v1_zero - float64(dint)
+							vol1 := (area * dfloat) / 1000.0
+							if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
+								bio[k].Volume = uint32(vol1)
+								level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
+								bio[k].Level = uint8(level)
 							}
 						}
 					}
