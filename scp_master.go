@@ -432,7 +432,7 @@ func scp_setup_devices() {
 				if nerr == 0 {
 					bio[i].Status = bio_empty
 				} else {
-					bio[i].Status = bio_error
+					bio[i].Status = bio_cip
 				}
 			}
 		}
