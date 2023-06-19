@@ -571,7 +571,7 @@ func scp_process_conn(conn net.Conn) {
 		checkErr(err)
 		return
 	}
-	fmt.Printf("msg: %s\n", buf[:n])
+	//fmt.Printf("msg: %s\n", buf[:n])
 	params := scp_splitparam(string(buf[:n]), "/")
 	fmt.Println(params)
 	scp_command := params[0]
