@@ -142,12 +142,12 @@ var totem_cfg map[string]Totem_cfg
 var biofabrica_cfg map[string]Biofabrica_cfg
 
 var bio = []Bioreact{
-	{"BIOR001", bio_nonexist, "", 100, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
-	{"BIOR002", bio_nonexist, "", 200, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
-	{"BIOR003", bio_nonexist, "", 1000, 3, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
-	{"BIOR004", bio_nonexist, "", 500, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
-	{"BIOR005", bio_nonexist, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
-	{"BIOR006", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
+	{"BIOR01", bio_nonexist, "", 100, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
+	{"BIOR02", bio_nonexist, "", 200, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 26, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
+	{"BIOR03", bio_nonexist, "", 1000, 3, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
+	{"BIOR04", bio_nonexist, "", 500, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 25, 7, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
+	{"BIOR05", bio_nonexist, "Tricoderma harzianum", 0, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 28, 7, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
+	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
 }
 
 var ibc = []IBC{
@@ -432,7 +432,7 @@ func scp_setup_devices() {
 				if nerr == 0 {
 					bio[i].Status = bio_empty
 				} else {
-					bio[i].Status = bio_cip
+					bio[i].Status = bio_error
 				}
 			}
 		}
