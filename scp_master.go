@@ -451,6 +451,7 @@ func scp_setup_devices() {
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
+			nerr := 0
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
@@ -460,6 +461,14 @@ func scp_setup_devices() {
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+			}
+			i := get_ibc_index(ib.IBCID)
+			if i >= 0 {
+				if nerr == 0 {
+					ibc[i].Status = bio_empty
+				} else {
+					ibc[i].Status = bio_error
+				}
 			}
 		}
 	}
