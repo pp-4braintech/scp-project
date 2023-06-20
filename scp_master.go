@@ -336,7 +336,7 @@ func save_all_data(filename string) int {
 	err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
 	checkErr(err2)
 	buf3, _ := json.Marshal(totem)
-	err3 := os.WriteFile(filename+"_ibc.json", []byte(buf3), 0644)
+	err3 := os.WriteFile(filename+"_totem.json", []byte(buf3), 0644)
 	checkErr(err3)
 	buf4, _ := json.Marshal(biofabrica)
 	err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
@@ -347,18 +347,32 @@ func save_all_data(filename string) int {
 func load_all_data(filename string) int {
 	dat1, err1 := os.ReadFile(filename + "_bio.json")
 	checkErr(err1)
-	json.Unmarshal([]byte(dat1), &bio)
-	fmt.Println("-- bio data = ", bio)
+	if err1 == nil {
+		json.Unmarshal([]byte(dat1), &bio)
+		fmt.Println("-- bio data = ", bio)
+	}
 
-	// buf2, _ := json.Marshal(ibc)
-	// err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
-	// checkErr(err2)
-	// buf3, _ := json.Marshal(totem)
-	// err3 := os.WriteFile(filename+"_ibc.json", []byte(buf3), 0644)
-	// checkErr(err3)
-	// buf4, _ := json.Marshal(biofabrica)
-	// err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
-	// checkErr(err4)
+	dat2, err2 := os.ReadFile(filename + "_ibc.json")
+	checkErr(err2)
+	if err2 == nil {
+		json.Unmarshal([]byte(dat2), &ibc)
+		fmt.Println("-- ibc data = ", ibc)
+	}
+
+	dat3, err3 := os.ReadFile(filename + "_totem.json")
+	checkErr(err3)
+	if err3 == nil {
+		json.Unmarshal([]byte(dat3), &totem)
+		fmt.Println("-- totem data = ", totem)
+	}
+
+	dat4, err4 := os.ReadFile(filename + "_biofabrica.json")
+	checkErr(err4)
+	if err4 == nil {
+		json.Unmarshal([]byte(dat4), &biofabrica)
+		fmt.Println("-- biofabrica data = ", biofabrica)
+	}
+
 	return 0
 }
 
