@@ -598,6 +598,7 @@ func scp_get_alldata() {
 	if demo {
 		return
 	}
+	countsave := 0
 	for {
 		if finishedsetup {
 			for k, b := range bio {
@@ -655,7 +656,12 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
-			save_all_data(bio_data_filename)
+			countsave++
+			if countsave == 5 {
+				save_all_data(bio_data_filename)
+				countsave = 0
+			}
+
 			time.Sleep(scp_refreshsleep * time.Millisecond)
 
 		}
