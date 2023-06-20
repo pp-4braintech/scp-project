@@ -1099,10 +1099,14 @@ func main() {
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
-	fmt.Println("BIO cfg", bio_cfg)
-	fmt.Println("IBC cfg", ibc_cfg)
-	fmt.Println("TOTEM cfg", totem_cfg)
-	fmt.Println("Biofabrica cfg", biofabrica_cfg)
+	// fmt.Println("BIO cfg", bio_cfg)
+	// fmt.Println("IBC cfg", ibc_cfg)
+	// fmt.Println("TOTEM cfg", totem_cfg)
+	// fmt.Println("Biofabrica cfg", biofabrica_cfg)
+	fmt.Println("BIO ", bio)
+	fmt.Println("IBC ", ibc)
+	fmt.Println("TOTEM ", totem)
+	fmt.Println("Biofabrica ", biofabrica)
 	load_all_data(bio_data_filename)
 	go scp_setup_devices()
 
