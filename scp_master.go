@@ -344,6 +344,24 @@ func save_all_data(filename string) int {
 	return 0
 }
 
+func load_all_data(filename string) int {
+	dat1, err1 := os.ReadFile(filename + "_bio.json")
+	checkErr(err1)
+	json.Unmarshal([]byte(dat1), &bio)
+	fmt.Println("-- bio data = ", dat1, bio)
+
+	// buf2, _ := json.Marshal(ibc)
+	// err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
+	// checkErr(err2)
+	// buf3, _ := json.Marshal(totem)
+	// err3 := os.WriteFile(filename+"_ibc.json", []byte(buf3), 0644)
+	// checkErr(err3)
+	// buf4, _ := json.Marshal(biofabrica)
+	// err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
+	// checkErr(err4)
+	return 0
+}
+
 func scp_splitparam(param string, separator string) []string {
 	scp_data := strings.Split(param, separator)
 	if len(scp_data) < 1 {
@@ -1085,6 +1103,7 @@ func main() {
 	fmt.Println("IBC cfg", ibc_cfg)
 	fmt.Println("TOTEM cfg", totem_cfg)
 	fmt.Println("Biofabrica cfg", biofabrica_cfg)
+	load_all_data(bio_data_filename)
 	go scp_setup_devices()
 
 	go scp_get_alldata()
