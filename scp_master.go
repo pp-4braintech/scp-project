@@ -29,8 +29,8 @@ const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
-const scp_refreshwait = 1000
-const scp_refreshsleep = 10000
+const scp_refreshwait = 500
+const scp_refreshsleep = 5000
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
@@ -596,6 +596,8 @@ func scp_get_alldata() {
 								bio[k].Level = uint8(level)
 								if vol1 == 0 {
 									bio[k].Status = bio_empty
+								} else {
+									bio[k].Status = bio_ready
 								}
 							}
 						}
