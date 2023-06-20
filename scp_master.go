@@ -1086,7 +1086,6 @@ func main() {
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
-	fmt.Println("IBC cfg", ibc_cfg)
 	nbiocfg := load_bios_conf("bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
