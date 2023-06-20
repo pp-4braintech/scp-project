@@ -348,7 +348,7 @@ func load_all_data(filename string) int {
 	dat1, err1 := os.ReadFile(filename + "_bio.json")
 	checkErr(err1)
 	json.Unmarshal([]byte(dat1), &bio)
-	fmt.Println("-- bio data = ", dat1, bio)
+	fmt.Println("-- bio data = ", bio)
 
 	// buf2, _ := json.Marshal(ibc)
 	// err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
