@@ -31,9 +31,9 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 1000
 const scp_refreshsleep = 10000
-const bio_diametro = 1430 // em mm
-const bio_v1_zero = 1483  // em mm
-const bio_v2_zero = 1502  // em mm
+const bio_diametro = 1430  // em mm
+const bio_v1_zero = 1483.0 // em mm
+const bio_v2_zero = 1502.0 // em mm
 
 // const scp_join = "JOIN"
 
@@ -587,9 +587,9 @@ func scp_get_alldata() {
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := bio_v1_zero - float64(dint)
-							vol1 := (area * dfloat) / 1000.0
-							fmt.Println("DEBUG Volume ", b.BioreactorID, dint, vol1)
+							dfloat := (float64(bio_v1_zero) - float64(dint)) / 1000.0
+							vol1 := area * dfloat
+							fmt.Println("DEBUG Volume ", b.BioreactorID, dint, area, dfloat, vol1)
 							if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 								bio[k].Volume = uint32(vol1)
 								level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
