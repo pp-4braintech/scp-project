@@ -514,7 +514,7 @@ func scp_setup_devices() {
 			i := get_totem_index(tot.TotemID)
 			if i >= 0 {
 				if nerr == 0 {
-					totem[i].Status = bio_empty
+					totem[i].Status = bio_ready
 				} else {
 					totem[i].Status = bio_error
 				}
