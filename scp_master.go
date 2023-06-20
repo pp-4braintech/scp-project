@@ -36,6 +36,7 @@ const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
 
 // const scp_join = "JOIN"
+const bio_data_filename = "dumpdata"
 
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
@@ -328,16 +329,18 @@ func load_biofabrica_conf(filename string) int {
 }
 
 func save_all_data(filename string) int {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0775)
-	if err != nil {
-		checkErr(err)
-		return -1
-	}
-	defer file.Close()
-	// buf := new([]byte)
-	buf, _ := json.Marshal(bio)
-	err1 := os.WriteFile(filename+"_bio.json", []byte(buf), 0644)
+	buf1, _ := json.Marshal(bio)
+	err1 := os.WriteFile(filename+"_bio.json", []byte(buf1), 0644)
 	checkErr(err1)
+	buf2, _ := json.Marshal(ibc)
+	err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
+	checkErr(err2)
+	buf3, _ := json.Marshal(totem)
+	err3 := os.WriteFile(filename+"_ibc.json", []byte(buf3), 0644)
+	checkErr(err3)
+	buf4, _ := json.Marshal(biofabrica)
+	err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
+	checkErr(err4)
 	return 0
 }
 
@@ -620,7 +623,7 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
-			save_all_data("biofabrica")
+			save_all_data(bio_data_filename)
 			time.Sleep(scp_refreshsleep * time.Millisecond)
 
 		}
