@@ -587,7 +587,7 @@ func scp_get_alldata() {
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := (float64(bio_v1_zero) - float64(dint)) / 1000.0
+							dfloat := float64(bio_v1_zero) - float64(dint)
 							vol1 := area * dfloat
 							fmt.Println("DEBUG Volume ", b.BioreactorID, dint, area, dfloat, vol1)
 							if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
