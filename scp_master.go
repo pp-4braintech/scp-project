@@ -327,6 +327,20 @@ func load_biofabrica_conf(filename string) int {
 	return totalrecords
 }
 
+func save_all_data(filename string) int {
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0775)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	// buf := new([]byte)
+	buf, _ := json.Marshal(bio)
+	err1 := os.WriteFile(filename+"_bio.json", []byte(buf), 0644)
+	checkErr(err1)
+	return 0
+}
+
 func scp_splitparam(param string, separator string) []string {
 	scp_data := strings.Split(param, separator)
 	if len(scp_data) < 1 {
@@ -606,6 +620,7 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			save_all_data("biofabrica")
 			time.Sleep(scp_refreshsleep * time.Millisecond)
 
 		}
