@@ -643,17 +643,19 @@ func scp_get_alldata() {
 							if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 								bio[k].Volume = uint32(vol1)
 								level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
-								bio[k].Level = uint8(level)
+								level_int := uint8(level)
+								if level_int != bio[k].Level {
+									bio[k].Level = level_int
+									levels := fmt.Sprintf("%d", level_int)
+									cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
+									ret := scp_sendmsg_orch(cmd)
+									fmt.Println("SCREEN:", cmd, level, levels, ret)
+								}
 								if vol1 == 0 {
 									bio[k].Status = bio_empty
 								} else {
 									bio[k].Status = bio_ready
 								}
-								levels := fmt.Sprintf("%d", uint8(level))
-								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
-								ret := scp_sendmsg_orch(cmd)
-								fmt.Println("SCREEN:", cmd, level, levels, ret)
-
 							}
 						}
 					}
