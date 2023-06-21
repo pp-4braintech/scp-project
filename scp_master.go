@@ -649,9 +649,10 @@ func scp_get_alldata() {
 								} else {
 									bio[k].Status = bio_ready
 								}
-								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + string(uint8(level)) + "/END"
+								levels := fmt.Sprintf("%d", uint8(level))
+								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
 								ret := scp_sendmsg_orch(cmd)
-								fmt.Println("SCREEN:", cmd, ret)
+								fmt.Println("SCREEN:", cmd, level, levels, ret)
 
 							}
 						}
