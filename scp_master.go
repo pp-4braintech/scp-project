@@ -34,6 +34,7 @@ const scp_refreshsleep = 2500
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
+const ibc_v1_zero = 2966.0 // em mm
 
 // const scp_join = "JOIN"
 const bio_data_filename = "dumpdata"
@@ -41,7 +42,7 @@ const bio_data_filename = "dumpdata"
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
 const bio_loading = "CARREGANDO"
-const bio_unloading = "ESVAZIANDO"
+const bio_unloading = "DESENVASE"
 const bio_producting = "PRODUZINDO"
 const bio_empty = "VAZIO"
 const bio_done = "CONCLUIDO"
@@ -663,6 +664,47 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			for k, b := range ibc {
+				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 {
+					i := get_ibc_index(b.IBCID)
+					if i >= 0 && (ibc[i].Status != bio_nonexist && ibc[i].Status != bio_error) {
+						ibcaddr := ibc_cfg[b.IBCID].Deviceaddr
+						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
+						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
+
+						cmd3 := "CMD/" + ibcaddr + "/GET/" + v1dev + "/END"
+						ret3 := scp_sendmsg_orch(cmd3)
+						params := scp_splitparam(ret3, "/")
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+							dfloat := float64(ibc_v1_zero) - float64(dint)
+							vol1 := area * dfloat
+							fmt.Println("DEBUG Volume ", b.IBCID, dint, area, dfloat, vol1)
+							if (vol1 >= 0) && (vol1 <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
+								ibc[k].Volume = uint32(vol1)
+								level := (vol1 / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
+								level_int := uint8(level)
+								if level_int != ibc[k].Level {
+									bio[k].Level = level_int
+									// levels := fmt.Sprintf("%d", level_int)
+									// cmd := "CMD/" + ibc_cfg[b.IBCID].Screenaddr + "/PUT/S231," + levels + "/END"
+									// ret := scp_sendmsg_orch(cmd)
+									// fmt.Println("SCREEN:", cmd, level, levels, ret)
+								}
+								if vol1 == 0 {
+									ibc[k].Status = bio_empty
+								} else {
+									ibc[k].Status = bio_ready
+								}
+							}
+						}
+					}
+
+				}
+				time.Sleep(scp_refreshwait * time.Millisecond)
+			}
+
 			countsave++
 			if countsave == 5 {
 				save_all_data(bio_data_filename)
