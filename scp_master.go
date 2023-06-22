@@ -680,7 +680,7 @@ func scp_get_alldata() {
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol1 := area * dfloat
-							fmt.Println("DEBUG Volume ", b.IBCID, dint, area, dfloat, vol1)
+							fmt.Println("DEBUG Volume ", b.IBCID, b.IBCID, dint, area, dfloat, vol1)
 							if (vol1 >= 0) && (vol1 <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
 								ibc[k].Volume = uint32(vol1)
 								level := (vol1 / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
