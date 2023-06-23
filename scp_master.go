@@ -771,7 +771,7 @@ func scp_get_alldata() {
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol1 = area * dfloat
-							fmt.Println("DEBUG Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1)
+							fmt.Println("DEBUG Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1, ret1)
 						} else {
 							fmt.Println("DEBUG ERRO USOM", b.IBCID, ret1, params)
 						}
@@ -787,7 +787,7 @@ func scp_get_alldata() {
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol2 = area * dfloat
-							fmt.Println("DEBUG Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2)
+							fmt.Println("DEBUG Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
 						} else {
 							fmt.Println("DEBUG ERRO LASER", b.IBCID, ret2, params)
 						}
