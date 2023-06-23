@@ -726,7 +726,7 @@ func scp_get_alldata() {
 							volc = vol1
 						} else if vol1 == -1 && vol2 == -1 {
 							volc = -1
-						} else if vol1 > vol2 {
+						} else if vol1 < vol2 {
 							volc = vol1
 						} else {
 							volc = vol2
