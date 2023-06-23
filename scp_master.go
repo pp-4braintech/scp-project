@@ -99,6 +99,12 @@ type Biofabrica struct {
 	Pumpwithdraw bool
 }
 
+type Path struct {
+	FromID	string
+	ToID 	string
+	Path	string
+}
+
 type Bioreact_cfg struct {
 	BioreactorID string
 	Deviceaddr   string
@@ -147,6 +153,7 @@ var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
 var biofabrica_cfg map[string]Biofabrica_cfg
+var paths map[string]Path
 
 var bio = []Bioreact{
 	{"BIOR01", bio_nonexist, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
@@ -325,6 +332,33 @@ func load_biofabrica_conf(filename string) int {
 		dev_port := r[2]
 		biofabrica_cfg[dev_id] = Biofabrica_cfg{dev_id, dev_addr, dev_port}
 		totalrecords = k
+	}
+	return totalrecords
+}
+
+func load_paths_conf(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	paths = make(map[string]Path, len(records))
+	for k, r := range records {
+		if r[0][0] != "#" {
+			from_id := r[0]
+			to_id := r[1]
+			path_id := from_id + "-" + to_id
+			pathstr := r[2]
+			paths[path_id] = Path{from_id, to_id, pathstr}
+			totalrecords = k
+		}
 	}
 	return totalrecords
 }
@@ -684,7 +718,7 @@ func scp_get_alldata() {
 							vol1 = area * dfloat
 							fmt.Println("DEBUG Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1)
 						} else {
-							fmt.Println("DEBUG ERRO", b.IBCID, ret1, params)
+							fmt.Println("DEBUG ERRO USOM", b.IBCID, ret1, params)
 						}
 
 						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
@@ -699,25 +733,8 @@ func scp_get_alldata() {
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol2 = area * dfloat
 							fmt.Println("DEBUG Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2)
-							// if (vol2 >= 0) && (vol2 <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
-							// 	ibc[k].Volume = uint32(vol1)
-							// 	level := (vol1 / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
-							// 	level_int := uint8(level)
-							// 	if level_int != ibc[k].Level {
-							// 		bio[k].Level = level_int
-							// 		// levels := fmt.Sprintf("%d", level_int)
-							// 		// cmd := "CMD/" + ibc_cfg[b.IBCID].Screenaddr + "/PUT/S231," + levels + "/END"
-							// 		// ret := scp_sendmsg_orch(cmd)
-							// 		// fmt.Println("SCREEN:", cmd, level, levels, ret)
-							// 	}
-							// 	if vol1 == 0 {
-							// 		ibc[k].Status = bio_empty
-							// 	} else {
-							// 		ibc[k].Status = bio_ready
-							// 	}
-							// }
 						} else {
-							fmt.Println("DEBUG ERRO", b.IBCID, ret2, params)
+							fmt.Println("DEBUG ERRO LASER", b.IBCID, ret2, params)
 						}
 						var volc float64
 						if vol1 == -1 && vol2 > 0 {
@@ -1216,10 +1233,15 @@ func main() {
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
+	npaths Ç= load_paths_conf("paths_conf.csv")
+	if npaths < 1 {
+		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
+	}
 	// fmt.Println("BIO cfg", bio_cfg)
 	// fmt.Println("IBC cfg", ibc_cfg)
 	// fmt.Println("TOTEM cfg", totem_cfg)
 	// fmt.Println("Biofabrica cfg", biofabrica_cfg)
+	fmt.Println("PATHs ", paths)
 	fmt.Println("BIO ", bio)
 	fmt.Println("IBC ", ibc)
 	fmt.Println("TOTEM ", totem)
