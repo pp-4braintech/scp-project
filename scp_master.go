@@ -346,11 +346,13 @@ func load_paths_conf(filename string) int {
 	}
 	defer file.Close()
 	fmt.Println(file)
-	records, err := csv.NewReader(file).ReadAll()
+	csvr := csv.NewReader(file)
+	records, err := csvr.ReadAll()
 	if err != nil {
 		checkErr(err)
 		return -1
 	}
+	fmt.Println(records)
 	paths = make(map[string]Path, len(records))
 	for k, r := range records {
 		fmt.Println(r)
