@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"net"
@@ -347,14 +348,15 @@ func load_paths_conf(filename string) int {
 	defer file.Close()
 	fmt.Println(file)
 	csvr := csv.NewReader(file)
-	records, err := csvr.ReadAll()
-	if err != nil {
-		checkErr(err)
-		return -1
-	}
-	fmt.Println(records)
-	paths = make(map[string]Path, len(records))
-	for k, r := range records {
+	paths = make(map[string]Path, 0)
+	for {
+		r, err := csvr.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			checkErr(err)
+			return -1
+		}
 		fmt.Println(r)
 		if r[0][0] != '#' {
 			from_id := r[0]
