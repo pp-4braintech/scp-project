@@ -351,7 +351,7 @@ func load_paths_conf(filename string) int {
 	}
 	paths = make(map[string]Path, len(records))
 	for k, r := range records {
-		if r[0][0] != "#" {
+		if r[0][0] != '#' {
 			from_id := r[0]
 			to_id := r[1]
 			path_id := from_id + "-" + to_id
