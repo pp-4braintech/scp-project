@@ -700,7 +700,7 @@ func scp_get_alldata() {
 								}
 							}
 						} else {
-							fmt.Println("DEBUG ERRO", b.IBCID, ret1)
+							fmt.Println("DEBUG ERRO", b.IBCID, ret1, params)
 						}
 
 						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
@@ -732,7 +732,7 @@ func scp_get_alldata() {
 							// 	}
 							// }
 						} else {
-							fmt.Println("DEBUG ERRO", b.IBCID, ret2)
+							fmt.Println("DEBUG ERRO", b.IBCID, ret2, params)
 						}
 					}
 
