@@ -155,6 +155,7 @@ var bio_cfg map[string]Bioreact_cfg
 var totem_cfg map[string]Totem_cfg
 var biofabrica_cfg map[string]Biofabrica_cfg
 var paths map[string]Path
+var valvs map[string]int
 
 var bio = []Bioreact{
 	{"BIOR01", bio_nonexist, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
@@ -375,6 +376,48 @@ func load_paths_conf(filename string) int {
 	return totalrecords
 }
 
+func set_valv_status(devid string, valvid string, value int) {
+	id := devid + "-" + valvid
+	valvs[id] = value
+}
+
+func get_valv_status(devid string, valvid string) int {
+	id := devid + "-" + valvid
+	value, ok := valvs[id]
+	if ok {
+		return value
+	} else {
+		return -1
+	}
+}
+
+func set_allvalvs_status() {
+	for _, b := range bio {
+		for n, v := range b.Valvs {
+			valvid := fmt.Sprintf("V%d", n+1)
+			set_valv_status(b.BioreactorID, valvid, v)
+		}
+	}
+	for _, i := range ibc {
+		for n, v := range i.Valvs {
+			valvid := fmt.Sprintf("V%d", n+1)
+			set_valv_status(i.IBCID, valvid, v)
+		}
+	}
+	for _, t := range totem {
+		for n, v := range t.Valvs {
+			valvid := fmt.Sprintf("V%d", n+1)
+			set_valv_status(t.TotemID, valvid, v)
+		}
+	}
+	// Biofrabrica
+	for n, v := range biofabrica.Valvs {
+		valvid := fmt.Sprintf("VBF%02d", n+1)
+		set_valv_status("BIOFABRICA", valvid, v)
+	}
+	fmt.Println(valvs)
+}
+
 func save_all_data(filename string) int {
 	buf1, _ := json.Marshal(bio)
 	err1 := os.WriteFile(filename+"_bio.json", []byte(buf1), 0644)
@@ -419,7 +462,7 @@ func load_all_data(filename string) int {
 		json.Unmarshal([]byte(dat4), &biofabrica)
 		fmt.Println("-- biofabrica data = ", biofabrica)
 	}
-
+	set_allvalvs_status()
 	return 0
 }
 
@@ -1258,6 +1301,7 @@ func main() {
 	fmt.Println("IBC ", ibc)
 	fmt.Println("TOTEM ", totem)
 	fmt.Println("Biofabrica ", biofabrica)
+	valvs = make(map[string]int, 0)
 	load_all_data(bio_data_filename)
 	go scp_setup_devices()
 
