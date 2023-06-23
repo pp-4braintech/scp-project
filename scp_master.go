@@ -724,8 +724,12 @@ func scp_get_alldata() {
 							volc = vol2
 						} else if vol2 == -1 && vol1 > 0 {
 							volc = vol1
-						} else {
+						} else if vol1 == -1 && vol2 == -1 {
 							volc = -1
+						} else if vol1 > vol2 {
+							volc = vol1
+						} else {
+							volc = vol2
 						}
 						if (volc >= 0) && (volc <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
 							ibc[k].Volume = uint32(volc)
