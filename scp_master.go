@@ -999,6 +999,8 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						valvid := fmt.Sprintf("V%d", value_valve+1)
+						set_valv_status(bioid, valvid, value_status)
 						bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
 						valve_str2 := fmt.Sprintf("%d", value_valve+201)
@@ -1076,6 +1078,8 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						valvid := fmt.Sprintf("V%d", value_valve+1)
+						set_valv_status(ibcid, valvid, value_status)
 						ibc[ind].Valvs[value_valve] = value_status
 
 						ibcdev := ibc_cfg[ibcid].Deviceaddr
@@ -1143,6 +1147,8 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
+						valvid := fmt.Sprintf("V%d", value_valve+1)
+						set_valv_status(totemid, valvid, value_status)
 						totem[ind].Valvs[value_valve] = value_status
 
 						totemdev := totem_cfg[totemid].Deviceaddr
@@ -1208,6 +1214,7 @@ func scp_process_conn(conn net.Conn) {
 				if (value_valve >= 0) && (value_valve < 9) {
 					biofabrica.Valvs[value_valve] = value_status
 					devid := fmt.Sprintf("VBF%02d", value_valve+1)
+					set_valv_status("BIOFABRICA", devid, value_status)
 					devaddr := biofabrica_cfg[devid].Deviceaddr
 					devport := biofabrica_cfg[devid].Deviceport
 					//ibcscr := bio_cfg[ibcid].Screenaddr
