@@ -345,6 +345,7 @@ func load_paths_conf(filename string) int {
 		return -1
 	}
 	defer file.Close()
+	fmt.Println(file)
 	records, err := csv.NewReader(file).ReadAll()
 	if err != nil {
 		checkErr(err)
