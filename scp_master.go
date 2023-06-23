@@ -354,10 +354,11 @@ func load_paths_conf(filename string) int {
 		r, err := csvr.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil && err != csv.ErrFieldCount {
-			fmt.Println(err)
-			checkErr(err)
-			return -1
+		} else if err != nil {
+			if perr, ok := err.(*csv.ParseError); ok && perr.Err != csv.ErrFieldCount {
+				checkErr(err)
+				return -1
+			}
 		}
 		fmt.Println(r)
 		if r[0][0] != '#' {
