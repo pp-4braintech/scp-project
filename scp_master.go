@@ -699,6 +699,8 @@ func scp_get_alldata() {
 									ibc[k].Status = bio_ready
 								}
 							}
+						} else {
+							fmt.Println("DEBUG ERRO", b.IBCID, ret1)
 						}
 
 						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
@@ -729,6 +731,8 @@ func scp_get_alldata() {
 							// 		ibc[k].Status = bio_ready
 							// 	}
 							// }
+						} else {
+							fmt.Println("DEBUG ERRO", b.IBCID, ret2)
 						}
 					}
 
