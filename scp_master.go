@@ -672,15 +672,16 @@ func scp_get_alldata() {
 						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
 						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
-						cmd3 := "CMD/" + ibcaddr + "/GET/" + v1dev + "/END"
-						ret3 := scp_sendmsg_orch(cmd3)
-						params := scp_splitparam(ret3, "/")
+						cmd1 := "CMD/" + ibcaddr + "/GET/" + v1dev + "/END"
+						ret1 := scp_sendmsg_orch(cmd1)
+						var vol1 float64
+						params := scp_splitparam(ret1, "/")
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
-							vol1 := area * dfloat
-							fmt.Println("DEBUG Volume ", b.IBCID, b.IBCID, dint, area, dfloat, vol1)
+							vol1 = area * dfloat
+							fmt.Println("DEBUG Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1)
 							if (vol1 >= 0) && (vol1 <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
 								ibc[k].Volume = uint32(vol1)
 								level := (vol1 / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
@@ -698,6 +699,36 @@ func scp_get_alldata() {
 									ibc[k].Status = bio_ready
 								}
 							}
+						}
+
+						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
+						cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
+						ret2 := scp_sendmsg_orch(cmd2)
+						params = scp_splitparam(ret2, "/")
+						var vol2 float64
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+							dfloat := float64(ibc_v1_zero) - float64(dint)
+							vol2 = area * dfloat
+							fmt.Println("DEBUG Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2)
+							// if (vol2 >= 0) && (vol2 <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
+							// 	ibc[k].Volume = uint32(vol1)
+							// 	level := (vol1 / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
+							// 	level_int := uint8(level)
+							// 	if level_int != ibc[k].Level {
+							// 		bio[k].Level = level_int
+							// 		// levels := fmt.Sprintf("%d", level_int)
+							// 		// cmd := "CMD/" + ibc_cfg[b.IBCID].Screenaddr + "/PUT/S231," + levels + "/END"
+							// 		// ret := scp_sendmsg_orch(cmd)
+							// 		// fmt.Println("SCREEN:", cmd, level, levels, ret)
+							// 	}
+							// 	if vol1 == 0 {
+							// 		ibc[k].Status = bio_empty
+							// 	} else {
+							// 		ibc[k].Status = bio_ready
+							// 	}
+							// }
 						}
 					}
 
