@@ -100,9 +100,9 @@ type Biofabrica struct {
 }
 
 type Path struct {
-	FromID	string
-	ToID 	string
-	Path	string
+	FromID string
+	ToID   string
+	Path   string
 }
 
 type Bioreact_cfg struct {
@@ -1233,7 +1233,7 @@ func main() {
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
-	npaths Ç= load_paths_conf("paths_conf.csv")
+	npaths := load_paths_conf("paths_conf.csv")
 	if npaths < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
 	}
