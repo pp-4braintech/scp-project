@@ -1245,7 +1245,7 @@ func scp_process_conn(conn net.Conn) {
 	default:
 		conn.Write([]byte(scp_err))
 	}
-
+	fmt.Println(valvs)
 	// scp_sendmsg_orch(string(buf[:n]))
 	// conn.Write([]byte(scp_ack))
 	conn.Close()
