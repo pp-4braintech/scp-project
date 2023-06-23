@@ -339,14 +339,12 @@ func load_biofabrica_conf(filename string) int {
 
 func load_paths_conf(filename string) int {
 	var totalrecords int
-	fmt.Println(filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		checkErr(err)
 		return -1
 	}
 	defer file.Close()
-	fmt.Println(file)
 	csvr := csv.NewReader(file)
 	paths = make(map[string]Path, 0)
 	totalrecords = 0
@@ -360,7 +358,7 @@ func load_paths_conf(filename string) int {
 				return -1
 			}
 		}
-		fmt.Println(r)
+		// fmt.Println(r)
 		if r[0][0] != '#' {
 			from_id := r[0]
 			to_id := r[1]
