@@ -355,6 +355,7 @@ func load_paths_conf(filename string) int {
 		if err == io.EOF {
 			break
 		} else if err != nil {
+			fmt.Println(err)
 			checkErr(err)
 			return -1
 		}
