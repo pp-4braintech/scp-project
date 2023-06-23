@@ -351,6 +351,7 @@ func load_paths_conf(filename string) int {
 	}
 	paths = make(map[string]Path, len(records))
 	for k, r := range records {
+		fmt.Println(r)
 		if r[0][0] != '#' {
 			from_id := r[0]
 			to_id := r[1]
