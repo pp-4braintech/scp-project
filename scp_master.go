@@ -349,6 +349,7 @@ func load_paths_conf(filename string) int {
 	fmt.Println(file)
 	csvr := csv.NewReader(file)
 	paths = make(map[string]Path, 0)
+	totalrecords = 0
 	for {
 		r, err := csvr.Read()
 		if err == io.EOF {
@@ -364,7 +365,7 @@ func load_paths_conf(filename string) int {
 			path_id := from_id + "-" + to_id
 			pathstr := r[2]
 			paths[path_id] = Path{from_id, to_id, pathstr}
-			totalrecords = k
+			totalrecords++
 		}
 	}
 	return totalrecords
