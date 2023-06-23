@@ -338,6 +338,7 @@ func load_biofabrica_conf(filename string) int {
 
 func load_paths_conf(filename string) int {
 	var totalrecords int
+	fmt.Println(filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		checkErr(err)
