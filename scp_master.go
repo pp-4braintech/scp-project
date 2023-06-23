@@ -363,7 +363,7 @@ func load_paths_conf(filename string) int {
 			from_id := r[0]
 			to_id := r[1]
 			path_id := from_id + "-" + to_id
-			pathstr := r[2]
+			pathstr := r[2:]
 			paths[path_id] = Path{from_id, to_id, pathstr}
 			totalrecords++
 		}
