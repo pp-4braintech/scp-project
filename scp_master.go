@@ -24,6 +24,7 @@ const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_par_withdraw = "WITHDRAW"
+const scp_par_out = "OUT"
 const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
@@ -72,6 +73,7 @@ type Bioreact struct {
 	Timeleft    [2]int
 	Timetotal   [2]int
 	Withdraw    uint32
+	OutID       string
 }
 
 type IBC struct {
@@ -84,6 +86,7 @@ type IBC struct {
 	Valvs      [4]int
 	Timetotal  [2]int
 	Withdraw   uint32
+	OutID      string
 }
 
 type Totem struct {
@@ -158,22 +161,22 @@ var paths map[string]Path
 var valvs map[string]int
 
 var bio = []Bioreact{
-	{"BIOR01", bio_nonexist, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0},
-	{"BIOR02", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0},
-	{"BIOR03", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0},
-	{"BIOR04", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0},
-	{"BIOR05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0},
-	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0},
+	{"BIOR01", bio_nonexist, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT"},
+	{"BIOR02", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT"},
+	{"BIOR03", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT"},
+	{"BIOR04", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT"},
+	{"BIOR05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT"},
+	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT"},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_nonexist, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0},
-	{"IBC02", bio_nonexist, "Bacillus Megaterium", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0},
-	{"IBC03", bio_nonexist, "Bacillus Amyloliquefaciens", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0},
-	{"IBC04", bio_nonexist, "Azospirilum brasiliense", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0},
-	{"IBC05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0},
-	{"IBC06", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0},
-	{"IBC07", bio_nonexist, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0},
+	{"IBC01", bio_nonexist, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0, "OUT"},
+	{"IBC02", bio_nonexist, "Bacillus Megaterium", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0, "OUT"},
+	{"IBC03", bio_nonexist, "Bacillus Amyloliquefaciens", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
+	{"IBC04", bio_nonexist, "Azospirilum brasiliense", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT"},
+	{"IBC05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT"},
+	{"IBC06", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT"},
+	{"IBC07", bio_nonexist, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
 }
 
 var totem = []Totem{
@@ -929,6 +932,23 @@ func scp_process_conn(conn net.Conn) {
 				scp_device := subparams[0]
 				fmt.Println("subparams=", subparams)
 				switch scp_device {
+				case scp_par_out:
+					outid := subparams[1]
+					if outid == "Descarte" {
+						outid = "DROP"
+					} else if outid == "Externo" {
+						outid = "OUT"
+					}
+					tmp := bioid + "-" + outid
+					_, ok := paths[tmp]
+					if ok {
+						bio[ind].OutID = outid
+						conn.Write([]byte(scp_ack))
+					} else {
+						fmt.Println("ID de saida", outid, " nao existe")
+						conn.Write([]byte(scp_err))
+					}
+
 				case scp_par_withdraw:
 					vol, err := strconv.Atoi(subparams[1])
 					checkErr(err)
@@ -1038,6 +1058,22 @@ func scp_process_conn(conn net.Conn) {
 				subparams := scp_splitparam(params[3], ",")
 				scp_device := subparams[0]
 				switch scp_device {
+				case scp_par_out:
+					outid := subparams[1]
+					if outid == "Descarte" {
+						outid = "DROP"
+					} else if outid == "Externo" {
+						outid = "OUT"
+					}
+					tmp := ibcid + "-" + outid
+					_, ok := paths[tmp]
+					if ok {
+						ibc[ind].OutID = outid
+						conn.Write([]byte(scp_ack))
+					} else {
+						fmt.Println("ID de saida", outid, " nao existe")
+						conn.Write([]byte(scp_err))
+					}
 				case scp_par_withdraw:
 					vol, err := strconv.Atoi(subparams[1])
 					checkErr(err)
