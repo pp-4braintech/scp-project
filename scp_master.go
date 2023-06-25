@@ -29,6 +29,7 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
+const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 500
@@ -379,9 +380,56 @@ func load_paths_conf(filename string) int {
 	return totalrecords
 }
 
-func set_valv_status(devid string, valvid string, value int) {
+func set_valv_status(devtype string, devid string, valvid string, value int) {
 	id := devid + "-" + valvid
 	valvs[id] = value
+	switch devtype {
+	case scp_donothing:
+		return
+	case scp_bioreactor:
+		ind := get_bio_index(devid)
+		if ind >= 0 {
+			v, err := strconv.Atoi(valvid[1:])
+			if err == nil {
+				bio[ind].Valvs[v-1] = value
+			} else {
+				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+			}
+		} else {
+			fmt.Println("ERRO SET VAL: BIORREATOR nao encontrado", devid)
+		}
+	case scp_ibc:
+		ind := get_ibc_index(devid)
+		if ind >= 0 {
+			v, err := strconv.Atoi(valvid[1:])
+			if err == nil {
+				ibc[ind].Valvs[v-1] = value
+			} else {
+				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+			}
+		} else {
+			fmt.Println("ERRO SET VAL: IBC nao encontrado", devid)
+		}
+	case scp_totem:
+		ind := get_totem_index(devid)
+		if ind >= 0 {
+			v, err := strconv.Atoi(valvid[1:])
+			if err == nil {
+				totem[ind].Valvs[v-1] = value
+			} else {
+				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+			}
+		} else {
+			fmt.Println("ERRO SET VAL: TOTEM nao encontrado", devid)
+		}
+	case scp_biofabrica:
+		v, err := strconv.Atoi(valvid[3:])
+		if err == nil {
+			biofabrica.Valvs[v-1] = value
+		} else {
+			fmt.Println("ERRO SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
+		}
+	}
 }
 
 func get_valv_status(devid string, valvid string) int {
@@ -392,31 +440,32 @@ func get_valv_status(devid string, valvid string) int {
 	} else {
 		return -1
 	}
+
 }
 
 func set_allvalvs_status() {
 	for _, b := range bio {
 		for n, v := range b.Valvs {
 			valvid := fmt.Sprintf("V%d", n+1)
-			set_valv_status(b.BioreactorID, valvid, v)
+			set_valv_status(scp_donothing, b.BioreactorID, valvid, v)
 		}
 	}
 	for _, i := range ibc {
 		for n, v := range i.Valvs {
 			valvid := fmt.Sprintf("V%d", n+1)
-			set_valv_status(i.IBCID, valvid, v)
+			set_valv_status(scp_donothing, i.IBCID, valvid, v)
 		}
 	}
 	for _, t := range totem {
 		for n, v := range t.Valvs {
 			valvid := fmt.Sprintf("V%d", n+1)
-			set_valv_status(t.TotemID, valvid, v)
+			set_valv_status(scp_donothing, t.TotemID, valvid, v)
 		}
 	}
 	// Biofrabrica
 	for n, v := range biofabrica.Valvs {
 		valvid := fmt.Sprintf("VBF%02d", n+1)
-		set_valv_status("BIOFABRICA", valvid, v)
+		set_valv_status(scp_donothing, "BIOFABRICA", valvid, v)
 	}
 	fmt.Println(valvs)
 }
@@ -845,7 +894,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
-		pathid := devid + "-" + bio[ind].BioreactorID
+		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
 			fmt.Println("ERRO RUN WITHDRAW: path nao existe", pathid)
@@ -854,8 +903,15 @@ func scp_run_withdraw(devtype string, devid string) int {
 		vpath := scp_splitparam(pathstr, ",")
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
+			val, ok := valvs[p]
+			if ok {
+				if val == 0 {
+
+				}
+			}
 		}
 	}
+	return 0
 }
 
 func scp_process_conn(conn net.Conn) {
@@ -867,7 +923,7 @@ func scp_process_conn(conn net.Conn) {
 	}
 	//fmt.Printf("msg: %s\n", buf[:n])
 	params := scp_splitparam(string(buf[:n]), "/")
-	fmt.Println(params)
+	// fmt.Println(params)
 	scp_command := params[0]
 	switch scp_command {
 	case scp_get:
@@ -906,7 +962,7 @@ func scp_process_conn(conn net.Conn) {
 			}
 
 		case scp_biofabrica:
-			fmt.Println(params)
+			// fmt.Println(params)
 			if params[2] == "END" {
 				buf, err := json.Marshal(biofabrica)
 				checkErr(err)
@@ -916,7 +972,7 @@ func scp_process_conn(conn net.Conn) {
 			}
 
 		case scp_totem:
-			fmt.Println(params)
+			// fmt.Println(params)
 			if params[2] == "END" {
 				buf, err := json.Marshal(totem)
 				checkErr(err)
@@ -1038,8 +1094,8 @@ func scp_process_conn(conn net.Conn) {
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
-						set_valv_status(bioid, valvid, value_status)
-						bio[ind].Valvs[value_valve] = value_status
+						set_valv_status(scp_bioreactor, bioid, valvid, value_status)
+						// bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
 						valve_str2 := fmt.Sprintf("%d", value_valve+201)
 						biodev := bio_cfg[bioid].Deviceaddr
@@ -1133,8 +1189,8 @@ func scp_process_conn(conn net.Conn) {
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
-						set_valv_status(ibcid, valvid, value_status)
-						ibc[ind].Valvs[value_valve] = value_status
+						set_valv_status(scp_ibc, ibcid, valvid, value_status)
+						// ibc[ind].Valvs[value_valve] = value_status
 
 						ibcdev := ibc_cfg[ibcid].Deviceaddr
 						valvaddr := ibc_cfg[ibcid].Valv_devs[value_valve]
@@ -1202,8 +1258,8 @@ func scp_process_conn(conn net.Conn) {
 					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
-						set_valv_status(totemid, valvid, value_status)
-						totem[ind].Valvs[value_valve] = value_status
+						set_valv_status(scp_totem, totemid, valvid, value_status)
+						// totem[ind].Valvs[value_valve] = value_status
 
 						totemdev := totem_cfg[totemid].Deviceaddr
 						valvaddr := totem_cfg[totemid].Valv_devs[value_valve]
@@ -1268,7 +1324,7 @@ func scp_process_conn(conn net.Conn) {
 				if (value_valve >= 0) && (value_valve < 9) {
 					biofabrica.Valvs[value_valve] = value_status
 					devid := fmt.Sprintf("VBF%02d", value_valve+1)
-					set_valv_status("BIOFABRICA", devid, value_status)
+					set_valv_status(scp_biofabrica, "BIOFABRICA", devid, value_status)
 					devaddr := biofabrica_cfg[devid].Deviceaddr
 					devport := biofabrica_cfg[devid].Deviceport
 					//ibcscr := bio_cfg[ibcid].Screenaddr
