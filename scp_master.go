@@ -380,60 +380,92 @@ func load_paths_conf(filename string) int {
 	return totalrecords
 }
 
-func set_valv_status(devtype string, devid string, valvid string, value int) {
-	id := devid + "-" + valvid
+func set_valv_status(devtype string, devid string, valvid string, value int) bool {
+	var devaddr, scraddr, valvaddr, valve_scrstr string
+	id := devid + "/" + valvid
 	valvs[id] = value
 	switch devtype {
 	case scp_donothing:
-		return
+		return true
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
+		devaddr = bio_cfg[devid].Deviceaddr
+		scraddr = bio_cfg[devid].Screenaddr
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
 				bio[ind].Valvs[v-1] = value
+				valvaddr = bio_cfg[devid].Valv_devs[v-1]
+				valve_scrstr = fmt.Sprintf("%d", v+200)
 			} else {
 				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				return false
 			}
 		} else {
 			fmt.Println("ERRO SET VAL: BIORREATOR nao encontrado", devid)
+			return false
 		}
 	case scp_ibc:
 		ind := get_ibc_index(devid)
+		devaddr = ibc_cfg[devid].Deviceaddr
+		scraddr = ""
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
 				ibc[ind].Valvs[v-1] = value
+				valvaddr = ibc_cfg[devid].Valv_devs[v-1]
 			} else {
 				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				return false
 			}
 		} else {
 			fmt.Println("ERRO SET VAL: IBC nao encontrado", devid)
+			return false
 		}
 	case scp_totem:
 		ind := get_totem_index(devid)
+		devaddr = totem_cfg[devid].Deviceaddr
+		scraddr = ""
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
 				totem[ind].Valvs[v-1] = value
+				valvaddr = totem_cfg[devid].Valv_devs[v-1]
 			} else {
 				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				return false
 			}
 		} else {
 			fmt.Println("ERRO SET VAL: TOTEM nao encontrado", devid)
+			return false
 		}
 	case scp_biofabrica:
+		devaddr = biofabrica_cfg[valvid].Deviceaddr
+		scraddr = ""
+		valvaddr = biofabrica_cfg[valvid].Deviceport
 		v, err := strconv.Atoi(valvid[3:])
 		if err == nil {
 			biofabrica.Valvs[v-1] = value
 		} else {
 			fmt.Println("ERRO SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
+			return false
 		}
 	}
+	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, valvaddr, value)
+	fmt.Println(cmd1)
+	ret1 := scp_sendmsg_orch(cmd1)
+	fmt.Println("RET CMD1 =", ret1)
+	if len(scraddr) > 0 {
+		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", scraddr, valve_scrstr, value)
+		fmt.Println(cmd2)
+		ret2 := scp_sendmsg_orch(cmd2)
+		fmt.Println("RET CMD2 =", ret2)
+	}
+	return true
 }
 
 func get_valv_status(devid string, valvid string) int {
-	id := devid + "-" + valvid
+	id := devid + "/" + valvid
 	value, ok := valvs[id]
 	if ok {
 		return value
@@ -557,6 +589,19 @@ func get_totem_index(totem_id string) int {
 		}
 	}
 	return -1
+}
+
+func get_scp_type(dev_id string) string {
+	if strings.Contains(dev_id, "BIOFABRICA") {
+		return scp_biofabrica
+	} else if strings.Contains(dev_id, "BIOR") {
+		return scp_bioreactor
+	} else if strings.Contains(dev_id, "IBC") {
+		return scp_ibc
+	} else if strings.Contains(dev_id, "TOTEM") {
+		return scp_totem
+	}
+	return scp_donothing
 }
 
 func scp_sendmsg_orch(cmd string) string {
@@ -903,11 +948,63 @@ func scp_run_withdraw(devtype string, devid string) int {
 		vpath := scp_splitparam(pathstr, ",")
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
+			if p == "END" {
+				break
+			}
 			val, ok := valvs[p]
 			if ok {
+				sub := scp_splitparam(p, "/")
+				dtype := get_scp_type(sub[0])
 				if val == 0 {
-
+					if !set_valv_status(dtype, sub[0], sub[1], 1) {
+						fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+						return -1
+					}
+				} else if val == 1 {
+					fmt.Println("ERRO RUN WITHDRAW: valvula ja aberta", p)
+					return -1
+				} else {
+					fmt.Println("ERRO RUN WITHDRAW: valvula com erro", p)
+					return -1
 				}
+			} else {
+				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
+				return -1
+			}
+		}
+	case scp_ibc:
+		ind := get_ibc_index(devid)
+		pathid := devid + "-" + ibc[ind].OutID
+		pathstr := paths[pathid].Path
+		if len(pathstr) == 0 {
+			fmt.Println("ERRO RUN WITHDRAW: path nao existe", pathid)
+			return -1
+		}
+		vpath := scp_splitparam(pathstr, ",")
+		for k, p := range vpath {
+			fmt.Println("step", k, p)
+			if p == "END" {
+				break
+			}
+			val, ok := valvs[p]
+			if ok {
+				sub := scp_splitparam(p, "/")
+				dtype := get_scp_type(sub[0])
+				if val == 0 {
+					if !set_valv_status(dtype, sub[0], sub[1], 1) {
+						fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+						return -1
+					}
+				} else if val == 1 {
+					fmt.Println("ERRO RUN WITHDRAW: valvula ja aberta", p)
+					return -1
+				} else {
+					fmt.Println("ERRO RUN WITHDRAW: valvula com erro", p)
+					return -1
+				}
+			} else {
+				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
+				return -1
 			}
 		}
 	}
@@ -1039,16 +1136,12 @@ func scp_process_conn(conn net.Conn) {
 					pumpdev := bio_cfg[bioid].Pump_dev
 					bio[ind].Pumpstatus = value
 					if value {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
 						cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
 						cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
-					// ret1 := scp_sendmsg_orch(cmd1)
-					// fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
 					ret3 := scp_sendmsg_orch(cmd3)
@@ -1064,19 +1157,15 @@ func scp_process_conn(conn net.Conn) {
 					bioscr := bio_cfg[bioid].Screenaddr
 					aerodev := bio_cfg[bioid].Aero_dev
 					if value {
-						// cmd0 = "CMD/" + biodev + "/MOD/27,3/END"
 						cmd1 = "CMD/" + biodev + "/PUT/D27,1/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",255/END"
 						cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
 
 					} else {
-						// cmd0 = "CMD/" + biodev + "/MOD/27,3/END"
 						cmd1 = "CMD/" + biodev + "/PUT/D27,0/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",0/END"
 						cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
 					}
-					// ret0 := scp_sendmsg_orch(cmd0)
-					// fmt.Println("RET CMD0 =", ret0)
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
@@ -1086,7 +1175,7 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					var cmd2, cmd3 string
+					// var cmd2, cmd3 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
@@ -1097,26 +1186,22 @@ func scp_process_conn(conn net.Conn) {
 						set_valv_status(scp_bioreactor, bioid, valvid, value_status)
 						// bio[ind].Valvs[value_valve] = value_status
 						conn.Write([]byte(scp_ack))
-						valve_str2 := fmt.Sprintf("%d", value_valve+201)
-						biodev := bio_cfg[bioid].Deviceaddr
-						bioscr := bio_cfg[bioid].Screenaddr
-						valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
-						if value_status > 0 {
-							// cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr[1:] + ",3/END"
-							cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
-							cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
-						} else {
-							// cmd1 = "CMD/" + biodev + "/MOD/" + valvaddr[1:] + ",3/END"
-							cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
-							cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
-						}
-						// ret1 := scp_sendmsg_orch(cmd1)
-						// fmt.Println("RET CMD1 =", ret1)
-						ret2 := scp_sendmsg_orch(cmd2)
-						fmt.Println("RET CMD2 =", ret2)
-						ret3 := scp_sendmsg_orch(cmd3)
-						fmt.Println("RET CMD3 =", ret3)
-						conn.Write([]byte(scp_ack))
+						// valve_str2 := fmt.Sprintf("%d", value_valve+201)
+						// biodev := bio_cfg[bioid].Deviceaddr
+						// bioscr := bio_cfg[bioid].Screenaddr
+						// valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
+						// if value_status > 0 {
+						// 	cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
+						// 	cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
+						// } else {
+						// 	cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
+						// 	cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
+						// }
+						// ret2 := scp_sendmsg_orch(cmd2)
+						// fmt.Println("RET CMD2 =", ret2)
+						// ret3 := scp_sendmsg_orch(cmd3)
+						// fmt.Println("RET CMD3 =", ret3)
+						// conn.Write([]byte(scp_ack))
 					}
 				default:
 					conn.Write([]byte(scp_err))
@@ -1154,6 +1239,7 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						ibc[ind].Withdraw = uint32(vol)
 					}
+					go scp_run_withdraw(scp_ibc, ibcid)
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					var cmd2 string
@@ -1164,24 +1250,18 @@ func scp_process_conn(conn net.Conn) {
 					pumpdev := ibc_cfg[ibcid].Pump_dev
 					//ibcscr := bio_cfg[ibcid].Screenaddr
 					if value {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + ibcdev + "/PUT/" + pumpdev + ",1/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + ibcdev + "/PUT/" + pumpdev + ",0/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
-					// ret1 := scp_sendmsg_orch(cmd1)
-					// fmt.Println("RET CMD1 =", ret1)
+
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
-					// ret3 := scp_sendmsg_orch(cmd3)
-					// fmt.Println("RET CMD3 =", ret3)
+
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					var cmd2 string
+					// var cmd2 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
@@ -1192,22 +1272,17 @@ func scp_process_conn(conn net.Conn) {
 						set_valv_status(scp_ibc, ibcid, valvid, value_status)
 						// ibc[ind].Valvs[value_valve] = value_status
 
-						ibcdev := ibc_cfg[ibcid].Deviceaddr
-						valvaddr := ibc_cfg[ibcid].Valv_devs[value_valve]
-						//ibcscr := bio_cfg[ibcid].Screenaddr
-						if value_status == 1 {
-							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",1/END"
-							//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
-						} else if value_status == 0 {
-							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-							cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
-							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
-						}
-						// ret1 := scp_sendmsg_orch(cmd1)
-						// fmt.Println("RET CMD1 =", ret1)
-						ret2 := scp_sendmsg_orch(cmd2)
-						fmt.Println("RET CMD2 =", ret2)
+						// ibcdev := ibc_cfg[ibcid].Deviceaddr
+						// valvaddr := ibc_cfg[ibcid].Valv_devs[value_valve]
+						// //ibcscr := bio_cfg[ibcid].Screenaddr
+						// if value_status == 1 {
+						// 	cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",1/END"
+						// } else if value_status == 0 {
+						// 	cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
+						// }
+
+						// ret2 := scp_sendmsg_orch(cmd2)
+						// fmt.Println("RET CMD2 =", ret2)
 						conn.Write([]byte(scp_ack))
 					}
 				default:
@@ -1231,26 +1306,17 @@ func scp_process_conn(conn net.Conn) {
 					totem[ind].Pumpstatus = value
 					totemdev := totem_cfg[totemid].Deviceaddr
 					pumpdev := totem_cfg[totemid].Pumpdev
-					//ibcscr := bio_cfg[ibcid].Screenaddr
 					if value {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 						cmd2 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
-					// ret1 := scp_sendmsg_orch(cmd1)
-					// fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
-					// ret3 := scp_sendmsg_orch(cmd3)
-					// fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					var cmd2 string
+					// var cmd2 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
@@ -1261,22 +1327,16 @@ func scp_process_conn(conn net.Conn) {
 						set_valv_status(scp_totem, totemid, valvid, value_status)
 						// totem[ind].Valvs[value_valve] = value_status
 
-						totemdev := totem_cfg[totemid].Deviceaddr
-						valvaddr := totem_cfg[totemid].Valv_devs[value_valve]
-						//ibcscr := bio_cfg[ibcid].Screenaddr
-						if value_status == 1 {
-							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-							cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",1/END"
-							//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
-						} else if value_status == 0 {
-							//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-							cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",0/END"
-							//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
-						}
-						// ret1 := scp_sendmsg_orch(cmd1)
-						// fmt.Println("RET CMD1 =", ret1)
-						ret2 := scp_sendmsg_orch(cmd2)
-						fmt.Println("RET CMD2 =", ret2)
+						// totemdev := totem_cfg[totemid].Deviceaddr
+						// valvaddr := totem_cfg[totemid].Valv_devs[value_valve]
+						// if value_status == 1 {
+						// 	cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",1/END"
+						// } else if value_status == 0 {
+						// 	cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",0/END"
+						// }
+
+						// ret2 := scp_sendmsg_orch(cmd2)
+						// fmt.Println("RET CMD2 =", ret2)
 						conn.Write([]byte(scp_ack))
 					}
 				default:
@@ -1296,52 +1356,37 @@ func scp_process_conn(conn net.Conn) {
 				biofabrica.Pumpwithdraw = value
 				devaddr := biofabrica_cfg["PBF01"].Deviceaddr
 				devport := biofabrica_cfg["PBF01"].Deviceport
-				//ibcscr := bio_cfg[ibcid].Screenaddr
 				if value {
-					//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 					cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",1/END"
-					//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 				} else {
-					//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
 					cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",0/END"
-					//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 				}
-				// ret1 := scp_sendmsg_orch(cmd1)
-				// fmt.Println("RET CMD1 =", ret1)
 				ret2 := scp_sendmsg_orch(cmd2)
 				fmt.Println("RET CMD2 =", ret2)
-				// ret3 := scp_sendmsg_orch(cmd3)
-				// fmt.Println("RET CMD3 =", ret3)
+
 				conn.Write([]byte(scp_ack))
 
 			case scp_dev_valve:
-				var cmd2 string
+				// var cmd2 string
 				value_valve, err := strconv.Atoi(subparams[1])
 				checkErr(err)
 				value_status, err := strconv.Atoi(subparams[2])
 				checkErr(err)
 				//fmt.Println(value_valve, value_status)
 				if (value_valve >= 0) && (value_valve < 9) {
-					biofabrica.Valvs[value_valve] = value_status
+					// biofabrica.Valvs[value_valve] = value_status
 					devid := fmt.Sprintf("VBF%02d", value_valve+1)
 					set_valv_status(scp_biofabrica, "BIOFABRICA", devid, value_status)
-					devaddr := biofabrica_cfg[devid].Deviceaddr
-					devport := biofabrica_cfg[devid].Deviceport
-					//ibcscr := bio_cfg[ibcid].Screenaddr
-					if value_status == 1 {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-						cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",1/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
-					} else if value_status == 0 {
-						//cmd1 = "CMD/" + biodev + "/MOD/" + pumpdev[1:] + ",3/END"
-						cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",0/END"
-						//cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
-					}
-					// ret1 := scp_sendmsg_orch(cmd1)
-					// fmt.Println("RET CMD1 =", ret1)
-					fmt.Println("biofabrica valvula", cmd2)
-					ret2 := scp_sendmsg_orch(cmd2)
-					fmt.Println("RET CMD2 =", ret2)
+					// devaddr := biofabrica_cfg[devid].Deviceaddr
+					// devport := biofabrica_cfg[devid].Deviceport
+					// if value_status == 1 {
+					// 	cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",1/END"
+					// } else if value_status == 0 {
+					// 	cmd2 = "CMD/" + devaddr + "/PUT/" + devport + ",0/END"
+					// }
+					// fmt.Println("biofabrica valvula", cmd2)
+					// ret2 := scp_sendmsg_orch(cmd2)
+					// fmt.Println("RET CMD2 =", ret2)
 					conn.Write([]byte(scp_ack))
 				}
 			default:
@@ -1351,7 +1396,7 @@ func scp_process_conn(conn net.Conn) {
 		default:
 			conn.Write([]byte(scp_err))
 		}
-		fmt.Println(valvs)
+		// fmt.Println(valvs)
 	default:
 		conn.Write([]byte(scp_err))
 	}
