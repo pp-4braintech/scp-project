@@ -841,6 +841,23 @@ func scp_get_alldata() {
 	}
 }
 
+func scp_run_withdraw(devtype string, devid string) int {
+	switch devtype {
+	case scp_bioreactor:
+		ind := get_bio_index(devid)
+		pathid := devid + "-" + bio[ind].BioreactorID
+		pathstr := paths[pathid].Path
+		if len(pathstr) == 0 {
+			fmt.Println("ERRO RUN WITHDRAW: path nao existe", pathid)
+			return -1
+		}
+		vpath := scp_splitparam(pathstr, ",")
+		for k, p := range vpath {
+			fmt.Println("step", k, p)
+		}
+	}
+}
+
 func scp_process_conn(conn net.Conn) {
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
@@ -955,6 +972,7 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
 					}
+					go scp_run_withdraw(scp_bioreactor, bioid)
 					conn.Write([]byte(scp_ack))
 				case scp_dev_pump:
 					var cmd2, cmd3 string
