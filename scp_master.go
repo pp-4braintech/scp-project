@@ -34,7 +34,7 @@ const scp_ibc = "IBC"
 const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
-const scp_refreshwait = 500
+const scp_refreshwait = 250
 const scp_refreshsleep = 2000
 
 const scp_timewaitvalvs = 12000
