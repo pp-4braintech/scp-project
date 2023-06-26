@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw time.Duration = 600
+const scp_maxtimewithdraw = 600
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
