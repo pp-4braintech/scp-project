@@ -36,6 +36,9 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 500
 const scp_refreshsleep = 2500
+
+const scp_timewaitvalvs = 12000
+
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
@@ -978,6 +981,8 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 		}
+		time.Sleep(scp_timewaitvalvs * time.Millisecond)
+		fmt.Println("WARN RUN WITHDRAW: Ligan do bomba", devid)
 	case scp_ibc:
 		ind := get_ibc_index(devid)
 		pathid := devid + "-" + ibc[ind].OutID
