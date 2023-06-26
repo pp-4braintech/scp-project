@@ -15,11 +15,13 @@ import (
 )
 
 const demo = false
+const testmode = true
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
 const scp_get = "GET"
 const scp_put = "PUT"
+const scp_fail = "FAIL"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -455,6 +457,10 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	fmt.Println(cmd1)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("RET CMD1 =", ret1)
+	if !strings.Contains(ret1[:2], scp_ack) && !testmode {
+		fmt.Println("ERRO SET VAL: SEND MSG ORCH falhou", ret1)
+		return false
+	}
 	if len(scraddr) > 0 {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", scraddr, valve_scrstr, value)
 		fmt.Println(cmd2)
