@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw = 600
+const scp_maxtimewithdraw = 30
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -991,6 +991,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
+		if !strings.Contains(ret1, scp_ack) {
+			fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba", p)
+			return -1
+		}
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
@@ -1050,6 +1054,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 		}
+		vol_ini := ibc[ind].Volume
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
 		pumpdev := biofabrica_cfg["PBF01"].Deviceaddr
@@ -1057,6 +1062,31 @@ func scp_run_withdraw(devtype string, devid string) int {
 		biofabrica.Pumpwithdraw = true
 		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+		if !strings.Contains(ret1, scp_ack) {
+			fmt.Println("ERRO RUN WITHDRAW: IBC falha ao ligar bomba", p)
+			return -1
+		}
+		t_start := time.Now()
+		for {
+			vol_now := ibc[ind].Volume
+			// t_now := time.Now()
+			t_elapsed := time.Since(t_start).Seconds()
+			if vol_ini-vol_now >= ibc[ind].Withdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido", vol_ini, vol_now)
+				break
+			}
+			if t_elapsed > scp_maxtimewithdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_elapsed, scp_maxtimewithdraw)
+				break
+			}
+			time.Sleep(scp_refreshwait * time.Millisecond)
+		}
+		ibc[ind].Withdraw = 0
+		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
+		bio[ind].Pumpstatus = true
+		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
+		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 	}
 	return 0
