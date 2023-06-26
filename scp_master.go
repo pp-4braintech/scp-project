@@ -1070,6 +1070,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
+		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
 			if p == "END" {
@@ -1095,6 +1096,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
 				return -1
 			}
+			pilha = append([]string{p}, pilha...)
 		}
 		vol_ini := ibc[ind].Volume
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
@@ -1130,6 +1132,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+		set_valvs_value(pilha, 0, false)
 	}
 	return 0
 }
