@@ -38,6 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
+const scp_maxtimewithdraw = 10*60*1000
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -269,13 +270,7 @@ func load_bios_conf(filename string) int {
 			vdev4 := r[15]
 			vdev5 := r[16]
 			vdev6 := r[17]
-			vdev7 := r[18]
-			vdev8 := r[19]
-			voldev1 := r[20]
-			voldev2 := r[21]
-			phdev := r[22]
-			tempdev := r[23]
-			lhigh := r[24]
+			vdev7 := r[18]scp_maxtimewithdraw 
 			llow := r[25]
 			emerg := r[26]
 
@@ -977,17 +972,40 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 		}
+		vol_ini := bio[ind].Volume
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
-		fmt.Println("WARN RUN WITHDRAW: Ligan do bomba", devid)
+		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
 		biodev := bio_cfg[devid].Deviceaddr
 		bioscr := bio_cfg[devid].Screenaddr
 		pumpdev := bio_cfg[devid].Pump_dev
 		bio[ind].Pumpstatus = true
-		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
+		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
 		cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		ret2 := scp_sendmsg_orch(cmd2)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
+		t_start := time.Now()
+		for {
+			vol_now := bio[ind].Volume
+			t_now := time.Now()
+			if vol_ini - vol_now >= bio[ind].Withdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido")
+				break
+			} else if t_now.Sub(t_start) > scp_maxtimewithdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maximo de withdraw excedido")
+				break
+			}
+			time.Sleep(scp_refreshwait * time.Millisecond)
+		}
+		bio[ind].Withdraw = 0
+		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
+		bio[ind].Pumpstatus = true
+		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
+		cmd2 = "CMD/" + bioscr + "/PUT/S270,1/END"
+		ret1 = scp_sendmsg_orch(cmd1)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -1024,6 +1042,14 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 		}
+		time.Sleep(scp_timewaitvalvs * time.Millisecond)
+		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
+		pumpdev := biofabrica_cfg["PBF01"].Deviceaddr
+		pumpport := biofabrica_cfg["PBF01"].Deviceport
+		biofabrica.Pumpwithdraw = true
+		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
+		ret1 := scp_sendmsg_orch(cmd1)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 	}
 	return 0
 }
