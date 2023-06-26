@@ -952,6 +952,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
+		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
 			if p == "END" {
@@ -977,7 +978,9 @@ func scp_run_withdraw(devtype string, devid string) int {
 				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
 				return -1
 			}
+			pilha = append([]string{p}, pilha...)
 		}
+		fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
@@ -1077,13 +1080,13 @@ func scp_run_withdraw(devtype string, devid string) int {
 				break
 			}
 			if t_elapsed > scp_maxtimewithdraw {
-				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_elapsed, scp_maxtimewithdraw)
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		ibc[ind].Withdraw = 0
-		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
+		fmt.Println("WARN RUN WITHDRAW: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
