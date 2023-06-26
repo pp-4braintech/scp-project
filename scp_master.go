@@ -983,7 +983,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		bioscr := bio_cfg[devid].Screenaddr
 		pumpdev := bio_cfg[devid].Pump_dev
 		bio[ind].Pumpstatus = true
-		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
+		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
 		cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
