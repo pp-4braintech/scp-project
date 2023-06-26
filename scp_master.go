@@ -1106,7 +1106,7 @@ func scp_process_conn(conn net.Conn) {
 			} else {
 				subparams := scp_splitparam(params[3], ",")
 				scp_device := subparams[0]
-				fmt.Println("subparams=", subparams)
+				// fmt.Println("subparams=", subparams)
 				switch scp_device {
 				case scp_par_out:
 					outid := subparams[1]
@@ -1463,11 +1463,11 @@ func main() {
 	// fmt.Println("IBC cfg", ibc_cfg)
 	// fmt.Println("TOTEM cfg", totem_cfg)
 	// fmt.Println("Biofabrica cfg", biofabrica_cfg)
-	fmt.Println("PATHs ", paths)
-	fmt.Println("BIO ", bio)
-	fmt.Println("IBC ", ibc)
-	fmt.Println("TOTEM ", totem)
-	fmt.Println("Biofabrica ", biofabrica)
+	// fmt.Println("PATHs ", paths)
+	// fmt.Println("BIO ", bio)
+	// fmt.Println("IBC ", ibc)
+	// fmt.Println("TOTEM ", totem)
+	// fmt.Println("Biofabrica ", biofabrica)
 	valvs = make(map[string]int, 0)
 	load_all_data(bio_data_filename)
 	go scp_setup_devices()
