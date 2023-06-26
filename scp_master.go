@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw = 10*60*1000
+const scp_maxtimewithdraw = 10 * 60 * 1000
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -270,7 +270,7 @@ func load_bios_conf(filename string) int {
 			vdev4 := r[15]
 			vdev5 := r[16]
 			vdev6 := r[17]
-			vdev7 := r[18]scp_maxtimewithdraw 
+			vdev7 := r[18]
 			llow := r[25]
 			emerg := r[26]
 
@@ -989,7 +989,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		for {
 			vol_now := bio[ind].Volume
 			t_now := time.Now()
-			if vol_ini - vol_now >= bio[ind].Withdraw {
+			if vol_ini-vol_now >= bio[ind].Withdraw {
 				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido")
 				break
 			} else if t_now.Sub(t_start) > scp_maxtimewithdraw {
