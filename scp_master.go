@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const testmode = true
+const testmode = false
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
@@ -461,7 +461,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	fmt.Println(cmd1)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("RET CMD1 =", ret1)
-	if !strings.Contains(ret1[:2], scp_ack) && !testmode {
+	if !strings.Contains(ret1, scp_ack) && !testmode {
 		fmt.Println("ERRO SET VAL: SEND MSG ORCH falhou", ret1)
 		return false
 	}
@@ -1104,7 +1104,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		pumpdev := biofabrica_cfg["PBF01"].Deviceaddr
 		pumpport := biofabrica_cfg["PBF01"].Deviceport
 		biofabrica.Pumpwithdraw = true
-		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
+		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !testmode {
