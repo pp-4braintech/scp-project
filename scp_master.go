@@ -991,7 +991,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
-		if !strings.Contains(ret1, scp_ack) {
+		if !strings.Contains(ret1, scp_ack) && !testmode {
 			fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba")
 			return -1
 		}
@@ -1063,7 +1063,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) {
+		if !strings.Contains(ret1, scp_ack) && !testmode {
 			fmt.Println("ERRO RUN WITHDRAW: IBC falha ao ligar bomba desenvase")
 			return -1
 		}
