@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw = 10 * 60 * 1000
+const scp_maxtimewithdraw = 10*60*1000
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -173,10 +173,13 @@ var bio = []Bioreact{
 	{"BIOR03", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT"},
 	{"BIOR04", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT"},
 	{"BIOR05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT"},
-	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT"},
-}
-
-var ibc = []IBC{
+	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 
+		vdev8 := r[19]
+		voldev1 := r[20]
+		voldev2 := r[21]
+		phdev := r[22]
+		tempdev := r[23]
+		lhigh := r[24]
 	{"IBC01", bio_nonexist, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0, "OUT"},
 	{"IBC02", bio_nonexist, "Bacillus Megaterium", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0, "OUT"},
 	{"IBC03", bio_nonexist, "Bacillus Amyloliquefaciens", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
@@ -271,6 +274,12 @@ func load_bios_conf(filename string) int {
 			vdev5 := r[16]
 			vdev6 := r[17]
 			vdev7 := r[18]
+			vdev8 := r[19]
+			voldev1 := r[20]
+			voldev2 := r[21]
+			phdev := r[22]
+			tempdev := r[23]
+			lhigh := r[24]
 			llow := r[25]
 			emerg := r[26]
 
@@ -989,11 +998,12 @@ func scp_run_withdraw(devtype string, devid string) int {
 		for {
 			vol_now := bio[ind].Volume
 			t_now := time.Now()
-			if vol_ini-vol_now >= bio[ind].Withdraw {
-				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido")
+			if vol_ini - vol_now >= bio[ind].Withdraw{
+				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido", vol_ini, vol_now)
 				break
-			} else if t_now.Sub(t_start) > scp_maxtimewithdraw {
-				fmt.Println("DEBUG RUN WITHDRAW: Tempo maximo de withdraw excedido")
+			}
+			iv t_now.Sub(t_start) > scp_maxtimewithdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgotado", t_now.Sub(t_start))
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
