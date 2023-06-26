@@ -35,10 +35,10 @@ const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 500
-const scp_refreshsleep = 2500
+const scp_refreshsleep = 2000
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw = 30
+const scp_maxtimewithdraw = 300
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
