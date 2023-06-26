@@ -741,10 +741,6 @@ func scp_setup_devices() {
 				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
 			}
 
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
-
 			nerr := 0
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
@@ -983,6 +979,16 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW: Ligan do bomba", devid)
+		biodev := bio_cfg[devid].Deviceaddr
+		bioscr := bio_cfg[devid].Screenaddr
+		pumpdev := bio_cfg[devid].Pump_dev
+		bio[ind].Pumpstatus = true
+		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
+		cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
+		ret1 := scp_sendmsg_orch(cmd1)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+		ret2 := scp_sendmsg_orch(cmd2)
+		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 	case scp_ibc:
 		ind := get_ibc_index(devid)
 		pathid := devid + "-" + ibc[ind].OutID
