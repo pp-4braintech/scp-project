@@ -1104,7 +1104,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		pumpdev := biofabrica_cfg["PBF01"].Deviceaddr
 		pumpport := biofabrica_cfg["PBF01"].Deviceport
 		biofabrica.Pumpwithdraw = true
-		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
+		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !testmode {
