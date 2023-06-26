@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw = 10 * 60 * 1000
+const scp_maxtimewithdraw int64 = 10 * 60 * 1000
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -1000,7 +1000,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				break
 			}
 			if t_now.Sub(t_start) > scp_maxtimewithdraw {
-				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_now.Sub(t_start))
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_now.Sub(t_start), scp_maxtimewithdraw)
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
