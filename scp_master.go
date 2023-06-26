@@ -941,6 +941,44 @@ func scp_get_alldata() {
 	}
 }
 
+func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
+	tot := 0
+	for _, p := range vlist {
+		if p != "END" {
+			val, ok := valvs[p]
+			if ok {
+				sub := scp_splitparam(p, "/")
+				dtype := get_scp_type(sub[0])
+				if val == (1 - value) {
+					if !set_valv_status(dtype, sub[0], sub[1], value) {
+						fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+						if abort_on_error {
+							return -1
+						}
+					}
+					tot++
+				} else if val == 1 {
+					fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+					if abort_on_error {
+						return -1
+					}
+				} else {
+					fmt.Println("ERRO RUN WITHDRAW: valvula com erro", p)
+					if abort_on_error {
+						return -1
+					}
+				}
+			} else {
+				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
+				if abort_on_error {
+					return -1
+				}
+			}
+		}
+	}
+	return tot
+}
+
 func scp_run_withdraw(devtype string, devid string) int {
 	switch devtype {
 	case scp_bioreactor:
@@ -1022,6 +1060,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
+		set_valvs_value(pilha, 0, false)
 	case scp_ibc:
 		ind := get_ibc_index(devid)
 		pathid := devid + "-" + ibc[ind].OutID
