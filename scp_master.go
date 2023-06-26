@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const testmode = false
+const testmode = true
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
