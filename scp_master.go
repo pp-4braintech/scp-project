@@ -1012,7 +1012,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		bio[ind].Withdraw = 0
 		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
-		bio[ind].Pumpstatus = true
+		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
 		cmd2 = "CMD/" + bioscr + "/PUT/S270,1/END"
 		ret1 = scp_sendmsg_orch(cmd1)
@@ -1084,7 +1084,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		ibc[ind].Withdraw = 0
 		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
-		bio[ind].Pumpstatus = true
+		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
