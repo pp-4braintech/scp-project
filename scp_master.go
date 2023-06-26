@@ -38,7 +38,7 @@ const scp_refreshwait = 500
 const scp_refreshsleep = 2500
 
 const scp_timewaitvalvs = 12000
-const scp_maxtimewithdraw time.Duration = 600000
+const scp_maxtimewithdraw time.Duration = 600
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -994,13 +994,14 @@ func scp_run_withdraw(devtype string, devid string) int {
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
-			t_now := time.Now()
+			// t_now := time.Now()
+			t_elapsed := time.Since(t_start) / 1000
 			if vol_ini-vol_now >= bio[ind].Withdraw {
 				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido", vol_ini, vol_now)
 				break
 			}
-			if t_now.Sub(t_start) > scp_maxtimewithdraw {
-				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_now.Sub(t_start), scp_maxtimewithdraw)
+			if t_elapsed > scp_maxtimewithdraw {
+				fmt.Println("DEBUG RUN WITHDRAW: Tempo maixo de withdraw esgota", t_elapsed, scp_maxtimewithdraw)
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
