@@ -1580,8 +1580,8 @@ func scp_master_ipc() {
 }
 
 func main() {
-	nibccfg := load_ibcs_conf("ibc_conf.csv")
-	if nibccfg < 1 {
+	if testmode {
+		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
 	nbiocfg := load_bios_conf("bio_conf.csv")
