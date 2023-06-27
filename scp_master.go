@@ -21,6 +21,7 @@ const scp_ack = "ACK"
 const scp_err = "ERR"
 const scp_get = "GET"
 const scp_put = "PUT"
+const scp_die = "DIE"
 const scp_fail = "FAIL"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
@@ -717,7 +718,7 @@ func scp_setup_devices() {
 				}
 				fmt.Println(ret, nerr)
 				if strings.Contains(ret, scp_die) {
-					fmt.Println("ERROR SETUP DEVICES: IBC DIE", b.BioreactorID)
+					fmt.Println("ERROR SETUP DEVICES: IBC DIE", ib.IBCID)
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
@@ -757,7 +758,7 @@ func scp_setup_devices() {
 				}
 				fmt.Println(ret, nerr)
 				if strings.Contains(ret, scp_die) {
-					fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", b.BioreactorID)
+					fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", tot.TotemID)
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
