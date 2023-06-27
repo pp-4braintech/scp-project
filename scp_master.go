@@ -684,10 +684,8 @@ func scp_setup_devices() {
 			}
 			i := get_bio_index(b.BioreactorID)
 			if i >= 0 {
-				if nerr == 0 {
-					bio[i].Status = bio_empty
-				} else {
-					bio[i].Status = bio_error
+				if nerr > 0 && !testmode {
+					bio[i].Status = bio_nonexist
 				}
 			}
 		}
@@ -719,10 +717,8 @@ func scp_setup_devices() {
 			}
 			i := get_ibc_index(ib.IBCID)
 			if i >= 0 {
-				if nerr == 0 {
-					ibc[i].Status = bio_empty
-				} else {
-					ibc[i].Status = bio_error
+				if nerr > 0 && !testmode {
+					ibc[i].Status = bio_nonexist
 				}
 			}
 		}
@@ -755,10 +751,8 @@ func scp_setup_devices() {
 			}
 			i := get_totem_index(tot.TotemID)
 			if i >= 0 {
-				if nerr == 0 {
-					totem[i].Status = bio_ready
-				} else {
-					totem[i].Status = bio_error
+				if nerr > 0 && !testmode {
+					totem[i].Status = bio_nonexist
 				}
 			}
 		}
