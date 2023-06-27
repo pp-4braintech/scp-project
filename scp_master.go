@@ -1140,6 +1140,9 @@ func scp_run_withdraw(devtype string, devid string) int {
 			time.Sleep(scp_timewaitvalvs * time.Millisecond)
 			fmt.Println("WARN RUN WITHDRAW: Ligando bomba TOTEM02", devid)
 			tind := get_totem_index("TOTEM002")
+			if tind < 0 {
+				fmt.Println("WARN RUN WITHDRAW: TOTEM02 nao encontrado", totem)
+			}
 			totemdev := totem_cfg["TOTEM002"].Deviceaddr
 			pumpdev := totem_cfg["TOTEM002"].Pumpdev
 			totem[tind].Pumpstatus = true
