@@ -1017,7 +1017,7 @@ func test_path(vpath []string, value int) bool {
 			break
 		}
 		val, ok := valvs[p]
-		// fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
+		fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
 		ret = ret && (val == value) && ok
 		fmt.Println("ret final=", ret)
 	}
