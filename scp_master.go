@@ -687,6 +687,8 @@ func scp_setup_devices() {
 				if nerr > 0 && !testmode {
 					bio[i].Status = bio_nonexist
 				}
+			} else {
+				fmt.Println("ERROR SETUP DEVICES: Biorreator nao encontrado na tabela", b.BioreactorID)
 			}
 		}
 	}
@@ -720,6 +722,8 @@ func scp_setup_devices() {
 				if nerr > 0 && !testmode {
 					ibc[i].Status = bio_nonexist
 				}
+			} else {
+				fmt.Println("ERROR SETUP DEVICES: IBC nao encontrado na tabela", ib.IBCID)
 			}
 		}
 	}
@@ -754,6 +758,8 @@ func scp_setup_devices() {
 				if nerr > 0 && !testmode {
 					totem[i].Status = bio_nonexist
 				}
+			} else {
+				fmt.Println("ERROR SETUP DEVICES: TOTEM nao encontrado na tabela", tot.TotemID)
 			}
 		}
 	}
