@@ -982,12 +982,13 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 func test_path(vpath []string, value int) bool {
 	ret := true
 	for _, p := range vpath {
-		// fmt.Println("step", k, p)
 		if p == "END" {
 			break
 		}
 		val, ok := valvs[p]
+		fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
 		ret = ret && (val == value) && ok
+		fmt.Println("ret final=", ret)
 	}
 	return ret
 }
