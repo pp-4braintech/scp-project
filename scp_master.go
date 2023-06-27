@@ -188,8 +188,8 @@ var ibc = []IBC{
 }
 
 var totem = []Totem{
-	{"TOTEM01", bio_empty, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
-	{"TOTEM02", bio_empty, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM01", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM02", bio_ready, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
 }
 
 var biofabrica = Biofabrica{
@@ -697,7 +697,7 @@ func scp_setup_devices() {
 		}
 	}
 
-	fmt.Println("\n\nCONFIGURANDO IBCS", ibc_cfg)
+	fmt.Println("\n\nCONFIGURANDO IBCS")
 	for _, ib := range ibc_cfg {
 		if len(ib.Deviceaddr) > 0 {
 			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
