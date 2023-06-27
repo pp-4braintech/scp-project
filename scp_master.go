@@ -32,6 +32,9 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
+const scp_out = "OUT"
+const scp_drop = "DROP"
+const scp_clean = "CLEAN"
 const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
@@ -112,9 +115,10 @@ type Biofabrica struct {
 }
 
 type Path struct {
-	FromID string
-	ToID   string
-	Path   string
+	FromID    string
+	ToID      string
+	Cleantime int
+	Path      string
 }
 
 type Bioreact_cfg struct {
@@ -374,13 +378,14 @@ func load_paths_conf(filename string) int {
 		if r[0][0] != '#' {
 			from_id := r[0]
 			to_id := r[1]
+			clean_time, _ := strconv.Atoi(r[2])
 			path_id := from_id + "-" + to_id
 			pathstr := ""
-			for i := 2; i < len(r); i++ {
+			for i := 3; i < len(r); i++ {
 				pathstr += r[i] + ","
 			}
 			pathstr += "END"
-			paths[path_id] = Path{from_id, to_id, pathstr}
+			paths[path_id] = Path{from_id, to_id, clean_time, pathstr}
 			totalrecords++
 		}
 	}
@@ -611,6 +616,12 @@ func get_scp_type(dev_id string) string {
 		return scp_ibc
 	} else if strings.Contains(dev_id, "TOTEM") {
 		return scp_totem
+	} else if strings.Contains(dev_id, "OUT") {
+		return scp_out
+	} else if strings.Contains(dev_id, "DROP") {
+		return scp_drop
+	} else if strings.Contains(dev_id, "CLEAN") {
+		return scp_clean
 	}
 	return scp_donothing
 }
@@ -1062,6 +1073,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
+		bio[ind].Status = bio_unloading
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
 		biodev := bio_cfg[devid].Deviceaddr
@@ -1076,9 +1088,11 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 		if !strings.Contains(ret1, scp_ack) && !testmode {
 			fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba")
+			cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
+			scp_sendmsg_orch(cmd2)
+			set_valvs_value(pilha, 0, false)
 			return -1
 		}
-		bio[ind].Status = bio_unloading
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
@@ -1098,13 +1112,60 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("WARN RUN WITHDRAW: Desligando bomba", devid)
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
-		cmd2 = "CMD/" + bioscr + "/PUT/S270,1/END"
+		cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 		set_valvs_value(pilha, 0, false)
 		bio[ind].Status = bio_ready
+		dest_type := get_scp_type(bio[ind].OutID)
+		if dest_type == scp_out || dest_type == scp_drop {
+			pathclean := "TOTEM02-CLEAN"
+			pathstr := paths[pathclean].Path
+			if len(pathstr) == 0 {
+				fmt.Println("ERRO RUN WITHDRAW: path CLEAN linha nao existe", pathclean)
+				return -1
+			}
+			var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+			vpath := scp_splitparam(pathstr, ",")
+			if !test_path(vpath, 0) {
+				fmt.Println("ERRO RUN WITHDRAW: falha de valvula no path", pathstr)
+				return -1
+			}
+			if set_valvs_value(vpath, 1, true) < 1 {
+				fmt.Println("ERROR RUN WITHDRAW: Falha ao abrir valvulas CLEAN linha", pathstr)
+				set_valvs_value(vpath, 0, false)
+			}
+			time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			fmt.Println("WARN RUN WITHDRAW: Ligando bomba TOTEM02", devid)
+			tind := get_totem_index("TOTEM002")
+			totemdev := totem_cfg["TOTEM002"].Deviceaddr
+			pumpdev := totem_cfg["TOTEM002"].Pumpdev
+			totem[tind].Pumpstatus = true
+			cmd1 := "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
+			ret1 := scp_sendmsg_orch(cmd1)
+			fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+			if !strings.Contains(ret1, scp_ack) && !testmode {
+				fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba TOTEM02")
+				totem[tind].Pumpstatus = false
+				set_valvs_value(vpath, 0, false)
+				return -1
+			}
+			time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+			fmt.Println("WARN RUN WITHDRAW: Desligando bomba TOTEM02", devid)
+			totem[tind].Pumpstatus = false
+			cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
+			ret1 = scp_sendmsg_orch(cmd1)
+			fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
+			if !strings.Contains(ret1, scp_ack) && !testmode {
+				fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba TOTEM02")
+				totem[tind].Pumpstatus = false
+				set_valvs_value(vpath, 0, false)
+				return -1
+			}
+			set_valvs_value(vpath, 0, false)
+		}
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -1184,7 +1245,6 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		set_valvs_value(pilha, 0, false)
 		ibc[ind].Status = bio_ready
-
 	}
 	return 0
 }
