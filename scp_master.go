@@ -720,7 +720,8 @@ func scp_setup_devices() {
 			i := get_ibc_index(ib.IBCID)
 			if i >= 0 {
 				if nerr > 0 && !testmode {
-					ibc[i].Status = bio_nonexist
+					// ibc[i].Status = bio_nonexist
+					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				}
 			} else {
 				fmt.Println("ERROR SETUP DEVICES: IBC nao encontrado na tabela", ib.IBCID)
