@@ -697,7 +697,7 @@ func scp_setup_devices() {
 		}
 	}
 
-	fmt.Println("\n\nCONFIGURANDO IBCS")
+	fmt.Println("\n\nCONFIGURANDO IBCS", ibc_cfg)
 	for _, ib := range ibc_cfg {
 		if len(ib.Deviceaddr) > 0 {
 			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
@@ -1604,6 +1604,9 @@ func scp_master_ipc() {
 func main() {
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
+	}
+	nibccfg := load_ibcs_conf("ibc_conf.csv")
+	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
 	nbiocfg := load_bios_conf("bio_conf.csv")
