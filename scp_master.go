@@ -650,6 +650,8 @@ func scp_setup_devices() {
 		return
 	}
 	fmt.Println("CONFIGURANDO DISPOSITIVOS")
+
+	fmt.Println("\n\nCONFIGURANDO BIORREATORES")
 	for _, b := range bio_cfg {
 		if len(b.Deviceaddr) > 0 {
 			fmt.Println("device:", b.BioreactorID, "-", b.Deviceaddr)
@@ -695,6 +697,7 @@ func scp_setup_devices() {
 		}
 	}
 
+	fmt.Println("\n\nCONFIGURANDO IBCS")
 	for _, ib := range ibc_cfg {
 		if len(ib.Deviceaddr) > 0 {
 			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
@@ -735,6 +738,7 @@ func scp_setup_devices() {
 		}
 	}
 
+	fmt.Println("\n\nCONFIGURANDO TOTEMS")
 	for _, tot := range totem_cfg {
 		if len(tot.Deviceaddr) > 0 {
 			fmt.Println("device:", tot.TotemID, "-", tot.Deviceaddr)
@@ -775,6 +779,7 @@ func scp_setup_devices() {
 		}
 	}
 
+	fmt.Println("\n\nCONFIGURANDO BIOFABRICA")
 	for _, bf := range biofabrica_cfg {
 		if len(bf.Deviceaddr) > 0 {
 			fmt.Println("device:", bf.DeviceID, "-", bf.Deviceaddr)
