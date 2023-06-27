@@ -672,19 +672,19 @@ func scp_setup_devices() {
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
-				if ret == scp_err {
+				if !strings.Contains(ret, scp_ack) {
 					nerr++
 				}
-				fmt.Println(ret)
-				if ret[0:2] == "DIE" {
-					fmt.Println("SLAVE ERROR - DIE")
+				fmt.Println(ret, nerr)
+				if strings.Contains(ret, scp_die) {
+					fmt.Println("ERROR SETUP DEVICES: BIORREATOR DIE", b.BioreactorID)
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 			i := get_bio_index(b.BioreactorID)
 			if i >= 0 {
-				if nerr > 0 && !testmode {
+				if nerr > 1 && !testmode {
 					bio[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				}
@@ -712,9 +712,12 @@ func scp_setup_devices() {
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
-				fmt.Println(ret)
-				if ret[0:2] == "DIE" {
-					fmt.Println("SLAVE ERROR - DIE")
+				if !strings.Contains(ret, scp_ack) {
+					nerr++
+				}
+				fmt.Println(ret, nerr)
+				if strings.Contains(ret, scp_die) {
+					fmt.Println("ERROR SETUP DEVICES: IBC DIE", b.BioreactorID)
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
@@ -749,9 +752,12 @@ func scp_setup_devices() {
 			for k, c := range cmd {
 				fmt.Print(k, "  ", c, " ")
 				ret := scp_sendmsg_orch(c)
-				fmt.Println(ret)
-				if ret[0:2] == "DIE" {
-					fmt.Println("SLAVE ERROR - DIE")
+				if !strings.Contains(ret, scp_ack) {
+					nerr++
+				}
+				fmt.Println(ret, nerr)
+				if strings.Contains(ret, scp_die) {
+					fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", b.BioreactorID)
 					break
 				}
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
