@@ -402,7 +402,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 			if err == nil {
 				bio[ind].Valvs[v-1] = value
 				valvaddr = bio_cfg[devid].Valv_devs[v-1]
-				valve_scrstr = fmt.Sprintf("%d", v+200)
+				valve_scrstr = fmt.Sprintf("S%d", v+200)
 			} else {
 				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
 				return false
@@ -986,7 +986,7 @@ func test_path(vpath []string, value int) bool {
 			break
 		}
 		val, ok := valvs[p]
-		fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
+		// fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
 		ret = ret && (val == value) && ok
 		fmt.Println("ret final=", ret)
 	}
@@ -1004,7 +1004,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
-		if test_path(vpath, 0) {
+		if !test_path(vpath, 0) {
 			fmt.Println("ERRO RUN WITHDRAW: falha de valvula no path", pathid)
 			return -1
 		}
@@ -1083,6 +1083,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 		set_valvs_value(pilha, 0, false)
+
 	case scp_ibc:
 		ind := get_ibc_index(devid)
 		pathid := devid + "-" + ibc[ind].OutID
@@ -1092,7 +1093,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
-		if test_path(vpath, 0) {
+		if !test_path(vpath, 0) {
 			fmt.Println("ERRO RUN WITHDRAW: falha de valvula no path", pathid)
 			return -1
 		}
