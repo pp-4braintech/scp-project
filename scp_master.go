@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const testmode = false
+const testmode = true
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
@@ -979,6 +979,19 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 	return tot
 }
 
+func test_path(vpath []string, value int) bool {
+	ret := true
+	for _, p := range vpath {
+		// fmt.Println("step", k, p)
+		if p == "END" {
+			break
+		}
+		val, ok := valvs[p]
+		ret = ret && (val == value) && ok
+	}
+	return ret
+}
+
 func scp_run_withdraw(devtype string, devid string) int {
 	switch devtype {
 	case scp_bioreactor:
@@ -990,6 +1003,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
+		if test_path(vpath, 0) {
+			fmt.Println("ERRO RUN WITHDRAW: falha de valvula no path", pathid)
+			return -1
+		}
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1003,17 +1020,21 @@ func scp_run_withdraw(devtype string, devid string) int {
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
 						fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+						set_valvs_value(pilha, 0, false) // undo
 						return -1
 					}
 				} else if val == 1 {
 					fmt.Println("ERRO RUN WITHDRAW: valvula ja aberta", p)
+					set_valvs_value(pilha, 0, false) // undo
 					return -1
 				} else {
 					fmt.Println("ERRO RUN WITHDRAW: valvula com erro", p)
+					set_valvs_value(pilha, 0, false) // undo
 					return -1
 				}
 			} else {
 				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
+				set_valvs_value(pilha, 0, false) // undo
 				return -1
 			}
 			pilha = append([]string{p}, pilha...)
@@ -1070,6 +1091,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
+		if test_path(vpath, 0) {
+			fmt.Println("ERRO RUN WITHDRAW: falha de valvula no path", pathid)
+			return -1
+		}
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
