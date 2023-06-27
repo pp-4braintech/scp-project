@@ -718,7 +718,9 @@ func scp_setup_devices() {
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 			i := get_ibc_index(ib.IBCID)
+
 			if i >= 0 {
+				ibc[i].Status = bio_empty
 				if nerr > 0 && !testmode {
 					// ibc[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
