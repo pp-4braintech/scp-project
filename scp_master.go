@@ -168,27 +168,27 @@ var paths map[string]Path
 var valvs map[string]int
 
 var bio = []Bioreact{
-	{"BIOR01", bio_nonexist, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT"},
-	{"BIOR02", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT"},
-	{"BIOR03", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT"},
-	{"BIOR04", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT"},
-	{"BIOR05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT"},
-	{"BIOR06", bio_nonexist, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT"},
+	{"BIOR01", bio_empty, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT"},
+	{"BIOR02", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT"},
+	{"BIOR03", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT"},
+	{"BIOR04", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT"},
+	{"BIOR05", bio_empty, "Tricoderma harzianum", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT"},
+	{"BIOR06", bio_empty, "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT"},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_nonexist, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0, "OUT"},
-	{"IBC02", bio_nonexist, "Bacillus Megaterium", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0, "OUT"},
-	{"IBC03", bio_nonexist, "Bacillus Amyloliquefaciens", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
-	{"IBC04", bio_nonexist, "Azospirilum brasiliense", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT"},
-	{"IBC05", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT"},
-	{"IBC06", bio_nonexist, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT"},
-	{"IBC07", bio_nonexist, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
+	{"IBC01", bio_empty, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0, "OUT"},
+	{"IBC02", bio_empty, "Bacillus Megaterium", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0, "OUT"},
+	{"IBC03", bio_empty, "Bacillus Amyloliquefaciens", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
+	{"IBC04", bio_empty, "Azospirilum brasiliense", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT"},
+	{"IBC05", bio_empty, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT"},
+	{"IBC06", bio_empty, "Tricoderma harzianum", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT"},
+	{"IBC07", bio_empty, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
 }
 
 var totem = []Totem{
-	{"TOTEM01", bio_nonexist, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
-	{"TOTEM02", bio_nonexist, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM01", bio_empty, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
+	{"TOTEM02", bio_empty, false, [2]int{0, 0}, [4]int{0, 0, 0, 0}},
 }
 
 var biofabrica = Biofabrica{
@@ -686,12 +686,14 @@ func scp_setup_devices() {
 			if i >= 0 {
 				if nerr > 0 && !testmode {
 					bio[i].Status = bio_nonexist
+					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				}
 			} else {
 				fmt.Println("ERROR SETUP DEVICES: Biorreator nao encontrado na tabela", b.BioreactorID)
 			}
 		}
 	}
+
 	for _, ib := range ibc_cfg {
 		if len(ib.Deviceaddr) > 0 {
 			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
@@ -718,11 +720,9 @@ func scp_setup_devices() {
 				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 			}
 			i := get_ibc_index(ib.IBCID)
-
 			if i >= 0 {
-				ibc[i].Status = bio_empty
 				if nerr > 0 && !testmode {
-					// ibc[i].Status = bio_nonexist
+					ibc[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				}
 			} else {
@@ -760,6 +760,7 @@ func scp_setup_devices() {
 			if i >= 0 {
 				if nerr > 0 && !testmode {
 					totem[i].Status = bio_nonexist
+					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
 				}
 			} else {
 				fmt.Println("ERROR SETUP DEVICES: TOTEM nao encontrado na tabela", tot.TotemID)
