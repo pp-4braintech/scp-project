@@ -690,6 +690,8 @@ func scp_setup_devices() {
 				if nerr > 1 && !testmode {
 					bio[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
+				} else if bio[i].Status == bio_nonexist {
+					bio[i].Status = bio_ready
 				}
 			} else {
 				fmt.Println("ERROR SETUP DEVICES: Biorreator nao encontrado na tabela", b.BioreactorID)
@@ -731,6 +733,8 @@ func scp_setup_devices() {
 				if nerr > 0 && !testmode {
 					ibc[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
+				} else if ibc[i].Status == bio_nonexist {
+					ibc[i].Status = bio_ready
 				}
 			} else {
 				fmt.Println("ERROR SETUP DEVICES: IBC nao encontrado na tabela", ib.IBCID)
