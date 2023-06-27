@@ -1078,6 +1078,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW: BIORREATOR falha ao ligar bomba")
 			return -1
 		}
+		bio[ind].Status = bio_unloading
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
@@ -1103,6 +1104,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 		set_valvs_value(pilha, 0, false)
+		bio[ind].Status = bio_ready
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -1158,6 +1160,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW: IBC falha ao ligar bomba desenvase")
 			return -1
 		}
+		ibc[ind].Status = bio_unloading
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
@@ -1180,6 +1183,8 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW: CMD1 =", cmd1, " RET=", ret1)
 		set_valvs_value(pilha, 0, false)
+		ibc[ind].Status = bio_ready
+
 	}
 	return 0
 }
