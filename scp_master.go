@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const testmode = true
+const testmode = false
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
@@ -1119,6 +1119,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW: CMD2 =", cmd2, " RET=", ret2)
 		set_valvs_value(pilha, 0, false)
 		bio[ind].Status = bio_ready
+		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		var pathclean string = ""
 		dest_type := get_scp_type(bio[ind].OutID)
 		if dest_type == scp_out || dest_type == scp_drop {
