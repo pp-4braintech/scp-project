@@ -1218,6 +1218,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			pilha = append([]string{p}, pilha...)
 		}
 		vol_ini := ibc[ind].Volume
+		ibc[ind].Status = bio_unloading
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW: Ligando bomba", devid)
 		pumpdev := biofabrica_cfg["PBF01"].Deviceaddr
@@ -1230,7 +1231,6 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW: IBC falha ao ligar bomba desenvase")
 			return -1
 		}
-		ibc[ind].Status = bio_unloading
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
