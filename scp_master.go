@@ -877,8 +877,6 @@ func scp_get_alldata() {
 								}
 								if vol1 == 0 {
 									bio[k].Status = bio_empty
-								} else {
-									bio[k].Status = bio_ready
 								}
 							}
 						}
@@ -950,8 +948,6 @@ func scp_get_alldata() {
 							}
 							if volc == 0 {
 								ibc[k].Status = bio_empty
-							} else {
-								ibc[k].Status = bio_ready
 							}
 						}
 					}
