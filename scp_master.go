@@ -1094,7 +1094,8 @@ func scp_run_withdraw(devtype string, devid string) int {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
-			if vol_ini-vol_now >= bio[ind].Withdraw {
+			vol_out := vol_ini - vol_now
+			if vol_now < vol_ini && vol_out >= bio[ind].Withdraw {
 				fmt.Println("DEBUG RUN WITHDRAW: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
 				break
 			}
@@ -1233,7 +1234,8 @@ func scp_run_withdraw(devtype string, devid string) int {
 			vol_now := ibc[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
-			if vol_ini-vol_now >= ibc[ind].Withdraw {
+			vol_out := vol_ini - vol_now
+			if vol_now < vol_ini && vol_out >= ibc[ind].Withdraw {
 				fmt.Println("DEBUG RUN WITHDRAW: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
 				break
 			}
