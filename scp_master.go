@@ -21,6 +21,7 @@ const scp_ack = "ACK"
 const scp_err = "ERR"
 const scp_get = "GET"
 const scp_put = "PUT"
+const scp_run = "RUN"
 const scp_die = "DIE"
 const scp_fail = "FAIL"
 const scp_dev_pump = "PUMP"
@@ -40,6 +41,7 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 100
 const scp_refreshsleep = 1000
+const scp_timeout_ms = 5000
 
 const scp_timewaitvalvs = 12000
 const scp_maxtimewithdraw = 60
@@ -54,6 +56,7 @@ const bio_data_filename = "dumpdata"
 
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
+const bio_pause = "PAUSADO"
 const bio_loading = "CARREGANDO"
 const bio_unloading = "DESENVASE"
 const bio_producting = "PRODUZINDO"
@@ -85,6 +88,7 @@ type Bioreact struct {
 	Timetotal   [2]int
 	Withdraw    uint32
 	OutID       string
+	Queue       []string
 }
 
 type IBC struct {
@@ -173,12 +177,12 @@ var paths map[string]Path
 var valvs map[string]int
 
 var bio = []Bioreact{
-	{"BIOR01", bio_ready, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT"},
-	{"BIOR02", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT"},
-	{"BIOR03", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT"},
-	{"BIOR04", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT"},
-	{"BIOR05", bio_ready, "Tricoderma harzianum", 200, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT"},
-	{"BIOR06", bio_ready, "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT"},
+	{"BIOR01", bio_ready, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
+	{"BIOR02", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
+	{"BIOR03", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}},
+	{"BIOR04", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}},
+	{"BIOR05", bio_ready, "Tricoderma harzianum", 200, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}},
+	{"BIOR06", bio_ready, "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}},
 }
 
 var ibc = []IBC{
@@ -646,6 +650,8 @@ func scp_sendmsg_orch(cmd string) string {
 	}
 	//fmt.Println("Enviado:", cmd, len(cmd))
 
+	err = con.SetReadDeadline(time.Now().Add(time.Duration(scp_timeout_ms) * time.Millisecond))
+	checkErr(err)
 	ret := make([]byte, 1024)
 	_, err = con.Read(ret)
 	if err != nil {
