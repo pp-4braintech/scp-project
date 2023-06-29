@@ -666,6 +666,7 @@ func scp_sendmsg_orch(cmd string) string {
 
 func board_add_message(m string) {
 	n := len(biofabrica.Messages)
+	msg := 
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, m)
 	} else {
@@ -1052,7 +1053,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("IDesenvase " + devid + " para " + bio[ind].OutID)
+		board_add_message("WDesenvase " + devid + " para " + bio[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
