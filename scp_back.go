@@ -509,10 +509,7 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 		}
-
-	default:
-
-	}
+		desenvase
 }
 
 func biofabrica_view(w http.ResponseWriter, r *http.Request) {
