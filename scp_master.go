@@ -666,7 +666,8 @@ func scp_sendmsg_orch(cmd string) string {
 
 func board_add_message(m string) {
 	n := len(biofabrica.Messages)
-	msg := fmt.Sprintf("%c[%s] %s", m[0], time.Now().Minute(), m[1:])
+	stime := time.Now().Format("3:4")
+	msg := fmt.Sprintf("%c[%s] %s", m[0], stime, m[1:])
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
