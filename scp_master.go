@@ -1054,7 +1054,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + "/" + bio[ind].OutID)
+		board_add_message("CDesenvase " + devid + " para " + bio[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1129,7 +1129,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		bio[ind].Withdraw = 0
-		board_add_message("IDesenvase de concluido")
+		board_add_message("IDesenvase concluido")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
@@ -1214,7 +1214,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + "/" + ibc[ind].OutID)
+		board_add_message("CDesenvase " + devid + " para " + ibc[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
