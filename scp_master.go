@@ -41,7 +41,7 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 100
 const scp_refreshsleep = 1000
-const scp_timeout_ms = 5000
+const scp_timeout_ms = 5500
 
 const scp_timewaitvalvs = 12000
 const scp_maxtimewithdraw = 60
