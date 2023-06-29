@@ -1054,7 +1054,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + " -> " + bio[ind].OutID)
+		board_add_message("CDesenvase " + devid + "/" + bio[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1129,7 +1129,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		bio[ind].Withdraw = 0
-		board_add_message("IDesenvase de " + devid + " concluido")
+		board_add_message("IDesenvase de concluido")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
@@ -1145,10 +1145,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 		dest_type := get_scp_type(bio[ind].OutID)
 		if dest_type == scp_out || dest_type == scp_drop {
 			pathclean = "TOTEM02-CLEAN4"
-			board_add_message("ILimpando LINHAS 2 e 4")
+			board_add_message("ILimpando LINHAS 2/4")
 		} else if dest_type == scp_ibc {
 			pathclean = "TOTEM02-CLEAN3"
-			board_add_message("ILimpando LINHAS 2 e 3")
+			board_add_message("ILimpando LINHAS 2/3")
 		} else {
 			fmt.Println("ERRO RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 			return -1
@@ -1214,7 +1214,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + " -> " + ibc[ind].OutID)
+		board_add_message("CDesenvase " + devid + "/" + ibc[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1277,7 +1277,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		ibc[ind].Withdraw = 0
-		board_add_message("IDesenvase " + devid + " concluido")
+		board_add_message("IDesenvase concluido")
 
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
