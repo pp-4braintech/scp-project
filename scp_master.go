@@ -666,7 +666,7 @@ func scp_sendmsg_orch(cmd string) string {
 
 func board_add_message(m string) {
 	n := len(biofabrica.Messages)
-	stime := time.Now().Format("3:4")
+	stime := time.Now().Format("15:04")
 	msg := fmt.Sprintf("%c[%s] %s", m[0], stime, m[1:])
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
@@ -1054,7 +1054,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("WDesenvase " + devid + " para " + bio[ind].OutID)
+		board_add_message("CDesenvase " + devid + " -> " + bio[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1145,10 +1145,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 		dest_type := get_scp_type(bio[ind].OutID)
 		if dest_type == scp_out || dest_type == scp_drop {
 			pathclean = "TOTEM02-CLEAN4"
-			board_add_message("ILimpando LINHA 4")
+			board_add_message("ILimpando LINHAS 2 e 4")
 		} else if dest_type == scp_ibc {
 			pathclean = "TOTEM02-CLEAN3"
-			board_add_message("ILimpando LINHA 3")
+			board_add_message("ILimpando LINHAS 2 e 3")
 		} else {
 			fmt.Println("ERRO RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 			return -1
@@ -1214,7 +1214,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("ADesenvase " + devid + " para " + ibc[ind].OutID)
+		board_add_message("CDesenvase " + devid + " -> " + ibc[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -1277,7 +1277,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		ibc[ind].Withdraw = 0
-		board_add_message("IDesenvase de " + devid + " concluido")
+		board_add_message("IDesenvase " + devid + " concluido")
 
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
@@ -1301,6 +1301,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 41: falha de valvula no path", pathstr)
 			return -1
 		}
+		board_add_message("ILimpando LINHA 4")
 		if set_valvs_value(vpath, 1, true) < 1 {
 			fmt.Println("ERROR RUN WITHDRAW 42: Falha ao abrir valvulas CLEAN linha", pathstr)
 			set_valvs_value(vpath, 0, false)
@@ -1336,6 +1337,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		set_valvs_value(vpath, 0, false)
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
+		board_add_message("ILimpeza concluída")
 		if dest_type == scp_ibc {
 			pathclean = "TOTEM02-CLEAN3"
 			pathstr = paths[pathclean].Path
@@ -1349,6 +1351,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				fmt.Println("ERRO RUN WITHDRAW 51: falha de valvula no path", pathstr)
 				return -1
 			}
+			board_add_message("ILimpando LINHA 3")
 			if set_valvs_value(vpath, 1, true) < 1 {
 				fmt.Println("ERROR RUN WITHDRAW 52: Falha ao abrir valvulas CLEAN linha", pathstr)
 				set_valvs_value(vpath, 0, false)
@@ -1383,6 +1386,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 			set_valvs_value(vpath, 0, false)
+			board_add_message("ILimpeza concluída")
 		}
 	}
 	return 0
