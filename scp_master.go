@@ -116,6 +116,7 @@ type Biofabrica struct {
 	BiofabricaID string
 	Valvs        [9]int
 	Pumpwithdraw bool
+	Messages     []string
 }
 
 type Path struct {
@@ -201,7 +202,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{},
 }
 
 func checkErr(err error) {
