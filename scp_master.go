@@ -1448,9 +1448,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 
 func create_sched(lista []string) int {
 	tot := 0
-	fmt.Println(lista)
 	for _, i := range lista {
-		fmt.Println(i)
+		if i == "END" {
+			break
+		}
 		item := scp_splitparam(i, ",")
 		bioid := item[0]
 		bioseq, _ := strconv.Atoi(item[1])
