@@ -1480,7 +1480,7 @@ func scp_process_conn(conn net.Conn) {
 	case scp_sched:
 		scp_object := params[1]
 		switch scp_object {
-		case scp_bioreactor:
+		case scp_biofabrica:
 			lista := params[2:]
 			create_sched(lista)
 		}
