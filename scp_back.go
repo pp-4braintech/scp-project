@@ -88,6 +88,7 @@ type Prodlist struct {
 }
 
 var orgs []Organism
+var lastsched []Prodlist
 
 func checkErr(err error) {
 	if err != nil {
@@ -583,8 +584,22 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-		//fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
-		//fmt.Println("Post Data", r.Form)
+		exec_str := r.FormValue("Execute")
+		exec_cmd, _ := strconv.ParseBool(exec_str)
+		if exec_cmd {
+			s_str := ""
+			for _, s := range lastsched {
+				for _, c := range s.Codes {
+					s_str += s.Bioid + "," + c + "/"
+				}
+			}
+			s_str += "END"
+			cmd := "SCHED/" + scp_biofabrica + "/" + s_str
+			fmt.Println("DEBUG SIM: CMD", cmd)
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
 		farm_area_form := r.FormValue("Farmarea")
 		farm_area, _ := strconv.Atoi(farm_area_form)
 		daily_area_form := r.FormValue("Dailyarea")
@@ -604,7 +619,8 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				//fmt.Println(i, r)
 			}
 			//fmt.Println("orgdata =", orgdata)
-			ndias, numbios, diasprod, primdia, sched := min_bio_sim(farm_area, daily_area, orgdata)
+			var ndias, numbios, diasprod, primdia int
+			ndias, numbios, diasprod, primdia, lastsched = min_bio_sim(farm_area, daily_area, orgdata)
 			type Result struct {
 				Totaldays        int
 				Totalbioreactors int
@@ -612,7 +628,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				Firstday         int
 				Scheduler        []Prodlist
 			}
-			var ret = Result{ndias, numbios, diasprod, primdia, sched}
+			var ret = Result{ndias, numbios, diasprod, primdia, lastsched}
 			jsonStr, err := json.Marshal(ret)
 			checkErr(err)
 			w.Write([]byte(jsonStr))
@@ -654,6 +670,8 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
 	})
+
+	lastsched = make([]Prodlist, 0)
 
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
