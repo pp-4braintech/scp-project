@@ -17,7 +17,6 @@ import (
 
 const scp_err = "ERR"
 const scp_par_withdraw = "WITHDRAW"
-const scp_par_out = "OUT"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -89,7 +88,6 @@ type Prodlist struct {
 }
 
 var orgs []Organism
-var lastsched []Prodlist
 
 func checkErr(err error) {
 	if err != nil {
@@ -280,7 +278,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 				}
 			}
 			fmt.Println()
-			bioid := fmt.Sprintf("BIOR%02d", k+1)
+			bioid := fmt.Sprintf("Bio%02d", k+1)
 			v = append(v, Prodlist{bioid, tmpnum, tmpcode})
 		}
 	}
@@ -351,14 +349,17 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-
+		// fmt.Println("Post from website! r.PostFrom = ", r.PostForm)
+		// fmt.Println("Post Data", r.Form)
+		// for i, d := range r.Form {
+		// 	fmt.Println(i, d)
+		// }
 		ibc_id := r.FormValue("Id")
 		if len(ibc_id) >= 0 {
 			pump := r.FormValue("Pumpstatus")
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
-			outid := r.FormValue("Out")
 			// fmt.Println("IBC_id = ", ibc_id)
 			// fmt.Println("Pump = ", pump)
 			// fmt.Println("Valve = ", valve)
@@ -371,11 +372,6 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			}
 			if valve != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				w.Write([]byte(jsonStr))
-			}
-			if outid != "" {
-				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_out + "," + outid + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
@@ -394,6 +390,8 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// fmt.Println("bio", bio)
+	//fmt.Println("Request", r)
 	switch r.Method {
 	case "GET":
 		var jsonStr []byte
@@ -415,7 +413,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
-
+		//fmt.Println("Put from website! r.PostFrom = ", r.PostForm)
+		//fmt.Println("Put Data", r.Form)
+		// for i, d := range r.Form {
+		// 	fmt.Println(i, d)
+		// }
 		bio_id := r.FormValue("Id")
 		if len(bio_id) >= 0 {
 			pump := r.FormValue("Pumpstatus")
@@ -423,7 +425,12 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
-			outid := r.FormValue("Out")
+			// fmt.Println("Bio_id = ", bio_id)
+			// fmt.Println("Pump = ", pump)
+			// fmt.Println("Aero = ", aero)
+			// fmt.Println("Valve = ", valve)
+			// fmt.Println("Status = ", valve_status)
+			// fmt.Println("Withdraw = ", withdraw)
 			if pump != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -440,17 +447,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 
 			}
-			if outid != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_out + "," + outid + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				w.Write([]byte(jsonStr))
-			}
 			if withdraw != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
-
 		}
 
 	default:
@@ -510,7 +511,10 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 		}
-		desenvase
+
+	default:
+
+	}
 }
 
 func biofabrica_view(w http.ResponseWriter, r *http.Request) {
@@ -600,8 +604,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				//fmt.Println(i, r)
 			}
 			//fmt.Println("orgdata =", orgdata)
-			var ndias, numbios, primdia int
-			ndias, numbios, diasprod, primdia, lastsched = min_bio_sim(farm_area, daily_area, orgdata)
+			ndias, numbios, diasprod, primdia, sched := min_bio_sim(farm_area, daily_area, orgdata)
 			type Result struct {
 				Totaldays        int
 				Totalbioreactors int
@@ -609,7 +612,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				Firstday         int
 				Scheduler        []Prodlist
 			}
-			var ret = Result{ndias, numbios, diasprod, primdia, lastsched}
+			var ret = Result{ndias, numbios, diasprod, primdia, sched}
 			jsonStr, err := json.Marshal(ret)
 			checkErr(err)
 			w.Write([]byte(jsonStr))
@@ -651,8 +654,6 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
 	})
-
-	lastsched = make([]Prodlist,0)
 
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
