@@ -23,6 +23,7 @@ const scp_get = "GET"
 const scp_put = "PUT"
 const scp_run = "RUN"
 const scp_die = "DIE"
+const scp_sched = "SCHED"
 const scp_fail = "FAIL"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
@@ -70,6 +71,17 @@ const bio_max_valves = 8
 const bio_max_msg = 50
 
 const TEMPMAX = 120
+
+type Organism struct {
+	Code       string
+	Orgname    string
+	Lifetime   int
+	Prodvol    int
+	Cultmedium string
+	Timetotal  int
+	Aero       [3]int
+	PH         [3]string
+}
 
 type Bioreact struct {
 	BioreactorID string
@@ -169,6 +181,12 @@ type Biofabrica_cfg struct {
 	Deviceport string
 }
 
+type SchedList struct {
+	Bioid   string
+	Seq     int
+	OrgCode string
+}
+
 var finishedsetup = false
 
 var ibc_cfg map[string]IBC_cfg
@@ -177,6 +195,8 @@ var totem_cfg map[string]Totem_cfg
 var biofabrica_cfg map[string]Biofabrica_cfg
 var paths map[string]Path
 var valvs map[string]int
+var organs map[string]Organism
+var schedule []SchedList
 
 var bio = []Bioreact{
 	{"BIOR01", bio_ready, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
@@ -210,6 +230,40 @@ func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
 	}
+}
+
+func load_organisms(filename string) int {
+	var totalrecords int
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	organs = make(map[string]Organism, len(records))
+	for k, r := range records {
+		code := r[0]
+		name := r[1]
+		lifetime, _ := strconv.Atoi(strings.Replace(r[2], " ", "", -1))
+		volume, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
+		medium := strings.Replace(r[4], " ", "", -1)
+		tottime, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
+		aero1, _ := strconv.Atoi(strings.Replace(r[6], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[8], " ", "", -1))
+		ph1 := strings.Replace(r[9], " ", "", -1)
+		ph2 := strings.Replace(r[10], " ", "", -1)
+		ph3 := strings.Replace(r[11], " ", "", -1)
+		org := Organism{code, name, lifetime, volume, medium, tottime, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		organs[code] = org
+		totalrecords = k
+	}
+	return totalrecords
 }
 
 func load_ibcs_conf(filename string) int {
@@ -1392,6 +1446,23 @@ func scp_run_withdraw(devtype string, devid string) int {
 	return 0
 }
 
+func create_sched(lista []string) int {
+	for _, i := range lista {
+		item := scp_splitparam(i, ",")
+		bioid := item[0]
+		bioseq, _ := strconv.Atoi(item[1])
+		orgcode := item[2]
+		ind := get_bio_index(bioid)
+		if ind < 0 {
+			fmt.Println("ERROR CREATE SCHED: Biorreator nao existe", bioid)
+		} else {
+			schedule = append(schedule, SchedList{bioid, bioseq, orgcode})
+		}
+	}
+	fmt.Println(schedule)
+
+}
+
 func scp_process_conn(conn net.Conn) {
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
@@ -1404,6 +1475,13 @@ func scp_process_conn(conn net.Conn) {
 	// fmt.Println(params)
 	scp_command := params[0]
 	switch scp_command {
+	case scp_sched:
+		scp_object := params[1]
+		switch scp_object {
+		case scp_bioreactor:
+			lista := params[2:]
+			create_sched(lista)
+		}
 	case scp_get:
 		scp_object := params[1]
 		switch scp_object {
@@ -1816,6 +1894,11 @@ func scp_master_ipc() {
 func main() {
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
+	}
+	norgs := load_organisms("organismos.csv")
+	if norgs < 0 {
+		fmt.Println("Não foi possivel ler o arquivo de organismos")
+		return
 	}
 	nibccfg := load_ibcs_conf("ibc_conf.csv")
 	if nibccfg < 1 {

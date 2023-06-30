@@ -591,8 +591,8 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 		if exec_cmd {
 			s_str := ""
 			for _, s := range lastsched {
-				for _, c := range s.Codes {
-					s_str += s.Bioid + "," + c + "/"
+				for k, c := range s.Codes {
+					s_str += s.Bioid + "," + string(k) + "," + c + "/"
 				}
 			}
 			s_str += "END"
