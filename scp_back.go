@@ -89,6 +89,7 @@ type Prodlist struct {
 }
 
 var orgs []Organism
+var lastsched []Prodlist
 
 func checkErr(err error) {
 	if err != nil {
@@ -279,7 +280,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 				}
 			}
 			fmt.Println()
-			bioid := fmt.Sprintf("Bio%02d", k+1)
+			bioid := fmt.Sprintf("BIOR%02d", k+1)
 			v = append(v, Prodlist{bioid, tmpnum, tmpcode})
 		}
 	}
@@ -599,7 +600,8 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				//fmt.Println(i, r)
 			}
 			//fmt.Println("orgdata =", orgdata)
-			ndias, numbios, diasprod, primdia, sched := min_bio_sim(farm_area, daily_area, orgdata)
+			var ndias, numbios, primdia int
+			ndias, numbios, diasprod, primdia, lastsched = min_bio_sim(farm_area, daily_area, orgdata)
 			type Result struct {
 				Totaldays        int
 				Totalbioreactors int
@@ -607,7 +609,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				Firstday         int
 				Scheduler        []Prodlist
 			}
-			var ret = Result{ndias, numbios, diasprod, primdia, sched}
+			var ret = Result{ndias, numbios, diasprod, primdia, lastsched}
 			jsonStr, err := json.Marshal(ret)
 			checkErr(err)
 			w.Write([]byte(jsonStr))
@@ -649,6 +651,8 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
 	})
+
+	lastsched = make([]Prodlist,0)
 
 	mux.HandleFunc("/bioreactor_view", bioreactor_view)
 
