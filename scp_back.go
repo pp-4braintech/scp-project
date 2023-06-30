@@ -23,6 +23,7 @@ const scp_dev_valve = "VALVE"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 
+const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
 const bio_cip = "CIP"
 const bio_loading = "CARREGANDO"
@@ -597,8 +598,8 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			s_str += "END"
-			cmd := "SCHED/" + scp_biofabrica + "/" + s_str
-			fmt.Println("DEBUG SIM: CMD", cmd)
+			cmd := scp_sched + "/" + scp_biofabrica + "/" + s_str
+			fmt.Println("DEBUG SIM: to master", cmd)
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
