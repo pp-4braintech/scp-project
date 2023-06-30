@@ -600,7 +600,7 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 			cmd := "SCHED/" + scp_biofabrica + "/" + s_str
 			fmt.Println("DEBUG SIM: CMD", cmd)
 			jsonStr := []byte(scp_sendmsg_master(cmd))
-			// os.Stdout.Write(jsonStr)
+			os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
 		}
 		farm_area_form := r.FormValue("Farmarea")
