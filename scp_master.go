@@ -1447,6 +1447,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 }
 
 func create_sched(lista []string) int {
+	tot := 0
 	for _, i := range lista {
 		item := scp_splitparam(i, ",")
 		bioid := item[0]
@@ -1457,10 +1458,11 @@ func create_sched(lista []string) int {
 			fmt.Println("ERROR CREATE SCHED: Biorreator nao existe", bioid)
 		} else {
 			schedule = append(schedule, SchedList{bioid, bioseq, orgcode})
+			tot++
 		}
 	}
 	fmt.Println(schedule)
-
+	return tot
 }
 
 func scp_process_conn(conn net.Conn) {
