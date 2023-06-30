@@ -279,7 +279,7 @@ func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int,
 				}
 			}
 			fmt.Println()
-			bioid := fmt.Sprintf("Bio%02d", k+1)
+			bioid := fmt.Sprintf("BIOR%02d", k+1)
 			v = append(v, Prodlist{bioid, tmpnum, tmpcode})
 		}
 	}
