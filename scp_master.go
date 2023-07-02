@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const demo = false
+const demo = true
 const testmode = true
 
 const scp_ack = "ACK"
