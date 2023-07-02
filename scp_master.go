@@ -85,23 +85,22 @@ type Organism struct {
 
 type Bioreact struct {
 	BioreactorID string
-	// Deviceaddr   string
-	// Screenaddr   string
-	Status      string
-	Organism    string
-	Volume      uint32
-	Level       uint8
-	Pumpstatus  bool
-	Aerator     bool
-	Valvs       [8]int
-	Temperature float32
-	PH          float32
-	Step        [2]int
-	Timeleft    [2]int
-	Timetotal   [2]int
-	Withdraw    uint32
-	OutID       string
-	Queue       []string
+	Status       string
+	OrgCode      string
+	Organism     string
+	Volume       uint32
+	Level        uint8
+	Pumpstatus   bool
+	Aerator      bool
+	Valvs        [8]int
+	Temperature  float32
+	PH           float32
+	Step         [2]int
+	Timeleft     [2]int
+	Timetotal    [2]int
+	Withdraw     uint32
+	OutID        string
+	Queue        []string
 }
 
 type IBC struct {
@@ -181,13 +180,14 @@ type Biofabrica_cfg struct {
 	Deviceport string
 }
 
-type SchedList struct {
+type Scheditem struct {
 	Bioid   string
 	Seq     int
 	OrgCode string
 }
 
 var finishedsetup = false
+var schedrunning = false
 
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
@@ -196,15 +196,15 @@ var biofabrica_cfg map[string]Biofabrica_cfg
 var paths map[string]Path
 var valvs map[string]int
 var organs map[string]Organism
-var schedule []SchedList
+var schedule []Scheditem
 
 var bio = []Bioreact{
-	{"BIOR01", bio_ready, "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
-	{"BIOR02", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
-	{"BIOR03", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}},
-	{"BIOR04", bio_ready, "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}},
-	{"BIOR05", bio_ready, "Tricoderma harzianum", 200, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}},
-	{"BIOR06", bio_ready, "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}},
+	{"BIOR01", bio_ready, "", "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
+	{"BIOR02", bio_ready, "", "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}},
+	{"BIOR06", bio_ready, "", "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}},
 }
 
 var ibc = []IBC{
@@ -1446,6 +1446,43 @@ func scp_run_withdraw(devtype string, devid string) int {
 	return 0
 }
 
+func pop_first_sched(bioid string) Scheditem {
+	var ret Scheditem
+	for k, s := range schedule {
+		if s.Bioid == bioid {
+			if k > 0 {
+				ret = Scheditem{s.Bioid, s.Seq, s.OrgCode}
+				if k < len(schedule) {
+					schedule = append(schedule[:k-1], schedule[k+1:]...)
+				} else {
+					schedule = schedule[:k-1]
+				}
+			} else {
+				schedule = schedule[k+1:]
+			}
+			return ret
+		}
+	}
+	ret = Scheditem{}
+	return ret
+}
+
+func scp_scheduler() {
+	schedrunning = true
+	for schedrunning == true {
+		for _, b := range bio {
+			if b.Status == bio_empty && b.Volume == 0 && len(b.Queue) == 0 {
+				s := pop_first_sched(b.BioreactorID)
+				if len(s.Bioid) > 0 {
+					b.Organism = organs[s.OrgCode].Orgname
+					b.Status = bio_ready
+					fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", b.Organism)
+				}
+			}
+		}
+	}
+}
+
 func create_sched(lista []string) int {
 	tot := 0
 	for _, i := range lista {
@@ -1460,7 +1497,7 @@ func create_sched(lista []string) int {
 		if ind < 0 {
 			fmt.Println("ERROR CREATE SCHED: Biorreator nao existe", bioid)
 		} else {
-			schedule = append(schedule, SchedList{bioid, bioseq, orgcode})
+			schedule = append(schedule, Scheditem{bioid, bioseq, orgcode})
 			tot++
 		}
 	}
@@ -1485,7 +1522,10 @@ func scp_process_conn(conn net.Conn) {
 		switch scp_object {
 		case scp_biofabrica:
 			lista := params[2:]
-			create_sched(lista)
+			n := create_sched(lista)
+			if n > 0 && !schedrunning {
+				go scp_scheduler()
+			}
 		}
 	case scp_get:
 		scp_object := params[1]
