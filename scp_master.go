@@ -43,6 +43,7 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 100
 const scp_refreshsleep = 1000
 const scp_timeout_ms = 5500
+const scp_schedwait = 500
 
 const scp_timewaitvalvs = 12000
 const scp_maxtimewithdraw = 60
@@ -56,8 +57,10 @@ const ibc_v1_zero = 2652.0 // em mm   2647
 const bio_data_filename = "dumpdata"
 
 const bio_nonexist = "NULL"
+const bio_die = "DIE"
 const bio_cip = "CIP"
 const bio_pause = "PAUSADO"
+const bio_starting = "INICIANDO"
 const bio_loading = "CARREGANDO"
 const bio_unloading = "DESENVASE"
 const bio_producting = "PRODUZINDO"
@@ -188,6 +191,7 @@ type Scheditem struct {
 
 var finishedsetup = false
 var schedrunning = false
+var devsrunning = false
 
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
@@ -199,8 +203,8 @@ var organs map[string]Organism
 var schedule []Scheditem
 
 var bio = []Bioreact{
-	{"BIOR01", bio_ready, "", "", 2000, 10, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
-	{"BIOR02", bio_ready, "", "", 100, 1, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
 	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}},
 	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}},
 	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}},
@@ -1051,25 +1055,25 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 				dtype := get_scp_type(sub[0])
 				if val == (1 - value) {
 					if !set_valv_status(dtype, sub[0], sub[1], value) {
-						fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+						fmt.Println("ERRO SET VALVS VALUE: nao foi possivel setar valvula", p)
 						if abort_on_error {
 							return -1
 						}
 					}
 					tot++
 				} else if val == 1 {
-					fmt.Println("ERRO RUN WITHDRAW: nao foi possivel setar valvula", p)
+					fmt.Println("ERRO SET VALVS VALUE: nao foi possivel setar valvula", p)
 					if abort_on_error {
 						return -1
 					}
 				} else {
-					fmt.Println("ERRO RUN WITHDRAW: valvula com erro", p)
+					fmt.Println("ERRO SET VALVS VALUE: valvula com erro", p)
 					if abort_on_error {
 						return -1
 					}
 				}
 			} else {
-				fmt.Println("ERRO RUN WITHDRAW: valvula nao existe", p)
+				fmt.Println("ERRO SET VALVS VALUE: valvula nao existe", p)
 				if abort_on_error {
 					return -1
 				}
@@ -1446,19 +1450,120 @@ func scp_run_withdraw(devtype string, devid string) int {
 	return 0
 }
 
-func pop_first_sched(bioid string) Scheditem {
+func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP TURN: Biorreator nao existe", bioid)
+		return false
+	}
+	devaddr := bio_cfg[bioid].Deviceaddr
+	aerorele := bio_cfg[bioid].Aero_rele
+	aerodev := bio_cfg[bioid].Aero_dev
+	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
+	if changevalvs {
+		if test_path(dev_valvs, 1-value) {
+			if set_valvs_value(dev_valvs, value, true) < 0 {
+				fmt.Println("ERROR SCP TURN AERO: erro ao definir valor [", value, "] das valvulas", dev_valvs)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP TURN AERO: erro nas valvulas", dev_valvs)
+			return false
+		}
+	}
+	aerovalue := int(255.0 * (float32(percent) / 100.0))
+	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
+	ret1 := scp_sendmsg_orch(cmd1)
+	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
+	if !strings.Contains(ret1, scp_ack) && !testmode {
+		fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir ", percent, "% aerador", ret1)
+		if changevalvs {
+			set_valvs_value(dev_valvs, 1-value, false)
+		}
+		return false
+	}
+	cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
+	ret2 := scp_sendmsg_orch(cmd2)
+	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
+	if !strings.Contains(ret2, scp_ack) && !testmode {
+		fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret2)
+		if changevalvs {
+			set_valvs_value(dev_valvs, 1-value, false)
+		}
+		ret1 = scp_sendmsg_orch(cmd1)
+		return false
+	}
+	return true
+}
+
+func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bool {
+	var devaddr, pumpdev string
+	var ind int
+	switch devtype {
+	case scp_bioreactor:
+		ind = get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR SCP TURN PUMP: Biorreator nao existe", main_id)
+			return false
+		}
+		devaddr = bio_cfg[main_id].Deviceaddr
+		pumpdev = bio_cfg[main_id].Pump_dev
+
+	case scp_ibc:
+		ind = get_ibc_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR SCP TURN PUMP: IBC nao existe", main_id)
+			return false
+		}
+		devaddr = ibc_cfg[main_id].Deviceaddr
+		pumpdev = ibc_cfg[main_id].Pump_dev
+	default:
+		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
+	}
+	dev_valvs := []string{}
+	if len(valvs) > 0 {
+		for _, v := range valvs {
+			valv := main_id + "/" + v
+			dev_valvs = append(dev_valvs, valv)
+		}
+		if test_path(dev_valvs, 1-value) {
+			if set_valvs_value(dev_valvs, value, true) < 0 {
+				fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", dev_valvs)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", dev_valvs)
+			return false
+		}
+	}
+	cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
+	ret := scp_sendmsg_orch(cmd)
+	fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
+	if !strings.Contains(ret, scp_ack) && !testmode {
+		fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
+		if len(valvs) > 0 {
+			set_valvs_value(dev_valvs, 1-value, false)
+		}
+		return false
+	}
+	return true
+}
+
+func pop_first_sched(bioid string, remove bool) Scheditem {
 	var ret Scheditem
 	for k, s := range schedule {
 		if s.Bioid == bioid {
-			if k > 0 {
-				ret = Scheditem{s.Bioid, s.Seq, s.OrgCode}
-				if k < len(schedule) {
-					schedule = append(schedule[:k-1], schedule[k+1:]...)
+			ret = Scheditem{s.Bioid, s.Seq, s.OrgCode}
+			if remove {
+				if k > 0 {
+					if k < len(schedule)-1 {
+						schedule = append(schedule[:k], schedule[k+1:]...)
+					} else {
+						schedule = schedule[:k]
+					}
 				} else {
-					schedule = schedule[:k-1]
+					schedule = schedule[k+1:]
 				}
-			} else {
-				schedule = schedule[k+1:]
 			}
 			return ret
 		}
@@ -1467,19 +1572,77 @@ func pop_first_sched(bioid string) Scheditem {
 	return ret
 }
 
+func pop_first_job(bioid string) string {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", bioid)
+		return ""
+	}
+	n := len(bio[ind].Queue)
+	ret := ""
+	if n > 0 {
+		ret = bio[ind].Queue[0]
+		bio[ind].Queue = bio[ind].Queue[1:]
+	}
+	return ret
+}
+
+func scp_run_job(bioid string, job string) bool {
+	fmt.Println("\n\nSIMULANDO EXECUCAO", bioid, job)
+	time.Sleep(scp_schedwait * time.Millisecond)
+	return true
+}
+
+func scp_run_bio(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", bioid)
+		return
+	}
+	for bio[ind].Status != bio_die {
+		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_pause && bio[ind].Status != bio_error {
+			var ret bool = false
+			job := bio[ind].Queue[0]
+			if len(job) > 0 {
+				ret = scp_run_job(bioid, job)
+			}
+			if !ret {
+				fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
+			}
+		}
+		time.Sleep(scp_schedwait * time.Millisecond)
+	}
+}
+
+func scp_run_devs() {
+	for _, b := range bio {
+		go scp_run_bio(b.BioreactorID)
+	}
+}
+
 func scp_scheduler() {
+	if !devsrunning {
+		scp_run_devs()
+	}
 	schedrunning = true
 	for schedrunning == true {
-		for _, b := range bio {
-			if b.Status == bio_empty && b.Volume == 0 && len(b.Queue) == 0 {
-				s := pop_first_sched(b.BioreactorID)
-				if len(s.Bioid) > 0 {
-					b.Organism = organs[s.OrgCode].Orgname
-					b.Status = bio_ready
-					fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", b.Organism)
+		for k, b := range bio {
+			// fmt.Println(k, " bio =", b)
+			r := pop_first_sched(b.BioreactorID, false)
+			if len(r.Bioid) > 0 {
+				if b.Status == bio_empty && b.Volume == 0 && len(b.Queue) == 0 {
+					fmt.Println("\n", k, " Schedule inicial", schedule, "//", len(schedule), "POP de ", b.BioreactorID)
+					s := pop_first_sched(b.BioreactorID, true)
+					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
+					if len(s.Bioid) > 0 {
+						bio[k].Organism = organs[s.OrgCode].Orgname
+						bio[k].Status = bio_starting
+						fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
+					}
 				}
 			}
 		}
+		time.Sleep(scp_schedwait * time.Millisecond)
 	}
 }
 
