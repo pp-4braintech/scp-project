@@ -1580,22 +1580,16 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
 	}
 
-	dev_valvs := []string{}
-	if len(valvs) > 0 {
-		for _, v := range valvs {
-			valv := main_id + "/" + v
-			dev_valvs = append(dev_valvs, valv)
-		}
-		if test_path(dev_valvs, 1-value) {
-			if set_valvs_value(dev_valvs, value, true) < 0 {
-				fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", dev_valvs)
-				return false
-			}
-		} else {
-			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", dev_valvs)
+	if test_path(valvs, 1-value) {
+		if set_valvs_value(valvs, value, true) < 0 {
+			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", dev_valvs)
 			return false
 		}
+	} else {
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", dev_valvs)
+		return false
 	}
+
 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
 	cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 	ret := scp_sendmsg_orch(cmd)
@@ -1603,7 +1597,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 	if !strings.Contains(ret, scp_ack) && !testmode {
 		fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
 		if len(valvs) > 0 {
-			set_valvs_value(dev_valvs, 1-value, false)
+			set_valvs_value(valvs, 1-value, false)
 			time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		}
 		return false
@@ -1731,10 +1725,6 @@ func scp_run_job(bioid string, job string) bool {
 				watervalv := totem + "/V1"
 				vpath = append(vpath, watervalv)
 				fmt.Println("DEBUG", vpath)
-				if !test_path(vpath, 0) {
-					fmt.Println("ERRO SCP RUN JOB: falha de valvula na linha", pathid, pathstr)
-					return false
-				}
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
 					return false
@@ -1779,10 +1769,6 @@ func scp_run_job(bioid string, job string) bool {
 				vpath := scp_splitparam(pathstr, ",")
 				watervalv := totem + "/V1"
 				vpath = append(vpath, watervalv)
-				if !test_path(vpath, 1) {
-					fmt.Println("ERRO SCP RUN JOB: falha de valvula na linha", pathid, pathstr)
-					return false
-				}
 				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
 					return false
