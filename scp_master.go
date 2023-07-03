@@ -33,6 +33,8 @@ const scp_dev_water = "WATER"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
+const scp_par_time = "TIME"
+const scp_par_volume = "VOLUME"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -1685,12 +1687,18 @@ func scp_run_job(bioid string, job string) bool {
 	case scp_job_wait:
 		var time_int uint64
 		var err error
-		if len(subpars) > 0 {
-			time_str := subpars[0]
-			time_int, err = strconv.ParseUint(time_str, 10, 32)
-			if err != nil {
-				fmt.Println("ERROR SCP RUN JOB: WAIT time invalido", time_str, params)
-				return false
+		if len(subpars) > 1 {
+			switch subpars[0] {
+			case scp_par_time:
+				time_str := subpars[0]
+				time_int, err = strconv.ParseUint(time_str, 10, 32)
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
+					return false
+				}
+			case scp_par_volume:
+				fmt.Println("Implementar volume")
+				//
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
