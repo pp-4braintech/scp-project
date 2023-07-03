@@ -25,11 +25,25 @@ const scp_run = "RUN"
 const scp_die = "DIE"
 const scp_sched = "SCHED"
 const scp_fail = "FAIL"
+
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
+const scp_dev_water = "WATER"
+
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
+
+const scp_job_org = "ORG"
+const scp_job_on = "ON"
+const scp_job_status = "STATUS"
+const scp_job_wait = "WAIT"
+const scp_job_ask = "ASK"
+const scp_job_off = "OFF"
+const scp_job_run = "RUN"
+const scp_job_stop = "STOP"
+const scp_job_done = "DONE"
+
 const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
@@ -1552,9 +1566,20 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		}
 		devaddr = ibc_cfg[main_id].Deviceaddr
 		pumpdev = ibc_cfg[main_id].Pump_dev
+
+	case scp_totem:
+		ind = get_totem_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR SCP TURN PUMP: IBC nao existe", main_id)
+			return false
+		}
+		devaddr = totem_cfg[main_id].Deviceaddr
+		pumpdev = totem_cfg[main_id].Pumpdev
+
 	default:
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
 	}
+
 	dev_valvs := []string{}
 	if len(valvs) > 0 {
 		for _, v := range valvs {
@@ -1571,6 +1596,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			return false
 		}
 	}
+	time.Sleep(scp_timewaitvalvs * time.Millisecond)
 	cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 	ret := scp_sendmsg_orch(cmd)
 	fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
@@ -1578,6 +1604,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
 		if len(valvs) > 0 {
 			set_valvs_value(dev_valvs, 1-value, false)
+			time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		}
 		return false
 	}
@@ -1626,7 +1653,146 @@ func pop_first_job(bioid string, remove bool) string {
 
 func scp_run_job(bioid string, job string) bool {
 	fmt.Println("\n\nSIMULANDO EXECUCAO", bioid, job)
-	time.Sleep(10000 * time.Millisecond)
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", bioid)
+		return false
+	}
+	params := scp_splitparam(job, "/")
+	subpars := []string{}
+	if len(params) > 1 {
+		subpars = scp_splitparam(params[1], ",")
+	}
+	switch params[0] {
+	case scp_job_org:
+		if len(subpars) > 0 {
+			orgcode := subpars[0]
+			if len(organs[orgcode].Orgname) > 0 {
+				bio[ind].OrgCode = subpars[0]
+				bio[ind].Organism = organs[orgcode].Orgname
+			} else {
+				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			return false
+		}
+
+	case scp_job_status:
+		if len(subpars) > 0 {
+			biostatus := subpars[0]
+			bio[ind].Status = biostatus
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			return false
+		}
+
+	case scp_job_on:
+		if len(subpars) > 1 {
+			device := subpars[0]
+			switch device {
+			case scp_dev_aero:
+				perc_str := subpars[1]
+				perc_int, err := strconv.Atoi(perc_str)
+				if err != nil {
+					checkErr(err)
+					fmt.Println("ERROR SCP RUN JOB: Falta parametros invalido em", scp_job_on, params)
+					return false
+				}
+				if !scp_turn_aero(bioid, true, 1, perc_int) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar aerador em", bioid)
+					return false
+				}
+			case scp_dev_pump:
+				valvs := []string{}
+				for k := 1; k < len(subpars) && subpars[k] != "END"; k++ {
+					v := bioid + "/" + subpars[k]
+					valvs = append(valvs, v)
+				}
+				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					return false
+				}
+			case scp_dev_water:
+				totem := subpars[1]
+				totem_ind := get_totem_index(totem)
+				if totem_ind < 0 {
+					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
+					return false
+				}
+				pathid := totem + "-" + bioid
+				pathstr := paths[pathid].Path
+				if len(pathstr) == 0 {
+					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
+					return false
+				}
+				vpath := scp_splitparam(pathstr, ",")
+				watervalv := totem + "/V1"
+				vpath = append(vpath, watervalv)
+				if !test_path(vpath, 0) {
+					fmt.Println("ERRO SCP RUN JOB: falha de valvula na linha", pathid, pathstr)
+					return false
+				}
+				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					return false
+				}
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_on, params)
+			return false
+		}
+	case scp_job_off:
+		if len(subpars) > 0 {
+			device := subpars[0]
+			switch device {
+			case scp_dev_aero:
+				if !scp_turn_aero(bioid, true, 0, 0) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao desligar aerador em", bioid)
+					return false
+				}
+			case scp_dev_pump:
+				valvs := []string{}
+				for k := 1; k < len(subpars) && subpars[k] != "END"; k++ {
+					v := bioid + "/" + subpars[k]
+					valvs = append(valvs, v)
+				}
+				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao desligar bomba em", bioid, valvs)
+					return false
+				}
+			case scp_dev_water:
+				totem := subpars[1]
+				totem_ind := get_totem_index(totem)
+				if totem_ind < 0 {
+					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
+					return false
+				}
+				pathid := totem + "-" + bioid
+				pathstr := paths[pathid].Path
+				if len(pathstr) == 0 {
+					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
+					return false
+				}
+				vpath := scp_splitparam(pathstr, ",")
+				watervalv := totem + "/V1"
+				vpath = append(vpath, watervalv)
+				if !test_path(vpath, 1) {
+					fmt.Println("ERRO SCP RUN JOB: falha de valvula na linha", pathid, pathstr)
+					return false
+				}
+				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					return false
+				}
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_off, params)
+			return false
+		}
+	}
+	time.Sleep(5000 * time.Millisecond)
 	return true
 }
 
@@ -1674,10 +1840,9 @@ func scp_scheduler() {
 					s := pop_first_sched(b.BioreactorID, true)
 					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
 					if len(s.Bioid) > 0 {
-						bio[k].Organism = organs[s.OrgCode].Orgname
-						bio[k].Status = bio_starting
 						orginfo := []string{"ORG/" + s.OrgCode + ",END"}
 						bio[k].Queue = append(orginfo, recipe...)
+						bio[k].Status = bio_starting
 						fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 					}
 				}
