@@ -1552,7 +1552,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		return false
 	}
 
-	if value == scp_val_off {
+	if value == scp_val_on {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
