@@ -1690,12 +1690,15 @@ func scp_run_job(bioid string, job string) bool {
 		if len(subpars) > 1 {
 			switch subpars[0] {
 			case scp_par_time:
-				time_str := subpars[0]
+				time_str := subpars[1]
 				time_int, err = strconv.ParseUint(time_str, 10, 32)
 				if err != nil {
 					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
 					return false
 				}
+				time_dur := time.Duration(time_int)
+				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur, "segundos")
+				time.Sleep(time_dur * time.Second)
 			case scp_par_volume:
 				fmt.Println("Implementar volume")
 				//
@@ -1704,9 +1707,6 @@ func scp_run_job(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		time_dur := time.Duration(time_int)
-		fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur, "segundos")
-		time.Sleep(time_dur * time.Second)
 
 	case scp_job_on:
 		if len(subpars) > 1 {
