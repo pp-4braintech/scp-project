@@ -261,7 +261,12 @@ func load_recipe_conf(filename string) int {
 		}
 		// fmt.Println(r)
 		if r[0][0] != '#' {
-			recipe = append(recipe, r...)
+			str := ""
+			for _, s := range r {
+				str += s + ","
+			}
+			str += "END"
+			recipe = append(recipe, str)
 			totalrecords++
 		}
 	}
