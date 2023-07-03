@@ -1582,11 +1582,11 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 
 	if test_path(valvs, 1-value) {
 		if set_valvs_value(valvs, value, true) < 0 {
-			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", dev_valvs)
+			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", valvs)
 			return false
 		}
 	} else {
-		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", dev_valvs)
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", valvs)
 		return false
 	}
 
