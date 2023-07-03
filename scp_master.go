@@ -1676,7 +1676,8 @@ func scp_scheduler() {
 					if len(s.Bioid) > 0 {
 						bio[k].Organism = organs[s.OrgCode].Orgname
 						bio[k].Status = bio_starting
-						bio[k].Queue = recipe
+						orginfo := []string{"ORG/" + s.OrgCode + ",END"}
+						bio[k].Queue = append(orginfo, recipe...)
 						fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 					}
 				}
