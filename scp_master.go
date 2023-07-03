@@ -17,6 +17,9 @@ import (
 const demo = true
 const testmode = true
 
+const scp_val_on = 1
+const scp_val_off = 0
+
 const scp_ack = "ACK"
 const scp_err = "ERR"
 const scp_get = "GET"
@@ -1511,6 +1514,21 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	aerorele := bio_cfg[bioid].Aero_rele
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
+
+	if value == scp_val_off {
+		cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
+		ret0 := scp_sendmsg_orch(cmd0)
+		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
+		if !strings.Contains(ret0, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret0)
+			if changevalvs {
+				set_valvs_value(dev_valvs, 1-value, false)
+			}
+			return false
+		}
+		bio[ind].Aerator = false
+	}
+
 	if changevalvs {
 		if test_path(dev_valvs, 1-value) {
 			if set_valvs_value(dev_valvs, value, true) < 0 {
@@ -1533,17 +1551,22 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		}
 		return false
 	}
-	cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
-	ret2 := scp_sendmsg_orch(cmd2)
-	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
-	if !strings.Contains(ret2, scp_ack) && !testmode {
-		fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret2)
-		if changevalvs {
-			set_valvs_value(dev_valvs, 1-value, false)
+
+	if value == scp_val_off {
+		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
+		ret2 := scp_sendmsg_orch(cmd2)
+		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
+		if !strings.Contains(ret2, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret2)
+			if changevalvs {
+				set_valvs_value(dev_valvs, 1-value, false)
+			}
+			ret1 = scp_sendmsg_orch(cmd1)
+			return false
 		}
-		ret1 = scp_sendmsg_orch(cmd1)
-		return false
+		bio[ind].Aerator = true
 	}
+
 	return true
 }
 
@@ -1582,6 +1605,28 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
 	}
 
+	if value == scp_val_off {
+		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
+		ret := scp_sendmsg_orch(cmd)
+		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
+		if !strings.Contains(ret, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
+			if len(valvs) > 0 {
+				set_valvs_value(valvs, 1-value, false)
+				time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			}
+			return false
+		}
+		switch devtype {
+		case scp_bioreactor:
+			bio[ind].Pumpstatus = false
+		case scp_ibc:
+			ibc[ind].Pumpstatus = false
+		case scp_totem:
+			totem[ind].Pumpstatus = false
+		}
+	}
+
 	if test_path(valvs, 1-value) {
 		if set_valvs_value(valvs, value, true) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", valvs)
@@ -1591,18 +1636,28 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", valvs)
 		return false
 	}
-
 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
-	cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
-	ret := scp_sendmsg_orch(cmd)
-	fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
-	if !strings.Contains(ret, scp_ack) && !testmode {
-		fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
-		if len(valvs) > 0 {
-			set_valvs_value(valvs, 1-value, false)
-			time.Sleep(scp_timewaitvalvs * time.Millisecond)
+
+	if value == scp_val_on {
+		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
+		ret := scp_sendmsg_orch(cmd)
+		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
+		if !strings.Contains(ret, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
+			if len(valvs) > 0 {
+				set_valvs_value(valvs, 1-value, false)
+				time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			}
+			return false
 		}
-		return false
+		switch devtype {
+		case scp_bioreactor:
+			bio[ind].Pumpstatus = true
+		case scp_ibc:
+			ibc[ind].Pumpstatus = true
+		case scp_totem:
+			totem[ind].Pumpstatus = true
+		}
 	}
 	return true
 }
@@ -1697,7 +1752,7 @@ func scp_run_job(bioid string, job string) bool {
 					return false
 				}
 				time_dur := time.Duration(time_int)
-				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur, "segundos")
+				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
 				time.Sleep(time_dur * time.Second)
 			case scp_par_volume:
 				fmt.Println("Implementar volume")
