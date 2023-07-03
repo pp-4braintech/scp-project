@@ -705,7 +705,7 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	//scp_bio_init()
-	if load_organisms("organismos.csv") < 0 {
+	if load_organisms("organismos_conf.csv") < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
 		return
 	}

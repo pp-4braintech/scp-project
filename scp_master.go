@@ -201,6 +201,7 @@ var paths map[string]Path
 var valvs map[string]int
 var organs map[string]Organism
 var schedule []Scheditem
+var recipe []string
 
 var bio = []Bioreact{
 	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
@@ -234,6 +235,37 @@ func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
 	}
+}
+
+func load_recipe_conf(filename string) int {
+	var totalrecords int
+	recipe = []string{}
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer file.Close()
+	csvr := csv.NewReader(file)
+	paths = make(map[string]Path, 0)
+	totalrecords = 0
+	for {
+		r, err := csvr.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			if perr, ok := err.(*csv.ParseError); ok && perr.Err != csv.ErrFieldCount {
+				checkErr(err)
+				return -1
+			}
+		}
+		// fmt.Println(r)
+		if r[0][0] != '#' {
+			recipe = append(recipe, r...)
+			totalrecords++
+		}
+	}
+	return totalrecords
 }
 
 func load_organisms(filename string) int {
@@ -549,10 +581,8 @@ func get_valv_status(devid string, valvid string) int {
 	value, ok := valvs[id]
 	if ok {
 		return value
-	} else {
-		return -1
 	}
-
+	return -1
 }
 
 func set_allvalvs_status() {
@@ -1572,7 +1602,7 @@ func pop_first_sched(bioid string, remove bool) Scheditem {
 	return ret
 }
 
-func pop_first_job(bioid string) string {
+func pop_first_job(bioid string, remove bool) string {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", bioid)
@@ -1582,14 +1612,16 @@ func pop_first_job(bioid string) string {
 	ret := ""
 	if n > 0 {
 		ret = bio[ind].Queue[0]
-		bio[ind].Queue = bio[ind].Queue[1:]
+		if remove {
+			bio[ind].Queue = bio[ind].Queue[1:]
+		}
 	}
 	return ret
 }
 
 func scp_run_job(bioid string, job string) bool {
 	fmt.Println("\n\nSIMULANDO EXECUCAO", bioid, job)
-	time.Sleep(scp_schedwait * time.Millisecond)
+	time.Sleep(10000 * time.Millisecond)
 	return true
 }
 
@@ -1602,12 +1634,14 @@ func scp_run_bio(bioid string) {
 	for bio[ind].Status != bio_die {
 		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_pause && bio[ind].Status != bio_error {
 			var ret bool = false
-			job := bio[ind].Queue[0]
+			job := pop_first_job(bioid, false)
 			if len(job) > 0 {
 				ret = scp_run_job(bioid, job)
 			}
 			if !ret {
 				fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
+			} else {
+				pop_first_job(bioid, true)
 			}
 		}
 		time.Sleep(scp_schedwait * time.Millisecond)
@@ -2103,9 +2137,14 @@ func main() {
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
-	norgs := load_organisms("organismos.csv")
+	norgs := load_organisms("organismos_conf.csv")
 	if norgs < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
+		return
+	}
+	nrecipe := load_recipe_conf("receita_conf.csv")
+	if nrecipe <= 0 {
+		fmt.Println("Não foi possivel ler o arquivo contendo a receita de producao")
 		return
 	}
 	nibccfg := load_ibcs_conf("ibc_conf.csv")
