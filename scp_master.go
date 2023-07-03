@@ -1730,6 +1730,7 @@ func scp_run_job(bioid string, job string) bool {
 				vpath := scp_splitparam(pathstr, ",")
 				watervalv := totem + "/V1"
 				vpath = append(vpath, watervalv)
+				fmt.Println("DEBUG", vpath)
 				if !test_path(vpath, 0) {
 					fmt.Println("ERRO SCP RUN JOB: falha de valvula na linha", pathid, pathstr)
 					return false
