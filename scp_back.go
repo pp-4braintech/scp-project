@@ -645,6 +645,48 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 	fmt.Println()
 }
 
+func withdraw_panel(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// fmt.Println("bio", bio)
+	switch r.Method {
+	case "GET":
+		// var jsonStr []byte
+		// jsonStr, err := json.Marshal(orgdata)
+		// checkErr(err)
+		//os.Stdout.Write(jsonStr)
+		fmt.Println("Metodo GET para WDPANEL nao suportado")
+		w.Write([]byte(scp_err))
+		return
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			w.Write([]byte(scp_err))
+			return
+		}
+		id_str := r.FormValue("Id")
+		value_str := r.FormValue("Value")
+		value_int, err := strconv.Atoi(value_str)
+		if err != nil {
+			checkErr(err)
+			w.Write([]byte(scp_err))
+			return
+		}
+		fmt.Println("id =", id_str, " value=", value_int)
+		if len(id_str) > 0 && len(value_str) > 0 {
+			w.Write([]byte(scp_ack))
+		} else {
+			w.Write([]byte(scp_err))
+		}
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
+	fmt.Println()
+	fmt.Println()
+	return
+}
+
 // func scp_bio_init() {
 // 	fmt.Println("Iniciando MOD")
 // 	for i := 2; i < 11; i++ {
@@ -686,6 +728,8 @@ func main() {
 	mux.HandleFunc("/biofabrica_view", biofabrica_view)
 
 	mux.HandleFunc("/simulator", biofactory_sim)
+
+	mux.HandleFunc("/wdpanel", withdraw_panel)
 
 	handler := cors.Handler(mux)
 
