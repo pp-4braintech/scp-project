@@ -668,6 +668,10 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 		}
 		id_str := r.FormValue("Id")
 		value_str := r.FormValue("Value")
+		if len(value_str) == 0 {
+			w.Write([]byte(scp_err))
+			return
+		}
 		value_int, err := strconv.Atoi(value_str)
 		if err != nil {
 			checkErr(err)
