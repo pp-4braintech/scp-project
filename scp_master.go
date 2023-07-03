@@ -2147,6 +2147,7 @@ func main() {
 		fmt.Println("Não foi possivel ler o arquivo contendo a receita de producao")
 		return
 	}
+	fmt.Println("receita=", recipe)
 	nibccfg := load_ibcs_conf("ibc_conf.csv")
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
