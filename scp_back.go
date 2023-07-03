@@ -16,6 +16,7 @@ import (
 )
 
 const scp_err = "ERR"
+const scp_ack = "ACK"
 const scp_par_withdraw = "WITHDRAW"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
