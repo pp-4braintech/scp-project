@@ -35,6 +35,6 @@ RUN/PRODUCAO
 #
 # Fim da Producao
 OFF/AERO
-DONE
+DONE/NOP
 
 
