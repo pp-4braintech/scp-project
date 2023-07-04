@@ -1558,6 +1558,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		return false
 	}
 
+	time.Sleep(scp_timewaitvalvs * time.Millisecond)
 	if value == scp_val_on {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
@@ -1769,7 +1770,7 @@ func scp_run_job(bioid string, job string) bool {
 			t_start := time.Now()
 			for {
 				ret2 := scp_sendmsg_orch(cmd2)
-				fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
+				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
 				if !strings.Contains(ret2, scp_ack) && !testmode {
 					fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao envirar GET screen", scraddr, ret2)
 					return false
@@ -1946,7 +1947,7 @@ func scp_run_job(bioid string, job string) bool {
 			return false
 		}
 	}
-	time.Sleep(5000 * time.Millisecond)
+	time.Sleep(1000 * time.Millisecond)
 	return true
 }
 
