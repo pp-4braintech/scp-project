@@ -1832,6 +1832,7 @@ func scp_run_job(bioid string, job string) bool {
 
 	case scp_job_done:
 		bio[ind].Status = bio_ready
+		fmt.Println("passei aqui no done")
 		board_add_message("ICultivo concluído no" + bioid + " - Pronto para Desenvase")
 		return true
 
