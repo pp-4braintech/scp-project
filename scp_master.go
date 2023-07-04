@@ -2035,7 +2035,7 @@ func scp_scheduler() {
 			// fmt.Println(k, " bio =", b)
 			r := pop_first_sched(b.BioreactorID, false)
 			if len(r.Bioid) > 0 {
-				if b.Status == bio_empty && b.Volume == 0 && len(b.Queue) == 0 {
+				if b.Status == bio_empty && len(b.Queue) == 0 { // && b.Volume == 0
 					fmt.Println("\n", k, " Schedule inicial", schedule, "//", len(schedule), "POP de ", b.BioreactorID)
 					s := pop_first_sched(b.BioreactorID, true)
 					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
