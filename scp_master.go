@@ -1769,7 +1769,7 @@ func scp_run_job(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		board_add_message("CIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
+		board_add_message("IIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
 
 	case scp_job_status:
 		if len(subpars) > 0 {
@@ -1833,7 +1833,7 @@ func scp_run_job(bioid string, job string) bool {
 	case scp_job_done:
 		bio[ind].Status = bio_ready
 		// fmt.Println("passei aqui no done")
-		board_add_message("ICultivo concluído no" + bioid + " - Pronto para Desenvase")
+		board_add_message("CCultivo concluído no " + bioid + " - Pronto para Desenvase")
 		return true
 
 	case scp_job_wait:
@@ -1984,6 +1984,8 @@ func scp_run_job(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_off, params)
 			return false
 		}
+	default:
+		fmt.Println("ERROR SCP RUN JOB: JOB invalido", bioid, job, params)
 	}
 	time.Sleep(1000 * time.Millisecond)
 	return true
