@@ -1534,10 +1534,11 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 			return false
 		}
 		bio[ind].Aerator = false
-		cmd0b := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-		ret0b := scp_sendmsg_orch(cmd0b)
-		if !strings.Contains(ret0b, scp_ack) && !testmode {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, ret0b)
+		cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		rets := scp_sendmsg_orch(cmds)
+		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		if !strings.Contains(rets, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
 		}
 
 	}
@@ -1579,10 +1580,11 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 			return false
 		}
 		bio[ind].Aerator = true
-		cmd0b := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-		ret0b := scp_sendmsg_orch(cmd0b)
-		if !strings.Contains(ret0b, scp_ack) && !testmode {
-			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao mudar aerador na screen ", scraddr, ret0b)
+		cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		rets := scp_sendmsg_orch(cmds)
+		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		if !strings.Contains(rets, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
 		}
 	}
 
@@ -1649,6 +1651,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		if len(scraddr) > 0 {
 			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
 			rets := scp_sendmsg_orch(cmds)
+			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 			if !strings.Contains(rets, scp_ack) && !testmode {
 				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
 			}
@@ -1689,6 +1692,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		if len(scraddr) > 0 {
 			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
 			rets := scp_sendmsg_orch(cmds)
+			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 			if !strings.Contains(rets, scp_ack) && !testmode {
 				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
 			}
