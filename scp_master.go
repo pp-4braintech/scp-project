@@ -1923,7 +1923,9 @@ func scp_run_job(bioid string, job string) bool {
 				}
 				vpath := scp_splitparam(pathstr, ",")
 				watervalv := totem + "/V1"
-				vpath = append(vpath, watervalv)
+				n := len(vpath)
+				vpath = append(vpath[:n-1], watervalv)
+				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
