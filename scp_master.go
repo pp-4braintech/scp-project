@@ -69,7 +69,7 @@ const scp_refreshsleep = 1000
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
 
-const scp_timewaitvalvs = 12000
+const scp_timewaitvalvs = 15000
 const scp_maxtimewithdraw = 60
 
 const bio_diametro = 1430  // em mm
