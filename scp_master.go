@@ -1785,11 +1785,14 @@ func scp_run_job(bioid string, job string) bool {
 			msg := subpars[0]
 			scraddr := bio_cfg[bioid].Screenaddr
 			var cmd1 string = ""
+			var msgask string = ""
 			switch msg {
 			case scp_msg_cloro:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
+				msgask = "CLORO"
 			case scp_msg_meio_inoculo:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
+				msgask = "MEIO e INOCULO"
 			default:
 				fmt.Println("ERROR SCP RUN JOB:", bioid, " ASK invalido", subpars)
 				return false
@@ -1801,6 +1804,7 @@ func scp_run_job(bioid string, job string) bool {
 				return false
 			}
 			cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
+			board_add_message("ABiorreator " + bioid + " aguardando " + msgask)
 			t_start := time.Now()
 			for {
 				ret2 := scp_sendmsg_orch(cmd2)
