@@ -49,6 +49,11 @@ const scp_job_run = "RUN"
 const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
 
+const scp_msg_cloro = "CLORO"
+const scp_msg_meio = "MEIO"
+const scp_msg_inoculo = "INOCULO"
+const scp_msg_meio_inoculo = "MEIO-INOCULO"
+
 const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
@@ -79,6 +84,7 @@ const bio_nonexist = "NULL"
 const bio_die = "DIE"
 const bio_cip = "CIP"
 const bio_pause = "PAUSADO"
+const bio_wait = "AGUARDANDO"
 const bio_starting = "INICIANDO"
 const bio_loading = "CARREGANDO"
 const bio_unloading = "DESENVASE"
@@ -1734,6 +1740,56 @@ func scp_run_job(bioid string, job string) bool {
 		if len(subpars) > 0 {
 			biostatus := subpars[0]
 			bio[ind].Status = biostatus
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			return false
+		}
+
+	case scp_job_ask:
+		if len(subpars) > 0 {
+			msg := subpars[0]
+			scraddr := bio_cfg[bioid].Screenaddr
+			var cmd1 string = ""
+			switch msg {
+			case scp_msg_cloro:
+				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
+			case scp_msg_meio_inoculo:
+				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
+			default:
+				fmt.Println("ERROR SCP RUN JOB:", bioid, " ASK invalido", subpars)
+				return false
+			}
+			ret1 := scp_sendmsg_orch(cmd1)
+			fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
+			if !strings.Contains(ret1, scp_ack) && !testmode {
+				fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao enviar PUT screen", scraddr, ret1)
+				return false
+			}
+			cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
+			t_start := time.Now()
+			for {
+				ret2 := scp_sendmsg_orch(cmd2)
+				fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
+				if !strings.Contains(ret2, scp_ack) && !testmode {
+					fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao envirar GET screen", scraddr, ret2)
+					return false
+				}
+				data := scp_splitparam(ret2, "/")
+				if len(data) > 1 {
+					if data[1] == "1" {
+						break
+					}
+				}
+				t_elapsed := time.Since(t_start).Seconds()
+				if t_elapsed > scp_maxtimewithdraw {
+					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
+					if !testmode {
+						return false
+					}
+					break
+				}
+				time.Sleep(scp_refreshwait * time.Millisecond)
+			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
