@@ -1077,7 +1077,7 @@ func scp_get_alldata() {
 							level := (volc / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
 							level_int := uint8(level)
 							if level_int != ibc[k].Level {
-								bio[k].Level = level_int
+								ibc[k].Level = level_int
 								// levels := fmt.Sprintf("%d", level_int)
 								// cmd := "CMD/" + ibc_cfg[b.IBCID].Screenaddr + "/PUT/S231," + levels + "/END"
 								// ret := scp_sendmsg_orch(cmd)
