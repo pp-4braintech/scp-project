@@ -1996,6 +1996,7 @@ func scp_run_job(bioid string, job string) bool {
 }
 
 func scp_run_bio(bioid string) {
+	fmt.Println("STARTANDO RUN", bioid)
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", bioid)
