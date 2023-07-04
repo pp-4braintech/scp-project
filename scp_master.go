@@ -1739,6 +1739,10 @@ func scp_run_job(bioid string, job string) bool {
 			return false
 		}
 
+	case scp_job_done:
+		bio[ind].Status = bio_ready
+		return true
+
 	case scp_job_wait:
 		var time_int uint64
 		var err error
@@ -1755,8 +1759,34 @@ func scp_run_job(bioid string, job string) bool {
 				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
 				time.Sleep(time_dur * time.Second)
 			case scp_par_volume:
-				fmt.Println("Implementar volume")
-				//
+				var vol_max uint64
+				var err error
+				vol_str := subpars[1]
+				vol_max, err = strconv.ParseUint(vol_str, 10, 32)
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME invalido", vol_str, params)
+					return false
+				}
+				if vol_max > uint64(bio_cfg[bioid].Maxvolume) {
+					fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME maior do que maximo do Biorreator", vol_max, bioid, bio_cfg[bioid].Maxvolume)
+					return false
+				}
+				t_start := time.Now()
+				for {
+					vol_now := uint64(bio[ind].Volume)
+					t_elapsed := time.Since(t_start).Seconds()
+					if vol_now >= vol_max {
+						break
+					}
+					if t_elapsed > scp_maxtimewithdraw {
+						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
+						if !testmode {
+							return false
+						}
+						break
+					}
+					time.Sleep(scp_refreshwait * time.Millisecond)
+				}
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
