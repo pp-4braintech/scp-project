@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-const demo = true
-const testmode = true
+const demo = false
+const testmode = false
 
 const scp_val_on = 1
 const scp_val_off = 0
