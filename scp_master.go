@@ -1517,6 +1517,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		return false
 	}
 	devaddr := bio_cfg[bioid].Deviceaddr
+	scraddr := bio_cfg[bioid].Screenaddr
 	aerorele := bio_cfg[bioid].Aero_rele
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
@@ -1526,13 +1527,19 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		ret0 := scp_sendmsg_orch(cmd0)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
 		if !strings.Contains(ret0, scp_ack) && !testmode {
-			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret0)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret0)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
 			}
 			return false
 		}
 		bio[ind].Aerator = false
+		cmd0b := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		ret0b := scp_sendmsg_orch(cmd0b)
+		if !strings.Contains(ret0b, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, ret0b)
+		}
+
 	}
 
 	if changevalvs {
@@ -1572,6 +1579,11 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 			return false
 		}
 		bio[ind].Aerator = true
+		cmd0b := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		ret0b := scp_sendmsg_orch(cmd0b)
+		if !strings.Contains(ret0b, scp_ack) && !testmode {
+			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao mudar aerador na screen ", scraddr, ret0b)
+		}
 	}
 
 	return true
@@ -1580,6 +1592,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bool {
 	var devaddr, pumpdev string
 	var ind int
+	scraddr := ""
 	switch devtype {
 	case scp_bioreactor:
 		ind = get_bio_index(main_id)
@@ -1589,6 +1602,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		}
 		devaddr = bio_cfg[main_id].Deviceaddr
 		pumpdev = bio_cfg[main_id].Pump_dev
+		scraddr = bio_cfg[main_id].Screenaddr
 
 	case scp_ibc:
 		ind = get_ibc_index(main_id)
@@ -1632,6 +1646,13 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		case scp_totem:
 			totem[ind].Pumpstatus = false
 		}
+		if len(scraddr) > 0 {
+			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
+			rets := scp_sendmsg_orch(cmds)
+			if !strings.Contains(rets, scp_ack) && !testmode {
+				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
+			}
+		}
 	}
 
 	if test_path(valvs, 1-value) {
@@ -1664,6 +1685,13 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			ibc[ind].Pumpstatus = true
 		case scp_totem:
 			totem[ind].Pumpstatus = true
+		}
+		if len(scraddr) > 0 {
+			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
+			rets := scp_sendmsg_orch(cmds)
+			if !strings.Contains(rets, scp_ack) && !testmode {
+				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
+			}
 		}
 	}
 	return true
