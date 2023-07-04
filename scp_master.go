@@ -1755,8 +1755,9 @@ func scp_run_job(bioid string, job string) bool {
 	}
 	switch params[0] {
 	case scp_job_org:
+		var orgcode string
 		if len(subpars) > 0 {
-			orgcode := subpars[0]
+			orgcode = subpars[0]
 			if len(organs[orgcode].Orgname) > 0 {
 				bio[ind].OrgCode = subpars[0]
 				bio[ind].Organism = organs[orgcode].Orgname
@@ -1768,6 +1769,7 @@ func scp_run_job(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
+		board_add_message("CIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
 
 	case scp_job_status:
 		if len(subpars) > 0 {
@@ -1830,6 +1832,7 @@ func scp_run_job(bioid string, job string) bool {
 
 	case scp_job_done:
 		bio[ind].Status = bio_ready
+		board_add_message("CCultivo concluído no" + bioid + " - Pronto para Desenvase")
 		return true
 
 	case scp_job_wait:
@@ -1891,7 +1894,7 @@ func scp_run_job(bioid string, job string) bool {
 				perc_int, err := strconv.Atoi(perc_str)
 				if err != nil {
 					checkErr(err)
-					fmt.Println("ERROR SCP RUN JOB: Falta parametros invalido em", scp_job_on, params)
+					fmt.Println("ERROR SCP RUN JOB: Parametros invalido em", scp_job_on, params)
 					return false
 				}
 				if !scp_turn_aero(bioid, true, 1, perc_int) {
