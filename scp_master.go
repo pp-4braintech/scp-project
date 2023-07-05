@@ -33,6 +33,7 @@ const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_dev_water = "WATER"
+const scp_dev_sprayball = "SPRAYBALL"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -227,6 +228,8 @@ var valvs map[string]int
 var organs map[string]Organism
 var schedule []Scheditem
 var recipe []string
+var cipbio []string
+var cipibc []string
 
 var bio = []Bioreact{
 	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
@@ -262,18 +265,16 @@ func checkErr(err error) {
 	}
 }
 
-func load_recipe_conf(filename string) int {
-	var totalrecords int
-	recipe = []string{}
+func load_tasks_conf(filename string) []string {
+	tasks := []string{}
 	file, err := os.Open(filename)
 	if err != nil {
 		checkErr(err)
-		return -1
+		return nil
 	}
 	defer file.Close()
 	csvr := csv.NewReader(file)
 	paths = make(map[string]Path, 0)
-	totalrecords = 0
 	for {
 		r, err := csvr.Read()
 		if err == io.EOF {
@@ -281,7 +282,7 @@ func load_recipe_conf(filename string) int {
 		} else if err != nil {
 			if perr, ok := err.(*csv.ParseError); ok && perr.Err != csv.ErrFieldCount {
 				checkErr(err)
-				return -1
+				return nil
 			}
 		}
 		// fmt.Println(r)
@@ -291,11 +292,10 @@ func load_recipe_conf(filename string) int {
 				str += s + ","
 			}
 			str += "END"
-			recipe = append(recipe, str)
-			totalrecords++
+			tasks = append(tasks, str)
 		}
 	}
-	return totalrecords
+	return tasks
 }
 
 func load_organisms(filename string) int {
@@ -1836,7 +1836,6 @@ func scp_run_job(bioid string, job string) bool {
 
 	case scp_job_done:
 		bio[ind].Status = bio_ready
-		// fmt.Println("passei aqui no done")
 		board_add_message("CCultivo concluído no " + bioid + " - Pronto para Desenvase")
 		return true
 
@@ -1923,13 +1922,30 @@ func scp_run_job(bioid string, job string) bool {
 					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
 					return false
 				}
+				use_spball := false
+				if len(subpars) > 2 {
+					if subpars[2] == scp_dev_sprayball {
+						use_spball = true
+					} else {
+						fmt.Println("ERROR SCP RUN JOB: ON Parametro invalido", bioid, subpars)
+						return false
+					}
+				}
 				pathid := totem + "-" + bioid
 				pathstr := paths[pathid].Path
 				if len(pathstr) == 0 {
 					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
 					return false
 				}
-				vpath := scp_splitparam(pathstr, ",")
+				var npath string
+				if use_spball {
+					npath = strings.Replace(pathstr, "/V4", "/V8", -1)
+					spball_valv := bioid + "/V3"
+					npath += spball_valv
+				} else {
+					npath = pathstr
+				}
+				vpath := scp_splitparam(npath, ",")
 				watervalv := totem + "/V1"
 				n := len(vpath)
 				vpath = append(vpath[:n-1], watervalv)
@@ -2511,15 +2527,18 @@ func main() {
 	}
 	norgs := load_organisms("organismos_conf.csv")
 	if norgs < 0 {
-		fmt.Println("Não foi possivel ler o arquivo de organismos")
-		return
+		log.Fatal("Não foi possivel ler o arquivo de organismos")
 	}
-	nrecipe := load_recipe_conf("receita_conf.csv")
-	if nrecipe <= 0 {
-		fmt.Println("Não foi possivel ler o arquivo contendo a receita de producao")
-		return
+	recipe = load_tasks_conf("receita_conf.csv")
+	if recipe == nil {
+		log.Fatal("Não foi possivel ler o arquivo contendo a receita de producao")
+	}
+	cipbio = load_tasks_conf("cip_bio_conf.csv")
+	if recipe == nil {
+		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP")
 	}
 	fmt.Println("receita=", recipe)
+	fmt.Println("cip=", cipbio)
 	nibccfg := load_ibcs_conf("ibc_conf.csv")
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")

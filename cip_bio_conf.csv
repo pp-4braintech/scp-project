@@ -1,0 +1,173 @@
+#
+STATUS/CIP
+#
+# PASSO 1
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Circula Agua 90s
+ON/PUMP,V4,V6
+WAIT/TIME,90
+OFF/PUMP,V4,V6
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# PASSO 2
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Circula Agua 240s pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,240
+OFF/PUMP,V3,V8,V6
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# PASSO 3
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Circula Agua 90s pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,240
+OFF/PUMP,V2,V8,V6
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# PASSO 4
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Blend1 2L (280s)
+ON/PERIS,P1
+WAIT/TIME,280
+OFF/PERIS,P1
+#
+# Liga Resistencia
+ON/HEATER,60
+#
+# Circula 600s
+ON/PUMP,V4,V6
+WAIT/TIME,90
+OFF/PUMP,V4,V6
+#
+# Circula Agua 600s pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,600
+OFF/PUMP,V2,V8,V6
+#
+# Circula Agua 3600s pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,3600
+OFF/PUMP,V3,V8,V6
+#
+# Liga Resistencia
+OFF/HEATER
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# PASSO 5
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Liga Resistencia
+ON/HEATER,60
+#
+# Circula Agua 90s pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,600
+OFF/PUMP,V2,V8,V6
+#
+# Circula Agua 90s pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,90
+OFF/PUMP,V3,V8,V6
+#
+# Liga Resistencia
+OFF/HEATER
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# PASSO 6
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM01,SPRAYBALL
+#
+# Volume de 25L
+WAIT/VOLUME,25
+OFF/WATER,TOTEM01,SPRAYBALL
+#
+# Blend1 2L (280s)
+ON/PERIS,P2
+WAIT/TIME,280
+OFF/PERIS,P2
+#
+# Liga Resistencia
+ON/HEATER,60
+#
+# Circula 600s
+ON/PUMP,V4,V6
+WAIT/TIME,90
+OFF/PUMP,V4,V6
+#
+# Circula 600s pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,600
+OFF/PUMP,V2,V8,V6
+#
+# Circula 1200s pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,1200
+OFF/PUMP,V3,V8,V6
+#
+# Liga Resistencia
+OFF/HEATER
+#
+# Descarta Agua
+WITHDRAW/DROP,WATER
+#
+#
+# FINAL
+#
+# Liga aerador por 30min = 1800seg
+ON/AERO,80
+WAIT/TIME,1800
+OFF/AERO
+#
+# Fim do CIP
+DONE/NOP
