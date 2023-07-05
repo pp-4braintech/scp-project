@@ -30,7 +30,7 @@ OFF/PUMP,V4,V6
 #
 # Inicia ciclo de Producao
 STATUS/PRODUZINDO
-RUN/PRODUCAO
+RUN/GROW
 #
 # Fim da Producao
 OFF/AERO

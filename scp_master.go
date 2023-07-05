@@ -241,8 +241,8 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_ready, "Bacillus Subtilis", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{24, 15}, 0, "OUT"},
-	{"IBC02", bio_ready, "Bacillus Megaterium", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{12, 5}, 0, "OUT"},
+	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
+	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
 	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
 	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT"},
 	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT"},
@@ -1761,6 +1761,8 @@ func scp_run_job(bioid string, job string) bool {
 			if len(organs[orgcode].Orgname) > 0 {
 				bio[ind].OrgCode = subpars[0]
 				bio[ind].Organism = organs[orgcode].Orgname
+				bio[ind].Timetotal = [2]int{organs[orgcode].Timetotal, 0}
+				bio[ind].Timeleft = [2]int{organs[orgcode].Timetotal, 0}
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
 				return false
