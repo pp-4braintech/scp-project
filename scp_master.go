@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-const demo = true
-const testmode = true
+const demo = false
+const testmode = false
 
 const scp_val_on = 1
 const scp_val_off = 0
@@ -1266,10 +1266,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 		dest_type := get_scp_type(bio[ind].OutID)
 		if dest_type == scp_out || dest_type == scp_drop {
 			pathclean = "TOTEM02-CLEAN4"
-			board_add_message("ILimpando LINHAS 2/4")
+			board_add_message("IEnxague LINHAS 2/4")
 		} else if dest_type == scp_ibc {
 			pathclean = "TOTEM02-CLEAN3"
-			board_add_message("ILimpando LINHAS 2/3")
+			board_add_message("IEnxague LINHAS 2/3")
 		} else {
 			fmt.Println("ERRO RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 			return -1
@@ -1320,7 +1320,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			return -1
 		}
 		set_valvs_value(vpath, 0, false)
-		board_add_message("ILimpeza concluída")
+		board_add_message("IEnxague concluído")
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -1458,7 +1458,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		set_valvs_value(vpath, 0, false)
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
-		board_add_message("ILimpeza concluída")
+		board_add_message("IEnxague concluído")
 		if dest_type == scp_ibc {
 			pathclean = "TOTEM02-CLEAN3"
 			pathstr = paths[pathclean].Path
@@ -1507,7 +1507,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 				return -1
 			}
 			set_valvs_value(vpath, 0, false)
-			board_add_message("ILimpeza concluída")
+			board_add_message("IEnxague concluído")
 		}
 	}
 	return 0
