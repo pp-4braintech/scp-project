@@ -1964,10 +1964,11 @@ func scp_run_job(bioid string, job string) bool {
 				if use_spball {
 					npath = strings.Replace(pathstr, "/V4", "/V8", -1)
 					spball_valv := bioid + "/V3"
-					npath += spball_valv
+					npath = spball_valv + npath
 				} else {
 					npath = pathstr
 				}
+				fmt.Println("npath=", npath)
 				vpath := scp_splitparam(npath, ",")
 				watervalv := totem + "/V1"
 				n := len(vpath)
