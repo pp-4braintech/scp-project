@@ -1964,7 +1964,7 @@ func scp_run_job(bioid string, job string) bool {
 				if use_spball {
 					npath = strings.Replace(pathstr, "/V4", "/V8", -1)
 					spball_valv := bioid + "/V3"
-					npath = spball_valv + npath
+					npath = spball_valv + "," + npath
 				} else {
 					npath = pathstr
 				}
