@@ -2010,15 +2010,35 @@ func scp_run_job(bioid string, job string) bool {
 					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
 					return false
 				}
+				use_spball := false
+				if len(subpars) > 2 && subpars[2] != "END" {
+					if subpars[2] == scp_dev_sprayball {
+						use_spball = true
+					} else {
+						fmt.Println("ERROR SCP RUN JOB: ON Parametro invalido", bioid, subpars)
+						return false
+					}
+				}
 				pathid := totem + "-" + bioid
 				pathstr := paths[pathid].Path
 				if len(pathstr) == 0 {
 					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
 					return false
 				}
-				vpath := scp_splitparam(pathstr, ",")
+				var npath string
+				if use_spball {
+					npath = strings.Replace(pathstr, "/V4", "/V8", -1)
+					spball_valv := bioid + "/V3"
+					npath = spball_valv + "," + npath
+				} else {
+					npath = pathstr
+				}
+				fmt.Println("npath=", npath)
+				vpath := scp_splitparam(npath, ",")
 				watervalv := totem + "/V1"
-				vpath = append(vpath, watervalv)
+				n := len(vpath)
+				vpath = append(vpath[:n-1], watervalv)
+				vpath = append(vpath, "END")
 				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
 					return false
