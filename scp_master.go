@@ -39,6 +39,8 @@ const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
 const scp_par_time = "TIME"
 const scp_par_volume = "VOLUME"
+const scp_par_grow = "GROW"
+const scp_par_cip = "CIP"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -49,10 +51,6 @@ const scp_job_off = "OFF"
 const scp_job_run = "RUN"
 const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
-
-const scp_run_withdraw = "WITHDRAW"
-const scp_run_grow = "GROW"
-const scp_run_cip = "CIP"
 
 const scp_msg_cloro = "CLORO"
 const scp_msg_meio = "MEIO"
@@ -1791,16 +1789,15 @@ func scp_run_job(bioid string, job string) bool {
 		if len(subpars) > 0 {
 			cmd := subpars[0]
 			switch cmd {
-			case scp_run_grow:
+			case scp_par_grow:
 				fmt.Println("running GROW")
-			case scp_run_cip:
+			case scp_par_cip:
 				qini := []string{bio[ind].Queue[0]}
 				qini = append(qini, cipbio...)
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
 				return true
 			}
-			bio[ind].Status = biostatus
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
 			return false
