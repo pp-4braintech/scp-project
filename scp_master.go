@@ -1791,12 +1791,23 @@ func scp_run_job(bioid string, job string) bool {
 			switch cmd {
 			case scp_par_grow:
 				fmt.Println("running GROW")
+
 			case scp_par_cip:
 				qini := []string{bio[ind].Queue[0]}
 				qini = append(qini, cipbio...)
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
+				board_add_message("ICIP Automático no biorreator " + bioid)
 				return true
+
+			case scp_par_withdraw:
+				bio[ind].Withdraw = bio[ind].Volume
+				bio[ind].OutID = strings.Replace(bioid, "BIOR", "IBC", -1)
+				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
+				if scp_run_withdraw(scp_bioreactor, bioid) < 0 {
+					return false
+				}
+
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
