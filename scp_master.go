@@ -1923,7 +1923,7 @@ func scp_run_job(bioid string, job string) bool {
 					return false
 				}
 				use_spball := false
-				if len(subpars) > 2 {
+				if len(subpars) > 2 && subpars[2] != "END" {
 					if subpars[2] == scp_dev_sprayball {
 						use_spball = true
 					} else {
