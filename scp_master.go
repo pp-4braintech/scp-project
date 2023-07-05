@@ -50,6 +50,10 @@ const scp_job_run = "RUN"
 const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
 
+const scp_run_withdraw = "WITHDRAW"
+const scp_run_grow = "GROW"
+const scp_run_cip = "CIP"
+
 const scp_msg_cloro = "CLORO"
 const scp_msg_meio = "MEIO"
 const scp_msg_inoculo = "INOCULO"
@@ -218,6 +222,7 @@ type Scheditem struct {
 var finishedsetup = false
 var schedrunning = false
 var devsrunning = false
+var autowithdraw = true
 
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
@@ -1782,6 +1787,25 @@ func scp_run_job(bioid string, job string) bool {
 			return false
 		}
 
+	case scp_job_run:
+		if len(subpars) > 0 {
+			cmd := subpars[0]
+			switch cmd {
+			case scp_run_grow:
+				fmt.Println("running GROW")
+			case scp_run_cip:
+				qini := []string{bio[ind].Queue[0]}
+				qini = append(qini, cipbio...)
+				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
+				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
+				return true
+			}
+			bio[ind].Status = biostatus
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
+			return false
+		}
+
 	case scp_job_ask:
 		if len(subpars) > 0 {
 			msg := subpars[0]
@@ -2060,6 +2084,10 @@ func scp_scheduler() {
 					if len(s.Bioid) > 0 {
 						orginfo := []string{"ORG/" + s.OrgCode + ",END"}
 						bio[k].Queue = append(orginfo, recipe...)
+						if autowithdraw {
+							wdraw := []string{"STATUS/DESENVASE,END", "RUN/WITHDRAW,END", "RUN/CIP/END"}
+							bio[k].Queue = append(bio[k].Queue, wdraw...)
+						}
 						bio[k].Status = bio_starting
 						fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 					}
