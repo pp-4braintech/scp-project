@@ -17,8 +17,8 @@ import (
 const demo = false
 const testmode = false
 
-const scp_val_on = 1
-const scp_val_off = 0
+const scp_on = 1
+const scp_off = 0
 
 const scp_ack = "ACK"
 const scp_err = "ERR"
@@ -185,6 +185,7 @@ type Bioreact_cfg struct {
 	Levelhigh    string
 	Levellow     string
 	Emergency    string
+	Heater       string
 }
 type IBC_cfg struct {
 	IBCID      string
@@ -413,11 +414,12 @@ func load_bios_conf(filename string) int {
 			lhigh := r[24]
 			llow := r[25]
 			emerg := r[26]
+			heater := r[27]
 
 			bio_cfg[id] = Bioreact_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev, aerodev, aerorele,
 				[5]string{perdev1, perdev2, perdev3, perdev4, perdev5},
 				[8]string{vdev1, vdev2, vdev3, vdev4, vdev5, vdev6, vdev7, vdev8},
-				[2]string{voldev1, voldev2}, phdev, tempdev, lhigh, llow, emerg}
+				[2]string{voldev1, voldev2}, phdev, tempdev, lhigh, llow, emerg, heater}
 			totalrecords += 1
 		} else if len(r) != 26 {
 			fmt.Println("ERROR BIO CFG: numero de parametros invalido", r)
@@ -1525,7 +1527,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
 
-	if value == scp_val_off {
+	if value == scp_off {
 		cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret0 := scp_sendmsg_orch(cmd0)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
@@ -1570,7 +1572,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	}
 
 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
-	if value == scp_val_on {
+	if value == scp_on {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
@@ -1631,7 +1633,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
 	}
 
-	if value == scp_val_off {
+	if value == scp_off {
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
@@ -1672,7 +1674,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 	}
 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
 
-	if value == scp_val_on {
+	if value == scp_on {
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
