@@ -42,7 +42,7 @@ const scp_par_volume = "VOLUME"
 const scp_par_grow = "GROW"
 const scp_par_cip = "CIP"
 const scp_par_status = "STATUS"
-const scp_par_step = "SETEP"
+const scp_par_step = "STEP"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
