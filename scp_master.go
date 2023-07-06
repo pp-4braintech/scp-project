@@ -42,7 +42,7 @@ const scp_par_volume = "VOLUME"
 const scp_par_grow = "GROW"
 const scp_par_cip = "CIP"
 const scp_par_status = "STATUS"
-const scp_par_set = "SET"
+const scp_par_step = "SET"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -1788,8 +1788,12 @@ func scp_run_job(bioid string, job string) bool {
 				biostatus := subpars[1]
 				bio[ind].Status = biostatus
 			case scp_par_step:
-				biostep := subpars[1]
-				bio[ind].Step = biostep
+				biostep_str := subpars[1]
+				biostep, _ := strconv.Atoi(biostep_str)
+				bio[ind].Step[0] = biostep
+			default:
+				fmt.Println("ERROR SCP RUN JOB: Parametro invalido em", scp_job_set, params)
+				return false
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_set, params)
