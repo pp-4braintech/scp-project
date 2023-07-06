@@ -15,7 +15,8 @@ import (
 )
 
 const demo = false
-const testmode = false
+const devmode = false
+const testmode = true
 
 const scp_on = 1
 const scp_off = 0
@@ -602,7 +603,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	fmt.Println(cmd1)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("RET CMD1 =", ret1)
-	if !strings.Contains(ret1, scp_ack) && !testmode {
+	if !strings.Contains(ret1, scp_ack) && !devmode {
 		fmt.Println("ERRO SET VAL: SEND MSG ORCH falhou", ret1)
 		return false
 	}
@@ -844,7 +845,7 @@ func scp_setup_devices() {
 			}
 			i := get_bio_index(b.BioreactorID)
 			if i >= 0 {
-				if nerr > 1 && !testmode {
+				if nerr > 1 && !devmode {
 					bio[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[i].Status == bio_nonexist {
@@ -887,7 +888,7 @@ func scp_setup_devices() {
 			}
 			i := get_ibc_index(ib.IBCID)
 			if i >= 0 {
-				if nerr > 0 && !testmode {
+				if nerr > 0 && !devmode {
 					ibc[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[i].Status == bio_nonexist {
@@ -930,7 +931,7 @@ func scp_setup_devices() {
 			}
 			i := get_totem_index(tot.TotemID)
 			if i >= 0 {
-				if nerr > 0 && !testmode {
+				if nerr > 0 && !devmode {
 					totem[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
 				}
@@ -1229,7 +1230,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW 08: CMD1 =", cmd1, " RET=", ret1)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 10: BIORREATOR falha ao ligar bomba")
 			cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
 			scp_sendmsg_orch(cmd2)
@@ -1307,7 +1308,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 22: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 23: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
@@ -1319,7 +1320,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 25: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 26: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
@@ -1380,7 +1381,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 := "CMD/" + pumpdev + "/PUT/" + pumpport + ",1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 34: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 35: IBC falha ao ligar bomba desenvase")
 			return -1
 		}
@@ -1445,7 +1446,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 45: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 46: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
@@ -1457,7 +1458,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 48: CMD1 =", cmd1, " RET=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !testmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERRO RUN WITHDRAW 49: BIORREATOR falha ao ligar bomba TOTEM02")
 			set_valvs_value(vpath, 0, false)
 			return -1
@@ -1495,7 +1496,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
 			ret1 = scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG RUN WITHDRAW 55: CMD1 =", cmd1, " RET=", ret1)
-			if !strings.Contains(ret1, scp_ack) && !testmode {
+			if !strings.Contains(ret1, scp_ack) && !devmode {
 				fmt.Println("ERRO RUN WITHDRAW 56: BIORREATOR falha ao ligar bomba TOTEM02")
 				totem[tind].Pumpstatus = false
 				set_valvs_value(vpath, 0, false)
@@ -1507,7 +1508,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
 			ret1 = scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG RUN WITHDRAW 58: CMD1 =", cmd1, " RET=", ret1)
-			if !strings.Contains(ret1, scp_ack) && !testmode {
+			if !strings.Contains(ret1, scp_ack) && !devmode {
 				fmt.Println("ERRO RUN WITHDRAW 59: BIORREATOR falha ao ligar bomba TOTEM02")
 				set_valvs_value(vpath, 0, false)
 				return -1
@@ -1535,7 +1536,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret0 := scp_sendmsg_orch(cmd0)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
-		if !strings.Contains(ret0, scp_ack) && !testmode {
+		if !strings.Contains(ret0, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret0)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
@@ -1546,7 +1547,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
 		rets := scp_sendmsg_orch(cmds)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-		if !strings.Contains(rets, scp_ack) && !testmode {
+		if !strings.Contains(rets, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
 		}
 
@@ -1567,7 +1568,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
-	if !strings.Contains(ret1, scp_ack) && !testmode {
+	if !strings.Contains(ret1, scp_ack) && !devmode {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
 			set_valvs_value(dev_valvs, 1-value, false)
@@ -1580,7 +1581,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
-		if !strings.Contains(ret2, scp_ack) && !testmode {
+		if !strings.Contains(ret2, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret2)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
@@ -1592,7 +1593,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
 		rets := scp_sendmsg_orch(cmds)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-		if !strings.Contains(rets, scp_ack) && !testmode {
+		if !strings.Contains(rets, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
 		}
 	}
@@ -1641,7 +1642,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
-		if !strings.Contains(ret, scp_ack) && !testmode {
+		if !strings.Contains(ret, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
 			if len(valvs) > 0 {
 				set_valvs_value(valvs, 1-value, false)
@@ -1661,7 +1662,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
 			rets := scp_sendmsg_orch(cmds)
 			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-			if !strings.Contains(rets, scp_ack) && !testmode {
+			if !strings.Contains(rets, scp_ack) && !devmode {
 				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
 			}
 		}
@@ -1682,7 +1683,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
-		if !strings.Contains(ret, scp_ack) && !testmode {
+		if !strings.Contains(ret, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
 			if len(valvs) > 0 {
 				set_valvs_value(valvs, 1-value, false)
@@ -1702,7 +1703,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
 			rets := scp_sendmsg_orch(cmds)
 			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-			if !strings.Contains(rets, scp_ack) && !testmode {
+			if !strings.Contains(rets, scp_ack) && !devmode {
 				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
 			}
 		}
@@ -1861,7 +1862,7 @@ func scp_run_job(bioid string, job string) bool {
 			}
 			ret1 := scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
-			if !strings.Contains(ret1, scp_ack) && !testmode {
+			if !strings.Contains(ret1, scp_ack) && !devmode {
 				fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao enviar PUT screen", scraddr, ret1)
 				return false
 			}
@@ -1871,7 +1872,7 @@ func scp_run_job(bioid string, job string) bool {
 			for {
 				ret2 := scp_sendmsg_orch(cmd2)
 				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
-				if !strings.Contains(ret2, scp_ack) && !testmode {
+				if !strings.Contains(ret2, scp_ack) && !devmode {
 					fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao envirar GET screen", scraddr, ret2)
 					return false
 				}
@@ -1882,10 +1883,10 @@ func scp_run_job(bioid string, job string) bool {
 					}
 				}
 				t_elapsed := time.Since(t_start).Seconds()
-				if t_elapsed > scp_maxtimewithdraw {
+				if t_elapsed > scp_timeoutdefault {
 					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
-					if !testmode {
-						return false
+					if !devmode {
+						return testmode
 					}
 					break
 				}
@@ -1909,7 +1910,7 @@ func scp_run_job(bioid string, job string) bool {
 			case scp_par_time:
 				time_str := subpars[1]
 				time_int, err = strconv.ParseUint(time_str, 10, 32)
-				if testmode {
+				if devmode || testmode {
 					time_int = uint64(scp_timeoutdefault)
 				}
 				if err != nil {
@@ -1939,10 +1940,10 @@ func scp_run_job(bioid string, job string) bool {
 					if vol_now >= vol_max {
 						break
 					}
-					if t_elapsed > scp_maxtimewithdraw {
+					if t_elapsed > scp_timeoutdefault {
 						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
-						if !testmode {
-							return false
+						if !devmode {
+							return testmode
 						}
 						break
 					}
@@ -2093,7 +2094,7 @@ func scp_run_job(bioid string, job string) bool {
 	default:
 		fmt.Println("ERROR SCP RUN JOB: JOB invalido", bioid, job, params)
 	}
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	return true
 }
 
@@ -2613,8 +2614,8 @@ func scp_master_ipc() {
 }
 
 func main() {
-	if testmode {
-		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
+	if devmode {
+		fmt.Println("WARN:  EXECUTANDO EM devmode\n\n\n")
 	}
 	norgs := load_organisms("organismos_conf.csv")
 	if norgs < 0 {
