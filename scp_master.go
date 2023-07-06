@@ -1830,6 +1830,10 @@ func scp_run_job(bioid string, job string) bool {
 				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
 				if scp_run_withdraw(scp_bioreactor, bioid) < 0 {
 					return false
+				} else {
+					bio[ind].Organism = ""
+					bio[ind].Withdraw = 0
+					bio[ind].Volume = 0 // verificar
 				}
 
 			}
