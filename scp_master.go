@@ -76,6 +76,7 @@ const scp_schedwait = 500
 
 const scp_timewaitvalvs = 15000
 const scp_maxtimewithdraw = 30
+const scp_timeoutdefault = 30
 
 const bio_diametro = 1430  // em mm
 const bio_v1_zero = 1483.0 // em mm
@@ -1899,6 +1900,9 @@ func scp_run_job(bioid string, job string) bool {
 			case scp_par_time:
 				time_str := subpars[1]
 				time_int, err = strconv.ParseUint(time_str, 10, 32)
+				if testmode {
+					time_int = uint64(scp_timeoutdefault)
+				}
 				if err != nil {
 					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
 					return false
@@ -2133,7 +2137,7 @@ func scp_scheduler() {
 						bio[k].Queue = append(orginfo, recipe...)
 						if autowithdraw {
 							outjob := "RUN/WITHDRAW," + strings.Replace(b.BioreactorID, "BIOR", "IBC", -1) + ",END"
-							wdraw := []string{"STATUS/DESENVASE,END", outjob, "RUN/CIP/END"}
+							wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
 							bio[k].Queue = append(bio[k].Queue, wdraw...)
 						}
 						bio[k].Status = bio_starting
