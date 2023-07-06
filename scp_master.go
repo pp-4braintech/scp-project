@@ -1849,6 +1849,7 @@ func scp_run_job(bioid string, job string) bool {
 			scraddr := bio_cfg[bioid].Screenaddr
 			var cmd1 string = ""
 			var msgask string = ""
+			scrmain := fmt.Sprintf("CMD/%s/PUT/S200,1/END", scraddr)
 			switch msg {
 			case scp_msg_cloro:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
@@ -1874,6 +1875,7 @@ func scp_run_job(bioid string, job string) bool {
 				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
 				if !strings.Contains(ret2, scp_ack) && !devmode {
 					fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao envirar GET screen", scraddr, ret2)
+					scp_sendmsg_orch(scrmain)
 					return false
 				}
 				data := scp_splitparam(ret2, "/")
@@ -1886,12 +1888,14 @@ func scp_run_job(bioid string, job string) bool {
 				if t_elapsed > scp_timeoutdefault {
 					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
 					if !devmode {
+						scp_sendmsg_orch(scrmain)
 						return testmode
 					}
 					break
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			scp_sendmsg_orch(scrmain)
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
