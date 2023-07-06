@@ -41,10 +41,12 @@ const scp_par_time = "TIME"
 const scp_par_volume = "VOLUME"
 const scp_par_grow = "GROW"
 const scp_par_cip = "CIP"
+const scp_par_status = "STATUS"
+const scp_par_set = "SET"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
-const scp_job_status = "STATUS"
+const scp_job_set = "SET"
 const scp_job_wait = "WAIT"
 const scp_job_ask = "ASK"
 const scp_job_off = "OFF"
@@ -1778,12 +1780,19 @@ func scp_run_job(bioid string, job string) bool {
 		}
 		board_add_message("IIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
 
-	case scp_job_status:
-		if len(subpars) > 0 {
-			biostatus := subpars[0]
-			bio[ind].Status = biostatus
+	case scp_job_set:
+		if len(subpars) > 1 {
+			flag := subpars[0]
+			switch flag {
+			case scp_par_status:
+				biostatus := subpars[1]
+				bio[ind].Status = biostatus
+			case scp_par_step:
+				biostep := subpars[1]
+				bio[ind].Step = biostep
+			}
 		} else {
-			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_set, params)
 			return false
 		}
 
