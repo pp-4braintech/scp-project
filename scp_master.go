@@ -1817,7 +1817,10 @@ func scp_run_job(bioid string, job string) bool {
 
 			case scp_par_withdraw:
 				bio[ind].Withdraw = bio[ind].Volume
-				bio[ind].OutID = strings.Replace(bioid, "BIOR", "IBC", -1)
+				if len(subpars) > 2 {
+					outid := subpars[1]
+					bio[ind].OutID = outid
+				}
 				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
 				if scp_run_withdraw(scp_bioreactor, bioid) < 0 {
 					return false
@@ -2129,7 +2132,8 @@ func scp_scheduler() {
 						orginfo := []string{"ORG/" + s.OrgCode + ",END"}
 						bio[k].Queue = append(orginfo, recipe...)
 						if autowithdraw {
-							wdraw := []string{"STATUS/DESENVASE,END", "RUN/WITHDRAW,END", "RUN/CIP/END"}
+							outjob := "RUN/WITHDRAW," + strings.Replace(b.BioreactorID, "BIOR", "IBC", -1) + ",END"
+							wdraw := []string{"STATUS/DESENVASE,END", outjob, "RUN/CIP/END"}
 							bio[k].Queue = append(bio[k].Queue, wdraw...)
 						}
 						bio[k].Status = bio_starting
