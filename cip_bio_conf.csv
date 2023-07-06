@@ -1,5 +1,6 @@
 #
 SET/STATUS,CIP
+SET/MAXSTEP,6
 #
 # PASSO 1
 #
