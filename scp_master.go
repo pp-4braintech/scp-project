@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const devmode = false
+const devmode = true
 const testmode = true
 
 const scp_on = 1
@@ -35,6 +35,7 @@ const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_dev_water = "WATER"
 const scp_dev_sprayball = "SPRAYBALL"
+const scp_dev_peris = "PERIS"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -1601,6 +1602,38 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	return true
 }
 
+func scp_turn_peris(bioid string, perisid string, value int) bool {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP TURN PERIS: Biorreator nao existe", bioid)
+		return false
+	}
+	peris_int, err := strconv.Atoi(perisid)
+	if err != nil || peris_int > 5 {
+		checkErr(err)
+		fmt.Println("ERROR SCP TURN PERIS: Peristaltica invalida", bioid, perisid)
+		return false
+	}
+	peris_dev := bio_cfg[bioid].Peris_dev[peris_int-1]
+	devaddr := bio_cfg[bioid].Deviceaddr
+	// scraddr := bio_cfg[bioid].Screenaddr
+	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, peris_dev, value)
+	ret0 := scp_sendmsg_orch(cmd0)
+	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
+	if !strings.Contains(ret0, scp_ack) && !devmode {
+		fmt.Println("ERROR SCP TURN PERIS:", bioid, " erro ao definir valor[", value, "] peristaltica ", ret0)
+		return false
+	}
+	//bio[ind].Aerator = false    Definir Status Peristalticas
+	// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+	// rets := scp_sendmsg_orch(cmds)
+	// fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+	// if !strings.Contains(rets, scp_ack) && !devmode {
+	// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
+	// }
+	return true
+}
+
 func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bool {
 	var devaddr, pumpdev string
 	var ind int
@@ -1985,6 +2018,13 @@ func scp_run_job(bioid string, job string) bool {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
 					return false
 				}
+			case scp_dev_peris:
+				peris_str := subpars[1]
+				if !scp_turn_peris(bioid, peris_str, 1) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
+					return false
+				}
+
 			case scp_dev_water:
 				totem := subpars[1]
 				totem_ind := get_totem_index(totem)
@@ -2048,6 +2088,12 @@ func scp_run_job(bioid string, job string) bool {
 				}
 				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao desligar bomba em", bioid, valvs)
+					return false
+				}
+			case scp_dev_peris:
+				peris_str := subpars[1]
+				if !scp_turn_peris(bioid, peris_str, 0) {
+					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
 			case scp_dev_water:
