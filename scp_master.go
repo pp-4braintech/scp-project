@@ -46,6 +46,7 @@ const scp_par_cip = "CIP"
 const scp_par_status = "STATUS"
 const scp_par_step = "STEP"
 const scp_par_maxstep = "MAXSTEP"
+const scp_par_heater = "HEATER"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -1785,7 +1786,11 @@ func pop_first_job(bioid string, remove bool) string {
 }
 
 func scp_run_job(bioid string, job string) bool {
-	fmt.Println("\n\nSIMULANDO EXECUCAO", bioid, job)
+	if devmode {
+		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
+	} else {
+		fmt.Println("\n\nSCP RUN JOB EXECUTANDO", bioid, job)
+	}
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", bioid)
@@ -2026,6 +2031,8 @@ func scp_run_job(bioid string, job string) bool {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
+			case scp_par_heater:
+				// Implementar
 
 			case scp_dev_water:
 				totem := subpars[1]
