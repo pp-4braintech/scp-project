@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const demo = false
+const demo = true
 const devmode = true
 const testmode = true
 
