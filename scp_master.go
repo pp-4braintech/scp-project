@@ -796,7 +796,7 @@ func scp_sendmsg_orch(cmd string) string {
 func board_add_message(m string) {
 	n := len(biofabrica.Messages)
 	stime := time.Now().Format("15:04")
-	msg := fmt.Sprintf("%c[%s] %s", m[0], stime, m[1:])
+	msg := fmt.Sprintf("%c%s [%s]", m[0], m[1:], stime)
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
@@ -1608,7 +1608,7 @@ func scp_turn_peris(bioid string, perisid string, value int) bool {
 		fmt.Println("ERROR SCP TURN PERIS: Biorreator nao existe", bioid)
 		return false
 	}
-	peris_int, err := strconv.Atoi(perisid)
+	peris_int, err := strconv.Atoi(perisid[1:])
 	if err != nil || peris_int > 5 {
 		checkErr(err)
 		fmt.Println("ERROR SCP TURN PERIS: Peristaltica invalida", bioid, perisid)
