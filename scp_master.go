@@ -1948,7 +1948,9 @@ func scp_run_job(bioid string, job string) bool {
 				time_str := subpars[1]
 				time_int, err = strconv.ParseUint(time_str, 10, 32)
 				if devmode || testmode {
-					time_int = uint64(scp_timeoutdefault)
+					if time_int > uint64(scp_timeoutdefault) {
+						time_int = uint64(scp_timeoutdefault)
+					}
 				}
 				if err != nil {
 					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
