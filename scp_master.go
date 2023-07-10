@@ -15,8 +15,8 @@ import (
 )
 
 const demo = false
-const devmode = false
-const testmode = false
+const devmode = true
+const testmode = true
 
 const scp_on = 1
 const scp_off = 0
@@ -1004,6 +1004,7 @@ func scp_get_alldata() {
 			for k, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
 					i := get_bio_index(b.BioreactorID)
+					fmt.Println("teste k/i", k, i)
 					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
