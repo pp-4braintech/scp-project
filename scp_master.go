@@ -1009,10 +1009,10 @@ func scp_get_alldata() {
 			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
 					ind := get_bio_index(b.BioreactorID)
-					mustupdate_this := mustupdate_bio && (bio_rand == ind)
-					if devmode {
-						fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
-					}
+					mustupdate_this := (mustupdate_bio && (bio_rand == ind)) || firsttime
+					// if devmode {
+					// 	fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
+					// }
 					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 					tempdev := bio_cfg[b.BioreactorID].Temp_dev
 					phdev := bio_cfg[b.BioreactorID].PH_dev
@@ -1144,7 +1144,7 @@ func scp_get_alldata() {
 			for k, b := range ibc {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
-					mustupdate_this := mustupdate_ibc && (ibc_rand == ind)
+					mustupdate_this := (mustupdate_ibc && (ibc_rand == ind)) || firsttime
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
