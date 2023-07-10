@@ -7,7 +7,8 @@ import (
 	"io"
 	"log"
 	"math"
-	"math/rand"
+
+	// "math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -79,6 +80,7 @@ const scp_refreshwait = 50
 const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
+const scp_timetosave = 45
 const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
 
@@ -991,25 +993,24 @@ func scp_get_alldata() {
 	if demo {
 		return
 	}
-	countsave := 0
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
+	t_start_save := time.Now()
 	firsttime := true
-	bio_rand := 0
-	ibc_rand := 0
+	bio_seq := 0
+	ibc_seq := 0
 	for {
 		if finishedsetup {
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
 			mustupdate_bio := false
 			if t_elapsed_bio >= scp_mustupdate_bio || firsttime {
 				mustupdate_bio = true
-				bio_rand = rand.Intn(len(bio))
 				t_start_bio = time.Now()
 			}
 			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
 					ind := get_bio_index(b.BioreactorID)
-					mustupdate_this := (mustupdate_bio && (bio_rand == ind)) || firsttime
+					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime
 					// if devmode {
 					// 	fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
 					// }
@@ -1134,17 +1135,22 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			if mustupdate_bio {
+				bio_seq++
+				if bio_seq >= len(bio) {
+					bio_seq = 0
+				}
+			}
 			t_elapsed_ibc := uint32(time.Since(t_start_ibc).Seconds())
 			mustupdate_ibc := false
 			if t_elapsed_ibc >= scp_mustupdate_ibc || firsttime {
 				mustupdate_ibc = true
-				ibc_rand = rand.Intn(len(ibc))
 				t_start_ibc = time.Now()
 			}
 			for k, b := range ibc {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
-					mustupdate_this := (mustupdate_ibc && (ibc_rand == ind)) || firsttime
+					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
@@ -1239,11 +1245,17 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			if mustupdate_ibc {
+				ibc_seq++
+				if ibc_seq >= len(ibc) {
+					ibc_seq = 0
+				}
+			}
 
-			countsave++
-			if countsave == 5 {
+			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
+			if t_elapsed_save >= scp_timetosave {
 				save_all_data(data_filename)
-				countsave = 0
+				t_start_save = time.Now()
 			}
 
 			firsttime = false
