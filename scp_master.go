@@ -82,7 +82,7 @@ const scp_mustupdate_bio = 300
 const scp_mustupdate_ibc = 600
 
 const scp_timewaitvalvs = 15000
-const scp_maxtimewithdraw = 60
+const scp_maxtimewithdraw = 600
 const scp_timeoutdefault = 60
 
 const bio_diametro = 1530  // em mm   era 1430
