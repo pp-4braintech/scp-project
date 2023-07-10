@@ -74,8 +74,8 @@ const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
-const scp_refreshwait = 100
-const scp_refreshsleep = 1000
+const scp_refreshwait = 50
+const scp_refreshsleep = 500
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
 const scp_mustupdate = 60
@@ -988,6 +988,9 @@ func scp_get_alldata() {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
 					i := get_bio_index(b.BioreactorID)
 					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
+						if devmode {
+							fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
+						}
 						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 						tempdev := bio_cfg[b.BioreactorID].Temp_dev
 						phdev := bio_cfg[b.BioreactorID].PH_dev
@@ -1048,6 +1051,9 @@ func scp_get_alldata() {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 					i := get_ibc_index(b.IBCID)
 					if i >= 0 && (ibc[i].Status != bio_nonexist && ibc[i].Status != bio_error) {
+						if devmode {
+							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
+						}
 						ibcaddr := ibc_cfg[b.IBCID].Deviceaddr
 						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
 						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
