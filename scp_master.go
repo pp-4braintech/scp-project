@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -994,17 +995,21 @@ func scp_get_alldata() {
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
 	firsttime := true
+	bio_rand := 0
+	ibc_rand := 0
 	for {
 		if finishedsetup {
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
 			mustupdate_bio := false
 			if t_elapsed_bio >= scp_mustupdate_bio || firsttime {
 				mustupdate_bio = true
+				bio_rand = rand.Intn(len(bio))
 				t_start_bio = time.Now()
 			}
 			for _, b := range bio {
-				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
+				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
 					ind := get_bio_index(b.BioreactorID)
+					mustupdate_this := mustupdate_bio && (bio_rand == ind)
 					if devmode {
 						fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
 					}
@@ -1016,7 +1021,7 @@ func scp_get_alldata() {
 					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 					//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
-					if mustupdate_bio || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true {
+					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true {
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
 						params := scp_splitparam(ret1, "/")
@@ -1029,7 +1034,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if mustupdate_bio || b.Status == bio_producting || b.Aerator == true {
+					if mustupdate_this || b.Status == bio_producting || b.Aerator == true {
 						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 						ret2 := scp_sendmsg_orch(cmd2)
 						params := scp_splitparam(ret2, "/")
@@ -1042,7 +1047,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
+					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 						cmdv0 := "CMD/" + bioaddr + "/GET/" + v0dev + "/END"
 						retv0 := scp_sendmsg_orch(cmdv0)
 						params := scp_splitparam(retv0, "/")
@@ -1133,12 +1138,14 @@ func scp_get_alldata() {
 			mustupdate_ibc := false
 			if t_elapsed_ibc >= scp_mustupdate_ibc || firsttime {
 				mustupdate_ibc = true
+				ibc_rand = rand.Intn(len(ibc))
 				t_start_ibc = time.Now()
 			}
 			for k, b := range ibc {
-				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate_ibc || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
+				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
-					if ind >= 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
+					mustupdate_this := mustupdate_ibc && (ibc_rand == ind)
+					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
