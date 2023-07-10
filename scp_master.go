@@ -88,6 +88,7 @@ const bio_diametro = 1530  // em mm   era 1430
 const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
 const ibc_v1_zero = 2652.0 // em mm   2647
+const ibc_v2_zero = 2652.0 // em mm
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
@@ -141,6 +142,7 @@ type Bioreact struct {
 	Withdraw     uint32
 	OutID        string
 	Queue        []string
+	Vol_zero     [2]float32
 }
 
 type IBC struct {
@@ -154,6 +156,7 @@ type IBC struct {
 	Timetotal  [2]int
 	Withdraw   uint32
 	OutID      string
+	Vol_zero   [2]float32
 }
 
 type Totem struct {
@@ -245,22 +248,22 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}},
-	{"BIOR06", bio_ready, "", "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR06", bio_ready, "", "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
-	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
-	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT"},
-	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT"},
-	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT"},
-	{"IBC06", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT"},
-	{"IBC07", bio_ready, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT"},
+	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC06", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC07", bio_ready, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
 }
 
 var totem = []Totem{
@@ -849,6 +852,12 @@ func scp_setup_devices() {
 			}
 			i := get_bio_index(b.BioreactorID)
 			if i >= 0 {
+				if bio[i].Vol_zero[0] == 0 {
+					bio[i].Vol_zero[0] = bio_v1_zero
+				}
+				if bio[i].Vol_zero[1] == 0 {
+					bio[i].Vol_zero[1] = bio_v2_zero
+				}
 				if nerr > 1 && !devmode {
 					bio[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
@@ -892,6 +901,12 @@ func scp_setup_devices() {
 			}
 			i := get_ibc_index(ib.IBCID)
 			if i >= 0 {
+				if ibc[i].Vol_zero[0] == 0 {
+					ibc[i].Vol_zero[0] = ibc_v1_zero
+				}
+				if ibc[i].Vol_zero[1] == 0 {
+					ibc[i].Vol_zero[1] = ibc_v2_zero
+				}
 				if nerr > 0 && !devmode {
 					ibc[i].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
@@ -993,7 +1008,9 @@ func scp_get_alldata() {
 						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 						tempdev := bio_cfg[b.BioreactorID].Temp_dev
 						phdev := bio_cfg[b.BioreactorID].PH_dev
+						v0dev := bio_cfg[b.BioreactorID].Levellow
 						v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
+						v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
@@ -1016,31 +1033,112 @@ func scp_get_alldata() {
 								bio[k].PH = phfloat
 							}
 						}
-						cmd3 := "CMD/" + bioaddr + "/GET/" + v1dev + "/END"
-						ret3 := scp_sendmsg_orch(cmd3)
-						params = scp_splitparam(ret3, "/")
+
+						cmdv0 := "CMD/" + bioaddr + "/GET/" + v0dev + "/END"
+						retv0 := scp_sendmsg_orch(cmdv0)
+						params = scp_splitparam(retv0, "/")
+						var vol0 float64
+						vol0 = -1
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
+							vol0 = float64(dint)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, vol0, retv0)
+						} else {
+							fmt.Println("ERRO GET ALLDATA: Volume ZERO", b.BioreactorID, retv0, params)
+						}
+
+						cmdv1 := "CMD/" + bioaddr + "/GET/" + v1dev + "/END"
+						retv1 := scp_sendmsg_orch(cmdv1)
+						var vol1 float64
+						vol1 = -1
+						params = scp_splitparam(retv1, "/")
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v1_zero*1.2)) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
+								b.Vol_zero[0] = float32(dint)
+							}
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := float64(bio_v1_zero) - float64(dint)
-							vol1 := area * dfloat
-							fmt.Println("DEBUG Volume ", b.BioreactorID, dint, area, dfloat, vol1)
-							if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
-								bio[k].Volume = uint32(vol1)
-								level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
-								level_int := uint8(level)
-								if level_int != bio[k].Level {
-									bio[k].Level = level_int
-									levels := fmt.Sprintf("%d", level_int)
-									cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
-									ret := scp_sendmsg_orch(cmd)
-									fmt.Println("SCREEN:", cmd, level, levels, ret)
-								}
-								if vol1 == 0 {
-									bio[k].Status = bio_empty
-								}
+							dfloat := float64(b.Vol_zero[0]) - float64(dint)
+							vol1 = area * dfloat
+							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol1, retv1)
+						} else {
+							fmt.Println("ERRO GET ALLDATA: USOM", b.BioreactorID, retv1, params)
+						}
+
+						cmdv2 := "CMD/" + bioaddr + "/GET/" + v2dev + "/END"
+						retv2 := scp_sendmsg_orch(cmdv2)
+						params = scp_splitparam(retv2, "/")
+						var vol2 float64
+						vol2 = -1
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v2_zero*1.2)) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
+								b.Vol_zero[1] = float32(dint)
+							}
+							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+							dfloat := float64(b.Vol_zero[1]) - float64(dint)
+							vol2 = area * dfloat
+							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol2, retv2)
+						} else {
+							fmt.Println("ERRO GET ALLDATA: LASER", b.BioreactorID, retv2, params)
+						}
+
+						var volc float64
+						if vol0 == 0 {
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido", b.BioreactorID)
+							volc = 0
+						} else if vol1 == -1 && vol2 > 0 {
+							volc = vol2
+						} else if vol2 == -1 && vol1 > 0 {
+							volc = vol1
+						} else if vol1 == -1 && vol2 == -1 {
+							volc = -1
+						} else if vol1 < vol2 {
+							volc = vol1
+						} else {
+							volc = vol2
+						}
+						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
+							bio[k].Volume = uint32(volc)
+							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
+							level_int := uint8(level)
+							if level_int != ibc[k].Level {
+								ibc[k].Level = level_int
+								levels := fmt.Sprintf("%d", level_int)
+								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
+								ret := scp_sendmsg_orch(cmd)
+								fmt.Println("SCREEN:", cmd, level, levels, ret)
+							}
+							if volc == 0 {
+								bio[k].Status = bio_empty
 							}
 						}
+
+						// params = scp_splitparam(ret3, "/")
+						// if params[0] == scp_ack {
+						// 	dint, _ := strconv.Atoi(params[1])
+						// 	area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+						// 	dfloat := float64(bio_v1_zero) - float64(dint)
+						// 	vol1 := area * dfloat
+						// 	fmt.Println("DEBUG Volume ", b.BioreactorID, dint, area, dfloat, vol1)
+						// 	if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
+						// 		bio[k].Volume = uint32(vol1)
+						// 		level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
+						// 		level_int := uint8(level)
+						// 		if level_int != bio[k].Level {
+						// 			bio[k].Level = level_int
+						// 			levels := fmt.Sprintf("%d", level_int)
+						// 			cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
+						// 			ret := scp_sendmsg_orch(cmd)
+						// 			fmt.Println("SCREEN:", cmd, level, levels, ret)
+						// 		}
+						// 		if vol1 == 0 {
+						// 			bio[k].Status = bio_empty
+						// 		}
+						// 	}
+						// }
 					}
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
@@ -1053,18 +1151,36 @@ func scp_get_alldata() {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
 						ibcaddr := ibc_cfg[b.IBCID].Deviceaddr
-						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
-						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
+						v0dev := bio_cfg[b.IBCID].Levellow
+
+						cmdv0 := "CMD/" + ibcaddr + "/GET/" + v0dev + "/END"
+						retv0 := scp_sendmsg_orch(cmdv0)
+						params := scp_splitparam(retv0, "/")
+						var vol0 float64
+						vol0 = -1
+						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							vol0 = float64(dint)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0, retv0)
+						} else {
+							fmt.Println("ERRO GET ALLDATA: Volume ZERO", b.IBCID, retv0, params)
+						}
+
+						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
 						cmd1 := "CMD/" + ibcaddr + "/GET/" + v1dev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
 						var vol1 float64
 						vol1 = -1
-						params := scp_splitparam(ret1, "/")
+						params = scp_splitparam(ret1, "/")
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
+							if vol0 == 0 && (dint > 0 && float32(dint) <= (ibc_v1_zero*1.2)) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
+								b.Vol_zero[0] = float32(dint)
+							}
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := float64(ibc_v1_zero) - float64(dint)
+							dfloat := float64(b.Vol_zero[0]) - float64(dint)
 							vol1 = area * dfloat
 							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1, ret1)
 						} else {
@@ -1079,15 +1195,22 @@ func scp_get_alldata() {
 						vol2 = -1
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
+							if vol0 == 0 && (dint > 0 && float32(dint) <= (ibc_v2_zero*1.2)) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
+								b.Vol_zero[1] = float32(dint)
+							}
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := float64(ibc_v1_zero) - float64(dint)
+							dfloat := float64(b.Vol_zero[1]) - float64(dint)
 							vol2 = area * dfloat
 							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
 						} else {
 							fmt.Println("ERRO GET ALLDATA: LASER", b.IBCID, ret2, params)
 						}
 						var volc float64
-						if vol1 == -1 && vol2 > 0 {
+						if vol0 == 0 {
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido", b.IBCID)
+							volc = 0
+						} else if vol1 == -1 && vol2 > 0 {
 							volc = vol2
 						} else if vol2 == -1 && vol1 > 0 {
 							volc = vol1
@@ -1100,7 +1223,7 @@ func scp_get_alldata() {
 						}
 						if (volc >= 0) && (volc <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
 							ibc[k].Volume = uint32(volc)
-							level := (volc / float64(bio_cfg[b.IBCID].Maxvolume)) * 10
+							level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10
 							level_int := uint8(level)
 							if level_int != ibc[k].Level {
 								ibc[k].Level = level_int
