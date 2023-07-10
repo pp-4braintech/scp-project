@@ -978,6 +978,7 @@ func scp_get_alldata() {
 	for {
 		if finishedsetup {
 			t_elapsed := uint32(time.Since(t_start).Seconds())
+			fmt.Println("t=", t_elapsed)
 			mustupdate := false
 			if t_elapsed%scp_mustupdate == 0 {
 				mustupdate = true
