@@ -379,7 +379,7 @@ func load_ibcs_conf(filename string) int {
 		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
 			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}, llow}
 		totalrecords = k
-		fmt.Println(ibc_cfg[id])
+		// fmt.Println(ibc_cfg[id])
 	}
 	return totalrecords
 }
@@ -1161,12 +1161,10 @@ func scp_get_alldata() {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
 						ibcaddr := ibc_cfg[b.IBCID].Deviceaddr
-
-						v0dev := bio_cfg[b.IBCID].Levellow
-
+						v0dev := ibc_cfg[b.IBCID].Levellow
 						cmdv0 := "CMD/" + ibcaddr + "/GET/" + v0dev + "/END"
 						retv0 := scp_sendmsg_orch(cmdv0)
-						fmt.Println("ZERO IBC", v0dev, " - ", cmdv0, " - ", retv0)
+						// fmt.Println("ZERO IBC", v0dev, " - ", cmdv0, " - ", retv0)
 						params := scp_splitparam(retv0, "/")
 						var vol0 float64
 						vol0 = -1
@@ -2842,7 +2840,7 @@ func main() {
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
-	fmt.Println(ibc_cfg)
+	// fmt.Println(ibc_cfg)
 	nbiocfg := load_bios_conf("bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
