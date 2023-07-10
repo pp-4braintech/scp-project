@@ -1023,6 +1023,7 @@ func scp_get_alldata() {
 					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true {
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
+						fmt.Println("DEBUG GET ALLDATA: Lendo TEMP do Biorreator", b.BioreactorID, cmd1, ret1)
 						params := scp_splitparam(ret1, "/")
 						if params[0] == scp_ack {
 							tempint, _ := strconv.Atoi(params[1])
@@ -1036,6 +1037,7 @@ func scp_get_alldata() {
 					if mustupdate_this || b.Status == bio_producting || b.Aerator == true {
 						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 						ret2 := scp_sendmsg_orch(cmd2)
+						fmt.Println("DEBUG GET ALLDATA: Lendo PH do Biorreator", b.BioreactorID, cmd2, ret2)
 						params := scp_splitparam(ret2, "/")
 						if params[0] == scp_ack {
 							phint, _ := strconv.Atoi(params[1])
