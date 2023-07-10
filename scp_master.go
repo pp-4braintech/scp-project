@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const devmode = true
+const devmode = false
 const testmode = true
 
 const scp_on = 1
