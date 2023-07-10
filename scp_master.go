@@ -1165,7 +1165,7 @@ func scp_get_alldata() {
 
 						cmdv0 := "CMD/" + ibcaddr + "/GET/" + v0dev + "/END"
 						retv0 := scp_sendmsg_orch(cmdv0)
-						fmt.Println("ZERO IBC", cmdv0, retv0)
+						fmt.Println("ZERO IBC", v0dev, " - ", cmdv0, " - ", retv0)
 						params := scp_splitparam(retv0, "/")
 						var vol0 float64
 						vol0 = -1
