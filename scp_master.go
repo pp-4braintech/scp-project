@@ -80,7 +80,7 @@ const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
 const scp_mustupdate_bio = 30
-const scp_mustupdate_ibc = 60
+const scp_mustupdate_ibc = 45
 
 const scp_timewaitvalvs = 15000
 const scp_maxtimewithdraw = 600
