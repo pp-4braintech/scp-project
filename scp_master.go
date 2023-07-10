@@ -832,9 +832,9 @@ func scp_setup_devices() {
 			for i := 0; i < len(b.Valv_devs); i++ {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Valv_devs[i][1:]+",3/END")
 			}
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",1/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",1/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",0/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
 			cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 			nerr := 0
 			for k, c := range cmd {
@@ -882,7 +882,7 @@ func scp_setup_devices() {
 				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
 			}
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levellow[1:]+",1/END")
+			cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Levellow[1:]+",0/END")
 			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
 			nerr := 0
