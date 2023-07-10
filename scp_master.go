@@ -1043,7 +1043,7 @@ func scp_get_alldata() {
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
 			for k, b := range ibc {
-				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 {
+				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 					i := get_ibc_index(b.IBCID)
 					if i >= 0 && (ibc[i].Status != bio_nonexist && ibc[i].Status != bio_error) {
 						ibcaddr := ibc_cfg[b.IBCID].Deviceaddr
