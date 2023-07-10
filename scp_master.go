@@ -978,7 +978,6 @@ func scp_get_alldata() {
 	for {
 		if finishedsetup {
 			t_elapsed := uint32(time.Since(t_start).Seconds())
-			fmt.Println("t=", t_elapsed)
 			mustupdate := false
 			if t_elapsed >= scp_mustupdate {
 				mustupdate = true
@@ -1043,7 +1042,6 @@ func scp_get_alldata() {
 							}
 						}
 					}
-
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
@@ -1068,9 +1066,9 @@ func scp_get_alldata() {
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol1 = area * dfloat
-							fmt.Println("DEBUG Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1, ret1)
+							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1, ret1)
 						} else {
-							fmt.Println("DEBUG ERRO USOM", b.IBCID, ret1, params)
+							fmt.Println("ERRO GET ALLDATA: USOM", b.IBCID, ret1, params)
 						}
 
 						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
@@ -1084,9 +1082,9 @@ func scp_get_alldata() {
 							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat := float64(ibc_v1_zero) - float64(dint)
 							vol2 = area * dfloat
-							fmt.Println("DEBUG Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
+							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
 						} else {
-							fmt.Println("DEBUG ERRO LASER", b.IBCID, ret2, params)
+							fmt.Println("ERRO GET ALLDATA: LASER", b.IBCID, ret2, params)
 						}
 						var volc float64
 						if vol1 == -1 && vol2 > 0 {
