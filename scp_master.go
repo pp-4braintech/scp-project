@@ -993,30 +993,30 @@ func scp_get_alldata() {
 	countsave := 0
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
+	firsttime := true
 	for {
 		if finishedsetup {
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
 			mustupdate_bio := false
-			if t_elapsed_bio >= scp_mustupdate_bio {
+			if t_elapsed_bio >= scp_mustupdate_bio || firsttime {
 				mustupdate_bio = true
 				t_start_bio = time.Now()
 			}
-			for k, b := range bio {
+			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
-					i := get_bio_index(b.BioreactorID)
-					fmt.Println("teste k/i", k, i)
-					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
-						if devmode {
-							fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
-						}
-						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-						tempdev := bio_cfg[b.BioreactorID].Temp_dev
-						phdev := bio_cfg[b.BioreactorID].PH_dev
-						v0dev := bio_cfg[b.BioreactorID].Levellow
-						v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
-						v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
-						//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
+					ind := get_bio_index(b.BioreactorID)
+					if devmode {
+						fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
+					}
+					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
+					tempdev := bio_cfg[b.BioreactorID].Temp_dev
+					phdev := bio_cfg[b.BioreactorID].PH_dev
+					v0dev := bio_cfg[b.BioreactorID].Levellow
+					v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
+					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
+					//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
+					if mustupdate_bio || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true {
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
 						params := scp_splitparam(ret1, "/")
@@ -1024,23 +1024,28 @@ func scp_get_alldata() {
 							tempint, _ := strconv.Atoi(params[1])
 							tempfloat := float32(tempint) / 100.0
 							if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
-								bio[k].Temperature = tempfloat
+								bio[ind].Temperature = tempfloat
 							}
 						}
+					}
+
+					if mustupdate_bio || b.Status == bio_producting || b.Aerator == true {
 						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 						ret2 := scp_sendmsg_orch(cmd2)
-						params = scp_splitparam(ret2, "/")
+						params := scp_splitparam(ret2, "/")
 						if params[0] == scp_ack {
 							phint, _ := strconv.Atoi(params[1])
 							phfloat := float32(phint) / 100.0
 							if (phfloat >= 0) && (phfloat <= 14) {
-								bio[k].PH = phfloat
+								bio[ind].PH = phfloat
 							}
 						}
+					}
 
+					if mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 						cmdv0 := "CMD/" + bioaddr + "/GET/" + v0dev + "/END"
 						retv0 := scp_sendmsg_orch(cmdv0)
-						params = scp_splitparam(retv0, "/")
+						params := scp_splitparam(retv0, "/")
 						var vol0 float64
 						vol0 = -1
 						if params[0] == scp_ack {
@@ -1106,58 +1111,34 @@ func scp_get_alldata() {
 						}
 						volc = vol1 // Precisa validar LASER BIO
 						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
-							bio[k].Volume = uint32(volc)
+							bio[ind].Volume = uint32(volc)
 							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
 							level_int := uint8(level)
-							if level_int != ibc[k].Level {
-								bio[k].Level = level_int
+							if level_int != bio[ind].Level {
+								bio[ind].Level = level_int
 								levels := fmt.Sprintf("%d", level_int)
 								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
 								ret := scp_sendmsg_orch(cmd)
 								fmt.Println("SCREEN:", cmd, level, levels, ret)
 							}
 							if volc == 0 {
-								bio[k].Status = bio_empty
+								bio[ind].Status = bio_empty
 							}
 						}
-
-						// params = scp_splitparam(ret3, "/")
-						// if params[0] == scp_ack {
-						// 	dint, _ := strconv.Atoi(params[1])
-						// 	area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-						// 	dfloat := float64(bio_v1_zero) - float64(dint)
-						// 	vol1 := area * dfloat
-						// 	fmt.Println("DEBUG Volume ", b.BioreactorID, dint, area, dfloat, vol1)
-						// 	if (vol1 >= 0) && (vol1 <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
-						// 		bio[k].Volume = uint32(vol1)
-						// 		level := (vol1 / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
-						// 		level_int := uint8(level)
-						// 		if level_int != bio[k].Level {
-						// 			bio[k].Level = level_int
-						// 			levels := fmt.Sprintf("%d", level_int)
-						// 			cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
-						// 			ret := scp_sendmsg_orch(cmd)
-						// 			fmt.Println("SCREEN:", cmd, level, levels, ret)
-						// 		}
-						// 		if vol1 == 0 {
-						// 			bio[k].Status = bio_empty
-						// 		}
-						// 	}
-						// }
 					}
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
 			t_elapsed_ibc := uint32(time.Since(t_start_ibc).Seconds())
 			mustupdate_ibc := false
-			if t_elapsed_ibc >= scp_mustupdate_ibc {
+			if t_elapsed_ibc >= scp_mustupdate_ibc || firsttime {
 				mustupdate_ibc = true
 				t_start_ibc = time.Now()
 			}
 			for k, b := range ibc {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate_ibc || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
-					i := get_ibc_index(b.IBCID)
-					if i >= 0 && (ibc[i].Status != bio_nonexist && ibc[i].Status != bio_error) {
+					ind := get_ibc_index(b.IBCID)
+					if ind >= 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
@@ -1258,6 +1239,7 @@ func scp_get_alldata() {
 				countsave = 0
 			}
 
+			firsttime = false
 			time.Sleep(scp_refreshsleep * time.Millisecond)
 
 		}
