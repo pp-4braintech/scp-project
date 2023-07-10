@@ -15,7 +15,7 @@ import (
 )
 
 const demo = false
-const devmode = false
+const devmode = true
 const testmode = true
 
 const scp_on = 1
@@ -73,10 +73,12 @@ const scp_clean = "CLEAN"
 const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
+
 const scp_refreshwait = 100
 const scp_refreshsleep = 1000
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
+const scp_mustupdate = 60
 
 const scp_timewaitvalvs = 15000
 const scp_maxtimewithdraw = 60
@@ -88,7 +90,7 @@ const bio_v2_zero = 1502.0 // em mm
 const ibc_v1_zero = 2652.0 // em mm   2647
 
 // const scp_join = "JOIN"
-const bio_data_filename = "dumpdata"
+const data_filename = "dumpdata"
 
 const bio_nonexist = "NULL"
 const bio_die = "DIE"
@@ -972,10 +974,16 @@ func scp_get_alldata() {
 		return
 	}
 	countsave := 0
+	t_start := time.Now()
 	for {
 		if finishedsetup {
+			t_elapsed := uint32(time.Since(t_start).Seconds())
+			mustupdate := false
+			if t_elapsed%scp_mustupdate == 0 {
+				mustupdate = true
+			}
 			for k, b := range bio {
-				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
+				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
 					i := get_bio_index(b.BioreactorID)
 					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
 						bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
@@ -1107,7 +1115,7 @@ func scp_get_alldata() {
 
 			countsave++
 			if countsave == 5 {
-				save_all_data(bio_data_filename)
+				save_all_data(data_filename)
 				countsave = 0
 			}
 
@@ -2720,7 +2728,7 @@ func main() {
 	// fmt.Println("TOTEM ", totem)
 	// fmt.Println("Biofabrica ", biofabrica)
 	valvs = make(map[string]int, 0)
-	load_all_data(bio_data_filename)
+	load_all_data(data_filename)
 	go scp_setup_devices()
 
 	go scp_get_alldata()
