@@ -78,7 +78,8 @@ const scp_refreshwait = 50
 const scp_refreshsleep = 500
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
-const scp_mustupdate = 60
+const scp_mustupdate_bio = 60
+const scp_mustupdate_ibc = 90
 
 const scp_timewaitvalvs = 15000
 const scp_maxtimewithdraw = 60
@@ -989,17 +990,18 @@ func scp_get_alldata() {
 		return
 	}
 	countsave := 0
-	t_start := time.Now()
+	t_start_bio := time.Now()
+	t_start_ibc := time.Now()
 	for {
 		if finishedsetup {
-			t_elapsed := uint32(time.Since(t_start).Seconds())
-			mustupdate := false
-			if t_elapsed >= scp_mustupdate {
-				mustupdate = true
-				t_start = time.Now()
+			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
+			mustupdate_bio := false
+			if t_elapsed_bio >= scp_mustupdate_bio {
+				mustupdate_bio = true
+				t_start_bio = time.Now()
 			}
 			for k, b := range bio {
-				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
+				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate_bio || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
 					i := get_bio_index(b.BioreactorID)
 					if i >= 0 && (bio[i].Status != bio_nonexist && bio[i].Status != bio_error) {
 						if devmode {
@@ -1100,6 +1102,7 @@ func scp_get_alldata() {
 						} else {
 							volc = vol2
 						}
+						volc = vol1 // Precisa validar LASER BIO
 						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 							bio[k].Volume = uint32(volc)
 							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
@@ -1143,8 +1146,14 @@ func scp_get_alldata() {
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+			t_elapsed_ibc := uint32(time.Since(t_start_ibc).Seconds())
+			mustupdate_ibc := false
+			if t_elapsed_ibc >= scp_mustupdate_ibc {
+				mustupdate_ibc = true
+				t_start_ibc = time.Now()
+			}
 			for k, b := range ibc {
-				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
+				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (mustupdate_ibc || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 					i := get_ibc_index(b.IBCID)
 					if i >= 0 && (ibc[i].Status != bio_nonexist && ibc[i].Status != bio_error) {
 						if devmode {
