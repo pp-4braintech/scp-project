@@ -379,6 +379,7 @@ func load_ibcs_conf(filename string) int {
 		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
 			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}, llow}
 		totalrecords = k
+		fmt.Println(ibc_cfg[id])
 	}
 	return totalrecords
 }
@@ -2841,6 +2842,7 @@ func main() {
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
+	fmt.Println(ibc_cfg)
 	nbiocfg := load_bios_conf("bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
