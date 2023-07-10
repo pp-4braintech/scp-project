@@ -980,8 +980,9 @@ func scp_get_alldata() {
 			t_elapsed := uint32(time.Since(t_start).Seconds())
 			fmt.Println("t=", t_elapsed)
 			mustupdate := false
-			if t_elapsed%scp_mustupdate == 0 {
+			if t_elapsed >= scp_mustupdate {
 				mustupdate = true
+				t_start = time.Now()
 			}
 			for k, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (mustupdate || b.Valvs[6] == 1 || b.Valvs[4] == 1) {
