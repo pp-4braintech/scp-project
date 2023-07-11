@@ -1028,7 +1028,7 @@ func scp_get_alldata() {
 						params := scp_splitparam(ret1, "/")
 						if params[0] == scp_ack {
 							tempint, _ := strconv.Atoi(params[1])
-							tempfloat := float32(tempint) / 100.0
+							tempfloat := float32(tempint) / 10.0
 							if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
 								bio[ind].Temperature = tempfloat
 							}
@@ -1042,7 +1042,7 @@ func scp_get_alldata() {
 						params := scp_splitparam(ret2, "/")
 						if params[0] == scp_ack {
 							phint, _ := strconv.Atoi(params[1])
-							phfloat := float32(phint) / 100.0
+							phfloat := float32(phint) / 10.0
 							if (phfloat >= 0) && (phfloat <= 14) {
 								bio[ind].PH = phfloat
 							}
