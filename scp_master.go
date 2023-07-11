@@ -2271,7 +2271,7 @@ func scp_run_job(bioid string, job string) bool {
 				}
 			case scp_dev_peris:
 				peris_str := subpars[1]
-				if !scp_turn_peris(bioid, peris_str, 0) {
+				if !scp_turn_peris(scp_bioreactor, bioid, peris_str, 0) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
