@@ -21,6 +21,7 @@ const scp_par_withdraw = "WITHDRAW"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
+const scp_dev_peris = "PERIS"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 
