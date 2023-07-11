@@ -1021,7 +1021,7 @@ func scp_get_alldata() {
 					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 					//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
-					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true {
+					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true || b.Valvs[2] == 1 {
 						cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 						ret1 := scp_sendmsg_orch(cmd1)
 						fmt.Println("DEBUG GET ALLDATA: Lendo TEMP do Biorreator", b.BioreactorID, cmd1, ret1)
