@@ -1751,21 +1751,42 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	return true
 }
 
-func scp_turn_peris(bioid string, perisid string, value int) bool {
-	ind := get_bio_index(bioid)
+func scp_turn_peris(devtype string, bioid string, perisid string, value int) bool {
+	var ind, max int
+	switch devtype {
+	case scp_bioreactor:
+		ind = get_bio_index(bioid)
+		max = 5
+	case scp_totem:
+		ind = get_totem_index(bioid)
+		max = 4
+	default:
+		fmt.Println("ERROR SCP TURN PERIS: Dispositivo invalido", devtype, bioid)
+		return false
+	}
 	if ind < 0 {
-		fmt.Println("ERROR SCP TURN PERIS: Biorreator nao existe", bioid)
+		fmt.Println("ERROR SCP TURN PERIS: Biorreator nao existe", devtype, bioid)
 		return false
 	}
 	peris_int, err := strconv.Atoi(perisid[1:])
-	if err != nil || peris_int > 5 {
+	if err != nil || peris_int > max {
 		checkErr(err)
 		fmt.Println("ERROR SCP TURN PERIS: Peristaltica invalida", bioid, perisid)
 		return false
 	}
-	peris_dev := bio_cfg[bioid].Peris_dev[peris_int-1]
-	devaddr := bio_cfg[bioid].Deviceaddr
-	// scraddr := bio_cfg[bioid].Screenaddr
+
+	peris_dev := ""
+	scrdev := ""
+	devaddr := ""
+	switch devtype {
+	case scp_bioreactor:
+		peris_dev = bio_cfg[bioid].Peris_dev[peris_int-1]
+		devaddr = bio_cfg[bioid].Deviceaddr
+		scrdev = bio_cfg[bioid].Screenaddr
+	case scp_totem:
+		peris_dev = totem_cfg[bioid].Peris_dev[peris_int-1]
+		devaddr = totem_cfg[bioid].Deviceaddr
+	}
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, peris_dev, value)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
@@ -1773,6 +1794,7 @@ func scp_turn_peris(bioid string, perisid string, value int) bool {
 		fmt.Println("ERROR SCP TURN PERIS:", bioid, " erro ao definir valor[", value, "] peristaltica ", ret0)
 		return false
 	}
+	fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
 	//bio[ind].Aerator = false    Definir Status Peristalticas
 	// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
 	// rets := scp_sendmsg_orch(cmds)
@@ -2175,7 +2197,7 @@ func scp_run_job(bioid string, job string) bool {
 				}
 			case scp_dev_peris:
 				peris_str := subpars[1]
-				if !scp_turn_peris(bioid, peris_str, 1) {
+				if !scp_turn_peris(scp_bioreactor, bioid, peris_str, 1) {
 					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
@@ -2727,6 +2749,23 @@ func scp_process_conn(conn net.Conn) {
 						// fmt.Println("RET CMD2 =", ret2)
 						conn.Write([]byte(scp_ack))
 					}
+
+				case scp_dev_peris:
+					// var cmd2 string
+					value_peris, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					value_status, err := strconv.Atoi(subparams[2])
+					checkErr(err)
+					//fmt.Println(value_valve, value_status)
+					if (value_peris >= 0) && (value_peris < 4) {
+						perisid := fmt.Sprintf("V%d", value_peris+1)
+						if scp_turn_peris(scp_totem, totemid, perisid, value_status) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
+					}
+
 				default:
 					conn.Write([]byte(scp_err))
 				}

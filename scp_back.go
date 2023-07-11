@@ -498,8 +498,9 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 		totem_id := r.FormValue("Id")
 		if len(totem_id) >= 0 {
 			pump := r.FormValue("Pump")
+			peris := r.FormValue("Perist")
 			valve := r.FormValue("Valve")
-			valve_status := r.FormValue("Status")
+			value_status := r.FormValue("Status")
 			// fmt.Println("Pump = ", pump)
 			// fmt.Println("Valve = ", valve)
 			// fmt.Println("Status = ", valve_status)
@@ -510,7 +511,13 @@ func totem_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 			if valve != "" {
-				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_valve + "," + valve + "," + value_status + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if peris != "" {
+				cmd := "PUT/" + scp_totem + "/" + totem_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
