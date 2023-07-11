@@ -136,6 +136,7 @@ type Bioreact struct {
 	Pumpstatus   bool
 	Aerator      bool
 	Valvs        [8]int
+	Perist       [5]int
 	Temperature  float32
 	PH           float32
 	Step         [2]int
@@ -250,12 +251,12 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR06", bio_ready, "", "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR06", bio_ready, "", "", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
 }
 
 var ibc = []IBC{
@@ -1795,6 +1796,12 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		return false
 	}
 	fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
+	switch devtype {
+	case scp_bioreactor:
+		bio[ind].Perist[peris_int-1] = value
+	case scp_totem:
+		totem[ind].Perist[peris_int-1] = value
+	}
 	//bio[ind].Aerator = false    Definir Status Peristalticas
 	// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
 	// rets := scp_sendmsg_orch(cmds)
