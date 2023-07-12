@@ -1042,15 +1042,17 @@ func scp_get_alldata() {
 					}
 
 					if mustupdate_this || b.Status == bio_producting || b.Aerator == true || b.Valvs[1] == 1 {
-						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-						ret2 := scp_sendmsg_orch(cmd2)
-						fmt.Println("DEBUG GET ALLDATA: Lendo PH do Biorreator", b.BioreactorID, cmd2, ret2)
-						params := scp_splitparam(ret2, "/")
-						if params[0] == scp_ack {
-							phint, _ := strconv.Atoi(params[1])
-							phfloat := float32(phint) / 10.0
-							if (phfloat >= 0) && (phfloat <= 14) {
-								bio[ind].PH = phfloat
+						if t_elapsed_bio%5 == 0 {
+							cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
+							ret2 := scp_sendmsg_orch(cmd2)
+							fmt.Println("DEBUG GET ALLDATA: Lendo PH do Biorreator", b.BioreactorID, cmd2, ret2)
+							params := scp_splitparam(ret2, "/")
+							if params[0] == scp_ack {
+								phint, _ := strconv.Atoi(params[1])
+								phfloat := float32(phint) / 10.0
+								if (phfloat >= 0) && (phfloat <= 14) {
+									bio[ind].PH = phfloat
+								}
 							}
 						}
 					}
