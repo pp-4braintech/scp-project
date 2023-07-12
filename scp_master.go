@@ -1988,9 +1988,9 @@ func scp_adjust_ph(bioid string, ph float32) {
 		return
 	}
 	for {
-		if bio[ind].PH == ph {
+		if ph*0.95 <= bio[ind].PH && bio[ind].PH <= ph*1.05 {
 			break
-		} else if bio[ind].PH < ph {
+		} else if bio[ind].PH > ph {
 			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
 				fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
 			} else {
