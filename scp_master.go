@@ -1027,7 +1027,7 @@ func scp_get_alldata() {
 					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 					//v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
 
-					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Aerator == true || b.Valvs[2] == 1 {
+					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Valvs[2] == 1 {
 						if t_elapsed_bio%5 == 0 {
 							cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 							ret1 := scp_sendmsg_orch(cmd1)
@@ -1043,7 +1043,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if mustupdate_this || b.Status == bio_producting || b.Aerator == true || b.Valvs[1] == 1 {
+					if mustupdate_this || b.Status == bio_producting || b.Valvs[1] == 1 {
 						if t_elapsed_bio%5 == 0 {
 							cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 							ret2 := scp_sendmsg_orch(cmd2)
