@@ -1266,9 +1266,11 @@ func scp_get_alldata() {
 }
 
 func test_file(filename string) bool {
-	mf, err1 := os.Stat(filename)
-	if err1 != nil {
-		checkErr(err1)
+	mf, err := os.Stat(filename)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			checkErr(err)
+		}
 		return false
 	}
 	fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
