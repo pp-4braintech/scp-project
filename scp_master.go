@@ -839,6 +839,7 @@ func scp_setup_devices() {
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",0/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
+			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",0/END")
 			cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 			nerr := 0
 			for k, c := range cmd {
