@@ -1973,6 +1973,31 @@ func pop_first_job(bioid string, remove bool) string {
 	return ret
 }
 
+func scp_grow_bio(bioid string) bool {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP GROW BIO: Biorreator nao encontrado", bioid)
+	}
+	orgid := bio[ind].OrgCode
+	t_start := time.Now()
+	org, ok := organs[orgid]
+	if !ok {
+		fmt.Println("ERROR SCP GROW BIO: Organismo nao encontrado", orgid)
+	}
+	fmt.Println("DEBUG SCP GROW BIO: Iniciando cultivo de", org.Orgname, " no Biorreator", bioid, " tempo=", org.Timetotal)
+	ttotal := org.Timetotal
+	if devmode || testmode {
+		ttotal = scp_timeoutdefault
+	}
+	for {
+		t_elapsed := (time.Since(t_start).Seconds()) / 60
+		if t_elapsed >= float64(ttotal)*60 {
+			break
+		}
+	}
+	return true
+}
+
 func scp_run_job(bioid string, job string) bool {
 	if devmode {
 		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
@@ -2038,7 +2063,7 @@ func scp_run_job(bioid string, job string) bool {
 			cmd := subpars[0]
 			switch cmd {
 			case scp_par_grow:
-				fmt.Println("running GROW")
+				scp_grow_bio(bioid)
 
 			case scp_par_cip:
 				qini := []string{bio[ind].Queue[0]}
