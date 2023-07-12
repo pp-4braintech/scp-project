@@ -2898,13 +2898,10 @@ func main() {
 	if recipe == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP")
 	}
-	fmt.Println("receita=", recipe)
-	fmt.Println("cip=", cipbio)
 	nibccfg := load_ibcs_conf("ibc_conf.csv")
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
-	// fmt.Println(ibc_cfg)
 	nbiocfg := load_bios_conf("bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
