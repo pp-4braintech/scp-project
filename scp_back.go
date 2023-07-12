@@ -24,6 +24,7 @@ const scp_dev_valve = "VALVE"
 const scp_dev_peris = "PERIS"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
+const scp_bioreactor = "BIOREACTOR"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
