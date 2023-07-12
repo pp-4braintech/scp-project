@@ -461,7 +461,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 			if peris != "" {
-				cmd := "PUT/" + scp_bioreactor + "/" + bio_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))

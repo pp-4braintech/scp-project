@@ -2610,7 +2610,7 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
-					if (value_peris >= 0) && (value_peris < 4) {
+					if (value_peris >= 0) && (value_peris < 5) {
 						perisid := fmt.Sprintf("V%d", value_peris+1)
 						if scp_turn_peris(scp_bioreactor, bioid, perisid, value_status) {
 							conn.Write([]byte(scp_ack))
