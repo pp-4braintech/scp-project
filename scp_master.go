@@ -1987,7 +1987,7 @@ func scp_grow_bio(bioid string) bool {
 	fmt.Println("DEBUG SCP GROW BIO: Iniciando cultivo de", org.Orgname, " no Biorreator", bioid, " tempo=", org.Timetotal)
 	ttotal := org.Timetotal
 	if devmode || testmode {
-		ttotal = scp_timeoutdefault
+		ttotal = scp_timeoutdefault / 60
 	}
 	for {
 		t_elapsed := (time.Since(t_start).Seconds()) / 60
