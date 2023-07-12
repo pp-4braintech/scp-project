@@ -83,8 +83,13 @@ const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
 
 const scp_timewaitvalvs = 15000
+const scp_timephwait = 5000
+const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 600
 const scp_timeoutdefault = 60
+
+const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
+const bio_deltaph = 0.1   // variacao de ph maximo em percentual
 
 const bio_diametro = 1530  // em mm   era 1430
 const bio_v1_zero = 1483.0 // em mm
@@ -1036,7 +1041,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if mustupdate_this || b.Status == bio_producting || b.Aerator == true {
+					if mustupdate_this || b.Status == bio_producting || b.Aerator == true || b.Valvs[1] == 1 {
 						cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 						ret2 := scp_sendmsg_orch(cmd2)
 						fmt.Println("DEBUG GET ALLDATA: Lendo PH do Biorreator", b.BioreactorID, cmd2, ret2)
@@ -1974,6 +1979,44 @@ func pop_first_job(bioid string, remove bool) string {
 	return ret
 }
 
+func scp_adjust_ph(bioid string, ph float32) {
+	ind := get_bio_index(bioid)
+	fmt.Println("DEBUG SCP GROW BIO: Ajustando PH", bioid, bio[ind].PH, ph)
+	valvs := []string{bioid + "/V4", bioid + "/V6"}
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+		return
+	}
+	for {
+		if bio[ind].PH == ph {
+			break
+		} else if bio[ind].PH < ph {
+			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
+				fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
+			} else {
+				time.Sleep(scp_timephwait * time.Millisecond)
+				if !scp_turn_peris(scp_bioreactor, bioid, "P1", 0) {
+					fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P1", bioid)
+				}
+			}
+		} else {
+			if !scp_turn_peris(scp_bioreactor, bioid, "P2", 1) {
+				fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P2", bioid)
+			} else {
+				time.Sleep(scp_timephwait * time.Millisecond)
+				if !scp_turn_peris(scp_bioreactor, bioid, "P2", 0) {
+					fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P2", bioid)
+				}
+			}
+		}
+		time.Sleep(scp_timephwait * time.Millisecond)
+	}
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+		return
+	}
+}
+
 func scp_grow_bio(bioid string) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -1986,15 +2029,44 @@ func scp_grow_bio(bioid string) bool {
 		fmt.Println("ERROR SCP GROW BIO: Organismo nao encontrado", orgid)
 	}
 	fmt.Println("DEBUG SCP GROW BIO: Iniciando cultivo de", org.Orgname, " no Biorreator", bioid, " tempo=", org.Timetotal)
-	ttotal := org.Timetotal
+	ttotal := float64(org.Timetotal * 60)
 	if devmode || testmode {
 		ttotal = scp_timeoutdefault / 60
 	}
+	pday := -1
+	var minph, maxph float64
 	for {
-		t_elapsed := (time.Since(t_start).Seconds()) / 60
-		if t_elapsed >= float64(ttotal)*60 {
+		t_elapsed := time.Since(t_start).Minutes()
+		if t_elapsed >= ttotal {
 			break
 		}
+		t_day := int(t_elapsed / (60 * 24))
+		if t_day != pday {
+			var err error
+			if t_day > len(org.PH) {
+				fmt.Println("ERROR SCP GROW BIO: Dia de cultivo invalido", t_day, org)
+			} else {
+				vals := scp_splitparam(org.PH[t_day], "-")
+				minph, err = strconv.ParseFloat(vals[0], 32)
+				if err != nil {
+					checkErr(err)
+					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
+				}
+				maxph, err = strconv.ParseFloat(vals[1], 32)
+				if err != nil {
+					checkErr(err)
+					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
+				}
+			}
+			if bio[ind].PH < float32(minph*(1-bio_deltaph)) {
+				go scp_adjust_ph(bioid, float32(minph))
+			}
+			if bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
+				go scp_adjust_ph(bioid, float32(maxph))
+			}
+
+		}
+		time.Sleep(scp_timegrowwait * time.Millisecond)
 	}
 	return true
 }
