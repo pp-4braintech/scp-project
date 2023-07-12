@@ -2883,7 +2883,7 @@ func main() {
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 	}
-	testmode = test_file("scptestmode.flag")
+	testmode = test_file("scp_testmode.flag")
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
