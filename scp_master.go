@@ -1987,7 +1987,7 @@ func scp_adjust_ph(bioid string, ph float32) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
 		return
 	}
-	for {
+	for n := 0; n < 3; n++ {
 		if ph*0.95 <= bio[ind].PH && bio[ind].PH <= ph*1.05 {
 			break
 		} else if bio[ind].PH > ph {
@@ -2059,10 +2059,10 @@ func scp_grow_bio(bioid string) bool {
 				}
 			}
 			if bio[ind].PH < float32(minph*(1-bio_deltaph)) {
-				go scp_adjust_ph(bioid, float32(minph))
+				scp_adjust_ph(bioid, float32(minph))
 			}
 			if bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
-				go scp_adjust_ph(bioid, float32(maxph))
+				scp_adjust_ph(bioid, float32(maxph))
 			}
 
 		}
