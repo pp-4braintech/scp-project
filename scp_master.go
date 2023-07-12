@@ -1242,7 +1242,6 @@ func scp_get_alldata() {
 							}
 						}
 					}
-
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
@@ -2544,6 +2543,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					go scp_run_withdraw(scp_bioreactor, bioid)
 					conn.Write([]byte(scp_ack))
+
 				case scp_dev_pump:
 					var cmd2, cmd3 string
 					value, err := strconv.ParseBool(subparams[1])
@@ -2592,34 +2592,33 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
-					// var cmd2, cmd3 string
 					value_valve, err := strconv.Atoi(subparams[1])
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
-					//fmt.Println(value_valve, value_status)
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
-						set_valv_status(scp_bioreactor, bioid, valvid, value_status)
-						// bio[ind].Valvs[value_valve] = value_status
-						conn.Write([]byte(scp_ack))
-						// valve_str2 := fmt.Sprintf("%d", value_valve+201)
-						// biodev := bio_cfg[bioid].Deviceaddr
-						// bioscr := bio_cfg[bioid].Screenaddr
-						// valvaddr := bio_cfg[bioid].Valv_devs[value_valve]
-						// if value_status > 0 {
-						// 	cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",1/END"
-						// 	cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",1/END"
-						// } else {
-						// 	cmd2 = "CMD/" + biodev + "/PUT/" + valvaddr + ",0/END"
-						// 	cmd3 = "CMD/" + bioscr + "/PUT/S" + valve_str2 + ",0/END"
-						// }
-						// ret2 := scp_sendmsg_orch(cmd2)
-						// fmt.Println("RET CMD2 =", ret2)
-						// ret3 := scp_sendmsg_orch(cmd3)
-						// fmt.Println("RET CMD3 =", ret3)
-						// conn.Write([]byte(scp_ack))
+						if set_valv_status(scp_bioreactor, bioid, valvid, value_status) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
 					}
+
+				case scp_dev_peris:
+					value_peris, err := strconv.Atoi(subparams[1])
+					checkErr(err)
+					value_status, err := strconv.Atoi(subparams[2])
+					checkErr(err)
+					if (value_peris >= 0) && (value_peris < 4) {
+						perisid := fmt.Sprintf("V%d", value_peris+1)
+						if scp_turn_peris(scp_bioreactor, bioid, perisid, value_status) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
+					}
+
 				default:
 					conn.Write([]byte(scp_err))
 				}
@@ -2658,6 +2657,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					go scp_run_withdraw(scp_ibc, ibcid)
 					conn.Write([]byte(scp_ack))
+
 				case scp_dev_pump:
 					var cmd2 string
 					value, err := strconv.ParseBool(subparams[1])

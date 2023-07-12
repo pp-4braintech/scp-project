@@ -429,7 +429,8 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			pump := r.FormValue("Pumpstatus")
 			aero := r.FormValue("Aerator")
 			valve := r.FormValue("Valve")
-			valve_status := r.FormValue("Status")
+			peris := r.FormValue("Perist")
+			value_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
 			// fmt.Println("Bio_id = ", bio_id)
 			// fmt.Println("Pump = ", pump)
@@ -448,7 +449,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 			if valve != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_valve + "," + valve + "," + value_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 
@@ -456,6 +457,12 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			if withdraw != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+			if peris != "" {
+				cmd := "PUT/" + scp_bioreactor + "/" + bio_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
 		}
