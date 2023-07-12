@@ -14,9 +14,9 @@ import (
 	"time"
 )
 
-const demo = false
-const devmode = true
-const testmode = false
+var demo = false
+var devmode = false
+var testmode = false
 
 const scp_on = 1
 const scp_off = 0
@@ -1263,6 +1263,16 @@ func scp_get_alldata() {
 
 		}
 	}
+}
+
+func test_file(filename string) bool {
+	mf, err1 := os.Stat(filename)
+	if err1 != nil {
+		checkErr(err1)
+		return false
+	}
+	fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
+	return true
 }
 
 func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
@@ -2867,9 +2877,15 @@ func scp_master_ipc() {
 }
 
 func main() {
+	devmode = test_file("scp_devmode.flag")
 	if devmode {
-		fmt.Println("WARN:  EXECUTANDO EM devmode\n\n\n")
+		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 	}
+	testmode = test_file("scptestmode.flag")
+	if testmode {
+		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
+	}
+
 	norgs := load_organisms("organismos_conf.csv")
 	if norgs < 0 {
 		log.Fatal("Não foi possivel ler o arquivo de organismos")
