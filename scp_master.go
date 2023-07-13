@@ -2569,8 +2569,8 @@ func scp_run_bio(bioid string) {
 						if !strings.Contains(onoff, "MUSTOFF") {
 							bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
 						} else {
-							fmt.Println("MUSTOFF", onoff)
-							bio[ind].MustOffQueue = append(bio[ind].MustOffQueue, onoff)
+							onoff_must := strings.Replace(onoff, "MUSTOFF,", ",", -1)
+							bio[ind].MustOffQueue = append(bio[ind].MustOffQueue, onoff_must)
 						}
 					}
 					pop_first_job(bioid, true)
