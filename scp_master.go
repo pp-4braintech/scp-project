@@ -2528,7 +2528,7 @@ func scp_run_bio(bioid string) {
 		return
 	}
 	for bio[ind].Status != bio_die {
-		if len(bio[ind].Queue > 0) {
+		if len(bio[ind].Queue) > 0 {
 			fmt.Println("\n\nBIO", bioid, " status", bio[ind].Status)
 			fmt.Println("\nQUEUE:", bio[ind].Queue)
 			fmt.Println("\nUNDOQUEUE:", bio[ind].UndoQueue)
