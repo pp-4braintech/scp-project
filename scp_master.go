@@ -2569,7 +2569,7 @@ func scp_run_bio(bioid string) {
 						if !strings.Contains(onoff, "MUSTOFF") {
 							bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
 						} else {
-							onoff_must := strings.Replace(onoff, "MUSTOFF,", ",", -1)
+							onoff_must := strings.Replace(onoff, ",MUSTOFF,", ",", -1)
 							bio[ind].MustOffQueue = append(bio[ind].MustOffQueue, onoff_must)
 						}
 					}
