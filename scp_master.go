@@ -159,6 +159,7 @@ type Bioreact struct {
 	Vol_zero     [2]float32
 	LastStatus   string
 	MustStop     bool
+	MustPause    bool
 }
 
 type IBC struct {
@@ -265,12 +266,12 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 }
 
 var ibc = []IBC{
@@ -2031,6 +2032,9 @@ func scp_adjust_ph(bioid string, ph float32) {
 		return
 	}
 	for n := 0; n < 3; n++ {
+		if bio[ind].MustPause || bio[ind].MustStop {
+			return
+		}
 		if ph*0.95 <= bio[ind].PH && bio[ind].PH <= ph*1.05 {
 			break
 		} else if bio[ind].PH > ph {
@@ -2108,6 +2112,9 @@ func scp_grow_bio(bioid string) bool {
 				scp_adjust_ph(bioid, float32(maxph))
 			}
 
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
 		}
 		time.Sleep(scp_timegrowwait * time.Millisecond)
 	}
@@ -2255,7 +2262,7 @@ func scp_run_job(bioid string, job string) bool {
 						break
 					}
 				}
-				if bio[ind].Status == scp_pause || bio[ind].MustStop {
+				if bio[ind].MustPause || bio[ind].MustStop {
 					break
 				}
 				t_elapsed := time.Since(t_start).Seconds()
@@ -2301,7 +2308,7 @@ func scp_run_job(bioid string, job string) bool {
 				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
 				var n time.Duration
 				for n = 0; n < time_dur; n++ {
-					if bio[ind].Status == scp_pause || bio[ind].MustStop {
+					if bio[ind].MustPause || bio[ind].MustStop {
 						break
 					}
 					time.Sleep(1000 * time.Millisecond)
@@ -2327,7 +2334,7 @@ func scp_run_job(bioid string, job string) bool {
 					if vol_now >= vol_max {
 						break
 					}
-					if bio[ind].Status == scp_pause || bio[ind].MustStop {
+					if bio[ind].MustPause || bio[ind].MustStop {
 						break
 					}
 					if t_elapsed > scp_timeoutdefault {
@@ -2522,7 +2529,7 @@ func scp_run_bio(bioid string) {
 	}
 	for bio[ind].Status != bio_die {
 		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
-			if bio[ind].Status != bio_pause {
+			if bio[ind].Status != bio_pause || bio[ind].MustPause {
 				var ret bool = false
 				job := pop_first_job(bioid, false)
 				if len(job) > 0 {
@@ -2635,6 +2642,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 		if pause {
 			biobak[indbak] = bio[ind]
 			bio[ind].LastStatus = bio[ind].Status
+			bio[ind].MustPause = true
 			bio[ind].Status = scp_pause
 		} else {
 			// var ntries int
