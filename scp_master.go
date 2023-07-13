@@ -2495,15 +2495,19 @@ func scp_scheduler() {
 					s := pop_first_sched(b.BioreactorID, true)
 					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
 					if len(s.Bioid) > 0 {
-						orginfo := []string{"ORG/" + s.OrgCode + ",END"}
-						bio[k].Queue = append(orginfo, recipe...)
-						if autowithdraw {
-							outjob := "RUN/WITHDRAW," + strings.Replace(b.BioreactorID, "BIOR", "IBC", -1) + ",END"
-							wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
-							bio[k].Queue = append(bio[k].Queue, wdraw...)
+						if s.OrgCode == scp_par_cip {
+							bio[k].Queue = []string{"RUN/CIP/END"}
+						} else {
+							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
+							bio[k].Queue = append(orginfo, recipe...)
+							if autowithdraw {
+								outjob := "RUN/WITHDRAW," + strings.Replace(b.BioreactorID, "BIOR", "IBC", -1) + ",END"
+								wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
+								bio[k].Queue = append(bio[k].Queue, wdraw...)
+							}
+							bio[k].Status = bio_starting
+							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 						}
-						bio[k].Status = bio_starting
-						fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 					}
 				}
 			}
@@ -2567,11 +2571,7 @@ func scp_process_conn(conn net.Conn) {
 			fmt.Println("ERROR START: Biorreator nao existe", bioid)
 			break
 		}
-		if orgcode == scp_par_cip {
-			fmt.Println("START CIP")
-			cip := []string{"SET/STATUS,CIP,END", "RUN/CIP/END"}
-			bio[ind].Queue = cip
-		} else if len(organs[orgcode].Orgname) > 0 {
+		if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
 			fmt.Println("START", orgcode)
 			biotask := []string{bioid + ",0," + orgcode}
 			n := create_sched(biotask)
