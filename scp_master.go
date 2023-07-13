@@ -1750,8 +1750,9 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	}
 
 	if changevalvs {
-		if test_path(dev_valvs, 1-value) {
-			if set_valvs_value(dev_valvs, value, true) < 0 {
+		musttest := value == 1
+		if test_path(dev_valvs, 1-value) && musttest {
+			if set_valvs_value(dev_valvs, value, musttest) < 0 {
 				fmt.Println("ERROR SCP TURN AERO: erro ao definir valor [", value, "] das valvulas", dev_valvs)
 				return false
 			}
@@ -1931,8 +1932,9 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		}
 	}
 
-	if test_path(valvs, 1-value) {
-		if set_valvs_value(valvs, value, true) < 0 {
+	musttest := value == 1
+	if test_path(valvs, 1-value) && musttest {
+		if set_valvs_value(valvs, value, musttest) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", valvs)
 			return false
 		}
