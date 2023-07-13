@@ -2529,7 +2529,7 @@ func scp_run_bio(bioid string) {
 	}
 	for bio[ind].Status != bio_die {
 		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
-			if bio[ind].Status != bio_pause || bio[ind].MustPause {
+			if bio[ind].Status != bio_pause || !bio[ind].MustPause && !bio[ind].MustStop {
 				var ret bool = false
 				job := pop_first_job(bioid, false)
 				if len(job) > 0 {
