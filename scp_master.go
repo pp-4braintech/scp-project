@@ -2551,6 +2551,7 @@ func scp_process_conn(conn net.Conn) {
 		switch scp_object {
 		case scp_biofabrica:
 			lista := params[2:]
+			fmt.Println("LISTA:", lista)
 			n := create_sched(lista)
 			if n > 0 && !schedrunning {
 				go scp_scheduler()
@@ -2572,6 +2573,9 @@ func scp_process_conn(conn net.Conn) {
 			bio[ind].Queue = cip
 		} else if len(organs[orgcode].Orgname) > 0 {
 			fmt.Println("START", orgcode)
+			if !schedrunning {
+				go scp_scheduler()
+			}
 		} else {
 			fmt.Println("ORG INVALIDO")
 		}
