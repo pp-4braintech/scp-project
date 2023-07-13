@@ -2559,9 +2559,21 @@ func scp_process_conn(conn net.Conn) {
 
 	case scp_start:
 		orgcode := params[1]
+		fmt.Println("START")
 		if len(organs[orgcode].Orgname) == 0 {
-			fmt.Println("")
+			fmt.Println("START")
 		}
+
+	case scp_stop:
+		fmt.Println("STOP")
+
+	case scp_pause:
+		fmt.Println("PAUSE")
+		orgcode := params[1]
+		if len(organs[orgcode].Orgname) == 0 {
+			fmt.Println("START")
+		}
+
 		// switch scp_object {
 		// case scp_biofabrica:
 		// 	lista := params[2:]
