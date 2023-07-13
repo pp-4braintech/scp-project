@@ -2663,6 +2663,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 		}
 	default:
 		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
+		return false
 	}
 	return true
 }
@@ -2676,11 +2677,12 @@ func stop_device(devtype string, main_id string) bool {
 			return false
 		}
 		bio[ind].Withdraw = 0
+		bio[ind].MustStop = true
 		pause_device(devtype, main_id, true)
 		bio[ind].Queue = []string{}
-		bio[ind].RedoQueue = []string{}
-		bio[ind].UndoQueue = []string{}
-		bio[ind].MustStop = true
+		//bio[ind].RedoQueue = []string{}
+		//bio[ind].UndoQueue = []string{}
+		bio[ind].MustStop = false
 	}
 	return true
 }
