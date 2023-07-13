@@ -2664,6 +2664,8 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].Status = bio[ind].LastStatus
 			bio[ind].LastStatus = scp_pause
 		}
+	default:
+		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
 	}
 	return true
 }
