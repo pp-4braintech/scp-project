@@ -441,7 +441,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 
 			if b_start != "" {
 				if orgcode != "" {
-					cmd := "PUT/BIOREACTOR/" + bio_id + "/START," + orgcode + "/END"
+					cmd := "START/BIOREACTOR/" + bio_id + "/" + orgcode + "/END"
 					jsonStr := []byte(scp_sendmsg_master(cmd))
 					w.Write([]byte(jsonStr))
 				} else {
@@ -449,12 +449,12 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if b_pause != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/PAUSE," + b_pause + "/END"
+				cmd := "PAUSE/BIOREACTOR/" + bio_id + "/" + b_pause + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
 			if b_stop != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/STOP/END"
+				cmd := "STOP/BIOREACTOR/" + bio_id + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
