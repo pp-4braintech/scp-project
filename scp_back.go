@@ -447,10 +447,9 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				} else {
 					fmt.Println("ERROR BIOREACTOR VIEW: Start faltando orgcode", r)
 				}
-
 			}
 			if b_pause != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/PAUSE/END"
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/PAUSE," + b_pause + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
