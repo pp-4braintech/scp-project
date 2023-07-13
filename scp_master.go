@@ -2646,7 +2646,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			fmt.Println("ERROR PAUSE DEVICE: Biorreator nao existe", main_id)
 			break
 		}
-		fmt.Println("DEBUG PAUSE DEVICE: Biorreator", main_id, " em", pause)
+		fmt.Println("\n\nDEBUG PAUSE DEVICE: Biorreator", main_id, " em", pause)
 		if pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Pausando Biorreator", main_id)
 			biobak[indbak] = bio[ind]
@@ -2654,6 +2654,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
 		} else {
+			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			bio[ind].Status = bio[ind].LastStatus
 			bio[ind].UndoQueue = []string{}
