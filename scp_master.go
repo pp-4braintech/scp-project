@@ -2280,7 +2280,7 @@ func scp_run_job(bioid string, job string) bool {
 					}
 				}
 				if bio[ind].MustPause || bio[ind].MustStop {
-					break
+					return false
 				}
 				t_elapsed := time.Since(t_start).Seconds()
 				if t_elapsed > scp_timeoutdefault {
@@ -2326,7 +2326,7 @@ func scp_run_job(bioid string, job string) bool {
 				var n time.Duration
 				for n = 0; n < time_dur; n++ {
 					if bio[ind].MustPause || bio[ind].MustStop {
-						break
+						return false
 					}
 					time.Sleep(1000 * time.Millisecond)
 				}
@@ -2352,7 +2352,7 @@ func scp_run_job(bioid string, job string) bool {
 						break
 					}
 					if bio[ind].MustPause || bio[ind].MustStop {
-						break
+						return false
 					}
 					if t_elapsed > scp_timeoutdefault {
 						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
