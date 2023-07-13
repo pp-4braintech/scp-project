@@ -2,7 +2,7 @@
 SET/MAXSTEP,3
 #
 # Ligando Aerador
-ON/AERO,80
+ON/AERO,80,MUSTOFF
 #
 # Enchendo agua
 SET/STEP,1
