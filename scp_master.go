@@ -2541,6 +2541,39 @@ func create_sched(lista []string) int {
 	return tot
 }
 
+func pause_device(devtype string, main_id string, pause bool) bool {
+	switch devtype {
+	case scp_bioreactor:
+		ind := get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR PAUSE DEVICE: Biorreator nao existe", main_id)
+			break
+		}
+		if pause {
+			bio[ind].LastStatus = bio[ind].Status
+			bio[ind].Status = scp_pause
+		} else {
+			bio[ind].Status = bio[ind].LastStatus
+			bio[ind].LastStatus = scp_pause
+		}
+	}
+	return true
+}
+
+func stop_device(devtype string, main_id string) bool {
+	switch devtype {
+	case scp_bioreactor:
+		ind := get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR STOP: Biorreator nao existe", main_id)
+			return false
+		}
+		pause_device(devtype, main_id, true)
+		bio[ind].MustStop = true
+	}
+	return true
+}
+
 func scp_process_conn(conn net.Conn) {
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
@@ -2586,28 +2619,30 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_stop:
-		fmt.Println("STOP")
+		devtype := params[1]
+		id := params[2]
+		if !stop_device(devtype, id) {
+			fmt.Println("ERROR STOP: Nao foi possivel parar dispositivo", devtype, id)
+			break
+		}
 
 	case scp_pause:
 		fmt.Println("PAUSE")
+		devtype := params[1]
+		id := params[2]
 		pauseflag := params[3]
-		bioid := params[2]
-		ind := get_bio_index(bioid)
-		if ind < 0 {
-			fmt.Println("ERROR PAUSE: Biorreator nao existe", bioid)
-			break
-		}
 		if len(pauseflag) > 0 {
 			pause, err := strconv.ParseBool(pauseflag)
 			if err != nil {
 				checkErr(err)
-			} else if pause {
-				bio[ind].LastStatus = bio[ind].Status
-				bio[ind].Status = scp_pause
-			} else {
-				bio[ind].Status = bio[ind].LastStatus
-				bio[ind].LastStatus = scp_pause
+				break
 			}
+			if !pause_device(devtype, id, pause) {
+				fmt.Println("ERROR PAUSE: Nao foi possivel pausar dispositivo", devtype, id)
+				break
+			}
+		} else {
+			fmt.Println("ERROR PAUSE: Parametros invalidos", devtype, id, params)
 		}
 
 	case scp_get:
