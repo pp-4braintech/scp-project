@@ -2540,30 +2540,30 @@ func scp_run_bio(bioid string) {
 				var ret bool = false
 				job := pop_first_job(bioid, false)
 				if len(job) > 0 {
+					ret = scp_run_job(bioid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar JOB", bioid, job)
+				} else {
 					onoff := scp_invert_onoff(job)
 					if len(onoff) > 0 {
 						bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
 					}
-					ret = scp_run_job(bioid, job)
-				}
-				if !ret {
-					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
-				} else {
 					pop_first_job(bioid, true)
 				}
 			} else if len(bio[ind].UndoQueue) > 0 && (bio[ind].MustPause || bio[ind].MustStop) {
 				var ret bool = false
 				job := pop_first_undojob(bioid, false)
 				if len(job) > 0 {
+					ret = scp_run_job(bioid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar UNDO JOB", bioid, job)
+				} else {
 					onoff := scp_invert_onoff(job)
 					if len(onoff) > 0 {
 						bio[ind].RedoQueue = append(bio[ind].RedoQueue, onoff)
 					}
-					ret = scp_run_job(bioid, job)
-				}
-				if !ret {
-					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
-				} else {
 					pop_first_undojob(bioid, true)
 				}
 			}
