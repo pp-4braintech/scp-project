@@ -1774,12 +1774,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	tmax := scp_timewaitvalvs / 1000
 	for i := 0; i < tmax; i++ {
 		if bio[ind].MustPause || bio[ind].MustPause {
-			if changevalvs {
-				set_valvs_value(dev_valvs, 1-value, false)
-			}
-			cmdoff := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, 0)
-			ret1 = scp_sendmsg_orch(cmdoff)
-			return false
+			break
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
@@ -1944,7 +1939,17 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", valvs)
 		return false
 	}
-	time.Sleep(scp_timewaitvalvs * time.Millisecond)
+
+	tmax := scp_timewaitvalvs / 1000
+	for i := 0; i < tmax; i++ {
+		switch devtype {
+		case scp_bioreactor:
+			if bio[ind].MustPause || bio[ind].MustPause {
+				i = tmax
+			}
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
 
 	if value == scp_on {
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
