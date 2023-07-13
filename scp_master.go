@@ -2646,6 +2646,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			fmt.Println("ERROR PAUSE DEVICE: Biorreator nao existe", main_id)
 			break
 		}
+		fmt.Println("DEBUG PAUSE DEVICE: Biorreator", main_id, " em", pause)
 		if pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Pausando Biorreator", main_id)
 			biobak[indbak] = bio[ind]
