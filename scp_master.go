@@ -2695,18 +2695,18 @@ func stop_device(devtype string, main_id string) bool {
 			fmt.Println("ERROR STOP: Biorreator nao existe", main_id)
 			return false
 		}
-		fmt.Println("DEBUG STOP: Executando STOP para", main_id)
+		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
 		if bio[ind].Status != bio_empty {
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
-			bio[ind].Queue = []string{}
 			for {
+				time.Sleep(5000 * time.Millisecond)
 				if len(bio[ind].UndoQueue) == 0 {
 					break
 				}
-				time.Sleep(2000 * time.Millisecond)
 			}
+			bio[ind].Queue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustStop = false
 			q := pop_first_sched(bio[ind].BioreactorID, false)
