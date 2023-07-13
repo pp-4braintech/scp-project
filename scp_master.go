@@ -2535,8 +2535,8 @@ func scp_run_bio(bioid string) {
 			fmt.Println("\nREDOQUEUE:", bio[ind].RedoQueue)
 		}
 
-		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
-			if bio[ind].Status != bio_pause && !bio[ind].MustPause && !bio[ind].MustStop {
+		if bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
+			if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_pause && !bio[ind].MustPause && !bio[ind].MustStop {
 				var ret bool = false
 				job := pop_first_job(bioid, false)
 				if len(job) > 0 {
@@ -2551,7 +2551,7 @@ func scp_run_bio(bioid string) {
 				} else {
 					pop_first_job(bioid, true)
 				}
-			} else {
+			} else if len(bio[ind].UndoQueue) > 0 && (bio[ind].MustPause || bio[ind].MustStop) {
 				var ret bool = false
 				job := pop_first_undojob(bioid, false)
 				if len(job) > 0 {
@@ -2670,6 +2670,8 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			bio[ind].Status = bio[ind].LastStatus
+			bio[ind].UndoQueue = []string{}
+			bio[ind].RedoQueue = []string{}
 			bio[ind].MustPause = false
 			bio[ind].LastStatus = scp_pause
 		}
