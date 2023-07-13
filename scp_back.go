@@ -432,14 +432,34 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			aero := r.FormValue("Aerator")
 			valve := r.FormValue("Valve")
 			peris := r.FormValue("Perist")
+			b_pause := r.FormValue("Pause")
+			b_stop := r.FormValue("Stop")
+			b_start := r.FormValue("Start")
+			orgcode := r.FormValue("OrgCode")
 			value_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
-			// fmt.Println("Bio_id = ", bio_id)
-			// fmt.Println("Pump = ", pump)
-			// fmt.Println("Aero = ", aero)
-			// fmt.Println("Valve = ", valve)
-			// fmt.Println("Status = ", valve_status)
-			// fmt.Println("Withdraw = ", withdraw)
+
+			if b_start != "" {
+				if orgcode != "" {
+					cmd := "PUT/BIOREACTOR/" + bio_id + "/START," + orgcode + "/END"
+					jsonStr := []byte(scp_sendmsg_master(cmd))
+					w.Write([]byte(jsonStr))
+				} else {
+					fmt.Println("ERROR BIOREACTOR VIEW: Start faltando orgcode", r)
+				}
+
+			}
+			if b_pause != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/PAUSE/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+			if b_stop != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/STOP/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+
 			if pump != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -711,16 +731,6 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 	fmt.Println()
 	return
 }
-
-// func scp_bio_init() {
-// 	fmt.Println("Iniciando MOD")
-// 	for i := 2; i < 11; i++ {
-// 		scp_msg := fmt.Sprintf("CMD/55:3A7D80/MOD/%d,1/END", i)
-// 		fmt.Println("CMD=", scp_msg)
-// 		scp_sendmsg_master(scp_msg)
-// 	}
-
-// }
 
 func main() {
 
