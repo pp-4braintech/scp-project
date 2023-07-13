@@ -170,6 +170,7 @@ type IBC struct {
 	Withdraw   uint32
 	OutID      string
 	Vol_zero   [2]float32
+	MustStop   bool
 }
 
 type Totem struct {
@@ -270,13 +271,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC06", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}},
-	{"IBC07", bio_ready, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}},
+	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC06", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC07", bio_ready, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
 }
 
 var totem = []Totem{
