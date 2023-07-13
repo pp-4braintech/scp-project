@@ -83,6 +83,7 @@ type Organism struct {
 
 type BioList struct {
 	OrganismName string
+	Code         string
 	Selected     bool
 }
 
@@ -588,8 +589,11 @@ func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 	orgdata := make([]BioList, len(orgs))
 	for k, r := range orgs {
 		orgdata[k].OrganismName = r.Orgname
+		orgdata[k].Code = r.Code
 		orgdata[k].Selected = false
 	}
+	orgcip := BioList{"CIP", "CIP", false}
+	orgdata = append(orgdata, orgcip)
 	// fmt.Println("bio", bio)
 	switch r.Method {
 	case "GET":
