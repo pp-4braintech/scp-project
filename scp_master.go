@@ -2558,11 +2558,18 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_start:
-		scp_object := params[2]
+		bioid := params[2]
 		orgcode := params[3]
-		fmt.Println("START", scp_object, orgcode, params)
+		fmt.Println("START", bioid, orgcode, params)
+		ind := get_bio_index(bioid)
+		if ind < 0 {
+			fmt.Println("ERROR START: Biorreator nao existe", bioid)
+			break
+		}
 		if orgcode == scp_par_cip {
 			fmt.Println("START CIP")
+			cip := []string{"SET/STATUS,CIP,END", "RUN/CIP/END"}
+			bio[ind].Queue = cip
 		} else if len(organs[orgcode].Orgname) > 0 {
 			fmt.Println("START", orgcode)
 		} else {
