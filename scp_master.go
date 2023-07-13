@@ -60,6 +60,7 @@ const scp_job_off = "OFF"
 const scp_job_run = "RUN"
 const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
+const scp_job_commit = "COMMIT"
 
 const scp_msg_cloro = "CLORO"
 const scp_msg_meio = "MEIO"
@@ -153,6 +154,8 @@ type Bioreact struct {
 	Withdraw     uint32
 	OutID        string
 	Queue        []string
+	UndoQueue    []string
+	RedoQueue    []string
 	Vol_zero     [2]float32
 	LastStatus   string
 	MustStop     bool
@@ -262,12 +265,12 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
-	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false},
 }
 
 var ibc = []IBC{
@@ -288,6 +291,8 @@ var totem = []Totem{
 var biofabrica = Biofabrica{
 	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{},
 }
+
+var biobak = bio // Salva status atual
 
 func checkErr(err error) {
 	if err != nil {
@@ -733,6 +738,17 @@ func scp_splitparam(param string, separator string) []string {
 func get_bio_index(bio_id string) int {
 	if len(bio_id) > 0 {
 		for i, v := range bio {
+			if v.BioreactorID == bio_id {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func get_biobak_index(bio_id string) int {
+	if len(bio_id) > 0 {
+		for i, v := range biobak {
 			if v.BioreactorID == bio_id {
 				return i
 			}
@@ -1989,6 +2005,23 @@ func pop_first_job(bioid string, remove bool) string {
 	return ret
 }
 
+func pop_first_undojob(bioid string, remove bool) string {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", bioid)
+		return ""
+	}
+	n := len(bio[ind].UndoQueue)
+	ret := ""
+	if n > 0 {
+		ret = bio[ind].UndoQueue[0]
+		if remove {
+			bio[ind].UndoQueue = bio[ind].UndoQueue[1:]
+		}
+	}
+	return ret
+}
+
 func scp_adjust_ph(bioid string, ph float32) {
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP GROW BIO: Ajustando PH", bioid, bio[ind].PH, ph)
@@ -2140,6 +2173,10 @@ func scp_run_job(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_set, params)
 			return false
 		}
+
+	case scp_job_commit:
+		bio[ind].UndoQueue = []string{}
+		bio[ind].RedoQueue = []string{}
 
 	case scp_job_run:
 		if len(subpars) > 0 {
@@ -2453,6 +2490,16 @@ func scp_run_job(bioid string, job string) bool {
 	return true
 }
 
+func scp_invert_onoff(job string) string {
+	inv := ""
+	if strings.Contains(job, "ON/") {
+		inv = strings.Replace(job, "ON", "OFF", -1)
+	} else if strings.Contains(job, "OFF/") {
+		inv = strings.Replace(job, "OFF", "ON", -1)
+	}
+	return inv
+}
+
 func scp_run_bio(bioid string) {
 	fmt.Println("STARTANDO RUN", bioid)
 	ind := get_bio_index(bioid)
@@ -2461,17 +2508,39 @@ func scp_run_bio(bioid string) {
 		return
 	}
 	for bio[ind].Status != bio_die {
-		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_pause && bio[ind].Status != bio_error {
-			var ret bool = false
-			job := pop_first_job(bioid, false)
-			if len(job) > 0 {
-				ret = scp_run_job(bioid, job)
-			}
-			if !ret {
-				fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
+		if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
+			if bio[ind].Status != bio_pause {
+				var ret bool = false
+				job := pop_first_job(bioid, false)
+				if len(job) > 0 {
+					onoff := scp_invert_onoff(job)
+					if len(onoff) > 0 {
+						bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
+					}
+					ret = scp_run_job(bioid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
+				} else {
+					pop_first_job(bioid, true)
+				}
 			} else {
-				pop_first_job(bioid, true)
+				var ret bool = false
+				job := pop_first_undojob(bioid, false)
+				if len(job) > 0 {
+					onoff := scp_invert_onoff(job)
+					if len(onoff) > 0 {
+						bio[ind].RedoQueue = append(bio[ind].RedoQueue, onoff)
+					}
+					ret = scp_run_job(bioid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar job", bioid, job)
+				} else {
+					pop_first_undojob(bioid, true)
+				}
 			}
+
 		}
 		time.Sleep(scp_schedwait * time.Millisecond)
 	}
@@ -2545,14 +2614,32 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(main_id)
+		indbak := get_biobak_index(main_id)
 		if ind < 0 {
 			fmt.Println("ERROR PAUSE DEVICE: Biorreator nao existe", main_id)
 			break
 		}
 		if pause {
+			biobak[indbak] = bio[ind]
 			bio[ind].LastStatus = bio[ind].Status
 			bio[ind].Status = scp_pause
 		} else {
+			// var ntries int
+			// for ntries=0; ntries<60; ntries++{
+			// 	if len(bio[ind].UndoQueue)>0 {
+			// 		break
+			// 	}
+			// 	time.Sleep(1000 * time.Millisecond)
+			// }
+			// if ntries >= 60{
+			// 	fmt.Println("CRITICAL PAUSE DEVICE: Undo mal sucedido", main_id)
+			// 	return false
+			// }
+			// bio[ind].UndoQueue = bio[ind].RedoQueue
+			// bio[ind].RedoQueue = []string{}
+			// for ntries=0; ntries<60; ntries++{
+
+			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			bio[ind].Status = bio[ind].LastStatus
 			bio[ind].LastStatus = scp_pause
 		}
@@ -2568,7 +2655,9 @@ func stop_device(devtype string, main_id string) bool {
 			fmt.Println("ERROR STOP: Biorreator nao existe", main_id)
 			return false
 		}
+		bio[ind].Withdraw = 0
 		pause_device(devtype, main_id, true)
+		bio[ind].Queue = []string{}
 		bio[ind].MustStop = true
 	}
 	return true
