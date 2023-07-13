@@ -1771,7 +1771,18 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		return false
 	}
 
-	time.Sleep(scp_timewaitvalvs * time.Millisecond)
+	tmax := scp_timewaitvalvs / 1000
+	for i := 0; i < tmax; i++ {
+		if bio[ind].MustPause || bio[ind].MustPause {
+			if changevalvs {
+				set_valvs_value(dev_valvs, 1-value, false)
+			}
+			cmdoff := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, 0)
+			ret1 = scp_sendmsg_orch(cmdoff)
+			return false
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
 	if value == scp_on {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
@@ -1781,7 +1792,8 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
 			}
-			ret1 = scp_sendmsg_orch(cmd1)
+			cmdoff := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, 0)
+			ret1 = scp_sendmsg_orch(cmdoff)
 			return false
 		}
 		bio[ind].Aerator = true
