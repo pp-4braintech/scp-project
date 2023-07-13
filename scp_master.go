@@ -2692,6 +2692,8 @@ func stop_device(devtype string, main_id string) bool {
 		bio[ind].Withdraw = 0
 		pause_device(devtype, main_id, true)
 		bio[ind].Queue = []string{}
+		bio[ind].RedoQueue = []string{}
+		bio[ind].UndoQueue = []string{}
 		bio[ind].MustStop = true
 	}
 	return true
