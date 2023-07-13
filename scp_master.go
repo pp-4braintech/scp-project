@@ -2673,6 +2673,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].UndoQueue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustPause = false
+			bio[ind].MustStop = false
 			bio[ind].LastStatus = scp_pause
 		}
 	default:
