@@ -2551,6 +2551,7 @@ func scp_run_bio(bioid string) {
 			fmt.Println("\nQUEUE:", bio[ind].Queue)
 			fmt.Println("\nUNDOQUEUE:", bio[ind].UndoQueue)
 			fmt.Println("\nREDOQUEUE:", bio[ind].RedoQueue)
+			fmt.Println("\nMUSTOFFQUEUE:", bio[ind].MustOffQueue)
 		}
 
 		if bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
@@ -2715,6 +2716,7 @@ func stop_device(devtype string, main_id string) bool {
 			}
 			bio[ind].Queue = []string{}
 			bio[ind].RedoQueue = []string{}
+			bio[ind].MustOffQueue = []string{}
 			bio[ind].MustStop = false
 			q := pop_first_sched(bio[ind].BioreactorID, false)
 			if len(q.Bioid) == 0 {
