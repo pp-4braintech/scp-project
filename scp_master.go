@@ -2558,10 +2558,15 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_start:
-		orgcode := params[1]
-		fmt.Println("START", orgcode, params)
-		if len(organs[orgcode].Orgname) == 0 {
-			fmt.Println("FALTA ORG")
+		scp_object := params[2]
+		orgcode := params[3]
+		fmt.Println("START", scp_object, orgcode, params)
+		if orgcode == scp_par_cip {
+			fmt.Println("START CIP")
+		} else if len(organs[orgcode].Orgname) > 0 {
+			fmt.Println("START", orgcode)
+		} else {
+			fmt.Println("ORG INVALIDO")
 		}
 
 	case scp_stop:
