@@ -2559,9 +2559,9 @@ func scp_process_conn(conn net.Conn) {
 
 	case scp_start:
 		orgcode := params[1]
-		fmt.Println("START", orgcode)
+		fmt.Println("START", orgcode, params)
 		if len(organs[orgcode].Orgname) == 0 {
-			fmt.Println("START")
+			fmt.Println("FALTA ORG")
 		}
 
 	case scp_stop:
