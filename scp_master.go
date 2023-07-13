@@ -2255,6 +2255,9 @@ func scp_run_job(bioid string, job string) bool {
 						break
 					}
 				}
+				if bio[ind].Status == scp_pause || bio[ind].MustStop {
+					break
+				}
 				t_elapsed := time.Since(t_start).Seconds()
 				if t_elapsed > scp_timeoutdefault {
 					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
@@ -2296,7 +2299,14 @@ func scp_run_job(bioid string, job string) bool {
 				}
 				time_dur := time.Duration(time_int)
 				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
-				time.Sleep(time_dur * time.Second)
+				var n time.Duration
+				for n = 0; n < time_dur; n++ {
+					if bio[ind].Status == scp_pause || bio[ind].MustStop {
+						break
+					}
+					time.Sleep(1000 * time.Millisecond)
+				}
+
 			case scp_par_volume:
 				var vol_max uint64
 				var err error
@@ -2315,6 +2325,9 @@ func scp_run_job(bioid string, job string) bool {
 					vol_now := uint64(bio[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
 					if vol_now >= vol_max {
+						break
+					}
+					if bio[ind].Status == scp_pause || bio[ind].MustStop {
 						break
 					}
 					if t_elapsed > scp_timeoutdefault {
