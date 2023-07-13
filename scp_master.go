@@ -154,6 +154,8 @@ type Bioreact struct {
 	OutID        string
 	Queue        []string
 	Vol_zero     [2]float32
+	LastStatus   string
+	MustStop     bool
 }
 
 type IBC struct {
@@ -259,12 +261,12 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
-	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
+	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, [2]float32{0, 0}, "", false},
 }
 
 var ibc = []IBC{
@@ -2150,7 +2152,7 @@ func scp_run_job(bioid string, job string) bool {
 				qini = append(qini, cipbio...)
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
-				board_add_message("ICIP Automático no biorreator " + bioid)
+				board_add_message("IExecutando CIP no biorreator " + bioid)
 				return true
 
 			case scp_par_withdraw:
@@ -2587,19 +2589,25 @@ func scp_process_conn(conn net.Conn) {
 
 	case scp_pause:
 		fmt.Println("PAUSE")
-		orgcode := params[1]
-		if len(organs[orgcode].Orgname) == 0 {
-			fmt.Println("START")
+		pauseflag := params[3]
+		bioid := params[2]
+		ind := get_bio_index(bioid)
+		if ind < 0 {
+			fmt.Println("ERROR PAUSE: Biorreator nao existe", bioid)
+			break
 		}
-
-		// switch scp_object {
-		// case scp_biofabrica:
-		// 	lista := params[2:]
-		// 	n := create_sched(lista)
-		// 	if n > 0 && !schedrunning {
-		// 		go scp_scheduler()
-		// 	}
-		// }
+		if len(pauseflag) > 0 {
+			pause, err := strconv.ParseBool(pauseflag)
+			if err != nil {
+				checkErr(err)
+			} else if pause {
+				bio[ind].LastStatus = bio[ind].Status
+				bio[ind].Status = scp_pause
+			} else {
+				bio[ind].Status = bio[ind].LastStatus
+				bio[ind].LastStatus = scp_pause
+			}
+		}
 
 	case scp_get:
 		scp_object := params[1]
