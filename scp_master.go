@@ -2651,30 +2651,15 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			biobak[indbak] = bio[ind]
 			bio[ind].LastStatus = bio[ind].Status
 			bio[ind].MustPause = true
-			bio[ind].Status = scp_pause
+			bio[ind].Status = bio_pause
 		} else {
-			// var ntries int
-			// for ntries=0; ntries<60; ntries++{
-			// 	if len(bio[ind].UndoQueue)>0 {
-			// 		break
-			// 	}
-			// 	time.Sleep(1000 * time.Millisecond)
-			// }
-			// if ntries >= 60{
-			// 	fmt.Println("CRITICAL PAUSE DEVICE: Undo mal sucedido", main_id)
-			// 	return false
-			// }
-			// bio[ind].UndoQueue = bio[ind].RedoQueue
-			// bio[ind].RedoQueue = []string{}
-			// for ntries=0; ntries<60; ntries++{
-
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			bio[ind].Status = bio[ind].LastStatus
 			bio[ind].UndoQueue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustPause = false
 			bio[ind].MustStop = false
-			bio[ind].LastStatus = scp_pause
+			bio[ind].LastStatus = bio_pause
 		}
 	default:
 		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
