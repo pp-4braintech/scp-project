@@ -2700,9 +2700,20 @@ func stop_device(devtype string, main_id string) bool {
 		if bio[ind].Status != bio_empty {
 			pause_device(devtype, main_id, true)
 			bio[ind].Queue = []string{}
-			//bio[ind].RedoQueue = []string{}
-			//bio[ind].UndoQueue = []string{}
+			for {
+				if len(bio[ind].UndoQueue) == 0 {
+					break
+				}
+				time.Sleep(2000 * time.Millisecond)
+			}
+			bio[ind].RedoQueue = []string{}
 			bio[ind].MustStop = false
+			q := pop_first_sched(bio[ind].BioreactorID, false)
+			if len(q.Bioid) == 0 {
+				if bio[ind].Volume == 0 {
+					bio[ind].Status = bio_empty
+				}
+			}
 		}
 
 	}
