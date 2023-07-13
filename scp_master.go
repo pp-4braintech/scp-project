@@ -2712,6 +2712,7 @@ func stop_device(devtype string, main_id string) bool {
 			if len(q.Bioid) == 0 {
 				if bio[ind].Volume == 0 {
 					bio[ind].Status = bio_empty
+					bio[ind].MustPause = false
 				}
 			}
 		}
