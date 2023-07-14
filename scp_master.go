@@ -1472,7 +1472,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
 		set_valvs_value(pilha, 0, false)
-		bio[ind].Status = bio_ready
+		// bio[ind].Status = bio_ready
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		var pathclean string = ""
 		dest_type := get_scp_type(bio[ind].OutID)
@@ -1619,7 +1619,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		fmt.Println("DEBUG RUN WITHDRAW 39: CMD1 =", cmd1, " RET=", ret1)
 		set_valvs_value(pilha, 0, false)
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
-		ibc[ind].Status = bio_ready
+		// ibc[ind].Status = bio_ready
 		var pathclean string = ""
 		dest_type := get_scp_type(ibc[ind].OutID)
 		pathclean = "TOTEM02-CLEAN4"
