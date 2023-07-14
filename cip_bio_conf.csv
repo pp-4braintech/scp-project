@@ -12,10 +12,16 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/1
+#
 # Circula Agua 90s
 ON/PUMP,V4,V6
 WAIT/TIME,90
 OFF/PUMP,V4,V6
+#
+# Step concluido
+COMMIT/2
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -31,10 +37,16 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/3
+#
 # Circula Agua 240s pelo sprayball
 ON/PUMP,V3,V8,V6
 WAIT/TIME,240
 OFF/PUMP,V3,V8,V6
+#
+# Step concluido
+COMMIT/4
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -51,10 +63,16 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/5
+#
 # Circula Agua 90s pelo aerador
 ON/PUMP,V2,V8,V6
 WAIT/TIME,240
 OFF/PUMP,V2,V8,V6
+#
+# Step concluido
+COMMIT/6
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -71,31 +89,46 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/7
+#
 # Blend1 2L (280s)
 ON/PERIS,P1
 WAIT/TIME,280
 OFF/PERIS,P1
 #
+# Step concluido
+COMMIT/8
+#
 # Liga Resistencia
-ON/HEATER,60
+ON/HEATER,60,MUSTOFF
 #
 # Circula 600s
 ON/PUMP,V4,V6
 WAIT/TIME,90
 OFF/PUMP,V4,V6
 #
+# Step concluido
+COMMIT/9
+#
 # Circula Agua 600s pelo aerador
 ON/PUMP,V2,V8,V6
 WAIT/TIME,600
 OFF/PUMP,V2,V8,V6
+#
+# Step concluido
+COMMIT/10
 #
 # Circula Agua 3600s pelo sprayball
 ON/PUMP,V3,V8,V6
 WAIT/TIME,3600
 OFF/PUMP,V3,V8,V6
 #
-# Liga Resistencia
+# Desliga Resistencia
 OFF/HEATER
+#
+# Step concluido
+COMMIT/11
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -112,10 +145,16 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/12
+#
 # Blend2 2L (280s)
 ON/PERIS,P2
 WAIT/TIME,280
 OFF/PERIS,P2
+#
+# Step concluido
+COMMIT/13
 #
 # Liga Resistencia
 ON/HEATER,60
@@ -125,13 +164,19 @@ ON/PUMP,V2,V8,V6
 WAIT/TIME,600
 OFF/PUMP,V2,V8,V6
 #
+# Step concluido
+COMMIT/14
+#
 # Circula Agua 90s pelo sprayball
 ON/PUMP,V3,V8,V6
 WAIT/TIME,90
 OFF/PUMP,V3,V8,V6
 #
-# Liga Resistencia
+# Desliga Resistencia
 OFF/HEATER
+#
+# Step concluido
+COMMIT/15
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -148,10 +193,16 @@ ON/WATER,TOTEM01,SPRAYBALL
 WAIT/VOLUME,25
 OFF/WATER,TOTEM01,SPRAYBALL
 #
+# Step concluido
+COMMIT/16
+#
 # Blend1 2L (280s)
 ON/PERIS,P2
 WAIT/TIME,280
 OFF/PERIS,P2
+#
+# Step concluido
+COMMIT/17
 #
 # Liga Resistencia
 ON/HEATER,60
@@ -161,10 +212,16 @@ ON/PUMP,V4,V6
 WAIT/TIME,90
 OFF/PUMP,V4,V6
 #
+# Step concluido
+COMMIT/18
+#
 # Circula 600s pelo aerador
 ON/PUMP,V2,V8,V6
 WAIT/TIME,600
 OFF/PUMP,V2,V8,V6
+#
+# Step concluido
+COMMIT/19
 #
 # Circula 1200s pelo sprayball
 ON/PUMP,V3,V8,V6
@@ -173,6 +230,9 @@ OFF/PUMP,V3,V8,V6
 #
 # Liga Resistencia
 OFF/HEATER
+#
+# Step concluido
+COMMIT/20
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
