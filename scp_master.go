@@ -104,6 +104,7 @@ const ibc_v2_zero = 2652.0 // em mm
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
+const execpath = "/home/scpadm/scp-project/"
 
 const bio_nonexist = "NULL"
 const bio_die = "DIE"
@@ -1314,7 +1315,7 @@ func scp_get_alldata() {
 
 			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
 			if t_elapsed_save >= scp_timetosave {
-				save_all_data(data_filename)
+				save_all_data(execpath + data_filename)
 				t_start_save = time.Now()
 			}
 
@@ -3326,44 +3327,44 @@ func scp_master_ipc() {
 }
 
 func main() {
-	devmode = test_file("scp_devmode.flag")
+	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 	}
-	testmode = test_file("scp_testmode.flag")
+	testmode = test_file(execpath + "scp_testmode.flag")
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
 
-	norgs := load_organisms("organismos_conf.csv")
+	norgs := load_organisms(execpath + "organismos_conf.csv")
 	if norgs < 0 {
 		log.Fatal("Não foi possivel ler o arquivo de organismos")
 	}
-	recipe = load_tasks_conf("receita_conf.csv")
+	recipe = load_tasks_conf(execpath + "receita_conf.csv")
 	if recipe == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo a receita de producao")
 	}
-	cipbio = load_tasks_conf("cip_bio_conf.csv")
+	cipbio = load_tasks_conf(execpath + "cip_bio_conf.csv")
 	if recipe == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP")
 	}
-	nibccfg := load_ibcs_conf("ibc_conf.csv")
+	nibccfg := load_ibcs_conf(execpath + "ibc_conf.csv")
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
-	nbiocfg := load_bios_conf("bio_conf.csv")
+	nbiocfg := load_bios_conf(execpath + "bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
 	}
-	ntotemcfg := load_totems_conf("totem_conf.csv")
+	ntotemcfg := load_totems_conf(execpath + "totem_conf.csv")
 	if ntotemcfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Totems nao encontrado")
 	}
-	nbiofabricacfg := load_biofabrica_conf("biofabrica_conf.csv")
+	nbiofabricacfg := load_biofabrica_conf(execpath + "biofabrica_conf.csv")
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
-	npaths := load_paths_conf("paths_conf.csv")
+	npaths := load_paths_conf(execpath + "paths_conf.csv")
 	if npaths < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
 	}
@@ -3377,7 +3378,7 @@ func main() {
 	// fmt.Println("TOTEM ", totem)
 	// fmt.Println("Biofabrica ", biofabrica)
 	valvs = make(map[string]int, 0)
-	load_all_data(data_filename)
+	load_all_data(execpath + data_filename)
 	go scp_setup_devices()
 
 	go scp_get_alldata()
