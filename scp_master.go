@@ -88,6 +88,7 @@ const scp_mustupdate_ibc = 45
 
 const scp_timewaitvalvs = 15000
 const scp_timephwait = 5000
+const scp_timetempwait = 3000
 const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 600
 const scp_timeoutdefault = 60
@@ -146,6 +147,7 @@ type Bioreact struct {
 	Aerator      bool
 	Valvs        [8]int
 	Perist       [5]int
+	Heater       bool
 	Temperature  float32
 	PH           float32
 	Step         [2]int
@@ -267,12 +269,12 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 }
 
 var ibc = []IBC{
@@ -1828,7 +1830,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		return false
 	}
 	if ind < 0 {
-		fmt.Println("ERROR SCP TURN PERIS: Biorreator nao existe", devtype, bioid)
+		fmt.Println("ERROR SCP TURN PERIS: Dispositivo nao existe", devtype, bioid)
 		return false
 	}
 	peris_int, err := strconv.Atoi(perisid[1:])
@@ -1864,13 +1866,26 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	case scp_totem:
 		totem[ind].Perist[peris_int-1] = value
 	}
-	//bio[ind].Aerator = false    Definir Status Peristalticas
-	// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-	// rets := scp_sendmsg_orch(cmds)
-	// fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-	// if !strings.Contains(rets, scp_ack) && !devmode {
-	// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
-	// }
+	return true
+}
+
+func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
+	var ind int
+	ind = get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP TURN HEATER: Biorreator nao existe", bioid)
+		return false
+	}
+	devaddr := bio_cfg[bioid].Deviceaddr
+	heater_dev := bio_cfg[bioid].Heater
+	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, heater_dev, value)
+	ret0 := scp_sendmsg_orch(cmd0)
+	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
+	if !strings.Contains(ret0, scp_ack) && !devmode {
+		fmt.Println("ERROR SCP TURN HEATER:", bioid, " erro ao definir valor[", value, "] aquecedor ", ret0)
+		return false
+	}
+	bio[ind].Heater = value
 	return true
 }
 
@@ -2062,7 +2077,7 @@ func scp_adjust_ph(bioid string, ph float32) {
 	}
 	for n := 0; n < 3; n++ {
 		if bio[ind].MustPause || bio[ind].MustStop {
-			return
+			break
 		}
 		if ph*0.95 <= bio[ind].PH && bio[ind].PH <= ph*1.05 {
 			break
@@ -2093,6 +2108,41 @@ func scp_adjust_ph(bioid string, ph float32) {
 	}
 }
 
+func scp_adjust_temperature(bioid string, temp float32) {
+	ind := get_bio_index(bioid)
+	fmt.Println("DEBUG SCP ADJUST TEMP: Ajustando Temperatura", bioid, bio[ind].Temperature, temp)
+	valvs := []string{bioid + "/V4", bioid + "/V6"}
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+		return
+	}
+	for n := 0; n < 3; n++ {
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if temp*0.95 <= bio[ind].Temperature && bio[ind].Temperature <= temp*1.05 {
+			break
+		} else if bio[ind].Temperature < temp {
+			if !scp_turn_heater(bioid, temp, true) {
+				fmt.Println("ERROR SCP ADJUST TEMP: Falha ao ligar aquecedor", bioid)
+			} else {
+				time.Sleep(scp_timetempwait * time.Millisecond)
+				if !scp_turn_heater(bioid, temp, false) {
+					fmt.Println("ERROR SCP ADJUST TEMP: Falha ao desligar aquecedor", bioid)
+				}
+			}
+		} else {
+			fmt.Println("WARN SCP ADJUST TEMP: Temperatura acima do limite em", bioid, bio[ind].Temperature, "/", temp)
+			break
+		}
+		time.Sleep(scp_timetempwait * time.Millisecond)
+	}
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+		return
+	}
+}
+
 func scp_grow_bio(bioid string) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -2110,7 +2160,7 @@ func scp_grow_bio(bioid string) bool {
 		ttotal = scp_timeoutdefault / 60
 	}
 	pday := -1
-	var minph, maxph float64
+	var minph, maxph, worktemp float64
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= ttotal {
@@ -2133,12 +2183,17 @@ func scp_grow_bio(bioid string) bool {
 					checkErr(err)
 					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
 				}
+				fmt.Println("\n\nPH", minph, maxph)
+				worktemp = 28
 			}
 			if bio[ind].PH < float32(minph*(1-bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(minph))
 			}
 			if bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(maxph))
+			}
+			if bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
+				scp_adjust_temperature(bioid, float32(worktemp))
 			}
 
 		}
