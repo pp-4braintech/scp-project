@@ -1150,18 +1150,33 @@ func scp_get_alldata() {
 						if vol0 == 0 {
 							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido", b.BioreactorID)
 							volc = 0
-						} else if vol1 == -1 && vol2 > 0 {
-							volc = vol2
-						} else if vol2 == -1 && vol1 > 0 {
-							volc = vol1
-						} else if vol1 == -1 && vol2 == -1 {
-							volc = -1
-						} else if vol1 < vol2 {
-							volc = vol1
 						} else {
-							volc = vol2
+							if bio[ind].Valvs[4] == 1 { // Desenvase
+								if vol1 < vol2 && vol1 != -1 {
+									volc = vol1
+								} else if vol2 != -1 {
+									volc = vol2
+								} else {
+									volc = float64(bio[ind].Volume)
+								}
+								if volc > float64(bio[ind].Volume) {
+									volc = float64(bio[ind].Volume)
+								}
+							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
+								if vol1 > vol2 && vol1 != -1 {
+									volc = vol1
+								} else if vol2 != -1 {
+									volc = vol2
+								} else {
+									volc = float64(bio[ind].Volume)
+								}
+								if volc < float64(bio[ind].Volume) {
+									volc = float64(bio[ind].Volume)
+								}
+							}
 						}
-						volc = vol1 // Precisa validar LASER BIO
+
+						// volc = vol1 // Precisa validar LASER BIO
 						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 							bio[ind].Volume = uint32(volc)
 							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
