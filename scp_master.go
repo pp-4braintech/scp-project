@@ -1174,6 +1174,16 @@ func scp_get_alldata() {
 								if volc < float64(bio[ind].Volume) || volc > float64(bio[ind].Volume)*1.1 {
 									volc = float64(bio[ind].Volume)
 								}
+							} else {
+								if vol1 != -1 && vol2 != -1 {
+									if bio[ind].Status == bio_producting {
+										volc = vol2
+									} else if bio[ind].Status == bio_cip {
+										volc = vol1
+									} else {
+										volc = vol1
+									}
+								}
 							}
 						}
 
