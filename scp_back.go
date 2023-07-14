@@ -38,6 +38,8 @@ const bio_error = "ERRO"
 const bio_max_valves = 8
 const max_buf = 8192
 
+const execpath = "/home/scpadm/scp-project/"
+
 const vol_bioreactor = 2000
 const vol_ibc = 4000
 const overhead = 1.1
@@ -734,7 +736,7 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	//scp_bio_init()
-	if load_organisms("organismos_conf.csv") < 0 {
+	if load_organisms(execpath+"organismos_conf.csv") < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
 		return
 	}
