@@ -2737,7 +2737,7 @@ func stop_device(devtype string, main_id string) bool {
 				if len(bio[ind].UndoQueue) == 0 {
 					break
 				}
-			}
+			} //
 			bio[ind].Queue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustOffQueue = []string{}
@@ -2748,6 +2748,8 @@ func stop_device(devtype string, main_id string) bool {
 					bio[ind].Status = bio_empty
 					bio[ind].MustPause = false
 				}
+				bio[ind].MustPause = false
+				bio[ind].Status = bio_ready
 			}
 		}
 
