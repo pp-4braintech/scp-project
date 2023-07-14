@@ -1160,7 +1160,7 @@ func scp_get_alldata() {
 								} else {
 									volc = float64(bio[ind].Volume)
 								}
-								if volc > float64(bio[ind].Volume) || volc < float64(bio[ind].Volume)*0.9 {
+								if volc > float64(bio[ind].Volume) || volc < float64(bio[ind].Volume)*0.8 {
 									volc = float64(bio[ind].Volume)
 								}
 							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
@@ -1171,7 +1171,7 @@ func scp_get_alldata() {
 								} else {
 									volc = float64(bio[ind].Volume)
 								}
-								if volc < float64(bio[ind].Volume) || volc > float64(bio[ind].Volume)*1.1 {
+								if volc < float64(bio[ind].Volume) || volc > float64(bio[ind].Volume)*1.2 {
 									volc = float64(bio[ind].Volume)
 								}
 							} else {
