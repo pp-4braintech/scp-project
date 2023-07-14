@@ -2694,6 +2694,8 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
+			board_add_message("ABiorreator " + main_id + " pausado")
+
 		} else {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
@@ -2703,6 +2705,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].MustPause = false
 			bio[ind].MustStop = false
 			bio[ind].LastStatus = bio_pause
+			board_add_message("APausa no Biorreator " + main_id + " liberada")
 		}
 	default:
 		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
@@ -2742,6 +2745,7 @@ func stop_device(devtype string, main_id string) bool {
 				}
 			}
 		}
+		board_add_message("ABiorreator interrompido" + main_id)
 
 	}
 	return true
