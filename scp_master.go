@@ -2729,7 +2729,7 @@ func stop_device(devtype string, main_id string) bool {
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
 		board_add_message("ABiorreator " + main_id + " interrompido")
-		if bio[ind].Status != bio_empty {
+		if bio[ind].Status != bio_empty || true { // corrigir
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
 			for {
