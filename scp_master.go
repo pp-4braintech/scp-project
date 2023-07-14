@@ -302,6 +302,15 @@ func checkErr(err error) {
 	}
 }
 
+func isin(list []string, element string) bool {
+	for _, s := range list {
+		if element == s {
+			return true
+		}
+	}
+	return false
+}
+
 func load_tasks_conf(filename string) []string {
 	tasks := []string{}
 	file, err := os.Open(filename)
@@ -2677,7 +2686,12 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			fmt.Println("DEBUG PAUSE DEVICE: Pausando Biorreator", main_id)
 			biobak[indbak] = bio[ind]
 			bio[ind].LastStatus = bio[ind].Status
-			bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
+			for _, j := range bio[ind].MustOffQueue {
+				if !isin(bio[ind].UndoQueue, j) {
+					bio[ind].UndoQueue = append([]string{j}, bio[ind].UndoQueue...)
+				}
+			}
+			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
 		} else {
