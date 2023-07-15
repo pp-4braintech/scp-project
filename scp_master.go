@@ -774,10 +774,19 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
 	scp_setup_devices(true)
+	for _, b := range bio {
+		pause_device(scp_bioreactor, b.BioreactorID, false)
+	}
+	if !schedrunning {
+		go scp_scheduler()
+	}
 }
 
 func scp_emergency_pause() {
 	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
+	for _, b := range bio {
+		pause_device(scp_bioreactor, b.BioreactorID, true)
+	}
 }
 
 func scp_check_network() {
@@ -788,6 +797,7 @@ func scp_check_network() {
 			biofabrica.Status = scp_netfail
 			save_all_data(data_filename)
 			scp_emergency_pause()
+			save_all_data(data_filename)
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Status == scp_netfail {
