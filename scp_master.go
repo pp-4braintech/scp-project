@@ -763,6 +763,8 @@ func scp_check_network() {
 		fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
 	} else if stats.PacketLoss > 0 {
 		fmt.Println("WARN CHECK NETWORK: Há perda de pacotes na rede com MAINROUTER", mainrouter)
+	} else {
+		fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 	}
 }
 
