@@ -1118,9 +1118,9 @@ func scp_get_alldata() {
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
-	needtorunsetup := false
 	for {
 		if finishedsetup {
+			needtorunsetup := false
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
 			mustupdate_bio := false
 			if t_elapsed_bio >= scp_mustupdate_bio || firsttime {
@@ -1416,10 +1416,9 @@ func scp_get_alldata() {
 			}
 
 			firsttime = false
-
-			time.Sleep(scp_refreshsleep * time.Millisecond)
-
 		}
+		time.Sleep(scp_refreshsleep * time.Millisecond)
+
 	}
 }
 
