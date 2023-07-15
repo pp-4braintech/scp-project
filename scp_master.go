@@ -110,7 +110,7 @@ const data_filename = "dumpdata"
 const execpath = "/home/scpadm/scp-project/"
 
 //const execpath = "./"
-const mainrouter = "10.0.0.1"
+const mainrouter = "10.0.0.2"
 const pingmax = 3
 const timetocheck = 30
 
