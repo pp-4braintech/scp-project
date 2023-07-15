@@ -129,6 +129,7 @@ const bio_storing = "ARMAZENANDO"
 const bio_error = "ERRO"
 const bio_ready = "PRONTO"
 const bio_water = "AGUA"
+const bio_update = "ATUALIZANDO"
 const bio_max_valves = 8
 const bio_max_msg = 50
 
@@ -279,22 +280,22 @@ var cipbio []string
 var cipibc []string
 
 var bio = []Bioreact{
-	{"BIOR01", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR02", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR03", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR04", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR05", bio_empty, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR06", bio_ready, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR01", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR02", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR03", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR04", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR05", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC02", bio_ready, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC03", bio_ready, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC04", bio_ready, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC05", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC06", bio_ready, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC07", bio_ready, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC01", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC02", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC03", bio_update, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC04", bio_update, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC05", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC06", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC07", bio_update, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
 }
 
 var totem = []Totem{
@@ -1102,6 +1103,8 @@ func scp_setup_devices(mustall bool) {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
 					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA")
+				} else {
+					biofabrica.Status = scp_ready
 				}
 			}
 		}
@@ -1132,7 +1135,7 @@ func scp_get_alldata() {
 			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_bio_index(b.BioreactorID)
-					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime
+					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime || bio[ind].Status == bio_update
 					// if devmode {
 					// 	fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
 					// }
@@ -1305,7 +1308,7 @@ func scp_get_alldata() {
 			for k, b := range ibc {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
-					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime
+					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime || ibc[ind].Status == bio_update
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
