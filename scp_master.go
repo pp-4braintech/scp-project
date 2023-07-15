@@ -1099,7 +1099,7 @@ func scp_setup_devices(mustall bool) {
 					}
 					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				if nerr > 0 && !devmode {
+				if nerr > 0 && !devmode && biofabrica.Status != scp_fail {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
 					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA")
