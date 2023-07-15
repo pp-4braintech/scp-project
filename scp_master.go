@@ -773,6 +773,7 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
+	board_add_message("ERETORNANDO de EMERGENCIA")
 	scp_setup_devices(true)
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, false)
@@ -784,6 +785,7 @@ func scp_run_recovery() {
 
 func scp_emergency_pause() {
 	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
+	board_add_message("EPARADA de EMERGENCIA")
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, true)
 	}
@@ -1096,6 +1098,7 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 0 && !devmode {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
+					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA")
 				}
 			}
 		}
