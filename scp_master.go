@@ -300,7 +300,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, "",
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, bio_ready,
 }
 
 var biobak = bio // Salva status atual
@@ -712,6 +712,12 @@ func save_all_data(filename string) int {
 	buf4, _ := json.Marshal(biofabrica)
 	err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
 	checkErr(err4)
+	buf5, _ := json.Marshal(schedule)
+	err5 := os.WriteFile(filename+"_schedule.json", []byte(buf5), 0644)
+	checkErr(err5)
+	buf6, _ := json.Marshal(valvs)
+	err6 := os.WriteFile(filename+"_valvs.json", []byte(buf6), 0644)
+	checkErr(err6)
 	return 0
 }
 
