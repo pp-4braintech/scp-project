@@ -109,7 +109,7 @@ const data_filename = "dumpdata"
 
 //const execpath = "/home/scpadm/scp-project/"
 const execpath = "./"
-const mainrouter = "anubis.laudolab.com.br"
+const mainrouter = "192.168.0.1"
 const pingmax = 3
 
 const bio_nonexist = "NULL"
