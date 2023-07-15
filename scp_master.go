@@ -3362,7 +3362,7 @@ func scp_master_ipc() {
 }
 
 func main() {
-
+	go scp_check_network()
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
