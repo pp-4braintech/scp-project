@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/go-ping/ping"
 )
 
 var demo = false
@@ -200,6 +198,7 @@ type Biofabrica struct {
 	Valvs        [9]int
 	Pumpwithdraw bool
 	Messages     []string
+	Status       string
 }
 
 type Path struct {
@@ -300,7 +299,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{},
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, "",
 }
 
 var biobak = bio // Salva status atual
@@ -747,24 +746,22 @@ func load_all_data(filename string) int {
 	return 0
 }
 
+func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
+	timeout := time.Duration(timemax * time.Second)
+	_, err := net.DialTimeout("tcp", host+":"+tcpport, timeout)
+	if err != nil {
+		checkErr(err)
+		return false
+
+	}
+	return true
+}
+
 func scp_check_network() {
-	pinger, err := ping.NewPinger(mainrouter)
-	if err != nil {
-		checkErr(err)
-	}
-	fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pinger.IPAddr(), pingmax)
-	pinger.Count = pingmax
-	//pinger.SetPrivileged(true)
-	err = pinger.Run() // Blocks until finished.
-	if err != nil {
-		checkErr(err)
-	}
-	stats := pinger.Statistics()
-	fmt.Println(stats)
-	if stats.PacketLoss == pingmax {
+	fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
+	if !tcp_host_isalive(mainrouter, "80", pingmax) {
 		fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-	} else if stats.PacketLoss > 0 {
-		fmt.Println("WARN CHECK NETWORK: Há perda de pacotes na rede com MAINROUTER", mainrouter)
+		biofabrica.Status = scp_fail
 	} else {
 		fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 	}
