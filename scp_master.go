@@ -3351,6 +3351,7 @@ func main() {
 		panic(err)
 	}
 	stats := pinger.Statistics()
+	fmt.Println(stats)
 
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
