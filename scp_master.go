@@ -796,11 +796,13 @@ func scp_check_network() {
 	for {
 		fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
 		if !tcp_host_isalive(mainrouter, "80", pingmax) {
-			fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-			biofabrica.Status = scp_netfail
-			save_all_data(data_filename)
-			scp_emergency_pause()
-			save_all_data(data_filename)
+			if biofabrica.Status != scp_netfail {
+				fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
+				biofabrica.Status = scp_netfail
+				save_all_data(data_filename)
+				scp_emergency_pause()
+				save_all_data(data_filename)
+			}
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Status == scp_netfail {
