@@ -109,6 +109,8 @@ const data_filename = "dumpdata"
 
 //const execpath = "/home/scpadm/scp-project/"
 const execpath = "./"
+const mainrouter = "10.0.0.1"
+const pingmax = 3
 
 const bio_nonexist = "NULL"
 const bio_die = "DIE"
@@ -743,6 +745,25 @@ func load_all_data(filename string) int {
 	}
 	set_allvalvs_status()
 	return 0
+}
+
+func scp_check_network() {
+	pinger, err := ping.NewPinger(mainrouter)
+	if err != nil {
+		checkErr(err)
+	}
+	pinger.Count = pingmax
+	err = pinger.Run() // Blocks until finished.
+	if err != nil {
+		checkErr(err)
+	}
+	stats := pinger.Statistics()
+	fmt.Println(stats)
+	if stats.PacketLoss == pingmax {
+		fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
+	} else if stats.PacketLoss > 0 {
+		fmt.Println("WARN CHECK NETWORK: Há perda de pacotes na rede com MAINROUTER", mainrouter)
+	}
 }
 
 func scp_splitparam(param string, separator string) []string {
@@ -3341,17 +3362,6 @@ func scp_master_ipc() {
 }
 
 func main() {
-	pinger, err := ping.NewPinger("www.google.com")
-	if err != nil {
-		panic(err)
-	}
-	pinger.Count = 3
-	err = pinger.Run() // Blocks until finished.
-	if err != nil {
-		panic(err)
-	}
-	stats := pinger.Statistics()
-	fmt.Println(stats)
 
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
