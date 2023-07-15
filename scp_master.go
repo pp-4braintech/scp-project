@@ -32,6 +32,8 @@ const scp_start = "START"
 const scp_stop = "STOP"
 const scp_pause = "PAUSE"
 const scp_fail = "FAIL"
+const scp_netfail = "NETFAIL"
+const scp_ready = "READY"
 
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
@@ -300,7 +302,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, bio_ready,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready,
 }
 
 var biobak = bio // Salva status atual
@@ -715,9 +717,6 @@ func save_all_data(filename string) int {
 	buf5, _ := json.Marshal(schedule)
 	err5 := os.WriteFile(filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
-	buf6, _ := json.Marshal(valvs)
-	err6 := os.WriteFile(filename+"_valvs.json", []byte(buf6), 0644)
-	checkErr(err6)
 	return 0
 }
 
@@ -750,6 +749,14 @@ func load_all_data(filename string) int {
 		fmt.Println("-- biofabrica data = ", biofabrica)
 	}
 	set_allvalvs_status()
+
+	dat5, err5 := os.ReadFile(filename + "_schedule.json")
+	checkErr(err5)
+	if err5 == nil {
+		json.Unmarshal([]byte(dat5), &schedule)
+		fmt.Println("-- schedule data = ", schedule)
+	}
+
 	return 0
 }
 
@@ -764,14 +771,29 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 	return true
 }
 
+func scp_run_recovery() {
+	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
+	scp_setup_devices(true)
+}
+
+func scp_emergency_pause() {
+	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
+}
+
 func scp_check_network() {
 	for {
 		fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
 		if !tcp_host_isalive(mainrouter, "80", pingmax) {
 			fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-			biofabrica.Status = scp_fail
+			biofabrica.Status = scp_netfail
+			save_all_data(data_filename)
+			scp_emergency_pause()
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
+			if biofabrica.Status == scp_netfail {
+				biofabrica.Status = scp_ready
+				scp_run_recovery()
+			}
 		}
 		time.Sleep(timetocheck * time.Second)
 	}
@@ -891,178 +913,184 @@ func board_add_message(m string) {
 	}
 }
 
-func scp_setup_devices() {
+func scp_setup_devices(mustall bool) {
 	if demo {
 		return
 	}
-	fmt.Println("CONFIGURANDO DISPOSITIVOS")
-
-	fmt.Println("\n\nCONFIGURANDO BIORREATORES")
+	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIORREATORES")
 	for _, b := range bio_cfg {
-		if len(b.Deviceaddr) > 0 {
-			fmt.Println("device:", b.BioreactorID, "-", b.Deviceaddr)
-			var cmd []string
-			bioaddr := b.Deviceaddr
-			cmd = make([]string, 0)
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Pump_dev[1:]+",3/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_dev[1:]+",3/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_rele[1:]+",3/END")
-			for i := 0; i < len(b.Peris_dev); i++ {
-				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
-			}
-			for i := 0; i < len(b.Valv_devs); i++ {
-				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Valv_devs[i][1:]+",3/END")
-			}
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",0/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
-			cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",0/END")
-			cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
-			nerr := 0
-			for k, c := range cmd {
-				fmt.Print(k, "  ", c, " ")
-				ret := scp_sendmsg_orch(c)
-				if !strings.Contains(ret, scp_ack) {
-					nerr++
+		ind := get_bio_index(b.BioreactorID)
+		if len(b.Deviceaddr) > 0 && ind >= 0 {
+			if mustall || bio[ind].Status == bio_nonexist {
+				fmt.Println("DEBUG SETUP DEVICES: Device:", b.BioreactorID, "-", b.Deviceaddr)
+				var cmd []string
+				bioaddr := b.Deviceaddr
+				cmd = make([]string, 0)
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Pump_dev[1:]+",3/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_dev[1:]+",3/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Aero_rele[1:]+",3/END")
+				for i := 0; i < len(b.Peris_dev); i++ {
+					cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Peris_dev[i][1:]+",3/END")
 				}
-				fmt.Println(ret, nerr)
-				if strings.Contains(ret, scp_die) {
-					fmt.Println("ERROR SETUP DEVICES: BIORREATOR DIE", b.BioreactorID)
-					break
+				for i := 0; i < len(b.Valv_devs); i++ {
+					cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Valv_devs[i][1:]+",3/END")
 				}
-				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
-			}
-			i := get_bio_index(b.BioreactorID)
-			if i >= 0 {
-				if bio[i].Vol_zero[0] == 0 {
-					bio[i].Vol_zero[0] = bio_v1_zero
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",0/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",0/END")
+				cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
+				nerr := 0
+				for k, c := range cmd {
+					fmt.Print(k, "  ", c, " ")
+					ret := scp_sendmsg_orch(c)
+					if !strings.Contains(ret, scp_ack) {
+						nerr++
+					}
+					fmt.Println(ret, nerr)
+					if strings.Contains(ret, scp_die) {
+						fmt.Println("ERROR SETUP DEVICES: BIORREATOR DIE", b.BioreactorID)
+						break
+					}
+					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				if bio[i].Vol_zero[1] == 0 {
-					bio[i].Vol_zero[1] = bio_v2_zero
+
+				if bio[ind].Vol_zero[0] == 0 {
+					bio[ind].Vol_zero[0] = bio_v1_zero
+				}
+				if bio[ind].Vol_zero[1] == 0 {
+					bio[ind].Vol_zero[1] = bio_v2_zero
 				}
 				if nerr > 1 && !devmode {
-					bio[i].Status = bio_nonexist
+					bio[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
-				} else if bio[i].Status == bio_nonexist {
-					bio[i].Status = bio_ready
+				} else if bio[ind].Status == bio_nonexist {
+					bio[ind].Status = bio_ready
 				}
-			} else {
-				fmt.Println("ERROR SETUP DEVICES: Biorreator nao encontrado na tabela", b.BioreactorID)
 			}
 		}
 	}
 
-	fmt.Println("\n\nCONFIGURANDO IBCS")
+	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando IBCs")
 	for _, ib := range ibc_cfg {
-		if len(ib.Deviceaddr) > 0 {
-			fmt.Println("device:", ib.IBCID, "-", ib.Deviceaddr)
-			var cmd []string
-			ibcaddr := ib.Deviceaddr
-			cmd = make([]string, 0)
-			cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Pump_dev[1:]+",3/END")
-			for i := 0; i < len(ib.Valv_devs); i++ {
-				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
-			}
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
-			cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Levellow[1:]+",0/END")
-			// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
+		ind := get_ibc_index(ib.IBCID)
+		if len(ib.Deviceaddr) > 0 && ind >= 0 {
+			if mustall || ibc[ind].Status == bio_nonexist {
+				fmt.Println("DEBUG SETUP DEVICES: Device:", ib.IBCID, "-", ib.Deviceaddr)
+				var cmd []string
+				ibcaddr := ib.Deviceaddr
+				cmd = make([]string, 0)
+				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Pump_dev[1:]+",3/END")
+				for i := 0; i < len(ib.Valv_devs); i++ {
+					cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
+				}
+				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Levellow[1:]+",0/END")
+				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
-			nerr := 0
-			for k, c := range cmd {
-				fmt.Print(k, "  ", c, " ")
-				ret := scp_sendmsg_orch(c)
-				if !strings.Contains(ret, scp_ack) {
-					nerr++
+				nerr := 0
+				for k, c := range cmd {
+					fmt.Print(k, "  ", c, " ")
+					ret := scp_sendmsg_orch(c)
+					if !strings.Contains(ret, scp_ack) {
+						nerr++
+					}
+					fmt.Println(ret, nerr)
+					if strings.Contains(ret, scp_die) {
+						fmt.Println("ERROR SETUP DEVICES: IBC DIE", ib.IBCID)
+						break
+					}
+					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				fmt.Println(ret, nerr)
-				if strings.Contains(ret, scp_die) {
-					fmt.Println("ERROR SETUP DEVICES: IBC DIE", ib.IBCID)
-					break
+
+				if ibc[ind].Vol_zero[0] == 0 {
+					ibc[ind].Vol_zero[0] = ibc_v1_zero
 				}
-				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
-			}
-			i := get_ibc_index(ib.IBCID)
-			if i >= 0 {
-				if ibc[i].Vol_zero[0] == 0 {
-					ibc[i].Vol_zero[0] = ibc_v1_zero
-				}
-				if ibc[i].Vol_zero[1] == 0 {
-					ibc[i].Vol_zero[1] = ibc_v2_zero
+				if ibc[ind].Vol_zero[1] == 0 {
+					ibc[ind].Vol_zero[1] = ibc_v2_zero
 				}
 				if nerr > 0 && !devmode {
-					ibc[i].Status = bio_nonexist
+					ibc[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
-				} else if ibc[i].Status == bio_nonexist {
-					ibc[i].Status = bio_ready
+				} else if ibc[ind].Status == bio_nonexist {
+					ibc[ind].Status = bio_ready
 				}
-			} else {
-				fmt.Println("ERROR SETUP DEVICES: IBC nao encontrado na tabela", ib.IBCID)
 			}
 		}
 	}
 
-	fmt.Println("\n\nCONFIGURANDO TOTEMS")
+	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando TOTEMs")
 	for _, tot := range totem_cfg {
-		if len(tot.Deviceaddr) > 0 {
-			fmt.Println("device:", tot.TotemID, "-", tot.Deviceaddr)
-			var cmd []string
-			totemaddr := tot.Deviceaddr
-			cmd = make([]string, 0)
-			cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Pumpdev[1:]+",3/END")
-			for i := 0; i < len(tot.Valv_devs); i++ {
-				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Valv_devs[i][1:]+",3/END")
-			}
-			for i := 0; i < len(tot.Peris_dev); i++ {
-				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
-			}
+		ind := get_totem_index(tot.TotemID)
+		if len(tot.Deviceaddr) > 0 && ind >= 0 {
+			if mustall || totem[ind].Status == bio_nonexist {
+				fmt.Println("DEBUG SETUP DEVICES: Device:", tot.TotemID, "-", tot.Deviceaddr)
+				var cmd []string
+				totemaddr := tot.Deviceaddr
+				cmd = make([]string, 0)
+				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Pumpdev[1:]+",3/END")
+				for i := 0; i < len(tot.Valv_devs); i++ {
+					cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Valv_devs[i][1:]+",3/END")
+				}
+				for i := 0; i < len(tot.Peris_dev); i++ {
+					cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
+				}
 
-			nerr := 0
-			for k, c := range cmd {
-				fmt.Print(k, "  ", c, " ")
-				ret := scp_sendmsg_orch(c)
-				if !strings.Contains(ret, scp_ack) {
-					nerr++
+				nerr := 0
+				for k, c := range cmd {
+					fmt.Print(k, "  ", c, " ")
+					ret := scp_sendmsg_orch(c)
+					if !strings.Contains(ret, scp_ack) {
+						nerr++
+					}
+					fmt.Println(ret, nerr)
+					if strings.Contains(ret, scp_die) {
+						fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", tot.TotemID)
+						break
+					}
+					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				fmt.Println(ret, nerr)
-				if strings.Contains(ret, scp_die) {
-					fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", tot.TotemID)
-					break
-				}
-				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
-			}
-			i := get_totem_index(tot.TotemID)
-			if i >= 0 {
 				if nerr > 0 && !devmode {
-					totem[i].Status = bio_nonexist
+					totem[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
 				}
-			} else {
-				fmt.Println("ERROR SETUP DEVICES: TOTEM nao encontrado na tabela", tot.TotemID)
 			}
 		}
 	}
 
-	fmt.Println("\n\nCONFIGURANDO BIOFABRICA")
-	for _, bf := range biofabrica_cfg {
-		if len(bf.Deviceaddr) > 0 {
-			fmt.Println("device:", bf.DeviceID, "-", bf.Deviceaddr)
-			var cmd []string
-			bfaddr := bf.Deviceaddr
-			cmd = make([]string, 0)
-			cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIOFABRICA")
+	if mustall || biofabrica.Status == scp_fail {
+		for _, bf := range biofabrica_cfg {
+			if len(bf.Deviceaddr) > 0 {
+				fmt.Println("DEBUG SETUP DEVICES: Device:", bf.DeviceID, "-", bf.Deviceaddr)
+				var cmd []string
+				bfaddr := bf.Deviceaddr
+				cmd = make([]string, 0)
+				cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
 
-			for k, c := range cmd {
-				fmt.Print(k, "  ", c, " ")
-				ret := scp_sendmsg_orch(c)
-				fmt.Println(ret)
-				if ret[0:2] == "DIE" {
-					fmt.Println("SLAVE ERROR - DIE")
-					break
+				nerr := 0
+				for k, c := range cmd {
+					fmt.Print(k, "  ", c, " ")
+					ret := scp_sendmsg_orch(c)
+					fmt.Println(ret)
+					if !strings.Contains(ret, scp_ack) {
+						nerr++
+					}
+					if ret[0:2] == "DIE" {
+						fmt.Println("SLAVE ERROR - DIE")
+						nerr++
+						break
+					}
+					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+				if nerr > 0 && !devmode {
+					biofabrica.Status = scp_fail
+					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
+				}
 			}
 		}
 	}
+
 	finishedsetup = true
 }
 
@@ -1076,6 +1104,7 @@ func scp_get_alldata() {
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
+	needtorunsetup := false
 	for {
 		if finishedsetup {
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
@@ -1085,7 +1114,7 @@ func scp_get_alldata() {
 				t_start_bio = time.Now()
 			}
 			for _, b := range bio {
-				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 {
+				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_bio_index(b.BioreactorID)
 					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime
 					// if devmode {
@@ -1240,6 +1269,8 @@ func scp_get_alldata() {
 							}
 						}
 					}
+				} else if b.Status == bio_nonexist {
+					needtorunsetup = true
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
@@ -1349,6 +1380,8 @@ func scp_get_alldata() {
 							}
 						}
 					}
+				} else if b.Status == bio_nonexist || b.Status == bio_error {
+					needtorunsetup = true
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
@@ -1363,9 +1396,13 @@ func scp_get_alldata() {
 			if t_elapsed_save >= scp_timetosave {
 				save_all_data(execpath + data_filename)
 				t_start_save = time.Now()
+				if needtorunsetup {
+					go scp_setup_devices(false)
+				}
 			}
 
 			firsttime = false
+
 			time.Sleep(scp_refreshsleep * time.Millisecond)
 
 		}
@@ -3429,8 +3466,8 @@ func main() {
 	// fmt.Println("Biofabrica ", biofabrica)
 	valvs = make(map[string]int, 0)
 	load_all_data(execpath + data_filename)
-	go scp_setup_devices()
 
+	go scp_setup_devices(true)
 	go scp_get_alldata()
 	scp_master_ipc()
 }
