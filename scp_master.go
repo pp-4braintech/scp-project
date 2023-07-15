@@ -1270,7 +1270,9 @@ func scp_get_alldata() {
 								}
 							}
 						}
-
+						if b.Status == bio_update && (vol1 != -1 || vol2 != -1) {
+							bio[ind].Status = bio_ready
+						}
 						// volc = vol1 // Precisa validar LASER BIO
 						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 							bio[ind].Volume = uint32(volc)
@@ -1382,6 +1384,9 @@ func scp_get_alldata() {
 							volc = vol1
 						} else {
 							volc = vol2
+						}
+						if b.Status == bio_update && (vol1 != -1 || vol2 != -1) {
+							ibc[ind].Status = bio_ready
 						}
 						if (volc >= 0) && (volc <= float64(ibc_cfg[b.IBCID].Maxvolume)*1.2) {
 							ibc[k].Volume = uint32(volc)
