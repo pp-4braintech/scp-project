@@ -2249,7 +2249,8 @@ func scp_grow_bio(bioid string) bool {
 				scp_adjust_ph(bioid, float32(maxph))
 			}
 			if bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
-				scp_adjust_temperature(bioid, float32(worktemp))
+				fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
+				// scp_adjust_temperature(bioid, float32(worktemp))
 			}
 
 		}
