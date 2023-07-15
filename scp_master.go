@@ -109,6 +109,7 @@ const data_filename = "dumpdata"
 const execpath = "./"
 const mainrouter = "192.168.0.5"
 const pingmax = 3
+const timetocheck = 30
 
 const bio_nonexist = "NULL"
 const bio_die = "DIE"
@@ -758,12 +759,15 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 }
 
 func scp_check_network() {
-	fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
-	if !tcp_host_isalive(mainrouter, "80", pingmax) {
-		fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-		biofabrica.Status = scp_fail
-	} else {
-		fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
+	for {
+		fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
+		if !tcp_host_isalive(mainrouter, "80", pingmax) {
+			fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
+			biofabrica.Status = scp_fail
+		} else {
+			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
+		}
+		time.Sleep(timetocheck * time.Second)
 	}
 }
 
@@ -3364,7 +3368,7 @@ func scp_master_ipc() {
 
 func main() {
 
-	scp_check_network()
+	go scp_check_network()
 
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
