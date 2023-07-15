@@ -752,7 +752,7 @@ func scp_check_network() {
 	if err != nil {
 		checkErr(err)
 	}
-	fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pinger.IpAddr())
+	fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pinger.IPAddr())
 	pinger.Count = pingmax
 	err = pinger.Run() // Blocks until finished.
 	if err != nil {
