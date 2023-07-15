@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-ping/ping"
 )
 
 var demo = false
@@ -104,7 +106,9 @@ const ibc_v2_zero = 2652.0 // em mm
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
-const execpath = "/home/scpadm/scp-project/"
+
+//const execpath = "/home/scpadm/scp-project/"
+const execpath = "./"
 
 const bio_nonexist = "NULL"
 const bio_die = "DIE"
@@ -3337,6 +3341,17 @@ func scp_master_ipc() {
 }
 
 func main() {
+	pinger, err := ping.NewPinger("www.google.com")
+	if err != nil {
+		panic(err)
+	}
+	pinger.Count = 3
+	err = pinger.Run() // Blocks until finished.
+	if err != nil {
+		panic(err)
+	}
+	stats := pinger.Statistics()
+
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
