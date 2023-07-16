@@ -22,7 +22,7 @@ const scp_state_TCP0 = 20
 const scp_state_TCPFAIL = 29
 const scp_max_len = 512
 const scp_keepalive_time = 6
-const scp_timeout_ms = 5000
+const scp_timeout_ms = 3000
 const scp_buff_size = 512
 const scp_max_err = 7
 
@@ -32,6 +32,7 @@ type scp_slave_map struct {
 	slave_scp_addr  string
 	slave_scp_state uint8
 	go_chan         chan string
+	slave_errors    uint8
 }
 
 var scp_slaves map[string]scp_slave_map
@@ -78,6 +79,20 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 		return string(ret), err
 	}
 	return scp_ack, err
+}
+
+func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
+	slave_data := *scp_slave
+	slave_addr := slave_data.slave_tcp_addr
+	fmt.Println("Enviando PING para", slave_addr)
+	ret, err := scp_sendtcp(slave_con, scp_ping, true)
+	if err != nil {
+		scp_slave.slave_errors++
+		fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING")
+	} else {
+		fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
+		scp_slave.slave_errors = 0
+	}
 }
 
 func scp_master_tcp_client(scp_slave *scp_slave_map) {
@@ -139,15 +154,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			current_time := time.Now().Unix()
 			elapsed_seconds := current_time - begin_time
 			if (elapsed_seconds > scp_keepalive_time) && (nerr < scp_max_err) {
-				fmt.Println("Enviando PING para", scp_slave.slave_scp_addr)
-				ret, err := scp_sendtcp(slave_tcp_con, scp_ping, true)
-				if err != nil {
-					nerr++
-					fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING")
-				} else {
-					fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
-					nerr = 0
-				}
+				go scp_send_ping(scp_slave, slave_tcp_con)
 				begin_time = current_time
 			}
 			time.Sleep(50 * time.Millisecond)
@@ -203,7 +210,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			if len(params) >= 3 {
 				tcp_addr := tmp_addr[0] + ":" + params[2]
 				process_chan := make(chan string)
-				scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan}
+				scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan, 0}
 				fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
 				_, err = con.WriteTo([]byte(scp_ack), net_addr)
 				checkErr(err)
@@ -234,8 +241,6 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					slave_data.slave_scp_state = scp_state_JOIN0
 				}
 				scp_slaves[scp_msg_data] = slave_data
-				//slave_data.go_chan <- "PUT/5/1/END"
-				//slave_data.go_chan <- "GET/1/END"
 			}
 		}
 
