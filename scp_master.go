@@ -29,11 +29,17 @@ const scp_run = "RUN"
 const scp_die = "DIE"
 const scp_sched = "SCHED"
 const scp_start = "START"
+const scp_status = "STATUS"
 const scp_stop = "STOP"
 const scp_pause = "PAUSE"
 const scp_fail = "FAIL"
 const scp_netfail = "NETFAIL"
 const scp_ready = "READY"
+
+const scp_state_JOIN0 = 10
+const scp_state_JOIN1 = 11
+const scp_state_TCP0 = 20
+const scp_state_TCPFAIL = 29
 
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
@@ -52,6 +58,7 @@ const scp_par_status = "STATUS"
 const scp_par_step = "STEP"
 const scp_par_maxstep = "MAXSTEP"
 const scp_par_heater = "HEATER"
+const scp_par_slaves = "SLAVES"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -81,6 +88,7 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
+const scp_refresstatus = 10
 const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
@@ -1113,6 +1121,64 @@ func scp_setup_devices(mustall bool) {
 	finishedsetup = true
 }
 
+func scp_refresh_status() {
+	var err error
+	nslaves := 0
+	nslavesok := 0
+	nslavesnok := 0
+	cmdstatus := "STATUS/END"
+	status := scp_sendmsg_orch(cmdstatus)
+	pars := scp_splitparam(status, "/")
+	if len(pars) > 1 && pars[0] == scp_status {
+		if strings.Contains(pars[1], scp_par_slaves) {
+			for i, p := range pars[1:] {
+				data := scp_splitparam(p, ",")
+				if len(data) > 0 {
+					if i == 0 {
+						nslaves, err = strconv.Atoi(data[1])
+						if err != nil {
+							fmt.Println("ERROR SCP REFRESH STATUS: Numero de slaves incorreto vindo do ORCH", pars)
+						} else {
+							fmt.Println("DEBUG SCP REFRESH STATUS: ORCH reportou", nslaves, " slaves")
+						}
+					} else if len(data) > 2 {
+						id := data[0]
+						ipaddr := data[1]
+						devstatus, _ := strconv.Atoi(data[2])
+						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", id, ipaddr, devstatus)
+						if devstatus == scp_state_TCP0 { // Dispositivo OK
+							nslaves++
+						} else { // Dispositivo NAO OK
+							nslavesnok++
+							ind := get_bio_index(id)
+							if ind >= 0 {
+								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", id)
+								bio[ind].Status = bio_error
+							} else {
+								ind = get_ibc_index(id)
+								if ind >= 0 {
+									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", id)
+									ibc[ind].Status = bio_error
+								} else {
+									ind = get_totem_index(id)
+									if ind >= 0 {
+										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", id)
+										totem[ind].Status = bio_error
+									} else {
+										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA na Biofabrica", id)
+										biofabrica.Status = scp_fail
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	fmt.Println("DEBUG SCP REFRESH STATUS: Total de Devices", nslaves, " OK", nslavesok, "NOK", nslavesnok)
+}
+
 func scp_get_alldata() {
 	if demo {
 		return
@@ -1120,6 +1186,7 @@ func scp_get_alldata() {
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
 	t_start_save := time.Now()
+	t_start_status := time.Now()
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1426,6 +1493,13 @@ func scp_get_alldata() {
 			}
 
 			firsttime = false
+
+			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
+			if t_elapsed_status >= scp_refresstatus {
+				scp_refresh_status()
+				t_start_status = time.Now()
+			}
+
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
 
