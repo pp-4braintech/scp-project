@@ -1153,17 +1153,19 @@ func scp_refresh_status() {
 						} else { // Dispositivo NAO OK
 							nslavesnok++
 							ind := get_bio_index(id)
-
+							fmt.Println("DEBUG SCP REFRESH STATUS: TEST BIO:", id, ind)
 							if ind >= 0 {
 								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", id)
 								bio[ind].Status = bio_error
 							} else {
 								ind = get_ibc_index(id)
+								fmt.Println("DEBUG SCP REFRESH STATUS: TEST IBC:", id, ind)
 								if ind >= 0 {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", id)
 									ibc[ind].Status = bio_error
 								} else {
 									ind = get_totem_index(id)
+									fmt.Println("DEBUG SCP REFRESH STATUS: TEST TOTEM:", id, ind)
 									if ind >= 0 {
 										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", id)
 										totem[ind].Status = bio_error

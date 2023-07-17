@@ -178,8 +178,8 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				begin_time = current_time
 				// fmt.Println(scp_slave)
 			}
-			time.Sleep(50 * time.Millisecond)
 		}
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
