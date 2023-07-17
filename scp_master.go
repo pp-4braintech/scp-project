@@ -115,11 +115,11 @@ const ibc_v2_zero = 2652.0 // em mm
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
-const execpath = "/home/scpadm/scp-project/"
-const mainrouter = "10.0.0.2"
+// const execpath = "/home/scpadm/scp-project/"
+// const mainrouter = "10.0.0.2"
 
-// const execpath = "./"
-// const mainrouter = "192.168.0.1"
+const execpath = "./"
+const mainrouter = "192.168.0.1"
 
 const pingmax = 3
 const timetocheck = 30
