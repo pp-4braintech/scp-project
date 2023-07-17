@@ -1499,7 +1499,7 @@ func scp_get_alldata() {
 
 			t_elapsed_setup := uint32(time.Since(t_start_setup).Seconds())
 			if t_elapsed_setup >= scp_checksetup {
-				if needtorunsetup {
+				if finishedsetup && needtorunsetup {
 					go scp_setup_devices(false)
 				}
 				t_start_setup = time.Now()
@@ -1507,10 +1507,11 @@ func scp_get_alldata() {
 
 			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
 			if t_elapsed_status >= scp_refresstatus {
-				scp_refresh_status()
+				if finishedsetup {
+					scp_refresh_status()
+				}
 				t_start_status = time.Now()
 			}
-
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
 
