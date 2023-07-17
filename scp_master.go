@@ -1355,7 +1355,8 @@ func scp_get_alldata() {
 							bio[ind].Status = bio_ready
 						}
 						// volc = vol1 // Precisa validar LASER BIO
-						if (volc >= 0) && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
+						// if volc >= 0 && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
+						if volc >= 0 {
 							bio[ind].Volume = uint32(volc)
 							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
 							level_int := uint8(level)
