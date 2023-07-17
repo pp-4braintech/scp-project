@@ -320,6 +320,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 						m.Unlock()
 					}
 					return
+				} else {
+					fmt.Println("SLAVE", slave_data, "BUSY")
 				}
 				time.Sleep(500 * time.Millisecond)
 			}
