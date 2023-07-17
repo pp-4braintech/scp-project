@@ -350,7 +350,7 @@ func scp_master_udp() {
 		fmt.Println("msg recebida:", string(reply))
 		fmt.Println("origem:", net_addr)
 
-		go scp_process_udp(con, reply, p_size, net_addr)
+		scp_process_udp(con, reply, p_size, net_addr)
 
 		// params := scp_splitparam(string(reply[0:p_size]))
 		// scp_command := params[0]
