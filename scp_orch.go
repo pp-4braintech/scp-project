@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -183,7 +184,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	}
 }
 
-func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Addr) {
+func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Addr, m *sync.Mutex) {
 	var err error
 
 	params := scp_splitparam(string(msg[0:p_size]))
@@ -231,8 +232,10 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 		if len(params) >= 3 {
 			tcp_addr := tmp_addr[0] + ":" + params[2]
 			process_chan := make(chan string)
+			m.Lock()
 			scp_slaves[scp_msg_data] = scp_slave_map{slave_udp_addr: udp_addr, slave_tcp_addr: tcp_addr, slave_scp_addr: scp_msg_data,
 				slave_scp_state: scp_state_JOIN0, go_chan: process_chan, slave_errors: 0, running: 0}
+			m.Unlock()
 			fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
 			_, err = con.WriteTo([]byte(scp_ack), net_addr)
 			checkErr(err)
@@ -252,7 +255,9 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			if slave_data.slave_scp_state == scp_state_JOIN0 {
 				fmt.Println("JOIN confirmado")
 				slave_data.slave_scp_state = scp_state_JOIN1
+				m.Lock()
 				scp_slaves[scp_msg_data] = slave_data
+				m.Unlock()
 				_, err = con.WriteTo([]byte(scp_ack), net_addr)
 				checkErr(err)
 				go scp_master_tcp_client(&slave_data)
@@ -261,7 +266,9 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					fmt.Println("ERRO ao criar conexao TCP com cliente")
 					slave_data.slave_scp_state = scp_state_JOIN0
 				}
+				m.Lock()
 				scp_slaves[scp_msg_data] = slave_data
+				m.Unlock()
 			}
 		}
 
@@ -308,7 +315,9 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					checkErr(err)
 					if ret == scp_die {
 						slave_data.slave_scp_state = scp_state_TCPFAIL
+						m.Lock()
 						scp_slaves[scp_msg_slaveaddr] = slave_data
+						m.Unlock()
 					}
 					return
 				}
@@ -337,6 +346,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 
 func scp_master_udp() {
 
+	var m sync.Mutex
 	con, err := net.ListenPacket("udp", ":7007")
 	checkErr(err)
 	defer con.Close()
@@ -350,7 +360,7 @@ func scp_master_udp() {
 		fmt.Println("msg recebida:", string(reply))
 		fmt.Println("origem:", net_addr)
 
-		go scp_process_udp(con, reply, p_size, net_addr)
+		go scp_process_udp(con, reply, p_size, net_addr, &m)
 
 		// params := scp_splitparam(string(reply[0:p_size]))
 		// scp_command := params[0]
