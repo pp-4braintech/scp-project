@@ -15,7 +15,9 @@ const scp_err = "ERR"
 const scp_die = "DIE"
 const scp_join = "JOIN"
 const scp_ping = "PING"
+const scp_pong = "PONG"
 const scp_destroy = "DESTROY"
+const scp_status = "STATUS"
 const scp_state_JOIN0 = 10
 const scp_state_JOIN1 = 11
 const scp_state_TCP0 = 20
@@ -49,6 +51,15 @@ func scp_splitparam(param string) []string {
 		return nil
 	}
 	return scp_data
+}
+
+func get_status() string {
+	stat := fmt.Sprintf("STATUS/SLAVES,%d/", len(scp_slaves))
+	for _, s := range scp_slaves {
+		stat += fmt.Sprintf("%s,%s,%d/", s.slave_scp_addr, s.slave_tcp_addr, s.slave_scp_state)
+	}
+	stat += "END"
+	return stat
 }
 
 func print_scp_slave() {
@@ -86,9 +97,9 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 	slave_addr := slave_data.slave_tcp_addr
 	fmt.Println("Enviando PING para", slave_addr)
 	ret, err := scp_sendtcp(slave_con, scp_ping, true)
-	if err != nil {
+	if err != nil || !strings.Contains(ret, scp_pong) {
 		scp_slave.slave_errors++
-		fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING")
+		fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING", ret)
 	} else {
 		fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
 		scp_slave.slave_errors = 0
@@ -96,7 +107,6 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 }
 
 func scp_master_tcp_client(scp_slave *scp_slave_map) {
-	nerr := 0
 	slave_data := *scp_slave
 	slave_addr := slave_data.slave_tcp_addr
 	fmt.Println("TCP con ", slave_addr)
@@ -131,7 +141,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				//slave_data.go_chan <- scp_ack
 				return
 			}
-			if nerr > scp_max_err {
+			if scp_slave.slave_errors > scp_max_err {
 				fmt.Println("----->>>> TCP CLIENT com excesso de erros")
 				slave_data.go_chan <- scp_die
 			} else {
@@ -143,9 +153,9 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				// }
 				if err == nil {
 					slave_data.go_chan <- ret
-					nerr = 0
+					scp_slave.slave_errors = 0
 				} else {
-					nerr++
+					scp_slave.slave_errors++
 					slave_data.go_chan <- scp_err
 				}
 				begin_time = time.Now().Unix()
@@ -153,9 +163,11 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 		default:
 			current_time := time.Now().Unix()
 			elapsed_seconds := current_time - begin_time
-			if (elapsed_seconds > scp_keepalive_time) && (nerr < scp_max_err) {
+			if (elapsed_seconds > scp_keepalive_time) && (scp_slave.slave_errors < scp_max_err) {
+
 				go scp_send_ping(scp_slave, slave_tcp_con)
 				begin_time = current_time
+				// fmt.Println(scp_slave)
 			}
 			time.Sleep(50 * time.Millisecond)
 		}
@@ -179,16 +191,15 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
 			fmt.Println("Destruindo SCP TCP")
-			select {
-			case slave_data.go_chan <- scp_destroy:
-				fmt.Println("destroy enviado com sucesso")
-				fmt.Println("fechando chain")
-				close(slave_data.go_chan)
-				// fmt.Println("deletando dados na tabela")
-				// delete(scp_slaves, scp_msg_data)
-			default:
-				fmt.Println("Falha ao enviar para o channel")
-			}
+			slave_data.go_chan <- scp_destroy
+			fmt.Println("destroy enviado com sucesso")
+			time.Sleep(50 * time.Millisecond)
+			fmt.Println("fechando chain")
+			close(slave_data.go_chan)
+
+			// fmt.Println("deletando dados na tabela")
+			// delete(scp_slaves, scp_msg_data)
+
 			// fmt.Println("...saindo do channel")
 			// time.Sleep(100 * time.Millisecond)
 			// select {
@@ -201,22 +212,22 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			// default:
 			// 	fmt.Println("Não houve resposta do chan")
 			// }
-			fmt.Println("deletando dados na tabela")
-			delete(scp_slaves, scp_msg_data)
+			// fmt.Println("Deletando  dados na tabela")
+			//delete(scp_slaves, scp_msg_data)
 
+		}
+
+		udp_addr := net_addr.String()
+		tmp_addr := strings.Split(udp_addr, ":")
+		if len(params) >= 3 {
+			tcp_addr := tmp_addr[0] + ":" + params[2]
+			process_chan := make(chan string)
+			scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan, 0}
+			fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
+			_, err = con.WriteTo([]byte(scp_ack), net_addr)
+			checkErr(err)
 		} else {
-			udp_addr := net_addr.String()
-			tmp_addr := strings.Split(udp_addr, ":")
-			if len(params) >= 3 {
-				tcp_addr := tmp_addr[0] + ":" + params[2]
-				process_chan := make(chan string)
-				scp_slaves[scp_msg_data] = scp_slave_map{udp_addr, tcp_addr, scp_msg_data, scp_state_JOIN0, process_chan, 0}
-				fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
-				_, err = con.WriteTo([]byte(scp_ack), net_addr)
-				checkErr(err)
-			} else {
-				fmt.Println("JOIN com parametros incorretos", params)
-			}
+			fmt.Println("JOIN com parametros incorretos", params)
 		}
 
 	case scp_ack:
@@ -244,6 +255,13 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			}
 		}
 
+	case scp_status:
+		scp_msg_data := params[1]
+		fmt.Println("STATUS recebido de", scp_msg_data, len(scp_msg_data))
+		stat := get_status()
+		_, err = con.WriteTo([]byte(stat), net_addr)
+		checkErr(err)
+
 	case scp_cmd:
 		scp_msg_slaveaddr := params[1]
 		slave_data, ok := scp_slaves[scp_msg_slaveaddr]
@@ -253,6 +271,10 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			checkErr(err)
 		} else if slave_data.slave_scp_state == scp_state_TCPFAIL {
 			fmt.Println("ERRO Cliente TCP")
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
+		} else if slave_data.slave_scp_state != scp_state_TCP0 {
+			fmt.Println("ERRO Cliente NÃO COMPLETOU JOIN", slave_data)
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
 		} else {
@@ -309,7 +331,7 @@ func scp_master_udp() {
 		fmt.Println("msg recebida:", string(reply))
 		fmt.Println("origem:", net_addr)
 
-		scp_process_udp(con, reply, p_size, net_addr)
+		go scp_process_udp(con, reply, p_size, net_addr)
 
 		// params := scp_splitparam(string(reply[0:p_size]))
 		// scp_command := params[0]
