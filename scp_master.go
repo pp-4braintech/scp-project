@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -289,6 +290,8 @@ var schedule []Scheditem
 var recipe []string
 var cipbio []string
 var cipibc []string
+
+var mainmutex sync.Mutex
 
 var bio = []Bioreact{
 	{"BIOR01", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
@@ -904,13 +907,16 @@ func scp_sendmsg_orch(cmd string) string {
 	if demo {
 		return scp_ack
 	}
+	mainmutex.Lock()
 	//fmt.Println("TO ORCH:", cmd)
 	con, err := net.Dial("udp", scp_orch_addr)
 	if err != nil {
 		checkErr(err)
+		mainmutex.Unlock()
 		return scp_err
 	}
 	defer con.Close()
+	defer mainmutex.Unlock()
 
 	_, err = con.Write([]byte(cmd))
 	if err != nil {
