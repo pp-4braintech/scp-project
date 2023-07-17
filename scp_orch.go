@@ -255,9 +255,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			if slave_data.slave_scp_state == scp_state_JOIN0 {
 				fmt.Println("JOIN confirmado")
 				slave_data.slave_scp_state = scp_state_JOIN1
-				m.Lock()
 				scp_slaves[scp_msg_data] = slave_data
-				m.Unlock()
 				_, err = con.WriteTo([]byte(scp_ack), net_addr)
 				checkErr(err)
 				go scp_master_tcp_client(&slave_data)
@@ -266,9 +264,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					fmt.Println("ERRO ao criar conexao TCP com cliente")
 					slave_data.slave_scp_state = scp_state_JOIN0
 				}
-				m.Lock()
 				scp_slaves[scp_msg_data] = slave_data
-				m.Unlock()
 			}
 		}
 
@@ -315,9 +311,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					checkErr(err)
 					if ret == scp_die {
 						slave_data.slave_scp_state = scp_state_TCPFAIL
-						m.Lock()
 						scp_slaves[scp_msg_slaveaddr] = slave_data
-						m.Unlock()
 					}
 					return
 				} else {
