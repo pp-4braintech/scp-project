@@ -93,6 +93,7 @@ const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
 const scp_timetosave = 45
+const scp_checksetup = 60
 const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
 
@@ -1189,6 +1190,7 @@ func scp_get_alldata() {
 	t_start_ibc := time.Now()
 	t_start_save := time.Now()
 	t_start_status := time.Now()
+	t_start_setup := time.Now()
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1489,12 +1491,17 @@ func scp_get_alldata() {
 			if t_elapsed_save >= scp_timetosave {
 				save_all_data(execpath + data_filename)
 				t_start_save = time.Now()
-				if needtorunsetup {
-					go scp_setup_devices(false)
-				}
 			}
 
 			firsttime = false
+
+			t_elapsed_setup := uint32(time.Since(t_start_setup).Seconds())
+			if t_elapsed_setup >= scp_checksetup {
+				if needtorunsetup {
+					go scp_setup_devices(false)
+				}
+				t_start_setup = time.Now()
+			}
 
 			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
 			if t_elapsed_status >= scp_refresstatus {
