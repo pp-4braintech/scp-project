@@ -102,7 +102,7 @@ const scp_timewaitvalvs = 15000
 const scp_timephwait = 5000
 const scp_timetempwait = 3000
 const scp_timegrowwait = 30000
-const scp_maxtimewithdraw = 600
+const scp_maxtimewithdraw = 1200
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
