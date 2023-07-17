@@ -38,7 +38,8 @@ const bio_error = "ERRO"
 const bio_max_valves = 8
 const max_buf = 8192
 
-const execpath = "/home/scpadm/scp-project/"
+// const execpath = "/home/scpadm/scp-project/"
+const execpath = "./"
 
 const vol_bioreactor = 2000
 const vol_ibc = 4000
