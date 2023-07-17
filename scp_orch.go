@@ -164,6 +164,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			current_time := time.Now().Unix()
 			elapsed_seconds := current_time - begin_time
 			if (elapsed_seconds > scp_keepalive_time) && (scp_slave.slave_errors < scp_max_err) {
+
 				go scp_send_ping(scp_slave, slave_tcp_con)
 				begin_time = current_time
 				// fmt.Println(scp_slave)
