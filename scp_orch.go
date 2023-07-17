@@ -278,7 +278,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			fmt.Println("ERRO Cliente NÃO COMPLETOU JOIN", slave_data)
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
-		} else {
+		} else if slave_data.slave_errors < scp_max_err {
 			cmd := params[2]
 			tam := len(cmd)
 			for _, v := range params[3:] {
@@ -299,6 +299,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 				slave_data.slave_scp_state = scp_state_TCPFAIL
 				scp_slaves[scp_msg_slaveaddr] = slave_data
 			}
+		}
+
 			// select {
 			// case slave_data.go_chan <- scp_msg_slavecmd:
 			// 	fmt.Println("CMD enviado para o CHANNEL")
