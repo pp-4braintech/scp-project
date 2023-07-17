@@ -1134,6 +1134,7 @@ func scp_refresh_status() {
 	if len(pars) > 1 && pars[0] == scp_status {
 		if strings.Contains(pars[1], scp_par_slaves) {
 			for i, p := range pars[1:] {
+				fmt.Println("DEBUG SCP REFRESH STATUS: ORCH", i, p)
 				data := scp_splitparam(p, ",")
 				if len(data) > 0 {
 					if i == 0 {
