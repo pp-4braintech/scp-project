@@ -1329,12 +1329,12 @@ func scp_get_alldata() {
 									volc = float64(bio[ind].Volume)
 								}
 							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
-								if vol1 > vol2 && vol1 != -1 {
-									volc = vol1
-								} else if vol2 != -1 {
+								volc = float64(bio[ind].Volume)
+								if vol2 != -1 && vol2 > float64(bio[ind].Volume) && vol2 < float64(bio[ind].Volume)*1.2 {
 									volc = vol2
-								} else {
-									volc = float64(bio[ind].Volume)
+								}
+								if vol1 != -1 && vol1 > float64(bio[ind].Volume) && vol1 < float64(bio[ind].Volume)*1.2 {
+									volc = vol1
 								}
 								if volc < float64(bio[ind].Volume) || volc > float64(bio[ind].Volume)*1.2 {
 									volc = float64(bio[ind].Volume)
