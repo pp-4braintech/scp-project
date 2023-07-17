@@ -1139,8 +1139,6 @@ func scp_refresh_status() {
 						nslaves, err = strconv.Atoi(data[1])
 						if err != nil {
 							fmt.Println("ERROR SCP REFRESH STATUS: Numero de slaves incorreto vindo do ORCH", pars)
-						} else {
-							fmt.Println("DEBUG SCP REFRESH STATUS: ORCH reportou", nslaves, " slaves")
 						}
 					} else if len(data) > 2 {
 						id := data[0]
@@ -1177,7 +1175,7 @@ func scp_refresh_status() {
 			}
 		}
 	}
-	fmt.Println("DEBUG SCP REFRESH STATUS: Total de Devices", nslaves, " OK", nslavesok, "NOK", nslavesnok)
+	fmt.Println("\nDEBUG SCP REFRESH STATUS: ORCH STATUS  Devices:", nslaves, "\tOK:", nslavesok, "\tNOK:", nslavesnok)
 }
 
 func scp_get_alldata() {
