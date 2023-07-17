@@ -1134,7 +1134,7 @@ func scp_refresh_status() {
 	if len(pars) > 1 && pars[0] == scp_status {
 		if strings.Contains(pars[1], scp_par_slaves) {
 			for i, p := range pars[1:] {
-				fmt.Println("DEBUG SCP REFRESH STATUS: ORCH", i, p)
+				// fmt.Println("DEBUG SCP REFRESH STATUS: ORCH", i, p)
 				data := scp_splitparam(p, ",")
 				if len(data) > 0 {
 					if i == 0 {
@@ -1148,7 +1148,7 @@ func scp_refresh_status() {
 						devstatus, _ := strconv.Atoi(data[2])
 						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", id, ipaddr, devstatus)
 						if devstatus == scp_state_TCP0 { // Dispositivo OK
-							nslaves++
+							nslavesok++
 						} else { // Dispositivo NAO OK
 							nslavesnok++
 							ind := get_bio_index(id)
