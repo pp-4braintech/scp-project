@@ -804,7 +804,6 @@ func scp_emergency_pause() {
 	board_add_message("EPARADA de EMERGENCIA")
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, true)
-		save_all_data(data_filename)
 	}
 }
 
@@ -3025,8 +3024,8 @@ func stop_device(devtype string, main_id string) bool {
 				bio[ind].Status = bio_ready
 			}
 		}
-
 	}
+	save_all_data(data_filename)
 	return true
 }
 
