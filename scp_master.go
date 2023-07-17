@@ -1152,6 +1152,7 @@ func scp_refresh_status() {
 						} else { // Dispositivo NAO OK
 							nslavesnok++
 							ind := get_bio_index(id)
+
 							if ind >= 0 {
 								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", id)
 								bio[ind].Status = bio_error
