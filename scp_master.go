@@ -818,8 +818,10 @@ func scp_check_network() {
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Status == scp_netfail {
-				biofabrica.Status = scp_ready
-				scp_run_recovery()
+				if finishedsetup {
+					biofabrica.Status = scp_ready
+					scp_run_recovery()
+				}
 			}
 		}
 		time.Sleep(timetocheck * time.Second)
