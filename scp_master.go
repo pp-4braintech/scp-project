@@ -1232,7 +1232,7 @@ func scp_refresh_status() {
 								}
 
 							case scp_totem:
-								ind := get_totem_index(id)
+								ind := get_totem_index(dev_id)
 								if ind >= 0 {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", dev_id)
 									totem[ind].Status = bio_error
