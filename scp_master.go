@@ -117,11 +117,11 @@ const ibc_v2_zero = 2652.0 // em mm
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
-const execpath = "/home/scpadm/scp-project/"
-const mainrouter = "10.0.0.2"
+// const execpath = "/home/scpadm/scp-project/"
+// const mainrouter = "10.0.0.2"
 
-// const execpath = "./"
-// const mainrouter = "192.168.0.1"
+const execpath = "./"
+const mainrouter = "192.168.0.1"
 
 const pingmax = 3
 const timetocheck = 30
@@ -1394,10 +1394,10 @@ func scp_get_alldata() {
 								}
 							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
 								volc = float64(bio[ind].Volume)
-								if vol2 != -1 && (volc == 0 || (vol2 > float64(bio[ind].Volume) && vol2 < float64(bio[ind].Volume)+100)) {
+								if vol2 != -1 && (volc == 0 || (vol2 > float64(bio[ind].Volume) && vol2 < float64(bio[ind].Volume)+150)) {
 									volc = vol2
 								}
-								if vol1 != -1 && (volc == 0 || (vol1 > float64(bio[ind].Volume) && vol1 < float64(bio[ind].Volume)+100)) {
+								if vol1 != -1 && (volc == 0 || (vol1 > float64(bio[ind].Volume) && vol1 < float64(bio[ind].Volume)+150)) {
 									volc = vol1
 								}
 							} else {
@@ -1433,7 +1433,7 @@ func scp_get_alldata() {
 							}
 						}
 					}
-				} else if b.Status == bio_nonexist {
+				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
@@ -1566,6 +1566,14 @@ func scp_get_alldata() {
 			}
 
 			firsttime = false
+
+			for _, t := range totem {
+				if t.Status == bio_error || t.Status == bio_nonexist {
+					needtorunsetup = true
+				}
+			}
+
+			needtorunsetup = needtorunsetup || (biofabrica.Status == scp_fail)
 
 			t_elapsed_setup := uint32(time.Since(t_start_setup).Seconds())
 			if t_elapsed_setup >= scp_checksetup {
