@@ -1413,6 +1413,9 @@ func scp_get_alldata() {
 								}
 							}
 						}
+						if volc > float64(bio_cfg[b.BioreactorID].Maxvolume) {
+							volc = float64(bio[ind].Volume)
+						}
 						if b.Status == bio_update && (vol1 != -1 || vol2 != -1) {
 							bio[ind].Status = bio_ready
 						}
