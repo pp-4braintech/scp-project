@@ -274,6 +274,12 @@ type Scheditem struct {
 	OrgCode string
 }
 
+type DevAddrData struct {
+	DevAddr string
+	DevType string
+	DevID   string
+}
+
 var finishedsetup = false
 var schedrunning = false
 var devsrunning = false
@@ -286,6 +292,7 @@ var biofabrica_cfg map[string]Biofabrica_cfg
 var paths map[string]Path
 var valvs map[string]int
 var organs map[string]Organism
+var addrs_type map[string]DevAddrData
 var schedule []Scheditem
 var recipe []string
 var cipbio []string
@@ -435,7 +442,13 @@ func load_ibcs_conf(filename string) int {
 		ibc_cfg[id] = IBC_cfg{id, dev_addr, screen_addr, uint32(voltot), pumpdev,
 			[4]string{vdev1, vdev2, vdev3, vdev4}, [2]string{voldev1, voldev2}, llow}
 		totalrecords = k
-		// fmt.Println(ibc_cfg[id])
+
+		old, ok := addrs_type[dev_addr]
+		if !ok {
+			addrs_type[dev_addr] = DevAddrData{dev_addr, scp_ibc, id}
+		} else {
+			fmt.Println("ERROR LOAD IBCS CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
+		}
 	}
 	return totalrecords
 }
@@ -490,6 +503,13 @@ func load_bios_conf(filename string) int {
 				[5]string{perdev1, perdev2, perdev3, perdev4, perdev5},
 				[8]string{vdev1, vdev2, vdev3, vdev4, vdev5, vdev6, vdev7, vdev8},
 				[2]string{voldev1, voldev2}, phdev, tempdev, lhigh, llow, emerg, heater}
+
+			old, ok := addrs_type[dev_addr]
+			if !ok {
+				addrs_type[dev_addr] = DevAddrData{dev_addr, scp_bioreactor, id}
+			} else {
+				fmt.Println("ERROR LOAD BIOS CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
+			}
 			totalrecords += 1
 		} else if len(r) != 26 {
 			fmt.Println("ERROR BIO CFG: numero de parametros invalido", r)
@@ -526,6 +546,12 @@ func load_totems_conf(filename string) int {
 			[4]string{perdev1, perdev2, perdev3, perdev4},
 			[2]string{vdev1, vdev2}}
 		totalrecords = k
+		old, ok := addrs_type[dev_addr]
+		if !ok {
+			addrs_type[dev_addr] = DevAddrData{dev_addr, scp_totem, id}
+		} else {
+			fmt.Println("ERROR LOAD TOTEMS CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
+		}
 	}
 	return totalrecords
 }
@@ -550,6 +576,12 @@ func load_biofabrica_conf(filename string) int {
 		dev_port := r[2]
 		biofabrica_cfg[dev_id] = Biofabrica_cfg{dev_id, dev_addr, dev_port}
 		totalrecords = k
+		old, ok := addrs_type[dev_addr]
+		if !ok {
+			addrs_type[dev_addr] = DevAddrData{dev_addr, scp_biofabrica, dev_id}
+		} else {
+			fmt.Println("WARN LOAD BIOFABRICA CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
+		}
 	}
 	return totalrecords
 }
@@ -591,6 +623,24 @@ func load_paths_conf(filename string) int {
 		}
 	}
 	return totalrecords
+}
+
+func get_devtype_byaddr(dev_addr string) string {
+	t, ok := addrs_type[dev_addr]
+	if ok {
+		return t.DevType
+	}
+	fmt.Println("ERROR GET DEVTYPE BYADDR: ADDR não EXISTE", dev_addr)
+	return ""
+}
+
+func get_devid_byaddr(dev_addr string) string {
+	t, ok := addrs_type[dev_addr]
+	if ok {
+		return t.DevID
+	}
+	fmt.Println("ERROR GET DEVTYPE BYADDR: ADDR não EXISTE", dev_addr)
+	return ""
 }
 
 func set_valv_status(devtype string, devid string, valvid string, value int) bool {
@@ -1152,36 +1202,50 @@ func scp_refresh_status() {
 							fmt.Println("ERROR SCP REFRESH STATUS: Numero de slaves incorreto vindo do ORCH", pars)
 						}
 					} else if len(data) > 2 {
-						id := data[0]
+						dev_addr := data[0]
 						ipaddr := data[1]
 						devstatus, _ := strconv.Atoi(data[2])
-						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", id, ipaddr, devstatus)
+						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", dev_addr, ipaddr, devstatus)
 						if devstatus == scp_state_TCP0 { // Dispositivo OK
 							nslavesok++
 						} else { // Dispositivo NAO OK
 							nslavesnok++
-							ind := get_bio_index(id)
-							fmt.Println("DEBUG SCP REFRESH STATUS: TEST BIO:", id, ind)
-							if ind >= 0 {
-								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", id)
-								bio[ind].Status = bio_error
-							} else {
-								ind = get_ibc_index(id)
-								fmt.Println("DEBUG SCP REFRESH STATUS: TEST IBC:", id, ind)
+							dev_type := get_devtype_byaddr(dev_addr)
+							dev_id := get_devid_byaddr(dev_addr)
+							switch dev_type {
+							case scp_bioreactor:
+								ind := get_bio_index(dev_id)
 								if ind >= 0 {
-									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", id)
+									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", dev_id)
+									bio[ind].Status = bio_error
+								} else {
+									fmt.Println("ERROR SCP REFRESH STATUS: Biorreator não existe na tabela", dev_id)
+								}
+
+							case scp_ibc:
+								ind := get_ibc_index(dev_id)
+								if ind >= 0 {
+									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", dev_id)
 									ibc[ind].Status = bio_error
 								} else {
-									ind = get_totem_index(id)
-									fmt.Println("DEBUG SCP REFRESH STATUS: TEST TOTEM:", id, ind)
-									if ind >= 0 {
-										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", id)
-										totem[ind].Status = bio_error
-									} else {
-										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA na Biofabrica", id)
-										biofabrica.Status = scp_fail
-									}
+									fmt.Println("ERROR SCP REFRESH STATUS: IBC não existe na tabela", dev_id)
 								}
+
+							case scp_totem:
+								ind := get_totem_index(id)
+								if ind >= 0 {
+									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", dev_id)
+									totem[ind].Status = bio_error
+								} else {
+									fmt.Println("ERROR SCP REFRESH STATUS: TOMEM não existe na tabela", dev_id)
+								}
+
+							case scp_biofabrica:
+								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA na Biofabrica", dev_id)
+								biofabrica.Status = scp_fail
+
+							default:
+								fmt.Println("ERROR SCP REFRESH STATUS: TIPO INVALIDO na tabela", dev_addr)
 							}
 						}
 					}
@@ -3528,6 +3592,8 @@ func scp_master_ipc() {
 func main() {
 
 	go scp_check_network()
+
+	addrs_type = make(map[string]DevAddrData, 0)
 
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
