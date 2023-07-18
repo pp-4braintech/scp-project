@@ -1341,18 +1341,20 @@ func scp_get_alldata() {
 
 						cmdv1 := "CMD/" + bioaddr + "/GET/" + v1dev + "/END"
 						retv1 := scp_sendmsg_orch(cmdv1)
-						var vol1 float64
+						var vol1, area, dfloat float64
 						vol1 = -1
 						params = scp_splitparam(retv1, "/")
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
+							area = 0
+							dfloat = 0
 							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v1_zero*1.2)) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[0] = float32(dint)
 							}
 							if dint != 0 {
-								area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-								dfloat := float64(b.Vol_zero[0]) - float64(dint)
+								area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
+								dfloat = float64(b.Vol_zero[0]) - float64(dint)
 								vol1 = area * dfloat
 							}
 							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol1, retv1)
@@ -1367,13 +1369,15 @@ func scp_get_alldata() {
 						vol2 = -1
 						if params[0] == scp_ack {
 							dint, _ := strconv.Atoi(params[1])
+							area = 0
+							dfloat = 0
 							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v2_zero*1.2)) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[1] = float32(dint)
 							}
 							if dint != 0 {
-								area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-								dfloat := float64(b.Vol_zero[1]) - float64(dint)
+								area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
+								dfloat = float64(b.Vol_zero[1]) - float64(dint)
 								vol2 = area * dfloat
 							}
 							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol2, retv2)
