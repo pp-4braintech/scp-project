@@ -840,6 +840,7 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
 	board_add_message("ERETORNANDO de EMERGENCIA")
+	time.Sleep(180 * time.Second)
 	scp_setup_devices(true)
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, false)
