@@ -1350,9 +1350,11 @@ func scp_get_alldata() {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[0] = float32(dint)
 							}
-							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := float64(b.Vol_zero[0]) - float64(dint)
-							vol1 = area * dfloat
+							if dint != 0 {
+								area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+								dfloat := float64(b.Vol_zero[0]) - float64(dint)
+								vol1 = area * dfloat
+							}
 							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol1, retv1)
 						} else {
 							fmt.Println("ERRO GET ALLDATA: USOM", b.BioreactorID, retv1, params)
@@ -1369,9 +1371,11 @@ func scp_get_alldata() {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[1] = float32(dint)
 							}
-							area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							dfloat := float64(b.Vol_zero[1]) - float64(dint)
-							vol2 = area * dfloat
+							if dint != 0 {
+								area := math.Pi * math.Pow(bio_diametro/2000.0, 2)
+								dfloat := float64(b.Vol_zero[1]) - float64(dint)
+								vol2 = area * dfloat
+							}
 							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol2, retv2)
 						} else {
 							fmt.Println("ERRO GET ALLDATA: LASER", b.BioreactorID, retv2, params)
