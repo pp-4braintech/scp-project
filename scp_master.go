@@ -3255,6 +3255,7 @@ func scp_process_conn(conn net.Conn) {
 
 			case scp_par_start:
 				ibc[ind].OutID = "OUT"
+
 				go scp_run_withdraw(scp_bioreactor, ibc_id)
 				fmt.Println("DEBUG WDPANEL: Executando Desenvase do IBC", ibc_id, " volume", ibc[ind].Withdraw)
 				conn.Write([]byte(scp_ack))
