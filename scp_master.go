@@ -3218,6 +3218,7 @@ func scp_process_conn(conn net.Conn) {
 			case scp_par_select:
 				ibc[ind].Selected = true
 				conn.Write([]byte(scp_ack))
+				fmt.Println("DEBUG WDPANEL: IBC Selecionado", ibc_id)
 
 			case scp_par_inc:
 				if ibc[ind].Withdraw < ibc[ind].Volume {
