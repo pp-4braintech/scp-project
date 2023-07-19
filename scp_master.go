@@ -310,7 +310,7 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR01", bio_update, "", "", 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 	{"BIOR02", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 	{"BIOR03", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 	{"BIOR04", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
