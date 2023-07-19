@@ -1857,6 +1857,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
+		if ind < 0 {
+			fmt.Println("ERRO RUN WITHDRAW 01: IBC nao existe", devid)
+			return -1
+		}
 		pathid := devid + "-" + ibc[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
@@ -3259,8 +3263,9 @@ func scp_process_conn(conn net.Conn) {
 
 			case scp_par_start:
 				ibc[ind].OutID = "OUT"
+				fmt.Println(scp_ibc, ibc_id)
 				go scp_run_withdraw(scp_ibc, ibc_id)
-				fmt.Println("DEBUG WDPANEL: Executando Desenvase do IBC", ibc_id, " volume", ibc[ind].Withdraw)
+				fmt.Println("DEBUG WDPANEL: Executando Desenvase do", ibc_id, " volume", ibc[ind].Withdraw)
 				conn.Write([]byte(scp_ack))
 
 			case scp_par_stop:
