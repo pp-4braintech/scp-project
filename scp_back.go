@@ -15,6 +15,11 @@ import (
 	"github.com/rs/cors"
 )
 
+// var demo = false
+var devmode = false
+
+// var testmode = false
+
 const scp_err = "ERR"
 const scp_ack = "ACK"
 const scp_par_withdraw = "WITHDRAW"
@@ -25,6 +30,7 @@ const scp_dev_peris = "PERIS"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_bioreactor = "BIOREACTOR"
+const scp_wdpanel = "WDPANEL"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -37,8 +43,6 @@ const bio_done = "CONCLUIDO"
 const bio_error = "ERRO"
 const bio_max_valves = 8
 const max_buf = 8192
-
-const execpath = "/home/scpadm/scp-project/"
 
 // const execpath = "./"
 
@@ -99,6 +103,7 @@ type Prodlist struct {
 
 var orgs []Organism
 var lastsched []Prodlist
+var execpath string
 
 func checkErr(err error) {
 	if err != nil {
@@ -711,22 +716,107 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 		}
 		id_str := r.FormValue("Id")
 		value_str := r.FormValue("Value")
-		if len(value_str) == 0 {
+		vol_inc := r.FormValue("VolInc")
+		vol_dec := r.FormValue("VolDec")
+		start := r.FormValue("Start")
+		stop := r.FormValue("Stop")
+
+		if len(id_str) == 0 {
 			w.Write([]byte(scp_err))
 			return
 		}
-		value_int, err := strconv.Atoi(value_str)
+
+		id_int, err := strconv.Atoi(id_str)
 		if err != nil {
 			checkErr(err)
 			w.Write([]byte(scp_err))
 			return
 		}
-		fmt.Println("id =", id_str, " value=", value_int)
-		if len(id_str) > 0 && len(value_str) > 0 {
-			w.Write([]byte(scp_ack))
-		} else {
-			w.Write([]byte(scp_err))
+
+		if len(value_str) > 0 {
+			value_int, err := strconv.Atoi(value_str)
+			if err != nil {
+				checkErr(err)
+				w.Write([]byte(scp_err))
+				return
+			}
+			s_str := fmt.Sprintf("SELECT,%d/END", value_int)
+			cmd := scp_wdpanel + "/" + s_str
+			fmt.Println("DEBUG WDPANEL: to master", cmd)
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+			return
 		}
+
+		if len(vol_inc) > 0 {
+			vol_inc_int, err := strconv.Atoi(vol_inc)
+			if err != nil {
+				checkErr(err)
+				w.Write([]byte(scp_err))
+				return
+			}
+			if vol_inc_int == 1 {
+				s_str := fmt.Sprintf("INC,IBC%02d/END", id_int+1)
+				cmd := scp_wdpanel + "/" + s_str
+				fmt.Println("DEBUG WDPANEL: to master", cmd)
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(vol_dec) > 0 {
+			vol_dec_int, err := strconv.Atoi(vol_dec)
+			if err != nil {
+				checkErr(err)
+				w.Write([]byte(scp_err))
+				return
+			}
+			if vol_dec_int == 1 {
+				s_str := fmt.Sprintf("DEC,IBC%02d/END", id_int+1)
+				cmd := scp_wdpanel + "/" + s_str
+				fmt.Println("DEBUG WDPANEL: to master", cmd)
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(start) > 0 {
+			start_int, err := strconv.Atoi(start)
+			if err != nil {
+				checkErr(err)
+				w.Write([]byte(scp_err))
+				return
+			}
+			if start_int == 1 {
+				s_str := fmt.Sprintf("%s,IBC%02d,START/END", scp_par_withdraw, id_int+1)
+				cmd := scp_wdpanel + "/" + s_str
+				fmt.Println("DEBUG WDPANEL: to master", cmd)
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(stop) > 0 {
+			stop_int, err := strconv.Atoi(stop)
+			if err != nil {
+				checkErr(err)
+				w.Write([]byte(scp_err))
+				return
+			}
+			if stop_int == 1 {
+				s_str := fmt.Sprintf("%s,IBC%02d,STOP/END", scp_par_withdraw, id_int+1)
+				cmd := scp_wdpanel + "/" + s_str
+				fmt.Println("DEBUG WDPANEL: to master", cmd)
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
 	default:
 		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
 	}
@@ -737,6 +827,13 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	devmode = test_file("/etc/scpd/scp_devmode.flag")
+	if devmode {
+		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
+		execpath = "./"
+	} else {
+		execpath = "/home/scpadm/scp-project/"
+	}
 	//scp_bio_init()
 	if load_organisms(execpath+"organismos_conf.csv") < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
