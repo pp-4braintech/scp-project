@@ -1442,7 +1442,11 @@ func scp_get_alldata() {
 							}
 						}
 						if devmode && bio[ind].Status == bio_update {
-							bio[ind].Status = bio_ready
+							if bio[ind].Volume == 0 {
+								bio[ind].Status = bio_empty
+							} else {
+								bio[ind].Status = bio_ready
+							}
 						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
@@ -1555,7 +1559,11 @@ func scp_get_alldata() {
 							}
 						}
 						if devmode && ibc[ind].Status == bio_update {
-							ibc[ind].Status = bio_ready
+							if ibc[ind].Volume == 0 {
+								ibc[ind].Status = bio_empty
+							} else {
+								ibc[ind].Status = bio_ready
+							}
 						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
