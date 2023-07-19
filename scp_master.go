@@ -3217,7 +3217,10 @@ func scp_process_conn(conn net.Conn) {
 			}
 			switch subcmd {
 			case scp_par_select:
-				// for _,b
+				for _, b := range ibc {
+					i := get_ibc_index(b.IBCID)
+					ibc[i].Selected = false
+				}
 				ibc[ind].Selected = true
 				conn.Write([]byte(scp_ack))
 				fmt.Println("DEBUG WDPANEL: IBC Selecionado", ibc_id)
