@@ -111,6 +111,18 @@ func checkErr(err error) {
 	}
 }
 
+func test_file(filename string) bool {
+	mf, err := os.Stat(filename)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			checkErr(err)
+		}
+		return false
+	}
+	fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
+	return true
+}
+
 func bio_to_code(bioname string) string {
 	n := len(bioname)
 	if n < 1 {
