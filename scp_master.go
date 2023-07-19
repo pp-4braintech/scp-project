@@ -2665,6 +2665,9 @@ func scp_run_job(bioid string, job string) bool {
 	case scp_job_done:
 		bio[ind].Status = bio_ready
 		board_add_message("CCultivo concluído no " + bioid + " - Pronto para Desenvase")
+		bio[ind].UndoQueue = []string{}
+		bio[ind].RedoQueue = []string{}
+		bio[ind].MustOffQueue = []string{}
 		return true
 
 	case scp_job_wait:
