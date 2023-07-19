@@ -3254,12 +3254,17 @@ func scp_process_conn(conn net.Conn) {
 				}
 
 			case scp_par_start:
-				ibc[ind].Selected = true
+				ibc[ind].OutID = "OUT"
+				go scp_run_withdraw(scp_bioreactor, ibc_id)
+				fmt.Println("DEBUG WDPANEL: Executando Desenvase do IBC", ibc_id, " volume", ibc[ind].Withdraw)
 				conn.Write([]byte(scp_ack))
-				fmt.Println("DEBUG WDPANEL: IBC Selecionado", ibc_id)
+
+			case scp_par_stop:
+				ibc[ind].Withdraw = 0
+				fmt.Println("DEBUG WDPANEL: Parando Desenvase do IBC", ibc_id)
+				conn.Write([]byte(scp_ack))
 
 			}
-
 		} else {
 			fmt.Println("ERROR WDPANEL: Parametros invalidos", params)
 			conn.Write([]byte(scp_err))
