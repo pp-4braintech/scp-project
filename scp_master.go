@@ -1437,7 +1437,7 @@ func scp_get_alldata() {
 							bio[ind].Status = bio_ready
 						}
 
-						volc = 100 //  REMOVER
+						// volc = 100 //  PARA TESTE
 
 						// volc = vol1 // Precisa validar LASER BIO
 						// if volc >= 0 && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
