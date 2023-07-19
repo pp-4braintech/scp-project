@@ -3217,6 +3217,7 @@ func scp_process_conn(conn net.Conn) {
 			}
 			switch subcmd {
 			case scp_par_select:
+				// for _,b
 				ibc[ind].Selected = true
 				conn.Write([]byte(scp_ack))
 				fmt.Println("DEBUG WDPANEL: IBC Selecionado", ibc_id)
@@ -3227,6 +3228,7 @@ func scp_process_conn(conn net.Conn) {
 					if ibc[ind].Withdraw > ibc[ind].Volume {
 						ibc[ind].Withdraw = ibc[ind].Volume
 					}
+					fmt.Println("DEBUG WDPANEL: Withdraw IBC", ibc_id, ibc[ind].Withdraw)
 				} else {
 					fmt.Println("ERROR WDPANEL: Volume Máximo para Desenvase atingido", ibc_id)
 					conn.Write([]byte(scp_err))
@@ -3242,6 +3244,12 @@ func scp_process_conn(conn net.Conn) {
 					fmt.Println("ERROR WDPANEL: Volume Mínimo para Desenvase atingido", ibc_id)
 					conn.Write([]byte(scp_err))
 				}
+
+			case scp_par_start:
+				ibc[ind].Selected = true
+				conn.Write([]byte(scp_ack))
+				fmt.Println("DEBUG WDPANEL: IBC Selecionado", ibc_id)
+
 			}
 
 		} else {
