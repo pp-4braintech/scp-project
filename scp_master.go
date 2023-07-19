@@ -3205,7 +3205,7 @@ func scp_process_conn(conn net.Conn) {
 
 	case scp_wdpanel:
 		fmt.Println("DEBUG SCP PROCESS CONN:", params)
-		if len(params) > 3 {
+		if len(params) > 2 {
 			subpars := scp_splitparam(params[1], ",")
 			subcmd := subpars[0]
 			ibc_id := subpars[1]
@@ -3245,6 +3245,10 @@ func scp_process_conn(conn net.Conn) {
 				}
 			}
 
+		} else {
+			fmt.Println("ERROR WDPANEL: Parametros invalidos", params)
+			conn.Write([]byte(scp_err))
+			return
 		}
 
 		// id := params[2]
