@@ -3213,7 +3213,9 @@ func scp_process_conn(conn net.Conn) {
 			if ind < 0 {
 				fmt.Println("ERROR WDPANEL: IBC invalido", ibc_id, params)
 				conn.Write([]byte(scp_err))
+				return
 			}
+			fmt.Println(subpars, subcmd)
 			switch subcmd {
 			case scp_par_select:
 				ibc[ind].Selected = true
