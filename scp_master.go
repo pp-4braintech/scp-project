@@ -3215,7 +3215,6 @@ func scp_process_conn(conn net.Conn) {
 				conn.Write([]byte(scp_err))
 				return
 			}
-			fmt.Println(subpars, subcmd)
 			switch subcmd {
 			case scp_par_select:
 				ibc[ind].Selected = true
