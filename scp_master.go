@@ -114,6 +114,8 @@ const scp_timeoutdefault = 60
 const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
 const bio_deltaph = 0.1   // variacao de ph maximo em percentual
 
+const bio_withdrawstep = 50
+
 const bio_diametro = 1530  // em mm   era 1430
 const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
@@ -3206,11 +3208,40 @@ func scp_process_conn(conn net.Conn) {
 		if len(params) > 3 {
 			subpars := scp_splitparam(params[1], ",")
 			subcmd := subpars[0]
+			ibc_id := subpars[1]
+			ind := get_ibc_index(ibc_id)
+			if ind < 0 {
+				fmt.Println("ERROR WDPANEL: IBC invalido", ibc_id, params)
+				conn.Write([]byte(scp_err))
+			}
 			switch subcmd {
 			case scp_par_select:
-				ind
+				ibc[ind].Selected = true
+				conn.Write([]byte(scp_ack))
 
+			case scp_par_inc:
+				if ibc[ind].Withdraw < ibc[ind].Volume {
+					ibc[ind].Withdraw += bio_withdrawstep
+					if ibc[ind].Withdraw > ibc[ind].Volume {
+						ibc[ind].Withdraw = ibc[ind].Volume
+					}
+				} else {
+					fmt.Println("ERROR WDPANEL: Volume Máximo para Desenvase atingido", ibc_id)
+					conn.Write([]byte(scp_err))
+				}
+
+			case scp_par_dec:
+				if ibc[ind].Withdraw > 0 {
+					ibc[ind].Withdraw -= bio_withdrawstep
+					if ibc[ind].Withdraw < 0 {
+						ibc[ind].Withdraw = 0
+					}
+				} else {
+					fmt.Println("ERROR WDPANEL: Volume Mínimo para Desenvase atingido", ibc_id)
+					conn.Write([]byte(scp_err))
+				}
 			}
+
 		}
 
 		// id := params[2]
