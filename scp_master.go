@@ -3401,9 +3401,14 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
+						if bio[ind].Withdraw > 0 {
+							go scp_run_withdraw(scp_bioreactor, bioid)
+						}
+						go scp_run_withdraw(scp_bioreactor, bioid)
+						conn.Write([]byte(scp_ack))
+					} else {
+						conn.Write([]byte(scp_err))
 					}
-					go scp_run_withdraw(scp_bioreactor, bioid)
-					conn.Write([]byte(scp_ack))
 
 				case scp_dev_pump:
 					var cmd2, cmd3 string
@@ -3515,9 +3520,12 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					if err == nil {
 						ibc[ind].Withdraw = uint32(vol)
+						if ibc[ind].Withdraw > 0 {
+							go scp_run_withdraw(scp_ibc, ibcid)
+						}
+						conn.Write([]byte(scp_ack))
 					}
-					go scp_run_withdraw(scp_ibc, ibcid)
-					conn.Write([]byte(scp_ack))
+					conn.Write([]byte(scp_err))
 
 				case scp_dev_pump:
 					var cmd2 string
