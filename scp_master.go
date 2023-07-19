@@ -117,12 +117,6 @@ const ibc_v2_zero = 2652.0 // em mm
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
-const execpath = "/home/scpadm/scp-project/"
-const mainrouter = "10.0.0.2"
-
-// const execpath = "./"
-// const mainrouter = "192.168.0.1"
-
 const pingmax = 3
 const timetocheck = 30
 
@@ -279,6 +273,9 @@ type DevAddrData struct {
 	DevType string
 	DevID   string
 }
+
+var execpath string
+var mainrouter string
 
 var finishedsetup = false
 var schedrunning = false
@@ -1348,7 +1345,7 @@ func scp_get_alldata() {
 							dint, _ := strconv.Atoi(params[1])
 							area = 0
 							dfloat = 0
-							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v1_zero*1.2)) {
+							if vol0 == 0 && (dint > 0 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.2)) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[0] = float32(dint)
 							}
@@ -1371,7 +1368,7 @@ func scp_get_alldata() {
 							dint, _ := strconv.Atoi(params[1])
 							area = 0
 							dfloat = 0
-							if vol0 == 0 && (dint > 0 && float32(dint) <= (bio_v2_zero*1.2)) {
+							if vol0 == 0 && (dint > 0 && float32(dint) >= (bio_v2_zero*0.7) && float32(dint) <= (bio_v2_zero*1.3)) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
 								b.Vol_zero[1] = float32(dint)
 							}
@@ -1421,9 +1418,9 @@ func scp_get_alldata() {
 								}
 							}
 						}
-						if volc > float64(bio_cfg[b.BioreactorID].Maxvolume)*1.3 {
-							volc = float64(bio[ind].Volume)
-						}
+						// if volc > float64(bio_cfg[b.BioreactorID].Maxvolume)*1.3 {
+						// 	volc = float64(bio[ind].Volume)
+						// }
 						if b.Status == bio_update && (vol1 != -1 || vol2 != -1) {
 							bio[ind].Status = bio_ready
 						}
@@ -1431,7 +1428,7 @@ func scp_get_alldata() {
 						// if volc >= 0 && (volc <= float64(bio_cfg[b.BioreactorID].Maxvolume)*1.2) {
 						if volc >= 0 {
 							bio[ind].Volume = uint32(volc)
-							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10
+							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10.0
 							level_int := uint8(level)
 							if level_int != bio[ind].Level {
 								bio[ind].Level = level_int
@@ -3618,6 +3615,11 @@ func main() {
 	devmode = test_file(execpath + "scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
+		execpath = "./"
+		mainrouter = "192.168.0.1"
+	} else {
+		execpath = "/home/scpadm/scp-project/"
+		mainrouter = "10.0.0.2"
 	}
 	testmode = test_file(execpath + "scp_testmode.flag")
 	if testmode {
