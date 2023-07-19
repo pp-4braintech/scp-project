@@ -1441,6 +1441,9 @@ func scp_get_alldata() {
 								bio[ind].Status = bio_empty
 							}
 						}
+						if devmode && bio[ind].Status == bio_update {
+							bio[ind].Status = bio_ready
+						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
@@ -1555,6 +1558,9 @@ func scp_get_alldata() {
 								ibc[k].Status = bio_empty
 							}
 						}
+						if devmode && ibc[ind].Status == bio_update {
+							ibc[ind].Status = bio_ready
+						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
@@ -1599,6 +1605,7 @@ func scp_get_alldata() {
 				}
 				t_start_status = time.Now()
 			}
+
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
 
