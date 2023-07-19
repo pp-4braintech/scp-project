@@ -3195,6 +3195,15 @@ func scp_process_conn(conn net.Conn) {
 			fmt.Println("ERROR PAUSE: Parametros invalidos", devtype, id, params)
 		}
 
+	case scp_wdpanel:
+		fmt.Println("DEBUG SCP PROCESS CONN:", params)
+
+		// id := params[2]
+		// if !stop_device(devtype, id) {
+		// 	fmt.Println("ERROR STOP: Nao foi possivel parar dispositivo", devtype, id)
+		// 	break
+		// }
+
 	case scp_get:
 		scp_object := params[1]
 		switch scp_object {
