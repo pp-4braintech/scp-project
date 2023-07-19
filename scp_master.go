@@ -305,7 +305,9 @@ var cipbio []string
 var cipibc []string
 
 var mainmutex sync.Mutex
-var withdrawrunning sync.Mutex
+var withdrawmutex sync.Mutex
+
+var withdrawrunning = false
 
 var bio = []Bioreact{
 	{"BIOR01", bio_update, "", "", 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
@@ -1690,9 +1692,15 @@ func test_path(vpath []string, value int) bool {
 	return ret
 }
 
+func turn_withdraw_var(value bool) {
+	withdrawrunning = value
+}
+
 func scp_run_withdraw(devtype string, devid string) int {
-	withdrawrunning.Lock()
-	defer withdrawrunning.Unlock()
+	withdrawmutex.Lock()
+	turn_withdraw_var(true)
+	defer withdrawmutex.Unlock()
+	defer turn_withdraw_var(false)
 
 	switch devtype {
 	case scp_bioreactor:
@@ -1858,6 +1866,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		set_valvs_value(vpath, 0, false)
 		board_add_message("IEnxague concluído")
+		bio[ind].Status = bio_ready
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -2050,6 +2059,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			set_valvs_value(vpath, 0, false)
 			board_add_message("IEnxague concluído")
 		}
+		ibc[ind].Status = bio_ready
 	}
 	return 0
 }
