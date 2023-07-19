@@ -3243,6 +3243,7 @@ func scp_process_conn(conn net.Conn) {
 					if ibc[ind].Withdraw < 0 {
 						ibc[ind].Withdraw = 0
 					}
+					fmt.Println("DEBUG WDPANEL: Withdraw IBC", ibc_id, ibc[ind].Withdraw)
 				} else {
 					fmt.Println("ERROR WDPANEL: Volume Mínimo para Desenvase atingido", ibc_id)
 					conn.Write([]byte(scp_err))
