@@ -1693,6 +1693,10 @@ func scp_run_withdraw(devtype string, devid string) int {
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
+		if ind < 0 {
+			fmt.Println("ERRO RUN WITHDRAW 01: Biorreator nao existe", devid)
+			return -1
+		}
 		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
@@ -3255,8 +3259,7 @@ func scp_process_conn(conn net.Conn) {
 
 			case scp_par_start:
 				ibc[ind].OutID = "OUT"
-
-				go scp_run_withdraw(scp_bioreactor, ibc_id)
+				go scp_run_withdraw(scp_ibc, ibc_id)
 				fmt.Println("DEBUG WDPANEL: Executando Desenvase do IBC", ibc_id, " volume", ibc[ind].Withdraw)
 				conn.Write([]byte(scp_ack))
 
