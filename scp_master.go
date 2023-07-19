@@ -60,6 +60,11 @@ const scp_par_step = "STEP"
 const scp_par_maxstep = "MAXSTEP"
 const scp_par_heater = "HEATER"
 const scp_par_slaves = "SLAVES"
+const scp_par_select = "SELECT"
+const scp_par_inc = "INC"
+const scp_par_dec = "DEC"
+const scp_par_start = "START"
+const scp_par_stop = "STOP"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -195,6 +200,7 @@ type IBC struct {
 	OutID      string
 	Vol_zero   [2]float32
 	MustStop   bool
+	Selected   bool
 }
 
 type Totem struct {
@@ -308,13 +314,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC02", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC03", bio_update, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC04", bio_update, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC05", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC06", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false},
-	{"IBC07", bio_update, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false},
+	{"IBC01", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC02", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC03", bio_update, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC04", bio_update, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC05", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC06", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC07", bio_update, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
 }
 
 var totem = []Totem{
@@ -3197,6 +3203,15 @@ func scp_process_conn(conn net.Conn) {
 
 	case scp_wdpanel:
 		fmt.Println("DEBUG SCP PROCESS CONN:", params)
+		if len(params) > 3 {
+			subpars := scp_splitparam(params[1], ",")
+			subcmd := subpars[0]
+			switch subcmd {
+			case scp_par_select:
+				ind
+
+			}
+		}
 
 		// id := params[2]
 		// if !stop_device(devtype, id) {

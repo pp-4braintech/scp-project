@@ -752,12 +752,14 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(scp_err))
 				return
 			}
-			s_str := fmt.Sprintf("SELECT,%d/END", value_int)
-			cmd := scp_wdpanel + "/" + s_str
-			fmt.Println("DEBUG WDPANEL: to master", cmd)
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
+			if value_int == 1 {
+				s_str := fmt.Sprintf("SELECT,IBC%02d/END", id_int+1)
+				cmd := scp_wdpanel + "/" + s_str
+				fmt.Println("DEBUG WDPANEL: to master", cmd)
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			return
 		}
 
