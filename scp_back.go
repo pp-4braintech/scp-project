@@ -785,7 +785,6 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				checkErr(err)
 				w.Write([]byte(scp_err))
-				return
 			}
 			if vol_dec_int == 1 {
 				s_str := fmt.Sprintf("DEC,IBC%02d/END", id_int+1)
