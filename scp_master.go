@@ -81,6 +81,7 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
+const scp_wdpanel = "WDPANEL"
 const scp_out = "OUT"
 const scp_drop = "DROP"
 const scp_clean = "CLEAN"
@@ -3627,7 +3628,7 @@ func main() {
 
 	addrs_type = make(map[string]DevAddrData, 0)
 
-	devmode = test_file(execpath + "scp_devmode.flag")
+	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 		execpath = "./"
@@ -3636,7 +3637,7 @@ func main() {
 		execpath = "/home/scpadm/scp-project/"
 		mainrouter = "10.0.0.2"
 	}
-	testmode = test_file(execpath + "scp_testmode.flag")
+	testmode = test_file("/etc/scpd/scp_testmode.flag")
 	if testmode {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
