@@ -2570,21 +2570,24 @@ func scp_grow_bio(bioid string) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP GROW BIO: Biorreator nao encontrado", bioid)
+		return false
 	}
 	orgid := bio[ind].OrgCode
-	t_start := time.Now()
 	org, ok := organs[orgid]
 	if !ok {
 		fmt.Println("ERROR SCP GROW BIO: Organismo nao encontrado", orgid)
+		return false
 	}
 	fmt.Println("DEBUG SCP GROW BIO: Iniciando cultivo de", org.Orgname, " no Biorreator", bioid, " tempo=", org.Timetotal)
 	ttotal := float64(org.Timetotal * 60)
 	if devmode || testmode {
 		ttotal = scp_timeoutdefault / 60
 	}
+	time.Sleep(5 * time.Second)
 	vol_start := bio[ind].Volume
 	pday := -1
 	var minph, maxph, worktemp float64
+	t_start := time.Now()
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= ttotal {
@@ -2607,14 +2610,14 @@ func scp_grow_bio(bioid string) bool {
 					checkErr(err)
 					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
 				}
-				fmt.Println("\n\nPH", minph, maxph)
+				fmt.Println("\n\nDEBUG SCP GROW BIO: Parametros de PH", minph, maxph)
 				worktemp = 28
+			}
+			if control_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
+				scp_adjust_foam(bioid)
 			}
 			if control_ph && bio[ind].PH < float32(minph*(1-bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(minph))
-			}
-			if control_foam && float64(bio[ind].Volume) >= float64(vol_start)*1.05 {
-				scp_adjust_foam(bioid)
 			}
 			if control_ph && bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(maxph))
