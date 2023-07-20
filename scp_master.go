@@ -3337,7 +3337,7 @@ func scp_process_conn(conn net.Conn) {
 
 			case scp_par_dec:
 				if ibc[ind].Volume > 0 {
-					if int32(ibc[ind].Volume)-bio_withdrawstep > 0 {
+					if int32(ibc[ind].Withdraw)-bio_withdrawstep > 0 {
 						ibc[ind].Withdraw -= bio_withdrawstep
 					} else {
 						ibc[ind].Withdraw = 0
