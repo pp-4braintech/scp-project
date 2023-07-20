@@ -675,11 +675,11 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 				valvaddr = bio_cfg[devid].Valv_devs[v-1]
 				valve_scrstr = fmt.Sprintf("S%d", v+200)
 			} else {
-				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
 				return false
 			}
 		} else {
-			fmt.Println("ERRO SET VAL: BIORREATOR nao encontrado", devid)
+			fmt.Println("ERROR SET VAL: BIORREATOR nao encontrado", devid)
 			return false
 		}
 	case scp_ibc:
@@ -692,11 +692,11 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 				ibc[ind].Valvs[v-1] = value
 				valvaddr = ibc_cfg[devid].Valv_devs[v-1]
 			} else {
-				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
 				return false
 			}
 		} else {
-			fmt.Println("ERRO SET VAL: IBC nao encontrado", devid)
+			fmt.Println("ERROR SET VAL: IBC nao encontrado", devid)
 			return false
 		}
 	case scp_totem:
@@ -709,11 +709,11 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 				totem[ind].Valvs[v-1] = value
 				valvaddr = totem_cfg[devid].Valv_devs[v-1]
 			} else {
-				fmt.Println("ERRO SET VAL: id da valvula nao inteiro", valvid)
+				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
 				return false
 			}
 		} else {
-			fmt.Println("ERRO SET VAL: TOTEM nao encontrado", devid)
+			fmt.Println("ERROR SET VAL: TOTEM nao encontrado", devid)
 			return false
 		}
 	case scp_biofabrica:
@@ -724,7 +724,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		if err == nil {
 			biofabrica.Valvs[v-1] = value
 		} else {
-			fmt.Println("ERRO SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
+			fmt.Println("ERROR SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
 			return false
 		}
 	}
@@ -733,7 +733,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("RET CMD1 =", ret1)
 	if !strings.Contains(ret1, scp_ack) && !devmode {
-		fmt.Println("ERRO SET VAL: SEND MSG ORCH falhou", ret1)
+		fmt.Println("ERROR SET VAL: SEND MSG ORCH falhou", ret1)
 		return false
 	}
 	if len(scraddr) > 0 {
@@ -1356,11 +1356,15 @@ func scp_get_alldata() {
 						var vol0 float64
 						vol0 = -1
 						if params[0] == scp_ack {
-							dint, _ := strconv.Atoi(params[1])
-							vol0 = float64(dint)
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, vol0, retv0)
+							if bio[ind].Status == bio_cip && (bio[ind].Valvs[1] == 1 || bio[ind].Valvs[2] == 1 || bio[ind].Valvs[3] == 1) {
+								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
+							} else {
+								dint, _ := strconv.Atoi(params[1])
+								vol0 = float64(dint)
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, vol0, retv0)
+							}
 						} else {
-							fmt.Println("ERRO GET ALLDATA: Volume ZERO", b.BioreactorID, retv0, params)
+							fmt.Println("ERROR GET ALLDATA: Volume ZERO", b.BioreactorID, retv0, params)
 						}
 
 						cmdv1 := "CMD/" + bioaddr + "/GET/" + v1dev + "/END"
@@ -1391,7 +1395,7 @@ func scp_get_alldata() {
 							}
 							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, area, dfloat, vol1, retv1)
 						} else {
-							fmt.Println("ERRO GET ALLDATA: ERRO Volume USOM", b.BioreactorID, retv1, params)
+							fmt.Println("ERROR GET ALLDATA: ERROR Volume USOM", b.BioreactorID, retv1, params)
 						}
 
 						cmdv2 := "CMD/" + bioaddr + "/GET/" + v2dev + "/END"
@@ -1548,7 +1552,7 @@ func scp_get_alldata() {
 							vol0 = float64(dint)
 							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0, retv0)
 						} else {
-							fmt.Println("ERRO GET ALLDATA: Volume ZERO", b.IBCID, retv0, params)
+							fmt.Println("ERROR GET ALLDATA: Volume ZERO", b.IBCID, retv0, params)
 						}
 
 						v1dev := ibc_cfg[b.IBCID].Vol_devs[0]
@@ -1568,7 +1572,7 @@ func scp_get_alldata() {
 							vol1 = area * dfloat
 							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol1, ret1)
 						} else {
-							fmt.Println("ERRO GET ALLDATA: USOM", b.IBCID, ret1, params)
+							fmt.Println("ERROR GET ALLDATA: USOM", b.IBCID, ret1, params)
 						}
 
 						v2dev := ibc_cfg[b.IBCID].Vol_devs[1]
@@ -1588,7 +1592,7 @@ func scp_get_alldata() {
 							vol2 = area * dfloat
 							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
 						} else {
-							fmt.Println("ERRO GET ALLDATA: LASER", b.IBCID, ret2, params)
+							fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
 						}
 						var volc float64
 						if vol0 == 0 {
@@ -1699,25 +1703,25 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 				dtype := get_scp_type(sub[0])
 				if val == (1 - value) {
 					if !set_valv_status(dtype, sub[0], sub[1], value) {
-						fmt.Println("ERRO SET VALVS VALUE: nao foi possivel setar valvula", p)
+						fmt.Println("ERROR SET VALVS VALUE: nao foi possivel setar valvula", p)
 						if abort_on_error {
 							return -1
 						}
 					}
 					tot++
 				} else if val == 1 {
-					fmt.Println("ERRO SET VALVS VALUE: nao foi possivel setar valvula", p)
+					fmt.Println("ERROR SET VALVS VALUE: nao foi possivel setar valvula", p)
 					if abort_on_error {
 						return -1
 					}
 				} else {
-					fmt.Println("ERRO SET VALVS VALUE: valvula com erro", p)
+					fmt.Println("ERROR SET VALVS VALUE: valvula com erro", p)
 					if abort_on_error {
 						return -1
 					}
 				}
 			} else {
-				fmt.Println("ERRO SET VALVS VALUE: valvula nao existe", p)
+				fmt.Println("ERROR SET VALVS VALUE: valvula nao existe", p)
 				if abort_on_error {
 					return -1
 				}
@@ -1755,19 +1759,19 @@ func scp_run_withdraw(devtype string, devid string) int {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
 		if ind < 0 {
-			fmt.Println("ERRO RUN WITHDRAW 01: Biorreator nao existe", devid)
+			fmt.Println("ERROR RUN WITHDRAW 01: Biorreator nao existe", devid)
 			return -1
 		}
 		prev_status := bio[ind].Status
 		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
-			fmt.Println("ERRO RUN WITHDRAW 01: path nao existe", pathid)
+			fmt.Println("ERROR RUN WITHDRAW 01: path nao existe", pathid)
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
-			fmt.Println("ERRO RUN WITHDRAW 02: falha de valvula no path", pathid)
+			fmt.Println("ERROR RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
 		board_add_message("CDesenvase " + devid + " para " + bio[ind].OutID)
@@ -1783,21 +1787,21 @@ func scp_run_withdraw(devtype string, devid string) int {
 				dtype := get_scp_type(sub[0])
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
-						fmt.Println("ERRO RUN WITHDRAW 03: nao foi possivel setar valvula", p)
+						fmt.Println("ERROR RUN WITHDRAW 03: nao foi possivel setar valvula", p)
 						set_valvs_value(pilha, 0, false) // undo
 						return -1
 					}
 				} else if val == 1 {
-					fmt.Println("ERRO RUN WITHDRAW 04: valvula ja aberta", p)
+					fmt.Println("ERROR RUN WITHDRAW 04: valvula ja aberta", p)
 					set_valvs_value(pilha, 0, false) // undo
 					return -1
 				} else {
-					fmt.Println("ERRO RUN WITHDRAW 05: valvula com erro", p)
+					fmt.Println("ERROR RUN WITHDRAW 05: valvula com erro", p)
 					set_valvs_value(pilha, 0, false) // undo
 					return -1
 				}
 			} else {
-				fmt.Println("ERRO RUN WITHDRAW 06: valvula nao existe", p)
+				fmt.Println("ERROR RUN WITHDRAW 06: valvula nao existe", p)
 				set_valvs_value(pilha, 0, false) // undo
 				return -1
 			}
@@ -1819,7 +1823,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 10: BIORREATOR falha ao ligar bomba")
+			fmt.Println("ERROR RUN WITHDRAW 10: BIORREATOR falha ao ligar bomba")
 			cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
 			scp_sendmsg_orch(cmd2)
 			set_valvs_value(pilha, 0, false)
@@ -1866,18 +1870,18 @@ func scp_run_withdraw(devtype string, devid string) int {
 			pathclean = "TOTEM02-CLEAN3"
 			board_add_message("IEnxague LINHAS 2/3")
 		} else {
-			fmt.Println("ERRO RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
+			fmt.Println("ERROR RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 			return -1
 		}
 		pathstr = paths[pathclean].Path
 		if len(pathstr) == 0 {
-			fmt.Println("ERRO RUN WITHDRAW 17: path CLEAN linha nao existe", pathclean)
+			fmt.Println("ERROR RUN WITHDRAW 17: path CLEAN linha nao existe", pathclean)
 			return -1
 		}
 		var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 		vpath = scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
-			fmt.Println("ERRO RUN WITHDRAW 18: falha de valvula no path", pathstr)
+			fmt.Println("ERROR RUN WITHDRAW 18: falha de valvula no path", pathstr)
 			return -1
 		}
 		if set_valvs_value(vpath, 1, true) < 1 {
@@ -1897,7 +1901,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 22: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 23: BIORREATOR falha ao ligar bomba TOTEM02")
+			fmt.Println("ERROR RUN WITHDRAW 23: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
 			return -1
@@ -1909,7 +1913,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 25: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 26: BIORREATOR falha ao ligar bomba TOTEM02")
+			fmt.Println("ERROR RUN WITHDRAW 26: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
 			return -1
@@ -1921,19 +1925,19 @@ func scp_run_withdraw(devtype string, devid string) int {
 	case scp_ibc:
 		ind := get_ibc_index(devid)
 		if ind < 0 {
-			fmt.Println("ERRO RUN WITHDRAW 01: IBC nao existe", devid)
+			fmt.Println("ERROR RUN WITHDRAW 01: IBC nao existe", devid)
 			return -1
 		}
 		prev_status := bio[ind].Status
 		pathid := devid + "-" + ibc[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
-			fmt.Println("ERRO RUN WITHDRAW 27: path nao existe", pathid)
+			fmt.Println("ERROR RUN WITHDRAW 27: path nao existe", pathid)
 			return -1
 		}
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
-			fmt.Println("ERRO RUN WITHDRAW 28: falha de valvula no path", pathid)
+			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
 		board_add_message("CDesenvase " + devid + " para " + ibc[ind].OutID)
@@ -1949,18 +1953,18 @@ func scp_run_withdraw(devtype string, devid string) int {
 				dtype := get_scp_type(sub[0])
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
-						fmt.Println("ERRO RUN WITHDRAW 29: nao foi possivel setar valvula", p)
+						fmt.Println("ERROR RUN WITHDRAW 29: nao foi possivel setar valvula", p)
 						return -1
 					}
 				} else if val == 1 {
-					fmt.Println("ERRO RUN WITHDRAW 30: valvula ja aberta", p)
+					fmt.Println("ERROR RUN WITHDRAW 30: valvula ja aberta", p)
 					return -1
 				} else {
-					fmt.Println("ERRO RUN WITHDRAW 31: valvula com erro", p)
+					fmt.Println("ERROR RUN WITHDRAW 31: valvula com erro", p)
 					return -1
 				}
 			} else {
-				fmt.Println("ERRO RUN WITHDRAW 32: valvula nao existe", p)
+				fmt.Println("ERROR RUN WITHDRAW 32: valvula nao existe", p)
 				return -1
 			}
 			pilha = append([]string{p}, pilha...)
@@ -1976,7 +1980,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 34: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 35: IBC falha ao ligar bomba desenvase")
+			fmt.Println("ERROR RUN WITHDRAW 35: IBC falha ao ligar bomba desenvase")
 			return -1
 		}
 		t_start := time.Now()
@@ -2014,13 +2018,13 @@ func scp_run_withdraw(devtype string, devid string) int {
 		pathclean = "TOTEM02-CLEAN4"
 		pathstr = paths[pathclean].Path
 		if len(pathstr) == 0 {
-			fmt.Println("ERRO RUN WITHDRAW 40: path CLEAN linha nao existe", pathclean)
+			fmt.Println("ERROR RUN WITHDRAW 40: path CLEAN linha nao existe", pathclean)
 			return -1
 		}
 		var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 		vpath = scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
-			fmt.Println("ERRO RUN WITHDRAW 41: falha de valvula no path", pathstr)
+			fmt.Println("ERROR RUN WITHDRAW 41: falha de valvula no path", pathstr)
 			return -1
 		}
 		board_add_message("ILimpando LINHA 4")
@@ -2041,7 +2045,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 45: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 46: BIORREATOR falha ao ligar bomba TOTEM02")
+			fmt.Println("ERROR RUN WITHDRAW 46: BIORREATOR falha ao ligar bomba TOTEM02")
 			totem[tind].Pumpstatus = false
 			set_valvs_value(vpath, 0, false)
 			return -1
@@ -2053,7 +2057,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 48: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
-			fmt.Println("ERRO RUN WITHDRAW 49: BIORREATOR falha ao ligar bomba TOTEM02")
+			fmt.Println("ERROR RUN WITHDRAW 49: BIORREATOR falha ao ligar bomba TOTEM02")
 			set_valvs_value(vpath, 0, false)
 			return -1
 		}
@@ -2064,13 +2068,13 @@ func scp_run_withdraw(devtype string, devid string) int {
 			pathclean = "TOTEM02-CLEAN3"
 			pathstr = paths[pathclean].Path
 			if len(pathstr) == 0 {
-				fmt.Println("ERRO RUN WITHDRAW 50: path CLEAN linha nao existe", pathclean)
+				fmt.Println("ERROR RUN WITHDRAW 50: path CLEAN linha nao existe", pathclean)
 				return -1
 			}
 			var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 			vpath = scp_splitparam(pathstr, ",")
 			if !test_path(vpath, 0) {
-				fmt.Println("ERRO RUN WITHDRAW 51: falha de valvula no path", pathstr)
+				fmt.Println("ERROR RUN WITHDRAW 51: falha de valvula no path", pathstr)
 				return -1
 			}
 			board_add_message("ILimpando LINHA 3")
@@ -2091,7 +2095,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			ret1 = scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG RUN WITHDRAW 55: CMD1 =", cmd1, " RET=", ret1)
 			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERRO RUN WITHDRAW 56: BIORREATOR falha ao ligar bomba TOTEM02")
+				fmt.Println("ERROR RUN WITHDRAW 56: BIORREATOR falha ao ligar bomba TOTEM02")
 				totem[tind].Pumpstatus = false
 				set_valvs_value(vpath, 0, false)
 				return -1
@@ -2103,7 +2107,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			ret1 = scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG RUN WITHDRAW 58: CMD1 =", cmd1, " RET=", ret1)
 			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERRO RUN WITHDRAW 59: BIORREATOR falha ao ligar bomba TOTEM02")
+				fmt.Println("ERROR RUN WITHDRAW 59: BIORREATOR falha ao ligar bomba TOTEM02")
 				set_valvs_value(vpath, 0, false)
 				return -1
 			}
@@ -2132,7 +2136,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		ret0 := scp_sendmsg_orch(cmd0)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
 		if !strings.Contains(ret0, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret0)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret0)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
 			}
@@ -2143,7 +2147,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		rets := scp_sendmsg_orch(cmds)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 		if !strings.Contains(rets, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		}
 
 	}
@@ -2152,11 +2156,11 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		musttest := value == 1
 		if test_path(dev_valvs, 1-value) || !musttest {
 			if set_valvs_value(dev_valvs, value, musttest) < 0 {
-				fmt.Println("ERROR SCP TURN AERO: erro ao definir valor [", value, "] das valvulas", dev_valvs)
+				fmt.Println("ERROR SCP TURN AERO: ERROR ao definir valor [", value, "] das valvulas", dev_valvs)
 				return false
 			}
 		} else {
-			fmt.Println("ERROR SCP TURN AERO: erro nas valvulas", dev_valvs)
+			fmt.Println("ERROR SCP TURN AERO: ERROR nas valvulas", dev_valvs)
 			return false
 		}
 	}
@@ -2165,7 +2169,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
 	if !strings.Contains(ret1, scp_ack) && !devmode {
-		fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao definir ", percent, "% aerador", ret1)
+		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
 			set_valvs_value(dev_valvs, 1-value, false)
 		}
@@ -2184,7 +2188,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN ERO:", bioid, " erro ao definir valor[", value, "] rele aerador ", ret2)
+			fmt.Println("ERROR SCP TURN ERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
 			}
@@ -2197,7 +2201,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		rets := scp_sendmsg_orch(cmds)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 		if !strings.Contains(rets, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " erro ao mudar aerador na screen ", scraddr, rets)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		}
 	}
 
@@ -2244,7 +2248,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode {
-		fmt.Println("ERROR SCP TURN PERIS:", bioid, " erro ao definir valor[", value, "] peristaltica ", ret0)
+		fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", ret0)
 		return false
 	}
 	fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
@@ -2270,7 +2274,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode {
-		fmt.Println("ERROR SCP TURN HEATER:", bioid, " erro ao definir valor[", value, "] aquecedor ", ret0)
+		fmt.Println("ERROR SCP TURN HEATER:", bioid, " ERROR ao definir valor[", value, "] aquecedor ", ret0)
 		return false
 	}
 	bio[ind].Heater = value
@@ -2319,7 +2323,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
 		if !strings.Contains(ret, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
+			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
 			if len(valvs) > 0 {
 				set_valvs_value(valvs, 1-value, false)
 				time.Sleep(scp_timewaitvalvs * time.Millisecond)
@@ -2339,7 +2343,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			rets := scp_sendmsg_orch(cmds)
 			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 			if !strings.Contains(rets, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
+				fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
 			}
 		}
 	}
@@ -2347,11 +2351,11 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 	musttest := value == 1
 	if test_path(valvs, 1-value) || !musttest {
 		if set_valvs_value(valvs, value, musttest) < 0 {
-			fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro ao definir valor [", value, "] das valvulas", valvs)
+			fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR ao definir valor [", value, "] das valvulas", valvs)
 			return false
 		}
 	} else {
-		fmt.Println("ERROR SCP TURN PUMP:", devtype, " erro nas valvulas", valvs)
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs)
 		return false
 	}
 
@@ -2371,7 +2375,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
 		if !strings.Contains(ret, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN PUMP:", main_id, " erro ao definir ", value, " bomba", ret)
+			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
 			if len(valvs) > 0 {
 				set_valvs_value(valvs, 1-value, false)
 				time.Sleep(scp_timewaitvalvs * time.Millisecond)
@@ -2391,7 +2395,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			rets := scp_sendmsg_orch(cmds)
 			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
 			if !strings.Contains(rets, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP TURN AERO: erro ao mudar bomba na screen ", scraddr, rets)
+				fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
 			}
 		}
 	}
@@ -2722,7 +2726,7 @@ func scp_run_job(bioid string, job string) bool {
 			ret1 := scp_sendmsg_orch(cmd1)
 			fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
 			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao enviar PUT screen", scraddr, ret1)
+				fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao enviar PUT screen", scraddr, ret1)
 				return false
 			}
 			cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
@@ -2732,7 +2736,7 @@ func scp_run_job(bioid string, job string) bool {
 				ret2 := scp_sendmsg_orch(cmd2)
 				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
 				if !strings.Contains(ret2, scp_ack) && !devmode {
-					fmt.Println("ERROR SCP RUN JOB:", bioid, " erro ao envirar GET screen", scraddr, ret2)
+					fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao envirar GET screen", scraddr, ret2)
 					scp_sendmsg_orch(scrmain)
 					return false
 				}
@@ -2862,7 +2866,7 @@ func scp_run_job(bioid string, job string) bool {
 					return false
 				}
 				if !scp_turn_aero(bioid, true, 1, perc_int) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar aerador em", bioid)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aerador em", bioid)
 					return false
 				}
 			case scp_dev_pump:
@@ -2872,13 +2876,13 @@ func scp_run_job(bioid string, job string) bool {
 					valvs = append(valvs, v)
 				}
 				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				}
 			case scp_dev_peris:
 				peris_str := subpars[1]
 				if !scp_turn_peris(scp_bioreactor, bioid, peris_str, 1) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
 			case scp_par_heater:
@@ -2888,7 +2892,7 @@ func scp_run_job(bioid string, job string) bool {
 				totem := subpars[1]
 				totem_ind := get_totem_index(totem)
 				if totem_ind < 0 {
-					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
+					fmt.Println("ERROR SCP RUN JOB: Totem nao existe", totem)
 					return false
 				}
 				use_spball := false
@@ -2903,7 +2907,7 @@ func scp_run_job(bioid string, job string) bool {
 				pathid := totem + "-" + bioid
 				pathstr := paths[pathid].Path
 				if len(pathstr) == 0 {
-					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
+					fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
 					return false
 				}
 				var npath string
@@ -2922,7 +2926,7 @@ func scp_run_job(bioid string, job string) bool {
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				}
 			}
@@ -2936,7 +2940,7 @@ func scp_run_job(bioid string, job string) bool {
 			switch device {
 			case scp_dev_aero:
 				if !scp_turn_aero(bioid, true, 0, 0) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao desligar aerador em", bioid)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar aerador em", bioid)
 					return false
 				}
 			case scp_dev_pump:
@@ -2946,20 +2950,20 @@ func scp_run_job(bioid string, job string) bool {
 					valvs = append(valvs, v)
 				}
 				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao desligar bomba em", bioid, valvs)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", bioid, valvs)
 					return false
 				}
 			case scp_dev_peris:
 				peris_str := subpars[1]
 				if !scp_turn_peris(scp_bioreactor, bioid, peris_str, 0) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar peristaltica em", bioid, peris_str)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", bioid, peris_str)
 					return false
 				}
 			case scp_dev_water:
 				totem := subpars[1]
 				totem_ind := get_totem_index(totem)
 				if totem_ind < 0 {
-					fmt.Println("ERRO SCP RUN JOB: Totem nao existe", totem)
+					fmt.Println("ERROR SCP RUN JOB: Totem nao existe", totem)
 					return false
 				}
 				use_spball := false
@@ -2974,7 +2978,7 @@ func scp_run_job(bioid string, job string) bool {
 				pathid := totem + "-" + bioid
 				pathstr := paths[pathid].Path
 				if len(pathstr) == 0 {
-					fmt.Println("ERRO SCP RUN JOB: path nao existe", pathid)
+					fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
 					return false
 				}
 				var npath string
@@ -2992,7 +2996,7 @@ func scp_run_job(bioid string, job string) bool {
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
 				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
-					fmt.Println("ERROR SCP RUN JOB: Erro ao ligar bomba em", bioid, valvs)
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				}
 			}
