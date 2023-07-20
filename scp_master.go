@@ -22,6 +22,7 @@ var autowithdraw = false
 
 const control_ph = false
 const control_temp = false
+const control_foam = true
 
 const scp_on = 1
 const scp_off = 0
@@ -2535,6 +2536,36 @@ func scp_adjust_temperature(bioid string, temp float32) {
 	}
 }
 
+func scp_adjust_foam(bioid string) {
+	ind := get_bio_index(bioid)
+	fmt.Println("DEBUG SCP ADJUST FOAM: Ajustando Esmpuma do Biorreator", bioid)
+	// valvs := []string{bioid + "/V4", bioid + "/V6"}
+	// if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+	// 	fmt.Println("ERROR SCP ADJUST FORAM: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+	// 	return
+	// }
+	if bio[ind].MustPause || bio[ind].MustStop {
+		return
+	}
+	if !scp_turn_peris(scp_bioreactor, bioid, "P5", 1) {
+		fmt.Println("ERROR SCP ADJUST FOAM: Falha ao LIGAR peristaltica 5", bioid)
+	} else {
+		for i := 0; i < 70; i++ {
+			if bio[ind].MustPause || bio[ind].MustStop {
+				break
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		if !scp_turn_peris(scp_bioreactor, bioid, "P5", 0) {
+			fmt.Println("ERROR SCP ADJUST FOAM: Falha ao DESLIGAR peristaltica 5", bioid)
+		}
+	}
+	// if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+	// 	fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+	// 	return
+	// }
+}
+
 func scp_grow_bio(bioid string) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -2551,6 +2582,7 @@ func scp_grow_bio(bioid string) bool {
 	if devmode || testmode {
 		ttotal = scp_timeoutdefault / 60
 	}
+	vol_start := bio[ind].Volume
 	pday := -1
 	var minph, maxph, worktemp float64
 	for {
@@ -2580,6 +2612,9 @@ func scp_grow_bio(bioid string) bool {
 			}
 			if control_ph && bio[ind].PH < float32(minph*(1-bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(minph))
+			}
+			if control_foam && float64(bio[ind].Volume) >= float64(vol_start)*1.05 {
+				scp_adjust_foam(bioid)
 			}
 			if control_ph && bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
 				scp_adjust_ph(bioid, float32(maxph))
