@@ -2816,8 +2816,10 @@ func scp_run_job(bioid string, job string) bool {
 					time_max, err = strconv.Atoi(subpars[2])
 					if err != nil {
 						time_max = scp_timeoutdefault
+						checkErr(err)
 						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO invalido", vol_str, params)
 					} else {
+						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e/ou TEMPO", vol_str, time_max)
 						par_time = true
 					}
 				}
