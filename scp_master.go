@@ -1758,6 +1758,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 01: Biorreator nao existe", devid)
 			return -1
 		}
+		prev_status := bio[ind].Status
 		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
@@ -1915,7 +1916,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 		}
 		set_valvs_value(vpath, 0, false)
 		board_add_message("IEnxague concluído")
-		bio[ind].Status = bio_ready
+		bio[ind].Status = prev_status
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -1923,6 +1924,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			fmt.Println("ERRO RUN WITHDRAW 01: IBC nao existe", devid)
 			return -1
 		}
+		prev_status := bio[ind].Status
 		pathid := devid + "-" + ibc[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
@@ -2108,7 +2110,7 @@ func scp_run_withdraw(devtype string, devid string) int {
 			set_valvs_value(vpath, 0, false)
 			board_add_message("IEnxague concluído")
 		}
-		ibc[ind].Status = bio_ready
+		ibc[ind].Status = prev_status
 	}
 	return 0
 }
