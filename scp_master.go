@@ -2610,23 +2610,35 @@ func scp_grow_bio(bioid string) bool {
 					checkErr(err)
 					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
 				}
-				fmt.Println("\n\nDEBUG SCP GROW BIO: Parametros de PH", minph, maxph)
+				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
 				worktemp = 28
+				pday = t_day
 			}
-			if control_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
-				scp_adjust_foam(bioid)
-			}
-			if control_ph && bio[ind].PH < float32(minph*(1-bio_deltaph)) {
-				scp_adjust_ph(bioid, float32(minph))
-			}
-			if control_ph && bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
-				scp_adjust_ph(bioid, float32(maxph))
-			}
-			if control_temp && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
-				fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
-				scp_adjust_temperature(bioid, float32(worktemp))
-			}
-
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if control_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
+			scp_adjust_foam(bioid)
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if control_ph && bio[ind].PH < float32(minph*(1-bio_deltaph)) {
+			scp_adjust_ph(bioid, float32(minph))
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if control_ph && bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
+			scp_adjust_ph(bioid, float32(maxph))
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if control_temp && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
+			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
+			scp_adjust_temperature(bioid, float32(worktemp))
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
