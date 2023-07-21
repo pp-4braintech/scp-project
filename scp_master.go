@@ -1445,7 +1445,7 @@ func scp_get_alldata() {
 						} else {
 							if bio[ind].Valvs[4] == 1 { // Desenvase
 								if vol1 < 400 {
-									if vol2 >= 0 {
+									if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
 										volc = vol2
 									} else if vol1 >= 0 {
 										volc = vol1
@@ -1471,10 +1471,14 @@ func scp_get_alldata() {
 								// }
 							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
 								if bio[ind].Valvs[2] == 0 { // Sprayball desligado
-									if vol1 >= 0 {
+									if vol1 < 400 {
+										if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
+											volc = vol2
+										} else if vol1 >= 0 {
+											volc = vol1
+										}
+									} else {
 										volc = vol1
-									} else if vol2 >= 0 {
-										volc = vol2
 									}
 								}
 								// if vol2 != -1 && (float64(bio[ind].Volume) == 0 || (vol2 > float64(bio[ind].Volume) && vol2 < float64(bio[ind].Volume)+150)) {
@@ -2889,15 +2893,27 @@ func scp_run_job(bioid string, job string) bool {
 				}
 
 				time_max := scp_timeoutdefault
+				time_min := 0
 				par_time := false
 				if len(subpars) > 3 {
 					time_max, err = strconv.Atoi(subpars[2])
 					if err != nil {
 						time_max = scp_timeoutdefault
 						checkErr(err)
-						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO invalido", vol_str, params)
+						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO MAX invalido", vol_str, params)
 					} else {
-						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e/ou TEMPO", vol_str, time_max)
+						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e/ou TEMPO MAX", vol_str, time_max)
+						par_time = true
+					}
+				}
+				if len(subpars) > 4 {
+					time_min, err = strconv.Atoi(subpars[3])
+					if err != nil {
+						time_min = 0
+						checkErr(err)
+						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO MIN invalido", vol_str, params)
+					} else {
+						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e TEMPO MIN", vol_str, time_min)
 						par_time = true
 					}
 				}
@@ -2905,7 +2921,7 @@ func scp_run_job(bioid string, job string) bool {
 				for {
 					vol_now := uint64(bio[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
-					if vol_now >= vol_max {
+					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
 						break
 					}
 					if bio[ind].MustPause || bio[ind].MustStop {
