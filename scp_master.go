@@ -980,7 +980,7 @@ func get_scp_type(dev_id string) string {
 
 func scp_sendmsg_orch(cmd string) string {
 
-	if demo {
+	if demo || strings.Contains(cmd, "FF:FFFFFF") {
 		return scp_ack
 	}
 	mainmutex.Lock()
