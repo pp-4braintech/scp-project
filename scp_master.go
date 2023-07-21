@@ -1486,8 +1486,13 @@ func scp_get_alldata() {
 						// if volc > float64(bio_cfg[b.BioreactorID].Maxvolume)*1.3 {
 						// 	volc = float64(bio[ind].Volume)
 						// }
-						if b.Status == bio_update && (vol1 != -1 || vol2 != -1) {
-							bio[ind].Status = bio_ready
+						if b.Status == bio_update {
+							if vol1 != -1 || vol2 != -1 {
+								bio[ind].Status = bio_ready
+							} else {
+								board_add_message("IVerifique sensores de Volume do " + b.BioreactorID)
+								bio[ind].Status = bio_error
+							}
 						}
 
 						// volc = 100 //  PARA TESTE
