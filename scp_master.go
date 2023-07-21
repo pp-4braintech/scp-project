@@ -1508,7 +1508,7 @@ func scp_get_alldata() {
 								ret := scp_sendmsg_orch(cmd)
 								fmt.Println("SCREEN:", cmd, level, levels, ret)
 							}
-							if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading {
+							if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
 								bio[ind].Status = bio_empty
 							}
 						}
