@@ -1442,6 +1442,8 @@ func scp_get_alldata() {
 									} else if vol1 >= 0 {
 										volc = vol1
 									}
+								} else {
+									volc = vol1
 								}
 								// if vol1 >= 0 {
 								// 	volc = vol1
