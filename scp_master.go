@@ -1075,7 +1075,7 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 1 && !devmode {
 					bio[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
-				} else if bio[ind].Status == bio_nonexist {
+				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
 					bio[ind].Status = bio_ready
 				}
 			}
