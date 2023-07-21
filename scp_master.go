@@ -1436,11 +1436,19 @@ func scp_get_alldata() {
 
 						} else {
 							if bio[ind].Valvs[4] == 1 { // Desenvase
-								if vol1 >= 0 {
-									volc = vol1
-								} else if vol2 >= 0 {
-									volc = vol2
+								if vol1 < 400 {
+									if vol2 >= 0 {
+										volc = vol2
+									} else if vol1 >= 0 {
+										volc = vol1
+									}
 								}
+								// if vol1 >= 0 {
+								// 	volc = vol1
+								// } else if vol2 >= 0 {
+								// 	volc = vol2
+								// }
+
 								// if vol1 < vol2 && vol1 != -1 {
 								// 	volc = vol1
 								// } else if vol2 != -1 {
