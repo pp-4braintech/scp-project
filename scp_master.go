@@ -1379,7 +1379,7 @@ func scp_get_alldata() {
 							dfloat = 0
 							if vol0 == 0 {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
-								if dint > 0 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.2) {
+								if dint > 0 && dint != 250 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.2) {
 									b.Vol_zero[0] = float32(dint)
 								} else {
 									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas D1 fora da faixa", b.BioreactorID, dint)
@@ -1388,7 +1388,7 @@ func scp_get_alldata() {
 							area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
 							dfloat = float64(b.Vol_zero[0]) - float64(dint)
 							vol1_pre := area * dfloat
-							if dint > 0 {
+							if dint > 0 && dint != 250 {
 								if vol1_pre >= 0 {
 									vol1 = vol1_pre
 								} else {
