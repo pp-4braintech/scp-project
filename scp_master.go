@@ -1164,6 +1164,8 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 0 && !devmode {
 					totem[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
+				} else if nerr == 0 {
+					totem[ind].Status = bio_ready
 				}
 			}
 		}
