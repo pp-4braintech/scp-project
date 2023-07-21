@@ -2289,7 +2289,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	return true
 }
 
-func scp_turn_heater(bioid string, maxtemp float32, value int) bool {
+func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	var ind int
 	ind = get_bio_index(bioid)
 	if ind < 0 {
@@ -2298,7 +2298,11 @@ func scp_turn_heater(bioid string, maxtemp float32, value int) bool {
 	}
 	devaddr := bio_cfg[bioid].Deviceaddr
 	heater_dev := bio_cfg[bioid].Heater
-	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, heater_dev, value)
+	value_str := "0"
+	if value {
+		value_str = "1"
+	}
+	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, heater_dev, value_str)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode {
@@ -2982,7 +2986,7 @@ func scp_run_job(bioid string, job string) bool {
 					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
 					return false
 				}
-				if !scp_turn_heater(bioid, float32(temp_int), 1) {
+				if !scp_turn_heater(bioid, float32(temp_int), true) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aquecedor em", bioid)
 				}
 
@@ -3058,7 +3062,7 @@ func scp_run_job(bioid string, job string) bool {
 					return false
 				}
 			case scp_par_heater:
-				if !scp_turn_heater(bioid, float32(0), 0) {
+				if !scp_turn_heater(bioid, float32(0), false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aquecedor em", bioid)
 				}
 			case scp_dev_water:
