@@ -3873,7 +3873,7 @@ func main() {
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
-		mainrouter = "10.0.0.2"
+		mainrouter = "10.0.0.1"
 	}
 	testmode = test_file("/etc/scpd/scp_testmode.flag")
 	if testmode {
