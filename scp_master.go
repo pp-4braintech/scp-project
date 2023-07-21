@@ -1389,7 +1389,11 @@ func scp_get_alldata() {
 							dfloat = float64(b.Vol_zero[0]) - float64(dint)
 							vol1_pre := area * dfloat
 							if dint > 0 {
-								vol1 = vol1_pre
+								if vol1_pre >= 0 {
+									vol1 = vol1_pre
+								} else {
+									vol1 = 0
+								}
 								bio[ind].Vol1 = int32(vol1_pre)
 							} else {
 								bio[ind].Vol1 = -1
@@ -1416,7 +1420,11 @@ func scp_get_alldata() {
 							dfloat = float64(b.Vol_zero[1]) - float64(dint)
 							vol2_pre := area * dfloat
 							if dint > 0 {
-								vol2 = vol2_pre
+								if vol2_pre >= 0 {
+									vol2 = vol2_pre
+								} else {
+									vol2 = 0
+								}
 								bio[ind].Vol2 = int32(vol2_pre)
 							} else {
 								bio[ind].Vol2 = -1
