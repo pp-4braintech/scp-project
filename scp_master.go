@@ -100,7 +100,7 @@ const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
-const scp_refresstatus = 30
+const scp_refresstatus = 15
 const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
@@ -2289,7 +2289,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	return true
 }
 
-func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
+func scp_turn_heater(bioid string, maxtemp float32, value int) bool {
 	var ind int
 	ind = get_bio_index(bioid)
 	if ind < 0 {
@@ -2975,7 +2975,16 @@ func scp_run_job(bioid string, job string) bool {
 					return false
 				}
 			case scp_par_heater:
-				// Implementar
+				temp_str := subpars[1]
+				temp_int, err := strconv.Atoi(temp_str)
+				if err != nil {
+					checkErr(err)
+					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
+					return false
+				}
+				if !scp_turn_heater(bioid, float32(temp_int), 1) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aquecedor em", bioid)
+				}
 
 			case scp_dev_water:
 				totem := subpars[1]
@@ -3047,6 +3056,10 @@ func scp_run_job(bioid string, job string) bool {
 				if !scp_turn_peris(scp_bioreactor, bioid, peris_str, 0) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", bioid, peris_str)
 					return false
+				}
+			case scp_par_heater:
+				if !scp_turn_heater(bioid, float32(0), 0) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aquecedor em", bioid)
 				}
 			case scp_dev_water:
 				totem := subpars[1]
