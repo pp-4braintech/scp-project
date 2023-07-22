@@ -3294,6 +3294,9 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			if !bio[ind].MustStop {
 				board_add_message("APausa no Biorreator " + main_id + " liberada")
 			}
+			if !schedrunning {
+				go scp_scheduler()
+			}
 		}
 	default:
 		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
