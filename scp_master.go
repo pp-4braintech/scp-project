@@ -1396,7 +1396,7 @@ func scp_get_alldata() {
 							vol1_pre := area * dfloat
 							if dint > 0 && dint != 250 {
 								if vol1_pre >= 0 {
-									vol1 = 10 * (math.Round(vol1_pre / 10))
+									vol1 = 10 * (math.Trunc(vol1_pre / 10))
 								} else {
 									vol1 = 0
 								}
@@ -1427,7 +1427,7 @@ func scp_get_alldata() {
 							vol2_pre := area * dfloat
 							if dint > 0 {
 								if vol2_pre >= 0 {
-									vol2 = 10 * (math.Round(vol2_pre / 10))
+									vol2 = 10 * (math.Trunc(vol2_pre / 10))
 								} else {
 									vol2 = 0
 								}
