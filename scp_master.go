@@ -1032,7 +1032,7 @@ func scp_setup_devices(mustall bool) {
 	for _, b := range bio_cfg {
 		ind := get_bio_index(b.BioreactorID)
 		if len(b.Deviceaddr) > 0 && ind >= 0 {
-			if mustall || bio[ind].Status == bio_nonexist {
+			if mustall || bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", b.BioreactorID, "-", b.Deviceaddr)
 				var cmd []string
 				bioaddr := b.Deviceaddr
@@ -1086,7 +1086,7 @@ func scp_setup_devices(mustall bool) {
 	for _, ib := range ibc_cfg {
 		ind := get_ibc_index(ib.IBCID)
 		if len(ib.Deviceaddr) > 0 && ind >= 0 {
-			if mustall || ibc[ind].Status == bio_nonexist {
+			if mustall || ibc[ind].Status == bio_nonexist  || ibc[ind].Status == bio_error {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", ib.IBCID, "-", ib.Deviceaddr)
 				var cmd []string
 				ibcaddr := ib.Deviceaddr
@@ -1134,7 +1134,7 @@ func scp_setup_devices(mustall bool) {
 	for _, tot := range totem_cfg {
 		ind := get_totem_index(tot.TotemID)
 		if len(tot.Deviceaddr) > 0 && ind >= 0 {
-			if mustall || totem[ind].Status == bio_nonexist {
+			if mustall || totem[ind].Status == bio_nonexist totem[ind].Status == bio_error {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", tot.TotemID, "-", tot.Deviceaddr)
 				var cmd []string
 				totemaddr := tot.Deviceaddr
