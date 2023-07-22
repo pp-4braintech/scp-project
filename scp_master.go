@@ -1124,7 +1124,7 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 0 && !devmode {
 					ibc[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
-				} else if ibc[ind].Status == bio_nonexist {
+				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
 					ibc[ind].Status = bio_ready
 				}
 			}
@@ -2307,7 +2307,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	if value {
 		value_str = "1"
 	}
-	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, heater_dev, value_str)
+	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%s/END", devaddr, heater_dev, value_str)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode {
