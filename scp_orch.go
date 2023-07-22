@@ -37,7 +37,6 @@ type scp_slave_map struct {
 	slave_scp_state uint8
 	go_chan         chan string
 	slave_errors    uint8
-	running         int
 }
 
 var scp_slaves map[string]scp_slave_map
@@ -139,18 +138,15 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 
 		select {
 		case chan_msg := <-slave_data.go_chan:
-			scp_slave.running++
 			fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
 			if chan_msg == scp_destroy {
 				fmt.Println("TCP destroy recebido")
 				//slave_data.go_chan <- scp_ack
-				scp_slave.running--
 				return
 			}
 			if scp_slave.slave_errors > scp_max_err {
 				fmt.Println("----->>>> TCP CLIENT com excesso de erros")
 				slave_data.go_chan <- scp_die
-				scp_slave.running--
 			} else {
 				fmt.Println("TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
 				ret, err := scp_sendtcp(slave_tcp_con, chan_msg, true)
@@ -161,11 +157,9 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				if err == nil {
 					slave_data.go_chan <- ret
 					scp_slave.slave_errors = 0
-					scp_slave.running--
 				} else {
 					scp_slave.slave_errors++
 					slave_data.go_chan <- scp_err
-					scp_slave.running--
 				}
 				begin_time = time.Now().Unix()
 			}
@@ -173,9 +167,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 			current_time := time.Now().Unix()
 			elapsed_seconds := current_time - begin_time
 			if (elapsed_seconds > scp_keepalive_time) && (scp_slave.slave_errors < scp_max_err) {
-				scp_slave.running++
 				scp_send_ping(scp_slave, slave_tcp_con)
-				scp_slave.running--
 				begin_time = current_time
 				// fmt.Println(scp_slave)
 			}
@@ -234,7 +226,7 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			process_chan := make(chan string)
 			m.Lock()
 			scp_slaves[scp_msg_data] = scp_slave_map{slave_udp_addr: udp_addr, slave_tcp_addr: tcp_addr, slave_scp_addr: scp_msg_data,
-				slave_scp_state: scp_state_JOIN0, go_chan: process_chan, slave_errors: 0, running: 0}
+				slave_scp_state: scp_state_JOIN0, go_chan: process_chan, slave_errors: 0}
 			m.Unlock()
 			fmt.Println("Slave inserido na tabela =", scp_slaves[scp_msg_data])
 			_, err = con.WriteTo([]byte(scp_ack), net_addr)
@@ -301,26 +293,18 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			scp_msg_slavecmd := cmd[0:tam]
 			fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
 			//go func () {
-			for ntries := 0; ntries < 5; ntries++ {
-				if slave_data.running == 0 {
-					slave_data.go_chan <- scp_msg_slavecmd
-					fmt.Println("CMD enviado para o CHANNEL")
-					ret := <-slave_data.go_chan
-					fmt.Println("CMD ret=", ret)
-					_, err = con.WriteTo([]byte(ret), net_addr)
-					checkErr(err)
-					if ret == scp_die {
-						slave_data.slave_scp_state = scp_state_TCPFAIL
-						scp_slaves[scp_msg_slaveaddr] = slave_data
-					}
-					return
-				} else {
-					fmt.Println("SLAVE", slave_data, "BUSY")
-				}
-				time.Sleep(500 * time.Millisecond)
-			}
-			_, err = con.WriteTo([]byte(scp_timeout), net_addr)
+			slave_data.go_chan <- scp_msg_slavecmd
+			fmt.Println("CMD enviado para o CHANNEL")
+			ret := <-slave_data.go_chan
+			fmt.Println("CMD ret=", ret)
+			_, err = con.WriteTo([]byte(ret), net_addr)
 			checkErr(err)
+			if ret == scp_die {
+				slave_data.slave_scp_state = scp_state_TCPFAIL
+				scp_slaves[scp_msg_slaveaddr] = slave_data
+			}
+			return
+
 		}
 
 		// select {
