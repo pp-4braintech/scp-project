@@ -3266,7 +3266,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			break
 		}
 		fmt.Println("\n\nDEBUG PAUSE DEVICE: Biorreator", main_id, " em", pause)
-		if pause {
+		if pause && bio[ind].Status != bio_pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Pausando Biorreator", main_id)
 			biobak[indbak] = bio[ind]
 			bio[ind].LastStatus = bio[ind].Status
