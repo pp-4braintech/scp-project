@@ -180,6 +180,7 @@ type Bioreact struct {
 	Perist       [5]int
 	Heater       bool
 	Temperature  float32
+	TempMax      float32
 	PH           float32
 	Step         [2]int
 	Timeleft     [2]int
@@ -316,12 +317,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR01", bio_update, "", "", 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false},
 }
 
 var ibc = []IBC{
@@ -1331,6 +1332,9 @@ func scp_get_alldata() {
 								tempfloat := float32(tempint) / 10.0
 								if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
 									bio[ind].Temperature = tempfloat
+									if bio[ind].Heater && tempfloat >= bio[ind].TempMax {
+										scp_turn_heater(b.BioreactorID, 0, false)
+									}
 								}
 							}
 						}
@@ -1392,7 +1396,7 @@ func scp_get_alldata() {
 							vol1_pre := area * dfloat
 							if dint > 0 && dint != 250 {
 								if vol1_pre >= 0 {
-									vol1 = vol1_pre
+									vol1 = 10 * (math.Round(vol1_pre / 10))
 								} else {
 									vol1 = 0
 								}
@@ -1423,7 +1427,7 @@ func scp_get_alldata() {
 							vol2_pre := area * dfloat
 							if dint > 0 {
 								if vol2_pre >= 0 {
-									vol2 = vol2_pre
+									vol2 = 10 * (math.Round(vol2_pre / 10))
 								} else {
 									vol2 = 0
 								}
@@ -2311,6 +2315,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 		return false
 	}
 	bio[ind].Heater = value
+	bio[ind].TempMax = maxtemp
 	return true
 }
 
