@@ -204,8 +204,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			slave_data.go_chan <- scp_destroy
 			fmt.Println("destroy enviado com sucesso")
 			time.Sleep(50 * time.Millisecond)
-			fmt.Println("fechando chain")
-			close(slave_data.go_chan)
+			// fmt.Println("fechando chain")
+			// close(slave_data.go_chan)
 
 			// fmt.Println("deletando dados na tabela")
 			// delete(scp_slaves, scp_msg_data)
