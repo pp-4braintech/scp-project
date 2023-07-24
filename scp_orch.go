@@ -176,6 +176,10 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	}
 }
 
+func scp_change_status(scp_slave *scp_slave_map, new_status uint8) {
+	scp_slave.slave_scp_state = new_status
+}
+
 func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Addr, m *sync.Mutex) {
 	var err error
 
@@ -257,6 +261,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 					slave_data.slave_scp_state = scp_state_JOIN0
 				}
 				scp_slaves[scp_msg_data] = slave_data
+			} else {
+				fmt.Println("\n\nACK UDP de dispositivo que não estava em JOIN0")
 			}
 		}
 

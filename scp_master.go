@@ -3577,7 +3577,6 @@ func scp_process_conn(conn net.Conn) {
 				switch scp_device {
 				case scp_par_out:
 					outid := subparams[1]
-					fmt.Println("\n\nPAR OUT", bioid, outid)
 					if outid == "Descarte" {
 						outid = "DROP"
 					} else if outid == "Externo" {
