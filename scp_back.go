@@ -23,6 +23,7 @@ var devmode = false
 const scp_err = "ERR"
 const scp_ack = "ACK"
 const scp_par_withdraw = "WITHDRAW"
+const scp_par_out = "OUT"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -389,6 +390,7 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			valve := r.FormValue("Valve")
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
+			outdev := r.FormValue("Out")
 			// fmt.Println("IBC_id = ", ibc_id)
 			// fmt.Println("Pump = ", pump)
 			// fmt.Println("Valve = ", valve)
@@ -406,6 +408,11 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			}
 			if withdraw != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+			if outdev != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_out + "," + outdev + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
@@ -459,6 +466,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			orgcode := r.FormValue("OrgCode")
 			value_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
+			outdev := r.FormValue("Out")
 
 			if b_start != "" {
 				if orgcode != "" {
@@ -505,6 +513,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if outdev != "" {
+				cmd := "PUT/IBC/" + bio_id + "/" + scp_par_out + "," + outdev + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
 		}
