@@ -3923,10 +3923,10 @@ func scp_master_ipc() {
 		conn, err := ipc.Accept()
 		if err != nil {
 			checkErr(err)
+
+		} else {
+			go scp_process_conn(conn)
 		}
-
-		go scp_process_conn(conn)
-
 	}
 }
 
