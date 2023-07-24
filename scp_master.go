@@ -198,19 +198,26 @@ type Bioreact struct {
 }
 
 type IBC struct {
-	IBCID      string
-	Status     string
-	Organism   string
-	Volume     uint32
-	Level      uint8
-	Pumpstatus bool
-	Valvs      [4]int
-	Timetotal  [2]int
-	Withdraw   uint32
-	OutID      string
-	Vol_zero   [2]float32
-	MustStop   bool
-	Selected   bool
+	IBCID        string
+	Status       string
+	OrgCode      string
+	Organism     string
+	Volume       uint32
+	Level        uint8
+	Pumpstatus   bool
+	Valvs        [4]int
+	Step         [2]int
+	Timetotal    [2]int
+	Withdraw     uint32
+	OutID        string
+	Vol_zero     [2]float32
+	MustStop     bool
+	MustPause    bool
+	Selected     bool
+	Queue        []string
+	UndoQueue    []string
+	RedoQueue    []string
+	MustOffQueue []string
 }
 
 type Totem struct {
@@ -326,13 +333,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC02", bio_update, "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC03", bio_update, "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC04", bio_update, "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC05", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC06", bio_update, "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, 0, "OUT", [2]float32{0, 0}, false, false},
-	{"IBC07", bio_update, "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false},
+	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC02", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC07", bio_update, "", "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
 }
 
 var totem = []Totem{
@@ -1050,7 +1057,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levelhigh[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
-				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",0/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",3/END")
 				cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 				nerr := 0
 				for k, c := range cmd {
@@ -2576,11 +2583,6 @@ func scp_adjust_temperature(bioid string, temp float32) {
 func scp_adjust_foam(bioid string) {
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST FOAM: Ajustando Esmpuma do Biorreator", bioid)
-	// valvs := []string{bioid + "/V4", bioid + "/V6"}
-	// if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
-	// 	fmt.Println("ERROR SCP ADJUST FORAM: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
-	// 	return
-	// }
 	if bio[ind].MustPause || bio[ind].MustStop {
 		return
 	}
@@ -2597,10 +2599,6 @@ func scp_adjust_foam(bioid string) {
 			fmt.Println("ERROR SCP ADJUST FOAM: Falha ao DESLIGAR peristaltica 5", bioid)
 		}
 	}
-	// if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
-	// 	fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
-	// 	return
-	// }
 }
 
 func scp_grow_bio(bioid string) bool {
@@ -2685,7 +2683,7 @@ func scp_grow_bio(bioid string) bool {
 	return true
 }
 
-func scp_run_job(bioid string, job string) bool {
+func scp_run_job_bio(bioid string, job string) bool {
 	if devmode {
 		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
 	} else {
@@ -3123,6 +3121,383 @@ func scp_run_job(bioid string, job string) bool {
 	return true
 }
 
+func scp_run_job_ibc(ibcid string, job string) bool {
+	if devmode {
+		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", ibcid, job)
+	} else {
+		fmt.Println("\n\nSCP RUN JOB EXECUTANDO", ibcid, job)
+	}
+	ind := get_ibc_index(ibcid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", ibcid)
+		return false
+	}
+	params := scp_splitparam(job, "/")
+	subpars := []string{}
+	if len(params) > 1 {
+		subpars = scp_splitparam(params[1], ",")
+	}
+	switch params[0] {
+	case scp_job_org:
+		var orgcode string
+		if len(subpars) > 0 {
+			orgcode = subpars[0]
+			if len(organs[orgcode].Orgname) > 0 {
+				ibc[ind].OrgCode = subpars[0]
+				ibc[ind].Organism = organs[orgcode].Orgname
+				ibc[ind].Timetotal = [2]int{0, 0}
+			} else {
+				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			return false
+		}
+		// board_add_message("IIniciando Cultivo " + organs[orgcode].Orgname + " no " + ibcid)
+
+	case scp_job_set:
+		if len(subpars) > 1 {
+			flag := subpars[0]
+			switch flag {
+			case scp_par_status:
+				biostatus := subpars[1]
+				ibc[ind].Status = biostatus
+			case scp_par_step:
+				biostep_str := subpars[1]
+				biostep, _ := strconv.Atoi(biostep_str)
+				ibc[ind].Step[0] = biostep
+			case scp_par_maxstep:
+				biomaxstep_str := subpars[1]
+				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
+				ibc[ind].Step[1] = biomaxstep
+			default:
+				fmt.Println("ERROR SCP RUN JOB: Parametro invalido em", scp_job_set, flag, params)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_set, params)
+			return false
+		}
+
+	case scp_job_commit:
+		if len(subpars) > 1 {
+			obj := subpars[0]
+			if obj == "ALL" {
+				ibc[ind].MustOffQueue = []string{}
+				fmt.Println("WARN SCP RUN JOB: COMMIT ALL executado", subpars)
+			}
+		}
+		ibc[ind].UndoQueue = []string{}
+		ibc[ind].RedoQueue = []string{}
+
+	case scp_job_run:
+		if len(subpars) > 0 {
+			cmd := subpars[0]
+			switch cmd {
+			case scp_par_grow:
+				scp_grow_bio(ibcid)
+
+			case scp_par_cip:
+				qini := []string{ibc[ind].Queue[0]}
+				qini = append(qini, cipbio...)
+				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
+				fmt.Println("\n\nTRUQUE CIP:", ibc[ind].Queue)
+				board_add_message("IExecutando CIP no IBC " + ibcid)
+				return true
+
+			case scp_par_withdraw:
+				ibc[ind].Withdraw = ibc[ind].Volume
+				if len(subpars) > 2 {
+					outid := subpars[1]
+					ibc[ind].OutID = outid
+				}
+				board_add_message("IDesenvase Automático do IBC " + ibcid + " para " + ibc[ind].OutID)
+				if scp_run_withdraw(scp_ibc, ibcid, false) < 0 {
+					return false
+				} else {
+					ibc[ind].Organism = ""
+					ibc[ind].Withdraw = 0
+					ibc[ind].Volume = 0 // verificar
+				}
+
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
+			return false
+		}
+
+	case scp_job_ask:
+		fmt.Println("ERROR SCP RUN JOB: ASK nao disponivel para IBC")
+		// if len(subpars) > 0 {
+		// 	msg := subpars[0]
+		// 	scraddr := bio_cfg[bioid].Screenaddr
+		// 	var cmd1 string = ""
+		// 	var msgask string = ""
+		// 	scrmain := fmt.Sprintf("CMD/%s/PUT/S200,1/END", scraddr)
+		// 	switch msg {
+		// 	case scp_msg_cloro:
+		// 		cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
+		// 		msgask = "CLORO"
+		// 	case scp_msg_meio_inoculo:
+		// 		cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
+		// 		msgask = "MEIO e INOCULO"
+		// 	default:
+		// 		fmt.Println("ERROR SCP RUN JOB:", bioid, " ASK invalido", subpars)
+		// 		return false
+		// 	}
+		// 	ret1 := scp_sendmsg_orch(cmd1)
+		// 	fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
+		// 	if !strings.Contains(ret1, scp_ack) && !devmode {
+		// 		fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao enviar PUT screen", scraddr, ret1)
+		// 		return false
+		// 	}
+		// 	cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
+		// 	board_add_message("ABiorreator " + bioid + " aguardando " + msgask)
+		// 	t_start := time.Now()
+		// 	for {
+		// 		ret2 := scp_sendmsg_orch(cmd2)
+		// 		// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
+		// 		if !strings.Contains(ret2, scp_ack) && !devmode {
+		// 			fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao envirar GET screen", scraddr, ret2)
+		// 			scp_sendmsg_orch(scrmain)
+		// 			return false
+		// 		}
+		// 		data := scp_splitparam(ret2, "/")
+		// 		if len(data) > 1 {
+		// 			if data[1] == "1" {
+		// 				break
+		// 			}
+		// 		}
+		// 		if bio[ind].MustPause || bio[ind].MustStop {
+		// 			return false
+		// 		}
+		// 		t_elapsed := time.Since(t_start).Seconds()
+		// 		if t_elapsed > scp_timeoutdefault {
+		// 			fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
+		// 			if !devmode {
+		// 				scp_sendmsg_orch(scrmain)
+		// 				return testmode
+		// 			}
+		// 			break
+		// 		}
+		// 		time.Sleep(scp_refreshwait * time.Millisecond)
+		// 	}
+		// 	scp_sendmsg_orch(scrmain)
+		// } else {
+		// 	fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+		// 	return false
+		// }
+
+	case scp_job_done:
+		ibc[ind].Status = bio_ready
+		board_add_message("CProcesso concluído no " + ibcid)
+		ibc[ind].UndoQueue = []string{}
+		ibc[ind].RedoQueue = []string{}
+		ibc[ind].MustOffQueue = []string{}
+		return true
+
+	case scp_job_wait:
+		var time_int uint64
+		var err error
+		if len(subpars) > 1 {
+			switch subpars[0] {
+			case scp_par_time:
+				time_str := subpars[1]
+				time_int, err = strconv.ParseUint(time_str, 10, 32)
+				if devmode || testmode {
+					if time_int > uint64(scp_timeoutdefault) {
+						time_int = uint64(scp_timeoutdefault)
+					}
+				}
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
+					return false
+				}
+				time_dur := time.Duration(time_int)
+				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
+				var n time.Duration
+				for n = 0; n < time_dur; n++ {
+					if ibc[ind].MustPause || ibc[ind].MustStop {
+						return false
+					}
+					time.Sleep(1000 * time.Millisecond)
+				}
+
+			case scp_par_volume:
+				var vol_max uint64
+				var err error
+				vol_str := subpars[1]
+				vol_max, err = strconv.ParseUint(vol_str, 10, 32)
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME invalido", vol_str, params)
+					return false
+				}
+				if vol_max > uint64(ibc_cfg[ibcid].Maxvolume) {
+					fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME maior do que maximo do Biorreator", vol_max, ibcid, ibc_cfg[ibcid].Maxvolume)
+					return false
+				}
+
+				time_max := scp_timeoutdefault
+				time_min := 0
+				par_time := false
+				if len(subpars) > 3 {
+					time_max, err = strconv.Atoi(subpars[2])
+					if err != nil {
+						time_max = scp_timeoutdefault
+						checkErr(err)
+						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO MAX invalido", vol_str, params)
+					} else {
+						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e/ou TEMPO MAX", vol_str, time_max)
+						par_time = true
+					}
+				}
+				if len(subpars) > 4 {
+					time_min, err = strconv.Atoi(subpars[3])
+					if err != nil {
+						time_min = 0
+						checkErr(err)
+						fmt.Println("ERROR SCP RUN JOB: WAIT VOLUME,TEMPO MIN invalido", vol_str, params)
+					} else {
+						fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME e TEMPO MIN", vol_str, time_min)
+						par_time = true
+					}
+				}
+				t_start := time.Now()
+				for {
+					vol_now := uint64(bio[ind].Volume)
+					t_elapsed := time.Since(t_start).Seconds()
+					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
+						break
+					}
+					if ibc[ind].MustPause || ibc[ind].MustStop {
+						return false
+					}
+					if t_elapsed > float64(time_max) {
+						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
+						if !devmode && !par_time {
+							return testmode
+						}
+						break
+					}
+					time.Sleep(scp_refreshwait * time.Millisecond)
+				}
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
+			return false
+		}
+
+	case scp_job_on:
+		if len(subpars) > 1 {
+			device := subpars[0]
+			switch device {
+			case scp_dev_pump:
+				valvs := []string{}
+				for k := 1; k < len(subpars) && subpars[k] != "END"; k++ {
+					v := ibcid + "/" + subpars[k]
+					valvs = append(valvs, v)
+				}
+				if !scp_turn_pump(scp_ibc, ibcid, valvs, 1) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
+					return false
+				}
+
+			case scp_dev_water:
+				totem := subpars[1]
+				totem_ind := get_totem_index(totem)
+				if totem_ind < 0 {
+					fmt.Println("ERROR SCP RUN JOB: Totem nao existe", totem)
+					return false
+				}
+				if len(subpars) > 2 && subpars[2] != "END" {
+					if subpars[2] == scp_dev_sprayball {
+						fmt.Println("ERROR SCP RUN JOB: Nao e possivel entrar agua pelo sprayball em IBC", ibcid, params)
+						break
+					}
+				}
+				pathid := totem + "-" + ibcid
+				pathstr := paths[pathid].Path
+				if len(pathstr) == 0 {
+					fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
+					return false
+				}
+				var npath string
+				npath = pathstr
+				fmt.Println("npath=", npath)
+				vpath := scp_splitparam(npath, ",")
+				watervalv := totem + "/V1"
+				n := len(vpath)
+				vpath = append(vpath[:n-1], watervalv)
+				vpath = append(vpath, "END")
+				fmt.Println("DEBUG", vpath)
+				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
+					return false
+				}
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_on, params)
+			return false
+		}
+	case scp_job_off:
+		if len(subpars) > 0 {
+			device := subpars[0]
+			switch device {
+			case scp_dev_pump:
+				valvs := []string{}
+				for k := 1; k < len(subpars) && subpars[k] != "END"; k++ {
+					v := ibcid + "/" + subpars[k]
+					valvs = append(valvs, v)
+				}
+				if !scp_turn_pump(scp_bioreactor, ibcid, valvs, 0) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", ibcid, valvs)
+					return false
+				}
+
+			case scp_dev_water:
+				totem := subpars[1]
+				totem_ind := get_totem_index(totem)
+				if totem_ind < 0 {
+					fmt.Println("ERROR SCP RUN JOB: Totem nao existe", totem)
+					return false
+				}
+
+				if len(subpars) > 2 && subpars[2] != "END" {
+					if subpars[2] == scp_dev_sprayball {
+						fmt.Println("ERROR SCP RUN JOB: Nao e possivel entrar agua pelo sprayball em IBC", ibcid, params)
+					}
+				}
+				pathid := totem + "-" + ibcid
+				pathstr := paths[pathid].Path
+				if len(pathstr) == 0 {
+					fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
+					return false
+				}
+				var npath string
+				npath = pathstr
+				fmt.Println("npath=", npath)
+				vpath := scp_splitparam(npath, ",")
+				watervalv := totem + "/V1"
+				n := len(vpath)
+				vpath = append(vpath[:n-1], watervalv)
+				vpath = append(vpath, "END")
+				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
+					return false
+				}
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_off, params)
+			return false
+		}
+	default:
+		fmt.Println("ERROR SCP RUN JOB: JOB invalido", ibcid, job, params)
+	}
+	time.Sleep(500 * time.Millisecond)
+	return true
+}
+
 func scp_invert_onoff(job string) string {
 	inv := ""
 	if strings.Contains(job, "ON/") {
@@ -3154,7 +3529,7 @@ func scp_run_bio(bioid string) {
 				var ret bool = false
 				job := pop_first_job(bioid, false)
 				if len(job) > 0 {
-					ret = scp_run_job(bioid, job)
+					ret = scp_run_job_bio(bioid, job)
 				}
 				if !ret {
 					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar JOB", bioid, job)
@@ -3174,7 +3549,7 @@ func scp_run_bio(bioid string) {
 				var ret bool = false
 				job := pop_first_undojob(bioid, false)
 				if len(job) > 0 {
-					ret = scp_run_job(bioid, job)
+					ret = scp_run_job_bio(bioid, job)
 				}
 				if !ret {
 					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar UNDO JOB", bioid, job)
@@ -3192,9 +3567,71 @@ func scp_run_bio(bioid string) {
 	}
 }
 
+func scp_run_ibc(ibcid string) {
+	fmt.Println("STARTANDO RUN", ibcid)
+	ind := get_bio_index(ibcid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", ibcid)
+		return
+	}
+	for ibc[ind].Status != bio_die {
+		if len(ibc[ind].Queue) > 0 {
+			fmt.Println("\n\nIBC", ibcid, " status", ibc[ind].Status)
+			fmt.Println("\nQUEUE:", ibc[ind].Queue)
+			fmt.Println("\nUNDOQUEUE:", ibc[ind].UndoQueue)
+			fmt.Println("\nREDOQUEUE:", ibc[ind].RedoQueue)
+			fmt.Println("\nMUSTOFFQUEUE:", ibc[ind].MustOffQueue)
+		}
+
+		if ibc[ind].Status != bio_nonexist && ibc[ind].Status != bio_error {
+			if len(ibc[ind].Queue) > 0 && ibc[ind].Status != bio_pause && !ibc[ind].MustPause && !ibc[ind].MustStop {
+				var ret bool = false
+				job := pop_first_job(ibcid, false)
+				if len(job) > 0 {
+					ret = scp_run_job_ibc(ibcid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar JOB", ibcid, job)
+				} else {
+					onoff := scp_invert_onoff(job)
+					if len(onoff) > 0 {
+						if !strings.Contains(onoff, "MUSTOFF") {
+							ibc[ind].UndoQueue = append(ibc[ind].UndoQueue, onoff)
+						} else {
+							onoff_must := strings.Replace(onoff, ",MUSTOFF,", ",", -1)
+							ibc[ind].MustOffQueue = append(ibc[ind].MustOffQueue, onoff_must)
+						}
+					}
+					pop_first_job(ibcid, true)
+				}
+			} else if len(ibc[ind].UndoQueue) > 0 && (ibc[ind].MustPause || ibc[ind].MustStop) {
+				var ret bool = false
+				job := pop_first_undojob(ibcid, false)
+				if len(job) > 0 {
+					ret = scp_run_job_ibc(ibcid, job)
+				}
+				if !ret {
+					fmt.Println("ERROR SCP RUN BIO: Nao foi possivel executar UNDO JOB", ibcid, job)
+				} else {
+					onoff := scp_invert_onoff(job)
+					if len(onoff) > 0 {
+						ibc[ind].RedoQueue = append(ibc[ind].RedoQueue, onoff)
+					}
+					pop_first_undojob(ibcid, true)
+				}
+			}
+
+		}
+		time.Sleep(scp_schedwait * time.Millisecond)
+	}
+}
+
 func scp_run_devs() {
 	for _, b := range bio {
 		go scp_run_bio(b.BioreactorID)
+	}
+	for _, b := range ibc {
+		go scp_run_ibc(b.IBCID)
 	}
 }
 
@@ -3225,6 +3662,31 @@ func scp_scheduler() {
 							}
 							bio[k].Status = bio_starting
 							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.BioreactorID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
+						}
+					}
+				}
+			}
+		}
+		for k, b := range ibc {
+			r := pop_first_sched(b.IBCID, false)
+			if len(r.Bioid) > 0 {
+				if b.Status == bio_empty && len(b.Queue) == 0 { // && b.Volume == 0
+					fmt.Println("\n", k, " Schedule inicial", schedule, "//", len(schedule), "POP de ", b.IBCID)
+					s := pop_first_sched(b.IBCID, true)
+					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
+					if len(s.Bioid) > 0 {
+						if s.OrgCode == scp_par_cip {
+							bio[k].Queue = []string{"RUN/CIP/END"}
+						} else {
+							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
+							bio[k].Queue = append(orginfo, recipe...)
+							if autowithdraw {
+								outjob := "RUN/WITHDRAW," + strings.Replace(b.IBCID, "BIOR", "IBC", -1) + ",END"
+								wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
+								bio[k].Queue = append(bio[k].Queue, wdraw...)
+							}
+							bio[k].Status = bio_starting
+							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.IBCID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 						}
 					}
 				}

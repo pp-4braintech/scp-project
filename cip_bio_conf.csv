@@ -1,6 +1,6 @@
 #
 SET/STATUS,CIP
-SET/MAXSTEP,6
+SET/MAXSTEP,7
 #
 # PASSO 1
 #
@@ -103,7 +103,7 @@ COMMIT/8
 # Circula 600s
 ON/PUMP,V4,V6
 ON/HEATER,60
-WAIT/TIME,90
+WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V4,V6
 #
@@ -148,24 +148,15 @@ OFF/WATER,TOTEM01
 # Step concluido
 COMMIT/12
 #
-# Blend2 2L (280s)
-ON/PERIS,P4
-WAIT/TIME,280
-OFF/PERIS,P4
-#
-# Step concluido
-COMMIT/13
-#
-#
 # Circula Agua 90s pelo aerador
 ON/PUMP,V2,V8,V6
 ON/HEATER,60
-WAIT/TIME,600
+WAIT/TIME,90
 OFF/HEATER
 OFF/PUMP,V2,V8,V6
 #
 # Step concluido
-COMMIT/14
+COMMIT/13
 #
 # Circula Agua 90s pelo sprayball
 ON/PUMP,V3,V8,V6
@@ -176,7 +167,7 @@ OFF/PUMP,V3,V8,V6
 #
 #
 # Step concluido
-COMMIT/15
+COMMIT/14
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
@@ -194,25 +185,25 @@ WAIT/VOLUME,25,20,20
 OFF/WATER,TOTEM01
 #
 # Step concluido
-COMMIT/16
+COMMIT/15
 #
-# Blend1 2L (280s)
-ON/PERIS,P2
+# Blend2 2L (280s)
+ON/PERIS,P4
 WAIT/TIME,280
-OFF/PERIS,P2
+OFF/PERIS,P4
 #
 # Step concluido
-COMMIT/17
+COMMIT/16
 #
 # Circula 600s
 ON/PUMP,V4,V6
 ON/HEATER,60
-WAIT/TIME,90
+WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V4,V6
 #
 # Step concluido
-COMMIT/18
+COMMIT/17
 #
 # Circula 600s pelo aerador
 ON/PUMP,V2,V8,V6
@@ -222,7 +213,7 @@ OFF/HEATER
 OFF/PUMP,V2,V8,V6
 #
 # Step concluido
-COMMIT/19
+COMMIT/18
 #
 # Circula 1200s pelo sprayball
 ON/PUMP,V3,V8,V6
@@ -232,7 +223,7 @@ OFF/HEATER
 OFF/PUMP,V3,V8,V6
 #
 # Step concluido
-COMMIT/20
+COMMIT/19
 #
 # Descarta Agua
 RUN/WITHDRAW,DROP
