@@ -406,13 +406,13 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
-			if withdraw != "" {
-				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
+			if outdev != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_out + "," + outdev + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
-			if outdev != "" {
-				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_out + "," + outdev + "/END"
+			if withdraw != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
@@ -504,6 +504,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 
 			}
+			if outdev != "" {
+				cmd := "PUT/IBC/" + bio_id + "/" + scp_par_out + "," + outdev + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
 			if withdraw != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_withdraw + "," + withdraw + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -513,11 +518,6 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_peris + "," + peris + "," + value_status + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
-				w.Write([]byte(jsonStr))
-			}
-			if outdev != "" {
-				cmd := "PUT/IBC/" + bio_id + "/" + scp_par_out + "," + outdev + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
 		}
