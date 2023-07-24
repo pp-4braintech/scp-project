@@ -507,7 +507,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			}
 			if outdev != "" {
 				fmt.Println("PAR OUT", outdev)
-				cmd := "PUT/IBC/" + bio_id + "/" + scp_par_out + "," + outdev + "/END"
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_out + "," + outdev + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
