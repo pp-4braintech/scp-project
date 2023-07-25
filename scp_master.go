@@ -220,6 +220,7 @@ type IBC struct {
 	UndoQueue    []string
 	RedoQueue    []string
 	MustOffQueue []string
+	ShowVol      bool
 }
 
 type Totem struct {
@@ -326,8 +327,8 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR02", bio_error, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
@@ -335,13 +336,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC02", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC03", bio_error, "", "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
-	{"IBC07", bio_update, "", "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}},
+	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, false},
+	{"IBC02", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC07", bio_update, "", "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
 }
 
 var totem = []Totem{
