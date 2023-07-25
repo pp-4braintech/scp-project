@@ -327,7 +327,7 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, false},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
 	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
@@ -336,7 +336,7 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, false},
+	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
 	{"IBC02", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
 	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{0, 30}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
 	{"IBC04", bio_update, "", "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
@@ -1087,7 +1087,11 @@ func scp_setup_devices(mustall bool) {
 					bio[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
-					bio[ind].Status = bio_ready
+					if bio[ind].Volume == 0 {
+						bio[ind].Status = bio_empty
+					} else {
+						bio[ind].Status = bio_ready
+					}
 				}
 			}
 		}
@@ -1135,7 +1139,11 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					ibc[ind].Status = bio_ready
+					if ibc[ind].Volume == 0 {
+						ibc[ind].Status = bio_empty
+					} else {
+						ibc[ind].Status = bio_ready
+					}
 				}
 			}
 		}
