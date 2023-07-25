@@ -197,6 +197,7 @@ type Bioreact struct {
 	MustStop     bool
 	MustPause    bool
 	ShowVol      bool
+	Messages     []string
 }
 
 type IBC struct {
@@ -327,12 +328,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
 }
 
 var ibc = []IBC{
@@ -1032,6 +1033,22 @@ func board_add_message(m string) {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
 		biofabrica.Messages = append(biofabrica.Messages[2:], msg)
+	}
+}
+
+func bio_add_message(bioid string, m string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR BIO ADD MESSAGE: Biorreator nao existe", bioid)
+		return
+	}
+	n := len(bio[ind].Messages)
+	stime := time.Now().Format("15:04")
+	msg := fmt.Sprintf("%c%s [%s]", m[0], m[1:], stime)
+	if n < bio_max_msg {
+		bio[ind].Messages = append(bio[ind].Messages, msg)
+	} else {
+		bio[ind].Messages = append(bio[ind].Messages[2:], msg)
 	}
 }
 
@@ -2710,6 +2727,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 	} else {
 		fmt.Println("\n\nSCP RUN JOB EXECUTANDO", bioid, job)
 	}
+	bio_add_message(bioid, job)
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", bioid)
