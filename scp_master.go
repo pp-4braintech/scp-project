@@ -1134,7 +1134,7 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					ibc[ind].Status = bio_ready
+					ibc[ind].Status = bio_error
 				}
 			}
 		}
