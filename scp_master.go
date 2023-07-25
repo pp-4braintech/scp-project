@@ -1134,7 +1134,7 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					ibc[ind].Status = bio_error
+					ibc[ind].Status = bio_ready
 				}
 			}
 		}
@@ -1372,10 +1372,11 @@ func scp_get_alldata() {
 						var vol0 float64
 						vol0 = -1
 						if params[0] == scp_ack {
+							dint, _ := strconv.Atoi(params[1])
+							bio[ind].Vol0 = dint
 							if bio[ind].Status == bio_cip && (bio[ind].Valvs[1] == 1 || bio[ind].Valvs[2] == 1 || bio[ind].Valvs[3] == 1) {
 								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
 							} else {
-								dint, _ := strconv.Atoi(params[1])
 								vol0 = float64(dint)
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, vol0, retv0)
 							}
@@ -1867,16 +1868,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			set_valvs_value(pilha, 0, false)
 			return -1
 		}
+		var vol_out int32
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
-			vol_out := vol_ini - vol_now
+			vol_out = int32(vol_ini - vol_now)
 			if bio[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now == 0 || (vol_now < vol_ini && vol_out >= bio[ind].Withdraw) {
+			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int32(bio[ind].Withdraw)) {
 				fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
 				break
 			}
@@ -1885,6 +1887,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
+		}
+		if bio[ind].Volume == 0 && bio[ind].Vol0 != 0 {
+			for i := 0; i < 100 && bio[ind].Withdraw != 0; i++ {
+				if bio[ind].Vol0 == 0 {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
 		bio[ind].Withdraw = 0
 		board_add_message("IDesenvase concluido")
@@ -3814,6 +3824,7 @@ func stop_device(devtype string, main_id string) bool {
 				}
 				bio[ind].MustPause = false
 			}
+			bio[ind].ShowVol = true
 		}
 	}
 	save_all_data(data_filename)
