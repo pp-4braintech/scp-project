@@ -231,6 +231,8 @@ RUN/WITHDRAW,DROP
 #
 # FINAL
 #
+SET/STEP,7
+#
 # Liga aerador por 30min = 1800seg
 ON/AERO,80
 WAIT/TIME,1800
