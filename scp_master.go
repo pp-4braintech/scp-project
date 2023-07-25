@@ -2727,7 +2727,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 	} else {
 		fmt.Println("\n\nSCP RUN JOB EXECUTANDO", bioid, job)
 	}
-	bio_add_message(bioid, job)
+	bio_add_message(bioid, "C"+job)
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", bioid)
