@@ -391,11 +391,11 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			valve_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
 			outdev := r.FormValue("Out")
-			// fmt.Println("IBC_id = ", ibc_id)
-			// fmt.Println("Pump = ", pump)
-			// fmt.Println("Valve = ", valve)
-			// fmt.Println("Status = ", valve_status)
-			// fmt.Println("Withdraw = ", withdraw)
+			b_pause := r.FormValue("Pause")
+			b_stop := r.FormValue("Stop")
+			b_start := r.FormValue("Start")
+			orgcode := r.FormValue("OrgCode")
+
 			if pump != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -407,7 +407,7 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 			if outdev != "" {
-				fmt.Println("PAR OUT", outdev)
+				// fmt.Println("PAR OUT", outdev)
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_out + "," + outdev + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
@@ -417,6 +417,26 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
+			if b_start != "" {
+				if orgcode != "" {
+					cmd := "START/IBC/" + ibc_id + "/" + orgcode + "/END"
+					jsonStr := []byte(scp_sendmsg_master(cmd))
+					w.Write([]byte(jsonStr))
+				} else {
+					fmt.Println("ERROR IBC VIEW: Start faltando orgcode", r)
+				}
+			}
+			if b_pause != "" {
+				cmd := "PAUSE/IBC/" + ibc_id + "/" + b_pause + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+			if b_stop != "" {
+				cmd := "STOP/IBC/" + ibc_id + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+
 		}
 
 	default:
