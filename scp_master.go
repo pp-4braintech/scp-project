@@ -3590,7 +3590,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
 						return false
 					}
-					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
+					if !scp_turn_peris(scp_totem, totem_str, peris_str, 0) {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar peristaltica em", totem_str, peris_str)
 						return false
 					}
