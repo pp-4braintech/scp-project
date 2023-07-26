@@ -2320,21 +2320,13 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		devaddr = bio_cfg[bioid].Deviceaddr
 		scrdev = bio_cfg[bioid].Screenaddr
 	case scp_totem:
-		totem_v2 = totem_cfg[bioid].Valv_devs[1]
 		peris_dev = totem_cfg[bioid].Peris_dev[peris_int-1]
 		devaddr = totem_cfg[bioid].Deviceaddr
 	}
 	if devtype == scp_totem && value == 1 {
-		cmdv := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, totem_v2, value)
-		retv := scp_sendmsg_orch(cmdv)
-		fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmdv, "\tRET =", retv)
-		if !strings.Contains(retv, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", retv)
+		if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
+			fmt.Println("ERROR SCP TURN PERIS: ERRO ao abrir valvula V2 do TOTEM ", bioid)
 			return false
-		}
-		for i := 0; i < scp_timewaitvalvs/100; i++ {
-			// if totem[ind]     						CHECAR MUST BREAK
-			time.Sleep(100 * time.Millisecond)
 		}
 	}
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, peris_dev, value)
@@ -2352,16 +2344,9 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		totem[ind].Perist[peris_int-1] = value
 	}
 	if devtype == scp_totem && value == 0 {
-		cmdv := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, totem_v2, value)
-		retv := scp_sendmsg_orch(cmdv)
-		fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmdv, "\tRET =", retv)
-		if !strings.Contains(retv, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", retv)
+		if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
+			fmt.Println("ERROR SCP TURN PERIS: ERRO ao fechar valvula V2 do TOTEM ", bioid)
 			return false
-		}
-		for i := 0; i < scp_timewaitvalvs/100; i++ {
-			// if totem[ind]     						CHECAR MUST BREAK
-			time.Sleep(100 * time.Millisecond)
 		}
 	}
 	return true
