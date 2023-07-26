@@ -1685,7 +1685,7 @@ func scp_get_alldata() {
 						}
 
 						var volc float64
-						volc = float64(bio[ind].Volume)
+						volc = float64(ibc[ind].Volume)
 						if vol0 == 0 {
 							fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
 							volc = 0
@@ -1730,7 +1730,7 @@ func scp_get_alldata() {
 							level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
 							level_int := uint8(level)
 							if level_int != ibc[ind].Level {
-								bio[ind].Level = level_int
+								ibc[ind].Level = level_int
 							}
 							if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
 								ibc[ind].Status = bio_empty
