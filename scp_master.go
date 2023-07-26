@@ -3522,6 +3522,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
+					tmax := scp_timewaitvalvs / 100
+					for i := 0; i < tmax; i++ {
+						// switch devtype {
+						// case scp_bioreactor:
+						// 	if bio[ind].MustPause || bio[ind].MustPause {
+						// 		i = tmax
+						// 	}
+						// }
+						time.Sleep(100 * time.Millisecond)
+					}
 					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
 						return false
@@ -3609,6 +3619,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					} else {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
+					}
+					tmax := scp_timewaitvalvs / 100
+					for i := 0; i < tmax; i++ {
+						// switch devtype {
+						// case scp_bioreactor:
+						// 	if bio[ind].MustPause || bio[ind].MustPause {
+						// 		i = tmax
+						// 	}
+						// }
+						time.Sleep(100 * time.Millisecond)
 					}
 				}
 
