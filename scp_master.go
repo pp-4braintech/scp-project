@@ -206,6 +206,9 @@ type IBC struct {
 	Status       string
 	OrgCode      string
 	Organism     string
+	Vol0         int
+	Vol1         int32
+	Vol2         int32
 	Volume       uint32
 	Level        uint8
 	Pumpstatus   bool
@@ -338,13 +341,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC02", bio_update, "", "", 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
-	{"IBC07", bio_update, "", "", 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
+	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, true},
 }
 
 var totem = []Totem{
@@ -1627,7 +1630,7 @@ func scp_get_alldata() {
 								if dint > 0 && dint != 250 && float32(dint) >= (ibc_v1_zero*0.7) && float32(dint) <= (ibc_v1_zero*1.2) {
 									b.Vol_zero[0] = float32(dint)
 								} else {
-									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas D1 fora da faixa", b.BioreactorID, dint)
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas D1 fora da faixa", b.IBCID, dint)
 								}
 							}
 							area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
