@@ -2761,6 +2761,10 @@ func scp_grow_bio(bioid string) bool {
 	pday := -1
 	var minph, maxph, worktemp float64
 	t_start := time.Now()
+	if control_foam {
+		scp_adjust_foam(bioid)
+	}
+
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= ttotal {
