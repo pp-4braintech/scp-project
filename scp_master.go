@@ -151,6 +151,7 @@ const bio_water = "AGUA"
 const bio_update = "ATUALIZANDO"
 const bio_max_valves = 8
 const bio_max_msg = 50
+const bioreactor_max_msg = 7
 
 const TEMPMAX = 120
 
@@ -1045,7 +1046,7 @@ func bio_add_message(bioid string, m string) {
 	n := len(bio[ind].Messages)
 	stime := time.Now().Format("15:04")
 	msg := fmt.Sprintf("%c%s [%s]", m[0], m[1:], stime)
-	if n < bio_max_msg {
+	if n < bioreactor_max_msg {
 		bio[ind].Messages = append(bio[ind].Messages, msg)
 	} else {
 		bio[ind].Messages = append(bio[ind].Messages[2:], msg)
