@@ -1,0 +1,121 @@
+#
+SET/STATUS,CIP
+SET/MAXSTEP,4
+#
+# PASSO 1
+#
+SET/STEP,1
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 100L
+WAIT/VOLUME,100,20,20
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/1
+#
+# Circula Agua 90s
+ON/PUMP,V1
+WAIT/TIME,90
+OFF/PUMP,V1
+#
+# Step concluido
+COMMIT/2
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# PASSO 2
+#
+SET/STEP,2
+#
+# 2L de Blend1 pelo Totem 2 / P1 
+ON/PERIS,P1,TOTEM02
+WAIT/TIME,280
+OFF/PERIS,P1,TOTEM02
+#
+# Step concluido
+COMMIT/3
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 50L ou 15seg
+WAIT/VOLUME,50,15,15
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/4
+#
+# Circula Agua 1800s pelo sprayball
+ON/PUMP,V2
+WAIT/TIME,1800
+OFF/PUMP,V2
+#
+# Step concluido
+COMMIT/5
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# PASSO 3
+#
+SET/STEP,3
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 50L
+WAIT/VOLUME,50,15,15
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/6
+#
+# Circula Agua 90s pelo aerador
+ON/PUMP,V2
+WAIT/TIME,90
+OFF/PUMP,V2
+#
+# Step concluido
+COMMIT/7
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# PASSO 4
+#
+SET/STEP,4
+#
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 50L
+WAIT/VOLUME,50,15,15
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/8
+#
+# 2L de Blend2 pelo Totem 2 / P1 
+ON/PERIS,P2,TOTEM02
+WAIT/TIME,280
+OFF/PERIS,P2,TOTEM02
+#
+# Step concluido
+COMMIT/9
+#
+# Circula 1800s
+ON/PUMP,V2
+WAIT/TIME,1800
+OFF/PUMP,V2
+#
+# Step concluido
+COMMIT/10
+#
+# FINAL DO CIP
+DONE/NOP

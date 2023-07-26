@@ -3174,7 +3174,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 	}
 	ind := get_ibc_index(ibcid)
 	if ind < 0 {
-		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", ibcid)
+		fmt.Println("ERROR SCP RUN JOB: IBC nao existe", ibcid)
 		return false
 	}
 	params := scp_splitparam(job, "/")
@@ -3240,12 +3240,10 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		if len(subpars) > 0 {
 			cmd := subpars[0]
 			switch cmd {
-			case scp_par_grow:
-				scp_grow_bio(ibcid)
 
 			case scp_par_cip:
 				qini := []string{ibc[ind].Queue[0]}
-				qini = append(qini, cipbio...)
+				qini = append(qini, cipibc...)
 				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", ibc[ind].Queue)
 				board_add_message("IExecutando CIP no IBC " + ibcid)
@@ -3410,7 +3408,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				}
 				t_start := time.Now()
 				for {
-					vol_now := uint64(bio[ind].Volume)
+					vol_now := uint64(ibc[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
 					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
 						break
@@ -3495,7 +3493,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					v := ibcid + "/" + subpars[k]
 					valvs = append(valvs, v)
 				}
-				if !scp_turn_pump(scp_bioreactor, ibcid, valvs, 0) {
+				if !scp_turn_pump(scp_ibc, ibcid, valvs, 0) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", ibcid, valvs)
 					return false
 				}
@@ -3725,11 +3723,11 @@ func scp_scheduler() {
 						} else {
 							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
 							bio[k].Queue = append(orginfo, recipe...)
-							if autowithdraw {
-								outjob := "RUN/WITHDRAW," + strings.Replace(b.IBCID, "BIOR", "IBC", -1) + ",END"
-								wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
-								bio[k].Queue = append(bio[k].Queue, wdraw...)
-							}
+							// if autowithdraw {
+							// 	outjob := "RUN/WITHDRAW," + strings.Replace(b.IBCID, "BIOR", "IBC", -1) + ",END"
+							// 	wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
+							// 	bio[k].Queue = append(bio[k].Queue, wdraw...)
+							// }
 							bio[k].Status = bio_starting
 							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.IBCID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
 						}
@@ -3883,23 +3881,47 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_start:
-		bioid := params[2]
-		orgcode := params[3]
-		fmt.Println("START", bioid, orgcode, params)
-		ind := get_bio_index(bioid)
-		if ind < 0 {
-			fmt.Println("ERROR START: Biorreator nao existe", bioid)
-			break
-		}
-		if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
-			fmt.Println("START", orgcode)
-			biotask := []string{bioid + ",0," + orgcode}
-			n := create_sched(biotask)
-			if n > 0 && !schedrunning {
-				go scp_scheduler()
+		scp_object := params[1]
+		switch scp_object {
+		case scp_bioreactor:
+			bioid := params[2]
+			orgcode := params[3]
+			fmt.Println("START", bioid, orgcode, params)
+			ind := get_bio_index(bioid)
+			if ind < 0 {
+				fmt.Println("ERROR START: Biorreator nao existe", bioid)
+				break
 			}
-		} else {
-			fmt.Println("ORG INVALIDO")
+			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
+				fmt.Println("START", orgcode)
+				biotask := []string{bioid + ",0," + orgcode}
+				n := create_sched(biotask)
+				if n > 0 && !schedrunning {
+					go scp_scheduler()
+				}
+			} else {
+				fmt.Println("ORG INVALIDO")
+			}
+
+		case scp_ibc:
+			ibcid := params[2]
+			orgcode := params[3]
+			fmt.Println("START", ibcid, orgcode, params)
+			ind := get_ibc_index(ibcid)
+			if ind < 0 {
+				fmt.Println("ERROR START: IBC nao existe", ibcid)
+				break
+			}
+			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
+				fmt.Println("START", orgcode)
+				biotask := []string{ibcid + ",0," + orgcode}
+				n := create_sched(biotask)
+				if n > 0 && !schedrunning {
+					go scp_scheduler()
+				}
+			} else {
+				fmt.Println("ORG INVALIDO")
+			}
 		}
 
 	case scp_stop:
@@ -4468,7 +4490,11 @@ func main() {
 	}
 	cipbio = load_tasks_conf(execpath + "cip_bio_conf.csv")
 	if recipe == nil {
-		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP")
+		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP de Biorreator")
+	}
+	cipibc = load_tasks_conf(execpath + "cip_ibc_conf.csv")
+	if recipe == nil {
+		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP de IBC")
 	}
 	nibccfg := load_ibcs_conf(execpath + "ibc_conf.csv")
 	if nibccfg < 1 {
