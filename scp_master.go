@@ -3746,15 +3746,16 @@ func create_sched(lista []string) int {
 			break
 		}
 		item := scp_splitparam(i, ",")
-		bioid := item[0]
+		main_id := item[0]
 		bioseq, _ := strconv.Atoi(item[1])
 		orgcode := item[2]
-		ind := get_bio_index(bioid)
-		if ind < 0 {
-			fmt.Println("ERROR CREATE SCHED: Biorreator nao existe", bioid)
-		} else {
-			schedule = append(schedule, Scheditem{bioid, bioseq, orgcode})
+		ind_bio := get_bio_index(main_id)
+		ind_ibc := get_ibc_index(main_id)
+		if ind_bio >= 0 || ind_ibc >= 0 {
+			schedule = append(schedule, Scheditem{main_id, bioseq, orgcode})
 			tot++
+		} else {
+			fmt.Println("ERROR CREATE SCHED: DISPOSITIVO nao existe", main_id)
 		}
 	}
 	fmt.Println(schedule)
