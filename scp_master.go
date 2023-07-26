@@ -225,6 +225,7 @@ type IBC struct {
 	UndoQueue    []string
 	RedoQueue    []string
 	MustOffQueue []string
+	LastStatus   string
 	ShowVol      bool
 }
 
@@ -3989,6 +3990,52 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].MustStop = false
 			bio[ind].LastStatus = bio_pause
 			if !bio[ind].MustStop {
+				board_add_message("APausa no Biorreator " + main_id + " liberada")
+			}
+			if !schedrunning {
+				go scp_scheduler()
+			}
+		}
+
+	case scp_ibc:
+		ind := get_ibc_index(main_id)
+		// indbak := get_biobak_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR PAUSE DEVICE: IBC nao existe", main_id)
+			break
+		}
+		fmt.Println("\n\nDEBUG PAUSE DEVICE: IBC", main_id, " em", pause)
+		if pause && ibc[ind].Status != bio_pause {
+			fmt.Println("DEBUG PAUSE DEVICE: Pausando IBC", main_id)
+			// biobak[indbak] = bio[ind]
+			ibc[ind].LastStatus = ibc[ind].Status
+			for _, j := range ibc[ind].MustOffQueue {
+				if !isin(ibc[ind].UndoQueue, j) {
+					ibc[ind].UndoQueue = append([]string{j}, ibc[ind].UndoQueue...)
+				}
+			}
+			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
+			ibc[ind].MustPause = true
+			ibc[ind].Status = bio_pause
+			if !ibc[ind].MustStop {
+				board_add_message("ABiorreator " + main_id + " pausado")
+			}
+
+		} else {
+			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
+			ibc[ind].Queue = append(ibc[ind].RedoQueue, ibc[ind].Queue...)
+			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
+			if ibc[ind].LastStatus == bio_pause {
+				ibc[ind].Status = bio_ready
+			} else {
+				ibc[ind].Status = ibc[ind].LastStatus
+			}
+			ibc[ind].UndoQueue = []string{}
+			ibc[ind].RedoQueue = []string{}
+			ibc[ind].MustPause = false
+			ibc[ind].MustStop = false
+			ibc[ind].LastStatus = bio_pause
+			if !ibc[ind].MustStop {
 				board_add_message("APausa no Biorreator " + main_id + " liberada")
 			}
 			if !schedrunning {
