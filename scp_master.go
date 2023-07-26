@@ -2541,7 +2541,7 @@ func pop_first_job(devtype string, main_id string, remove bool) string {
 		}
 		return ret
 	}
-
+	return ""
 }
 
 func pop_first_undojob(devtype string, main_id string, remove bool) string {
@@ -2577,6 +2577,7 @@ func pop_first_undojob(devtype string, main_id string, remove bool) string {
 		}
 		return ret
 	}
+	return ""
 }
 
 func scp_adjust_ph(bioid string, ph float32) {
