@@ -2322,12 +2322,12 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		peris_dev = totem_cfg[bioid].Peris_dev[peris_int-1]
 		devaddr = totem_cfg[bioid].Deviceaddr
 	}
-	if devtype == scp_totem && value == 1 {
-		if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
-			fmt.Println("ERROR SCP TURN PERIS: ERRO ao abrir valvula V2 do TOTEM ", bioid)
-			return false
-		}
-	}
+	// if devtype == scp_totem && value == 1 {
+	// 	if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
+	// 		fmt.Println("ERROR SCP TURN PERIS: ERRO ao abrir valvula V2 do TOTEM ", bioid)
+	// 		return false
+	// 	}
+	// }
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, peris_dev, value)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
@@ -2342,12 +2342,12 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	case scp_totem:
 		totem[ind].Perist[peris_int-1] = value
 	}
-	if devtype == scp_totem && value == 0 {
-		if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
-			fmt.Println("ERROR SCP TURN PERIS: ERRO ao fechar valvula V2 do TOTEM ", bioid)
-			return false
-		}
-	}
+	// if devtype == scp_totem && value == 0 {
+	// 	if !set_valv_status(scp_totem, bioid, "V2", value) && !devmode {
+	// 		fmt.Println("ERROR SCP TURN PERIS: ERRO ao fechar valvula V2 do TOTEM ", bioid)
+	// 		return false
+	// 	}
+	// }
 	return true
 }
 
@@ -3500,6 +3500,28 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				if len(subpars) > 3 {
 					peris_str := subpars[1]
 					totem_str := subpars[2]
+					pathid := totem_str + "-" + ibcid
+					pathstr := paths[pathid].Path
+					if len(pathstr) == 0 {
+						fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
+						return false
+					}
+					fmt.Println("npath=", pathstr)
+					vpath := scp_splitparam(pathstr, ",")
+					perisvalv := totem_str + "/V2"
+					n := len(vpath)
+					vpath = append(vpath[:n-1], perisvalv)
+					vpath = append(vpath, "END")
+					fmt.Println("DEBUG", vpath)
+					if test_path(vpath, 0) {
+						if set_valvs_value(vpath, 1, true) < 0 {
+							fmt.Println("ERROR SCP RUN JOB: ERRO ao abrir valvulas no path ", vpath)
+							return false
+						}
+					} else {
+						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
+						return false
+					}
 					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
 						return false
@@ -3562,8 +3584,30 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				if len(subpars) > 3 {
 					peris_str := subpars[1]
 					totem_str := subpars[2]
+					pathid := totem_str + "-" + ibcid
+					pathstr := paths[pathid].Path
+					if len(pathstr) == 0 {
+						fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
+						return false
+					}
 					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
-						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
+						fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar peristaltica em", totem_str, peris_str)
+						return false
+					}
+					fmt.Println("npath=", pathstr)
+					vpath := scp_splitparam(pathstr, ",")
+					perisvalv := totem_str + "/V2"
+					n := len(vpath)
+					vpath = append(vpath[:n-1], perisvalv)
+					vpath = append(vpath, "END")
+					fmt.Println("DEBUG", vpath)
+					if test_path(vpath, 1) {
+						if set_valvs_value(vpath, 0, true) < 0 {
+							fmt.Println("ERROR SCP RUN JOB: ERRO ao fechar valvulas no path ", vpath)
+							return false
+						}
+					} else {
+						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
 				}
