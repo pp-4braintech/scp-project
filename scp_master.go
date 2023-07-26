@@ -2508,38 +2508,75 @@ func pop_first_sched(bioid string, remove bool) Scheditem {
 	return ret
 }
 
-func pop_first_job(bioid string, remove bool) string {
-	ind := get_bio_index(bioid)
-	if ind < 0 {
-		fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", bioid)
-		return ""
-	}
-	n := len(bio[ind].Queue)
-	ret := ""
-	if n > 0 {
-		ret = bio[ind].Queue[0]
-		if remove {
-			bio[ind].Queue = bio[ind].Queue[1:]
+func pop_first_job(devtype string, main_id string, remove bool) string {
+	switch devtype {
+	case scp_bioreactor:
+		ind := get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", main_id)
+			return ""
 		}
+		n := len(bio[ind].Queue)
+		ret := ""
+		if n > 0 {
+			ret = bio[ind].Queue[0]
+			if remove {
+				bio[ind].Queue = bio[ind].Queue[1:]
+			}
+		}
+		return ret
+	case scp_ibc:
+		ind := get_ibc_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR POP FIRST WORK: IBC nao existe", main_id)
+			return ""
+		}
+		n := len(ibc[ind].Queue)
+		ret := ""
+		if n > 0 {
+			ret = ibc[ind].Queue[0]
+			if remove {
+				ibc[ind].Queue = ibc[ind].Queue[1:]
+			}
+		}
+		return ret
 	}
-	return ret
+
 }
 
-func pop_first_undojob(bioid string, remove bool) string {
-	ind := get_bio_index(bioid)
-	if ind < 0 {
-		fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", bioid)
-		return ""
-	}
-	n := len(bio[ind].UndoQueue)
-	ret := ""
-	if n > 0 {
-		ret = bio[ind].UndoQueue[0]
-		if remove {
-			bio[ind].UndoQueue = bio[ind].UndoQueue[1:]
+func pop_first_undojob(devtype string, main_id string, remove bool) string {
+	switch devtype {
+	case scp_bioreactor:
+		ind := get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR POP FIRST WORK: Biorreator nao existe", main_id)
+			return ""
 		}
+		n := len(bio[ind].UndoQueue)
+		ret := ""
+		if n > 0 {
+			ret = bio[ind].UndoQueue[0]
+			if remove {
+				bio[ind].UndoQueue = bio[ind].UndoQueue[1:]
+			}
+		}
+		return ret
+	case scp_ibc:
+		ind := get_ibc_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR POP FIRST WORK: IBC nao existe", main_id)
+			return ""
+		}
+		n := len(ibc[ind].UndoQueue)
+		ret := ""
+		if n > 0 {
+			ret = ibc[ind].UndoQueue[0]
+			if remove {
+				ibc[ind].UndoQueue = ibc[ind].UndoQueue[1:]
+			}
+		}
+		return ret
 	}
-	return ret
 }
 
 func scp_adjust_ph(bioid string, ph float32) {
@@ -3570,7 +3607,7 @@ func scp_run_bio(bioid string) {
 		if bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
 			if len(bio[ind].Queue) > 0 && bio[ind].Status != bio_pause && !bio[ind].MustPause && !bio[ind].MustStop {
 				var ret bool = false
-				job := pop_first_job(bioid, false)
+				job := pop_first_job(scp_bioreactor, bioid, false)
 				if len(job) > 0 {
 					ret = scp_run_job_bio(bioid, job)
 				}
@@ -3586,11 +3623,11 @@ func scp_run_bio(bioid string) {
 							bio[ind].MustOffQueue = append(bio[ind].MustOffQueue, onoff_must)
 						}
 					}
-					pop_first_job(bioid, true)
+					pop_first_job(scp_bioreactor, bioid, true)
 				}
 			} else if len(bio[ind].UndoQueue) > 0 && (bio[ind].MustPause || bio[ind].MustStop) {
 				var ret bool = false
-				job := pop_first_undojob(bioid, false)
+				job := pop_first_undojob(scp_bioreactor, bioid, false)
 				if len(job) > 0 {
 					ret = scp_run_job_bio(bioid, job)
 				}
@@ -3601,7 +3638,7 @@ func scp_run_bio(bioid string) {
 					if len(onoff) > 0 {
 						bio[ind].RedoQueue = append(bio[ind].RedoQueue, onoff)
 					}
-					pop_first_undojob(bioid, true)
+					pop_first_undojob(scp_bioreactor, bioid, true)
 				}
 			}
 
@@ -3612,7 +3649,7 @@ func scp_run_bio(bioid string) {
 
 func scp_run_ibc(ibcid string) {
 	fmt.Println("STARTANDO RUN", ibcid)
-	ind := get_bio_index(ibcid)
+	ind := get_ibc_index(ibcid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", ibcid)
 		return
@@ -3629,7 +3666,7 @@ func scp_run_ibc(ibcid string) {
 		if ibc[ind].Status != bio_nonexist && ibc[ind].Status != bio_error {
 			if len(ibc[ind].Queue) > 0 && ibc[ind].Status != bio_pause && !ibc[ind].MustPause && !ibc[ind].MustStop {
 				var ret bool = false
-				job := pop_first_job(ibcid, false)
+				job := pop_first_job(scp_ibc, ibcid, false)
 				if len(job) > 0 {
 					ret = scp_run_job_ibc(ibcid, job)
 				}
@@ -3645,11 +3682,11 @@ func scp_run_ibc(ibcid string) {
 							ibc[ind].MustOffQueue = append(ibc[ind].MustOffQueue, onoff_must)
 						}
 					}
-					pop_first_job(ibcid, true)
+					pop_first_job(scp_ibc, ibcid, true)
 				}
 			} else if len(ibc[ind].UndoQueue) > 0 && (ibc[ind].MustPause || ibc[ind].MustStop) {
 				var ret bool = false
-				job := pop_first_undojob(ibcid, false)
+				job := pop_first_undojob(scp_ibc, ibcid, false)
 				if len(job) > 0 {
 					ret = scp_run_job_ibc(ibcid, job)
 				}
@@ -3660,7 +3697,7 @@ func scp_run_ibc(ibcid string) {
 					if len(onoff) > 0 {
 						ibc[ind].RedoQueue = append(ibc[ind].RedoQueue, onoff)
 					}
-					pop_first_undojob(ibcid, true)
+					pop_first_undojob(scp_ibc, ibcid, true)
 				}
 			}
 
