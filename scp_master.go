@@ -2892,9 +2892,12 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_msg_cloro:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
 				msgask = "CLORO"
-			case scp_msg_meio_inoculo:
+			case scp_msg_meio:
+				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,3/END", scraddr)
+				msgask = "MEIO"
+			case scp_msg_inoculo:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
-				msgask = "MEIO e INOCULO"
+				msgask = "INOCULO"
 			default:
 				fmt.Println("ERROR SCP RUN JOB:", bioid, " ASK invalido", subpars)
 				return false
@@ -2912,7 +2915,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				ret2 := scp_sendmsg_orch(cmd2)
 				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
 				if !strings.Contains(ret2, scp_ack) && !devmode {
-					fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao envirar GET screen", scraddr, ret2)
+					fmt.Println("ERROR SCP RUN JOB:", bioid, " ERRO ao envirar GET screen", scraddr, ret2)
 					scp_sendmsg_orch(scrmain)
 					return false
 				}
