@@ -2313,7 +2313,6 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	peris_dev := ""
 	scrdev := ""
 	devaddr := ""
-	totem_v2 := ""
 	switch devtype {
 	case scp_bioreactor:
 		peris_dev = bio_cfg[bioid].Peris_dev[peris_int-1]
