@@ -91,20 +91,20 @@ RUN/WITHDRAW,DROP
 #
 SET/STEP,4
 #
+# 2L de Blend2 pelo Totem 2 / P1 
+ON/PERIS,P2,TOTEM02
+WAIT/TIME,280
+OFF/PERIS,P2,TOTEM02
+#
+# Step concluido
+COMMIT/8
+#
 # Agua pelo sprayball
 ON/WATER,TOTEM02
 #
 # Volume de 50L
 WAIT/VOLUME,50,15,15
 OFF/WATER,TOTEM02
-#
-# Step concluido
-COMMIT/8
-#
-# 2L de Blend2 pelo Totem 2 / P1 
-ON/PERIS,P2,TOTEM02
-WAIT/TIME,280
-OFF/PERIS,P2,TOTEM02
 #
 # Step concluido
 COMMIT/9
@@ -116,6 +116,9 @@ OFF/PUMP,V2
 #
 # Step concluido
 COMMIT/10
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
 #
 # FINAL DO CIP
 DONE/NOP
