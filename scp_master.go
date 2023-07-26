@@ -3484,6 +3484,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					return false
 				}
 
+			case scp_dev_peris:
+				if len(subpars) > 3 {
+					peris_str := subpars[1]
+					totem_str := subpars[2]
+					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
+						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
+						return false
+					}
+				}
+
 			case scp_dev_water:
 				totem := subpars[1]
 				totem_ind := get_totem_index(totem)
@@ -3534,6 +3544,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				if !scp_turn_pump(scp_ibc, ibcid, valvs, 0) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", ibcid, valvs)
 					return false
+				}
+
+			case scp_dev_peris:
+				if len(subpars) > 3 {
+					peris_str := subpars[1]
+					totem_str := subpars[2]
+					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
+						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
+						return false
+					}
 				}
 
 			case scp_dev_water:
