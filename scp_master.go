@@ -3757,17 +3757,17 @@ func scp_scheduler() {
 					fmt.Println("Schedule depois do POP", schedule, "//", len(schedule), "\n\n")
 					if len(s.Bioid) > 0 {
 						if s.OrgCode == scp_par_cip {
-							bio[k].Queue = []string{"RUN/CIP/END"}
+							ibc[k].Queue = []string{"RUN/CIP/END"}
 						} else {
 							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
-							bio[k].Queue = append(orginfo, recipe...)
+							ibc[k].Queue = append(orginfo, recipe...)
 							// if autowithdraw {
 							// 	outjob := "RUN/WITHDRAW," + strings.Replace(b.IBCID, "BIOR", "IBC", -1) + ",END"
 							// 	wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
 							// 	bio[k].Queue = append(bio[k].Queue, wdraw...)
 							// }
-							bio[k].Status = bio_starting
-							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.IBCID, " ira produzir", s.OrgCode, "-", bio[k].Organism)
+							ibc[k].Status = bio_starting
+							fmt.Println("DEBUG SCP SCHEDULER: Biorreator", b.IBCID, " ira produzir", s.OrgCode, "-", ibc[k].Organism)
 						}
 					}
 				}
