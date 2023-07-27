@@ -75,6 +75,7 @@ const scp_par_stop = "STOP"
 const scp_par_ph4 = "PH4"
 const scp_par_ph6 = "PH6"
 const scp_par_ph9 = "PH9"
+const scp_par_calibrate = "CALIBRATE"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -206,6 +207,7 @@ type Bioreact struct {
 	MustPause    bool
 	ShowVol      bool
 	Messages     []string
+	PHref        [3]float64
 	RegresPH     [2]float64
 }
 
@@ -372,12 +374,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
 }
 
 var ibc = []IBC{
@@ -1316,6 +1318,25 @@ func scp_setup_devices(mustall bool) {
 	}
 
 	finishedsetup = true
+}
+
+func scp_get_ph(bioid string) float64 {
+	bioaddr := bio_cfg[bioid].Deviceaddr
+	phdev := bio_cfg[bioid].PH_dev
+	if len(bioaddr) > 0 {
+		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
+		ret_ph := scp_sendmsg_orch(cmd_ph)
+		fmt.Println("DEBUG SCP GET PH: Lendo PH do Biorreator", bioid, cmd_ph, ret_ph)
+		params := scp_splitparam(ret_ph, "/")
+		if params[0] == scp_ack {
+			phint, _ := strconv.Atoi(params[1])
+			phfloat := float64(phint) / 100.0
+			return phfloat
+		}
+	} else {
+		fmt.Println("ERROR SCP GET PH: ADDR Biorreator nao existe", bioid)
+	}
+	return -1
 }
 
 func scp_refresh_status() {
@@ -4192,7 +4213,47 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_config:
-		scp_
+		scp_object := params[1]
+		switch scp_object {
+		case scp_bioreactor:
+			if len(params) > 4 {
+				bioid := params[2]
+				ind := get_bio_index(bioid)
+				if ind >= 0 {
+					switch params[3] {
+					case scp_par_ph4:
+						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
+						tmp := scp_get_ph(bioid)
+						if tmp >= 0 {
+							bio[ind].PHref[0] = tmp
+						}
+					case scp_par_ph6:
+						fmt.Println("DEBUG CONFIG: Ajustando PH 6.89")
+						tmp := scp_get_ph(bioid)
+						if tmp >= 0 {
+							bio[ind].PHref[1] = tmp
+						}
+					case scp_par_ph9:
+						fmt.Println("DEBUG CONFIG: Ajustando PH 9.18")
+						tmp := scp_get_ph(bioid)
+						if tmp >= 0 {
+							bio[ind].PHref[2] = tmp
+						}
+					case scp_par_calibrate:
+						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH")
+						X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
+						var y_data = []float64{4, 6.89, 9.18}
+						// Executa a regressao linear
+						b0, b1 := estimateB0B1(X_data, y_data)
+						bio[ind].RegresPH = [2]float64{b0, b1}
+					}
+				} else {
+					fmt.Println("ERROR CONFIG: Biorreator nao existe", bioid)
+				}
+			} else {
+				fmt.Println("ERROR CONFIG: Numero de parametros invalido", params)
+			}
+		}
 
 	case scp_start:
 		scp_object := params[1]

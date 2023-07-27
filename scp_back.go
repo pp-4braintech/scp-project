@@ -37,6 +37,7 @@ const scp_par_out = "OUT"
 const scp_par_ph4 = "PH4"
 const scp_par_ph6 = "PH6"
 const scp_par_ph9 = "PH9"
+const scp_par_calibrate = "CALIBRATE"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -681,29 +682,40 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ParseForm() err: ", err)
 			return
 		}
+		bioid := r.FormValue("BioId")
 		ph4 := r.FormValue("PH4")
 		ph6 := r.FormValue("PH6")
 		ph9 := r.FormValue("PH9")
+		calibrate := r.FormValue("Calibrate")
 
-		if ph4 != "" {
-			cmd := "PUT/" + scp_config + "/" + scp_par_ph4 + "," + ph4 + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			// os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
-		}
+		if len(bioid) > 0 {
+			if ph4 != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph4 + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 
-		if ph6 != "" {
-			cmd := "PUT/" + scp_config + "/" + scp_par_ph6 + "," + ph6 + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			// os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
-		}
+			if ph6 != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph6 + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 
-		if ph9 != "" {
-			cmd := "PUT/" + scp_config + "/" + scp_par_ph9 + "," + ph9 + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			// os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
+			if ph9 != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph9 + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+
+			if calibrate != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_calibrate + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 		}
 
 	default:
