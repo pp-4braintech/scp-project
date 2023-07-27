@@ -194,8 +194,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 		slave_data, ok := scp_slaves[scp_msg_data]
 		if ok {
 			fmt.Println("JOIN recebido de slave já existente", slave_data)
-			_, err = con.WriteTo([]byte(scp_err), net_addr)
-			checkErr(err)
+			// _, err = con.WriteTo([]byte(scp_err), net_addr)             MUDEI POR CONTA DAS TELAS ENTRAR EM LOOP TENTANDO FAZER JOIN
+			// checkErr(err)
 			fmt.Println("Destruindo SCP TCP")
 			slave_data.go_chan <- scp_destroy
 			fmt.Println("destroy enviado com sucesso")
@@ -237,6 +237,8 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			checkErr(err)
 		} else {
 			fmt.Println("JOIN com parametros incorretos", params)
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
 		}
 
 	case scp_ack:

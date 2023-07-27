@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"gonum.org/v1/gonum/stat"
 )
 
 var demo = false
@@ -152,6 +154,7 @@ const bio_update = "ATUALIZANDO"
 const bio_max_valves = 8
 const bio_max_msg = 50
 const bioreactor_max_msg = 7
+const bio_max_foam = 5
 
 const TEMPMAX = 120
 
@@ -199,6 +202,38 @@ type Bioreact struct {
 	MustPause    bool
 	ShowVol      bool
 	Messages     []string
+	RegresPH     [2]float64
+}
+
+type Bioreact_ETL struct {
+	BioreactorID string
+	Status       string
+	OrgCode      string
+	Organism     string
+	Vol0         int
+	Vol1         int32
+	Vol2         int32
+	Volume       uint32
+	Level        uint8
+	Pumpstatus   bool
+	Aerator      bool
+	Valvs        [8]int
+	Perist       [5]int
+	Heater       bool
+	Temperature  float32
+	TempMax      float32
+	PH           float32
+	Step         [2]int
+	Timeleft     [2]int
+	Timetotal    [2]int
+	Withdraw     uint32
+	OutID        string
+	Vol_zero     [2]float32
+	LastStatus   string
+	MustStop     bool
+	MustPause    bool
+	ShowVol      bool
+	RegresPH     [2]float64
 }
 
 type IBC struct {
@@ -333,12 +368,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [2]float64{0, 0}},
 }
 
 var ibc = []IBC{
@@ -361,6 +396,34 @@ var biofabrica = Biofabrica{
 }
 
 var biobak = bio // Salva status atual
+
+func sumXYandXX(arrayX []float64, arrayY []float64, meanX float64, meanY float64) (float64, float64) {
+	resultXX := 0.0
+	resultXY := 0.0
+	for x := 0; x < len(arrayX); x++ {
+		for y := 0; y < len(arrayY); y++ {
+			if x == y {
+				resultXY += (arrayX[x] - meanX) * (arrayY[y] - meanY)
+			}
+		}
+		resultXX += (arrayX[x] - meanX) * (arrayX[x] - meanX)
+	}
+	return resultXY, resultXX
+}
+
+func estimateB0B1(x []float64, y []float64) (float64, float64) {
+	var meanX float64
+	var meanY float64
+	var sumXY float64
+	var sumXX float64
+	meanX = stat.Mean(x, nil) //mean of x
+	meanY = stat.Mean(y, nil) //mean pf y
+	sumXY, sumXX = sumXYandXX(x, y, meanX, meanY)
+	// regression coefficients
+	b1 := sumXY / sumXX    // b1 or slope
+	b0 := meanY - b1*meanX // b0 or intercept
+	return b0, b1
+}
 
 func checkErr(err error) {
 	if err != nil {
@@ -2765,6 +2828,7 @@ func scp_grow_bio(bioid string) bool {
 		scp_adjust_foam(bioid)
 	}
 
+	ncontrol_foam := 1
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= ttotal {
@@ -2795,8 +2859,9 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
 		}
-		if control_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
+		if control_foam && ncontrol_foam < bio_max_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
 			scp_adjust_foam(bioid)
+			ncontrol_foam++
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
