@@ -72,6 +72,9 @@ const scp_par_inc = "INC"
 const scp_par_dec = "DEC"
 const scp_par_start = "START"
 const scp_par_stop = "STOP"
+const scp_par_ph4 = "PH4"
+const scp_par_ph6 = "PH6"
+const scp_par_ph9 = "PH9"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -94,6 +97,7 @@ const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
 const scp_wdpanel = "WDPANEL"
+const scp_config = "CONFIG"
 const scp_out = "OUT"
 const scp_drop = "DROP"
 const scp_clean = "CLEAN"
@@ -4186,6 +4190,9 @@ func scp_process_conn(conn net.Conn) {
 				go scp_scheduler()
 			}
 		}
+
+	case scp_config:
+		scp_
 
 	case scp_start:
 		scp_object := params[1]
