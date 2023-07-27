@@ -4242,10 +4242,14 @@ func scp_process_conn(conn net.Conn) {
 					case scp_par_calibrate:
 						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH")
 						X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
-						var y_data = []float64{4, 6.89, 9.18}
-						// Executa a regressao linear
-						b0, b1 := estimateB0B1(X_data, y_data)
-						bio[ind].RegresPH = [2]float64{b0, b1}
+						if bio[ind].PHref[0] > 0 && bio[ind].PHref[1] > 0 && bio[ind].PHref[2] > 0 {
+							var y_data = []float64{4, 6.89, 9.18}
+							// Executa a regressao linear
+							b0, b1 := estimateB0B1(X_data, y_data)
+							bio[ind].RegresPH = [2]float64{b0, b1}
+						} else {
+							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
+						}
 					}
 				} else {
 					fmt.Println("ERROR CONFIG: Biorreator nao existe", bioid)
