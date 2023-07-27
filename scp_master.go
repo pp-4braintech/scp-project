@@ -4223,22 +4223,43 @@ func scp_process_conn(conn net.Conn) {
 					switch params[3] {
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
-						tmp := scp_get_ph(bioid)
-						if tmp >= 0 {
-							bio[ind].PHref[0] = tmp
+						s := 0.0
+						for n := 0; n < 5; n++ {
+							tmp := scp_get_ph(bioid)
+							if tmp >= 0 {
+								s += tmp
+							}
 						}
+						if s > 0 {
+							bio[ind].PHref[0] = s / 5.0
+						}
+
 					case scp_par_ph6:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 6.89")
-						tmp := scp_get_ph(bioid)
-						if tmp >= 0 {
-							bio[ind].PHref[1] = tmp
+						s := 0.0
+						for n := 0; n < 5; n++ {
+							tmp := scp_get_ph(bioid)
+							if tmp >= 0 {
+								s += tmp
+							}
 						}
+						if s > 0 {
+							bio[ind].PHref[1] = s / 5.0
+						}
+
 					case scp_par_ph9:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 9.18")
-						tmp := scp_get_ph(bioid)
-						if tmp >= 0 {
-							bio[ind].PHref[2] = tmp
+						s := 0.0
+						for n := 0; n < 5; n++ {
+							tmp := scp_get_ph(bioid)
+							if tmp >= 0 {
+								s += tmp
+							}
 						}
+						if s > 0 {
+							bio[ind].PHref[2] = s / 5.0
+						}
+
 					case scp_par_calibrate:
 						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH")
 						X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
