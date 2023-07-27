@@ -197,8 +197,10 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			// _, err = con.WriteTo([]byte(scp_err), net_addr)             MUDEI POR CONTA DAS TELAS ENTRAR EM LOOP TENTANDO FAZER JOIN
 			// checkErr(err)
 			fmt.Println("Destruindo SCP TCP")
-			slave_data.go_chan <- scp_destroy
-			fmt.Println("destroy enviado com sucesso")
+			go func() {
+				slave_data.go_chan <- scp_destroy
+				fmt.Println("destroy enviado com sucesso")
+			}
 			time.Sleep(50 * time.Millisecond)
 			// fmt.Println("fechando chain")
 			// close(slave_data.go_chan)
