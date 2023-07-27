@@ -154,7 +154,7 @@ const bio_update = "ATUALIZANDO"
 const bio_max_valves = 8
 const bio_max_msg = 50
 const bioreactor_max_msg = 7
-const bio_max_foam = 5
+const bio_max_foam = 4
 
 const TEMPMAX = 120
 
@@ -2854,6 +2854,10 @@ func scp_grow_bio(bioid string) bool {
 				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
 				worktemp = 28
 				pday = t_day
+			}
+			if control_foam {
+				scp_adjust_foam(bioid)
+				ncontrol_foam++
 			}
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {

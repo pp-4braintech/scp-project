@@ -22,8 +22,6 @@ var devmode = false
 
 const scp_err = "ERR"
 const scp_ack = "ACK"
-const scp_par_withdraw = "WITHDRAW"
-const scp_par_out = "OUT"
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -32,6 +30,13 @@ const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_bioreactor = "BIOREACTOR"
 const scp_wdpanel = "WDPANEL"
+const scp_config = "CONFIG"
+
+const scp_par_withdraw = "WITHDRAW"
+const scp_par_out = "OUT"
+const scp_par_ph4 = "PH4"
+const scp_par_ph6 = "PH6"
+const scp_par_ph9 = "PH9"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -658,6 +663,54 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func set_config(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case "GET":
+		w.Write([]byte("NAO IMPLEMENTADO"))
+		// var jsonStr []byte
+		// cmd := "GET/BIOFABRICA/END"
+		// jsonStr = []byte(scp_sendmsg_master(cmd))
+		// // os.Stdout.Write(jsonStr)
+		// w.Write([]byte(jsonStr))
+
+	case "PUT":
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		ph4 := r.FormValue("PH4")
+		ph6 := r.FormValue("PH6")
+		ph9 := r.FormValue("PH9")
+
+		if ph4 != "" {
+			cmd := "PUT/" + scp_config + "/" + scp_par_ph4 + "," + ph4 + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+		if ph6 != "" {
+			cmd := "PUT/" + scp_config + "/" + scp_par_ph6 + "," + ph6 + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+		if ph9 != "" {
+			cmd := "PUT/" + scp_config + "/" + scp_par_ph9 + "," + ph9 + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+	default:
+
+	}
+}
+
 func biofactory_sim(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -911,6 +964,8 @@ func main() {
 	mux.HandleFunc("/biofabrica_view", biofabrica_view)
 
 	mux.HandleFunc("/simulator", biofactory_sim)
+
+	mux.HandleFunc("/config", set_config)
 
 	mux.HandleFunc("/wdpanel", withdraw_panel)
 
