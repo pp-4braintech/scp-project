@@ -3132,6 +3132,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].UndoQueue = []string{}
 		bio[ind].RedoQueue = []string{}
 		bio[ind].MustOffQueue = []string{}
+		bio[ind].Step = [2]int{0, 0}
 		return true
 
 	case scp_job_wait:
@@ -3472,6 +3473,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 			switch cmd {
 
 			case scp_par_cip:
+				ibc[ind].ShowVol = false
 				qini := []string{ibc[ind].Queue[0]}
 				qini = append(qini, cipibc...)
 				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
@@ -3568,6 +3570,8 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		ibc[ind].UndoQueue = []string{}
 		ibc[ind].RedoQueue = []string{}
 		ibc[ind].MustOffQueue = []string{}
+		ibc[ind].Step = [2]int{0, 0}
+		ibc[ind].ShowVol = true
 		return true
 
 	case scp_job_wait:
