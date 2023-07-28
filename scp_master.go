@@ -76,6 +76,8 @@ const scp_par_ph4 = "PH4"
 const scp_par_ph6 = "PH6"
 const scp_par_ph9 = "PH9"
 const scp_par_calibrate = "CALIBRATE"
+const scp_par_save = "SAVE"
+const scp_par_restart = "RESTART"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -4276,7 +4278,25 @@ func scp_process_conn(conn net.Conn) {
 					fmt.Println("ERROR CONFIG: Biorreator nao existe", bioid)
 				}
 			} else {
-				fmt.Println("ERROR CONFIG: Numero de parametros invalido", params)
+				fmt.Println("ERROR CONFIG: BIORREATOR - Numero de parametros invalido", params)
+			}
+		case scp_biofabrica:
+			if len(params) > 3 {
+				cmd := params[2]
+				switch cmd {
+				case scp_par_save:
+					fmt.Println("DEBUG CONFIG: Salvando configuracoes")
+					save_all_data(data_filename)
+
+				case scp_par_restart:
+					fmt.Println("DEBUG CONFIG: Restartando ORCH")
+
+					save_all_data(data_filename)
+
+				}
+
+			} else {
+				fmt.Println("ERROR CONFIG: BIOFABRICA - Numero de parametros invalido", params)
 			}
 		}
 
