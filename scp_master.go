@@ -1490,7 +1490,6 @@ func scp_get_alldata() {
 					// 	fmt.Println("DEBUG GET ALLDATA: Lendo dados do Biorreator", b.BioreactorID)
 					// }
 					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
-					tempdev := bio_cfg[b.BioreactorID].Temp_dev
 					v0dev := bio_cfg[b.BioreactorID].Levellow
 					v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
 					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
@@ -1500,8 +1499,8 @@ func scp_get_alldata() {
 						if t_elapsed_bio%5 == 0 {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
-								bio[ind].Temperature = t_tmp
-								if bio[ind].Heater && t_tmp >= bio[ind].TempMax {
+								bio[ind].Temperature = float32(t_tmp)
+								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
 									scp_turn_heater(b.BioreactorID, 0, false)
 								}
 							}
