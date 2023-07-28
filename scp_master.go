@@ -437,6 +437,11 @@ func estimateB0B1(x []float64, y []float64) (float64, float64) {
 	return b0, b1
 }
 
+func calc_PH(x float64, b0 float64, b1 float64) float64 {
+	ph := b0 + b1*x
+	return ph
+}
+
 func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
@@ -894,28 +899,28 @@ func save_all_data(filename string) int {
 }
 
 func load_all_data(filename string) int {
-	dat1, err1 := os.ReadFile(filename + "_bio.json")
+	dat1, err1 := os.ReadFile(execpath + filename + "_bio.json")
 	checkErr(err1)
 	if err1 == nil {
 		json.Unmarshal([]byte(dat1), &bio)
 		fmt.Println("-- bio data = ", bio)
 	}
 
-	dat2, err2 := os.ReadFile(filename + "_ibc.json")
+	dat2, err2 := os.ReadFile(execpath + filename + "_ibc.json")
 	checkErr(err2)
 	if err2 == nil {
 		json.Unmarshal([]byte(dat2), &ibc)
 		fmt.Println("-- ibc data = ", ibc)
 	}
 
-	dat3, err3 := os.ReadFile(filename + "_totem.json")
+	dat3, err3 := os.ReadFile(execpath + filename + "_totem.json")
 	checkErr(err3)
 	if err3 == nil {
 		json.Unmarshal([]byte(dat3), &totem)
 		fmt.Println("-- totem data = ", totem)
 	}
 
-	dat4, err4 := os.ReadFile(filename + "_biofabrica.json")
+	dat4, err4 := os.ReadFile(execpath + filename + "_biofabrica.json")
 	checkErr(err4)
 	if err4 == nil {
 		json.Unmarshal([]byte(dat4), &biofabrica)
@@ -923,7 +928,7 @@ func load_all_data(filename string) int {
 	}
 	set_allvalvs_status()
 
-	dat5, err5 := os.ReadFile(filename + "_schedule.json")
+	dat5, err5 := os.ReadFile(execpath + filename + "_schedule.json")
 	checkErr(err5)
 	if err5 == nil {
 		json.Unmarshal([]byte(dat5), &schedule)
@@ -1326,7 +1331,7 @@ func scp_setup_devices(mustall bool) {
 	finishedsetup = true
 }
 
-func scp_get_ph(bioid string) float64 {
+func scp_get_ph_voltage(bioid string) float64 {
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	phdev := bio_cfg[bioid].PH_dev
 	if len(bioaddr) > 0 {
@@ -1341,6 +1346,24 @@ func scp_get_ph(bioid string) float64 {
 		}
 	} else {
 		fmt.Println("ERROR SCP GET PH: ADDR Biorreator nao existe", bioid)
+	}
+	return -1
+}
+
+func scp_get_ph(bioid string) float64 {
+	ind := get_bio_index(bioid)
+	if ind >= 0 {
+		phvolt := scp_get_ph_voltage(bioid)
+		if phvolt >= 0 {
+			b0 := bio[ind].RegresPH[0]
+			b1 := bio[ind].RegresPH[1]
+			ph := calc_PH(phvolt, b0, b1)
+			if (ph >= 0) && (ph <= 14) {
+				return ph
+			}
+		}
+	} else {
+		fmt.Println("ERROR SCP GET PH: Biorreator nao existe", bioid)
 	}
 	return -1
 }
@@ -1449,7 +1472,6 @@ func scp_get_alldata() {
 					// }
 					bioaddr := bio_cfg[b.BioreactorID].Deviceaddr
 					tempdev := bio_cfg[b.BioreactorID].Temp_dev
-					phdev := bio_cfg[b.BioreactorID].PH_dev
 					v0dev := bio_cfg[b.BioreactorID].Levellow
 					v1dev := bio_cfg[b.BioreactorID].Vol_devs[0]
 					v2dev := bio_cfg[b.BioreactorID].Vol_devs[1]
@@ -1476,16 +1498,9 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Status == bio_producting || b.Valvs[1] == 1 {
 						if t_elapsed_bio%5 == 0 {
-							cmd2 := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-							ret2 := scp_sendmsg_orch(cmd2)
-							fmt.Println("DEBUG GET ALLDATA: Lendo PH do Biorreator", b.BioreactorID, cmd2, ret2)
-							params := scp_splitparam(ret2, "/")
-							if params[0] == scp_ack {
-								phint, _ := strconv.Atoi(params[1])
-								phfloat := float32(phint) / 10.0
-								if (phfloat >= 0) && (phfloat <= 14) {
-									bio[ind].PH = phfloat
-								}
+							phtmp := scp_get_ph(b.BioreactorID)
+							if phtmp >= 0 {
+								bio[ind].PH = float32(phtmp)
 							}
 						}
 					}
@@ -4273,7 +4288,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
 						for n := 0; n < 5; n++ {
-							tmp := scp_get_ph(bioid)
+							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
 							}
@@ -4286,7 +4301,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 6.89")
 						s := 0.0
 						for n := 0; n < 5; n++ {
-							tmp := scp_get_ph(bioid)
+							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
 							}
@@ -4299,7 +4314,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 9.18")
 						s := 0.0
 						for n := 0; n < 5; n++ {
-							tmp := scp_get_ph(bioid)
+							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
 							}
@@ -4991,7 +5006,7 @@ func main() {
 	// fmt.Println("TOTEM ", totem)
 	// fmt.Println("Biofabrica ", biofabrica)
 	valvs = make(map[string]int, 0)
-	load_all_data(execpath + data_filename)
+	load_all_data(data_filename)
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
