@@ -39,6 +39,7 @@ const scp_par_ph6 = "PH6"
 const scp_par_ph9 = "PH9"
 const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
+const scp_par_restart = "RESTART"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
