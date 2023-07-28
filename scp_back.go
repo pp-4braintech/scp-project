@@ -38,6 +38,7 @@ const scp_par_ph4 = "PH4"
 const scp_par_ph6 = "PH6"
 const scp_par_ph9 = "PH9"
 const scp_par_calibrate = "CALIBRATE"
+const scp_par_save = "SAVE"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -687,6 +688,8 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		ph6 := r.FormValue("PH6")
 		ph9 := r.FormValue("PH9")
 		calibrate := r.FormValue("Calibrate")
+		saveconfig := r.FormValue("SaveConfig")
+		restart := r.FormValue("Restart")
 
 		if len(bioid) > 0 {
 			if ph4 != "" {
@@ -712,6 +715,20 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 			if calibrate != "" {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_calibrate + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+
+			if saveconfig != "" {
+				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_save + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+
+			if restart != "" {
+				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_restart + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
@@ -943,7 +960,7 @@ func main() {
 	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
-		execpath = "./"
+		execpath = "/home/paulo/work/iot/scp-project/"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
 	}
