@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"filepath"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -4193,7 +4195,9 @@ func stop_device(devtype string, main_id string) bool {
 
 func scp_restart_services() {
 	// fmt.Println("Reestartando Servico ORCH")
-	cmd := exec.Command("systemctl restart scp_orch.service")
+	cmdpath, _ := filepath.Abs("/usr/bin/systemctl")
+	fmt.Println(cmdpath)
+	cmd := exec.Command(cmdpath, "restart scp_orch.service")
 	cmd.Dir = "/usr/bin"
 	output, err := cmd.CombinedOutput()
 	fmt.Println("OUPUT", string(output))
