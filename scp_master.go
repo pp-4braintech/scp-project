@@ -4892,6 +4892,7 @@ func main() {
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 		execpath = "/home/paulo/work/iot/scp-project/"
+
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
