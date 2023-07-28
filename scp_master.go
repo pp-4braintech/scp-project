@@ -873,19 +873,19 @@ func set_allvalvs_status() {
 
 func save_all_data(filename string) int {
 	buf1, _ := json.Marshal(bio)
-	err1 := os.WriteFile(filename+"_bio.json", []byte(buf1), 0644)
+	err1 := os.WriteFile(execpath+filename+"_bio.json", []byte(buf1), 0644)
 	checkErr(err1)
 	buf2, _ := json.Marshal(ibc)
-	err2 := os.WriteFile(filename+"_ibc.json", []byte(buf2), 0644)
+	err2 := os.WriteFile(execpath+filename+"_ibc.json", []byte(buf2), 0644)
 	checkErr(err2)
 	buf3, _ := json.Marshal(totem)
-	err3 := os.WriteFile(filename+"_totem.json", []byte(buf3), 0644)
+	err3 := os.WriteFile(execpath+filename+"_totem.json", []byte(buf3), 0644)
 	checkErr(err3)
 	buf4, _ := json.Marshal(biofabrica)
-	err4 := os.WriteFile(filename+"_biofabrica.json", []byte(buf4), 0644)
+	err4 := os.WriteFile(execpath+filename+"_biofabrica.json", []byte(buf4), 0644)
 	checkErr(err4)
 	buf5, _ := json.Marshal(schedule)
-	err5 := os.WriteFile(filename+"_schedule.json", []byte(buf5), 0644)
+	err5 := os.WriteFile(execpath+filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
 	return 0
 }
@@ -1851,7 +1851,7 @@ func scp_get_alldata() {
 
 			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
 			if t_elapsed_save >= scp_timetosave {
-				save_all_data(execpath + data_filename)
+				save_all_data(data_filename)
 				t_start_save = time.Now()
 			}
 
