@@ -1368,6 +1368,25 @@ func scp_get_ph(bioid string) float64 {
 	return -1
 }
 
+func scp_get_temperature(bioid string) float64 {
+	bioaddr := bio_cfg[bioid].Deviceaddr
+	tempdev := bio_cfg[bioid].Temp_dev
+	if len(bioaddr) > 0 {
+		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
+		ret_temp := scp_sendmsg_orch(cmd_temp)
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, cmd_temp, ret_temp)
+		params := scp_splitparam(ret_temp, "/")
+		if params[0] == scp_ack {
+			tempint, _ := strconv.Atoi(params[1])
+			tempfloat := float64(tempint) / 10.0
+			return tempfloat
+		}
+	} else {
+		fmt.Println("ERROR SCP GET TEMPERATURE: ADDR Biorreator nao existe", bioid)
+	}
+	return -1
+}
+
 func scp_refresh_status() {
 	var err error
 	nslaves := 0
@@ -1479,18 +1498,11 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Valvs[2] == 1 {
 						if t_elapsed_bio%5 == 0 {
-							cmd1 := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-							ret1 := scp_sendmsg_orch(cmd1)
-							fmt.Println("DEBUG GET ALLDATA: Lendo TEMP do Biorreator", b.BioreactorID, cmd1, ret1)
-							params := scp_splitparam(ret1, "/")
-							if params[0] == scp_ack {
-								tempint, _ := strconv.Atoi(params[1])
-								tempfloat := float32(tempint) / 10.0
-								if (tempfloat >= 0) && (tempfloat <= TEMPMAX) {
-									bio[ind].Temperature = tempfloat
-									if bio[ind].Heater && tempfloat >= bio[ind].TempMax {
-										scp_turn_heater(b.BioreactorID, 0, false)
-									}
+							t_tmp := scp_get_temperature(b.BioreactorID)
+							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
+								bio[ind].Temperature = t_tmp
+								if bio[ind].Heater && t_tmp >= bio[ind].TempMax {
+									scp_turn_heater(b.BioreactorID, 0, false)
 								}
 							}
 						}
@@ -1810,7 +1822,6 @@ func scp_get_alldata() {
 								} else {
 									volc = vol1
 								}
-
 							} else if ibc[ind].Valvs[2] == 1 { // Carregando
 								if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
 									if vol1 < 0 {
@@ -1821,7 +1832,6 @@ func scp_get_alldata() {
 										volc = vol1
 									}
 								}
-
 							} else {
 								if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
 									fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
@@ -1901,7 +1911,6 @@ func scp_get_alldata() {
 
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
-
 	}
 }
 
@@ -4094,7 +4103,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				board_add_message("ABiorreator " + main_id + " pausado")
 			}
 
-		} else {
+		} else if !pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
@@ -4137,11 +4146,11 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].MustPause = true
 			ibc[ind].Status = bio_pause
 			if !ibc[ind].MustStop {
-				board_add_message("ABiorreator " + main_id + " pausado")
+				board_add_message("AIBC " + main_id + " pausado")
 			}
 
-		} else {
-			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
+		} else if !pause {
+			fmt.Println("DEBUG PAUSE DEVICE: Retomando IBC", main_id)
 			ibc[ind].Queue = append(ibc[ind].RedoQueue, ibc[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
 			if ibc[ind].LastStatus == bio_pause {
@@ -4155,7 +4164,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].MustStop = false
 			ibc[ind].LastStatus = bio_pause
 			if !ibc[ind].MustStop {
-				board_add_message("APausa no Biorreator " + main_id + " liberada")
+				board_add_message("APausa no IBC " + main_id + " liberada")
 			}
 			if !schedrunning {
 				go scp_scheduler()
@@ -4203,6 +4212,41 @@ func stop_device(devtype string, main_id string) bool {
 				bio[ind].MustPause = false
 			}
 			bio[ind].ShowVol = true
+		}
+
+	case scp_ibc:
+		ind := get_ibc_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR STOP: IBC nao existe", main_id)
+			return false
+		}
+		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
+		ibc[ind].Withdraw = 0
+		board_add_message("AIBC " + main_id + " interrompido")
+		if ibc[ind].Status != bio_empty || true { // corrigir
+			ibc[ind].MustStop = true
+			pause_device(devtype, main_id, true)
+			for {
+				time.Sleep(5000 * time.Millisecond)
+				if len(ibc[ind].UndoQueue) == 0 {
+					break
+				}
+			} //
+			ibc[ind].Queue = []string{}
+			ibc[ind].RedoQueue = []string{}
+			ibc[ind].MustOffQueue = []string{}
+			ibc[ind].MustStop = false
+			q := pop_first_sched(ibc[ind].IBCID, false)
+
+			if len(q.Bioid) == 0 {
+				if ibc[ind].Volume == 0 {
+					ibc[ind].Status = bio_empty
+				} else {
+					ibc[ind].Status = bio_ready
+				}
+				ibc[ind].MustPause = false
+			}
+			ibc[ind].ShowVol = true
 		}
 	}
 	save_all_data(data_filename)
