@@ -720,20 +720,20 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
+		}
 
-			if saveconfig != "" {
-				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_save + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				// os.Stdout.Write(jsonStr)
-				w.Write([]byte(jsonStr))
-			}
+		if saveconfig != "" {
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_save + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
 
-			if restart != "" {
-				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_restart + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				// os.Stdout.Write(jsonStr)
-				w.Write([]byte(jsonStr))
-			}
+		if restart != "" {
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_restart + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
 		}
 
 	default:
