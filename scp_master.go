@@ -4190,6 +4190,10 @@ func stop_device(devtype string, main_id string) bool {
 	return true
 }
 
+func scp_restart_services() {
+
+}
+
 func scp_process_conn(conn net.Conn) {
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
@@ -4289,10 +4293,8 @@ func scp_process_conn(conn net.Conn) {
 					save_all_data(data_filename)
 
 				case scp_par_restart:
-					fmt.Println("DEBUG CONFIG: Restartando ORCH")
-
-					save_all_data(data_filename)
-
+					fmt.Println("DEBUG CONFIG: Restartando Service")
+					scp_restart_services()
 				}
 
 			} else {
@@ -4889,7 +4891,7 @@ func main() {
 	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	if devmode {
 		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
-		execpath = "./"
+		execpath = "/home/paulo/work/iot/scp-project/"
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
