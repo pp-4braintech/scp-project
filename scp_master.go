@@ -4197,27 +4197,38 @@ func stop_device(devtype string, main_id string) bool {
 func scp_restart_services() {
 	// fmt.Println("Reestartando Servico ORCH")
 	cmdpath, _ := filepath.Abs("/usr/bin/systemctl")
-	fmt.Println(cmdpath)
 	cmd := exec.Command(cmdpath, "restart", "scp_orch")
 	cmd.Dir = "/usr/bin"
 	output, err := cmd.CombinedOutput()
-	fmt.Println("OUPUT", string(output))
+	if len(output) > 0 {
+		fmt.Println("OUPUT", string(output))
+	}
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar ORCH")
 		return
 	}
+	time.Sleep(10 * time.Second)
 	fmt.Println("Reestartando Servico BACKEND")
-	cmd = exec.Command("/usr/bin/systemctl", "restart scp_back.service")
-	err = cmd.Run()
+	cmd = exec.Command(cmdpath, "restart", "scp_back")
+	cmd.Dir = "/usr/bin"
+	output, err = cmd.CombinedOutput()
+	if len(output) > 0 {
+		fmt.Println("OUPUT", string(output))
+	}
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar BACK")
 		return
 	}
+	time.Sleep(10 * time.Second)
 	fmt.Println("Reestartando Servico MASTER")
-	cmd = exec.Command("/usr/bin/systemctl", "restart scp_master.service")
-	err = cmd.Run()
+	cmd = exec.Command(cmdpath, "restart", "scp_master")
+	cmd.Dir = "/usr/bin"
+	output, err = cmd.CombinedOutput()
+	if len(output) > 0 {
+		fmt.Println("OUPUT", string(output))
+	}
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar MASTER")
