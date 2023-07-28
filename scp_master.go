@@ -2224,6 +2224,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		fmt.Println("DEBUG RUN WITHDRAW 34: CMD1 =", cmd1, " RET=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERROR RUN WITHDRAW 35: IBC falha ao ligar bomba desenvase")
+			ibc[ind].Status = prev_status
 			return -1
 		}
 		t_start := time.Now()
@@ -2246,7 +2247,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		ibc[ind].Withdraw = 0
-		board_add_message("IDesenvase concluido")
+		board_add_message("IDesenvase IBC " + devid + " concluido")
 
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
@@ -2263,12 +2264,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			pathstr = paths[pathclean].Path
 			if len(pathstr) == 0 {
 				fmt.Println("ERROR RUN WITHDRAW 40: path CLEAN linha nao existe", pathclean)
+				ibc[ind].Status = prev_status
 				return -1
 			}
 			var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 			vpath = scp_splitparam(pathstr, ",")
 			if !test_path(vpath, 0) {
 				fmt.Println("ERROR RUN WITHDRAW 41: falha de valvula no path", pathstr)
+				ibc[ind].Status = prev_status
 				return -1
 			}
 			board_add_message("ILimpando LINHA 4")
@@ -2292,6 +2295,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 				fmt.Println("ERROR RUN WITHDRAW 46: BIORREATOR falha ao ligar bomba TOTEM02")
 				totem[tind].Pumpstatus = false
 				set_valvs_value(vpath, 0, false)
+				ibc[ind].Status = prev_status
 				return -1
 			}
 			time.Sleep(time.Duration(time_to_clean/2) * time.Millisecond)
@@ -2303,6 +2307,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			if !strings.Contains(ret1, scp_ack) && !devmode {
 				fmt.Println("ERROR RUN WITHDRAW 49: BIORREATOR falha ao ligar bomba TOTEM02")
 				set_valvs_value(vpath, 0, false)
+				ibc[ind].Status = prev_status
 				return -1
 			}
 			set_valvs_value(vpath, 0, false)
@@ -2313,12 +2318,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 				pathstr = paths[pathclean].Path
 				if len(pathstr) == 0 {
 					fmt.Println("ERROR RUN WITHDRAW 50: path CLEAN linha nao existe", pathclean)
+					ibc[ind].Status = prev_status
 					return -1
 				}
 				var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 				vpath = scp_splitparam(pathstr, ",")
 				if !test_path(vpath, 0) {
 					fmt.Println("ERROR RUN WITHDRAW 51: falha de valvula no path", pathstr)
+					ibc[ind].Status = prev_status
 					return -1
 				}
 				board_add_message("ILimpando LINHA 3")
@@ -2342,6 +2349,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 					fmt.Println("ERROR RUN WITHDRAW 56: BIORREATOR falha ao ligar bomba TOTEM02")
 					totem[tind].Pumpstatus = false
 					set_valvs_value(vpath, 0, false)
+					ibc[ind].Status = prev_status
 					return -1
 				}
 				time.Sleep(time.Duration(time_to_clean/2) * time.Millisecond)
@@ -2353,6 +2361,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 				if !strings.Contains(ret1, scp_ack) && !devmode {
 					fmt.Println("ERROR RUN WITHDRAW 59: BIORREATOR falha ao ligar bomba TOTEM02")
 					set_valvs_value(vpath, 0, false)
+					ibc[ind].Status = prev_status
 					return -1
 				}
 				set_valvs_value(vpath, 0, false)
@@ -2360,6 +2369,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			}
 		}
 		ibc[ind].Status = prev_status
+	default:
+		fmt.Println("DEBUG RUN WITHDRAW 58: Devtype invalido", devtype, devid)
 	}
 	return 0
 }
@@ -4111,7 +4122,11 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
 			if bio[ind].LastStatus == bio_pause {
-				bio[ind].Status = bio_ready
+				if bio[ind].Volume == 0 {
+					bio[ind].Status = bio_empty
+				} else {
+					bio[ind].Status = bio_ready
+				}
 			} else {
 				bio[ind].Status = bio[ind].LastStatus
 			}
@@ -4157,7 +4172,11 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].Queue = append(ibc[ind].RedoQueue, ibc[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
 			if ibc[ind].LastStatus == bio_pause {
-				ibc[ind].Status = bio_ready
+				if ibc[ind].Volume == 0 {
+					ibc[ind].Status = bio_empty
+				} else {
+					ibc[ind].Status = bio_ready
+				}
 			} else {
 				ibc[ind].Status = ibc[ind].LastStatus
 			}
