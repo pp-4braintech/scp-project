@@ -4192,7 +4192,7 @@ func stop_device(devtype string, main_id string) bool {
 }
 
 func scp_restart_services() {
-	fmt.Println("Reestartando Servico ORCH")
+	// fmt.Println("Reestartando Servico ORCH")
 	cmd := exec.Command("/bin/systemctl", "restart scp_orc")
 	err := cmd.Run()
 	if err != nil {
