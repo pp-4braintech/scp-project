@@ -9,6 +9,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -4191,7 +4192,30 @@ func stop_device(devtype string, main_id string) bool {
 }
 
 func scp_restart_services() {
-
+	fmt.Println("Reestartando Servico ORCH")
+	cmd := exec.Command("systemctl", "restart scp_orc")
+	err := cmd.Run()
+	if err != nil {
+		checkErr(err)
+		fmt.Println("Falha ao Restartar ORCH")
+		return
+	}
+	fmt.Println("Reestartando Servico BACKEND")
+	cmd = exec.Command("systemctl", "restart scp_back")
+	err = cmd.Run()
+	if err != nil {
+		checkErr(err)
+		fmt.Println("Falha ao Restartar BACK")
+		return
+	}
+	fmt.Println("Reestartando Servico MASTER")
+	cmd = exec.Command("systemctl", "restart scp_master")
+	err = cmd.Run()
+	if err != nil {
+		checkErr(err)
+		fmt.Println("Falha ao Restartar MASTER")
+		return
+	}
 }
 
 func scp_process_conn(conn net.Conn) {
