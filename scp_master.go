@@ -4195,7 +4195,8 @@ func scp_restart_services() {
 	// fmt.Println("Reestartando Servico ORCH")
 	cmd := exec.Command("systemctl", "restart scp_orc")
 	cmd.Dir = "/usr/bin/"
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
+	fmt.Println("OUPUT", output)
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar ORCH")
