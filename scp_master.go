@@ -1716,7 +1716,7 @@ func scp_get_alldata() {
 						if b.Status == bio_update {
 							if vol1 != -1 || vol2 != -1 {
 								bio[ind].Status = bio_ready
-							} else {
+							} else if !devmode {
 								board_add_message("IVerifique sensores de Volume do " + b.BioreactorID)
 								bio[ind].Status = bio_error
 							}
