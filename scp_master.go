@@ -1359,6 +1359,10 @@ func scp_get_ph(bioid string) float64 {
 	if ind >= 0 {
 		phvolt := scp_get_ph_voltage(bioid)
 		if phvolt >= 2 && phvolt <= 5 {
+			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
+				fmt.Println("ERROR SCP GET PH: Biorreator com PH NAO CALIBRADO", bioid)
+				return -1
+			}
 			b0 := bio[ind].RegresPH[0]
 			b1 := bio[ind].RegresPH[1]
 			ph := calc_PH(phvolt, b0, b1)
