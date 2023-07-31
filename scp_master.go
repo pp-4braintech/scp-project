@@ -1446,6 +1446,10 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	if params[0] == scp_ack {
 		dint, _ = strconv.Atoi(params[1])
 		if vol_type == scp_dev_vol0 {
+			if dint != 0 && dint != 1 {
+				fmt.Println("ERROR SCP GET VOLUME: Retorno do ORCH para VOLUME0 com ERRO", main_id, dint, ret)
+				return -1, -1
+			}
 			return dint, float64(dint)
 		}
 	} else {
@@ -1457,7 +1461,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		return -1, -1
 	}
 	if dev_type == scp_dev_volusom && dint == 250 {
-		fmt.Println("ERROR SCP GET VOLUME: ULTRASSOM em DEADZONE", main_id, ret)
+		fmt.Println("ERROR SCP GET VOLUME: ULTRASSOM em DEADZONE", main_id, dint, ret)
 		return -1, -1
 	}
 	var area, dfloat float64
@@ -1609,13 +1613,12 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
-						var vol0 float64
+						var vol0 float64 = -1
 						var dint int
 						dint, _ = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0)
 						if dint >= 0 {
 							bio[ind].Vol0 = dint
 						}
-						vol0 = -1
 						if bio[ind].Status == bio_cip && (bio[ind].Valvs[1] == 1 || bio[ind].Valvs[2] == 1 || bio[ind].Valvs[3] == 1) {
 							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
 						} else {
@@ -1626,13 +1629,12 @@ func scp_get_alldata() {
 						var vol1, vol1_pre float64
 						vol1 = -1
 						dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
-
 						if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
 							dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
 						}
 
 						if vol0 == 0 {
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0 USOM", b.BioreactorID, dint)
 							if dint > 0 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.3) {
 								bio[ind].Vol_zero[0] = float32(dint)
 							} else {
@@ -1649,7 +1651,7 @@ func scp_get_alldata() {
 						vol2 = -1
 						dint, vol2_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vollaser)
 						if vol0 == 0 {
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.BioreactorID, dint)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0 LASER", b.BioreactorID, dint)
 							if dint > 0 && float32(dint) >= (bio_v2_zero*0.7) && float32(dint) <= (bio_v2_zero*1.3) {
 								bio[ind].Vol_zero[1] = float32(dint)
 							} else {
@@ -1771,13 +1773,12 @@ func scp_get_alldata() {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
 
-						var vol0 float64
+						var vol0 float64 = -1
 						var dint int
 						dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
 						if dint >= 0 {
 							ibc[ind].Vol0 = dint
 						}
-						vol0 = -1
 						if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
 							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
 						} else {
@@ -1788,7 +1789,6 @@ func scp_get_alldata() {
 						var vol1, vol1_pre float64
 						vol1 = -1
 						dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
-
 						if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
 							dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
 						}
