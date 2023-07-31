@@ -4413,7 +4413,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
 						n := 0.0
-						for i := 2; i <= 5; i++ {
+						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 && tmp <= 5 {
 								s += tmp
@@ -4422,6 +4422,7 @@ func scp_process_conn(conn net.Conn) {
 						}
 						if s > 0 {
 							bio[ind].PHref[0] = s / n
+							fmt.Println("DEBUG CONFIG: Media Voltagem PH 4", bio[ind].PHref[0])
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
 						}
@@ -4439,6 +4440,7 @@ func scp_process_conn(conn net.Conn) {
 						}
 						if s > 0 {
 							bio[ind].PHref[1] = s / n
+							fmt.Println("DEBUG CONFIG: Media Voltagem PH 7", bio[ind].PHref[1])
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
 						}
@@ -4456,6 +4458,7 @@ func scp_process_conn(conn net.Conn) {
 						}
 						if s > 0 {
 							bio[ind].PHref[2] = s / n
+							fmt.Println("DEBUG CONFIG: Media Voltagem PH 10", bio[ind].PHref[2])
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
 						}
