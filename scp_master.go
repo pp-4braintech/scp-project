@@ -4451,7 +4451,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH")
 						X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
 						if bio[ind].PHref[0] > 0 && bio[ind].PHref[1] > 0 && bio[ind].PHref[2] > 0 {
-							var y_data = []float64{4, 6.89, 9.18}
+							var y_data = []float64{4, 7, 10}
 							// Executa a regressao linear
 							b0, b1 := estimateB0B1(X_data, y_data)
 							bio[ind].RegresPH = [2]float64{b0, b1}
