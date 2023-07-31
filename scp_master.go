@@ -4413,7 +4413,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
 						n := 0.0
-						for i := 0; i < 5; i++ {
+						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 && tmp <= 5 {
 								s += tmp
@@ -4430,7 +4430,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
 						s := 0.0
 						n := 0.0
-						for i := 0; i < 5; i++ {
+						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 && tmp <= 5 {
 								s += tmp
@@ -4447,9 +4447,9 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
 						s := 0.0
 						n := 0.0
-						for i := 0; i < 5; i++ {
+						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 && tmp <= 14 {
+							if tmp >= 0 && tmp <= 5 {
 								s += tmp
 								n++
 							}
