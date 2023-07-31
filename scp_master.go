@@ -1369,6 +1369,8 @@ func scp_get_ph(bioid string) float64 {
 			if (ph >= 0) && (ph <= 14) {
 				fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
 				return ph
+			} else {
+				fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
 			}
 		} else {
 			fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PHVolt no Biorreator", bioid, "PHVolt=", phvolt)
