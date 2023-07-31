@@ -1652,7 +1652,7 @@ func scp_get_alldata() {
 						dint, vol2_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vollaser)
 						if vol0 == 0 {
 							if dint > 0 && float32(dint) >= (bio_v2_zero*0.7) && float32(dint) <= (bio_v2_zero*1.3) {
-								fmt.Print("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER ", b.BioreactorID, dint)
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER ", b.BioreactorID, dint)
 								bio[ind].Vol_zero[1] = float32(dint)
 							} else {
 								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.BioreactorID, dint)
