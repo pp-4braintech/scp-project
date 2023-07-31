@@ -1358,7 +1358,7 @@ func scp_get_ph(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
 		phvolt := scp_get_ph_voltage(bioid)
-		if phvolt >= 0 {
+		if phvolt >= 0 && phvolt <= 5 {
 			b0 := bio[ind].RegresPH[0]
 			b1 := bio[ind].RegresPH[1]
 			ph := calc_PH(phvolt, b0, b1)
@@ -1607,7 +1607,7 @@ func scp_get_alldata() {
 						if t_elapsed_bio%5 == 0 {
 							phtmp := scp_get_ph(b.BioreactorID)
 							if phtmp >= 0 {
-								bio[ind].PH = float32(phtmp)
+								bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
 							}
 						}
 					}
@@ -4413,7 +4413,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
 						n := 0.0
-						for i := 0; i <= 5; i++ {
+						for i := 2; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 && tmp <= 5 {
 								s += tmp
@@ -4432,7 +4432,7 @@ func scp_process_conn(conn net.Conn) {
 						n := 0.0
 						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 && tmp <= 5 {
+							if tmp >= 2 && tmp <= 5 {
 								s += tmp
 								n++
 							}
@@ -4449,7 +4449,7 @@ func scp_process_conn(conn net.Conn) {
 						n := 0.0
 						for i := 0; i <= 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 && tmp <= 5 {
+							if tmp >= 2 && tmp <= 5 {
 								s += tmp
 								n++
 							}
