@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -444,6 +445,20 @@ func calc_PH(x float64, b0 float64, b1 float64) float64 {
 	ph := b0 + b1*x
 	fmt.Println("DEBUG CALC PH: Equacao = ", b0, " + ", b1, "*", x, " = ", ph)
 	return ph
+}
+
+func calc_mediana(x []float64) float64 {
+	var mediana float64
+	sort.Float64s(x)
+	n := len(x)
+	c := int(n / 2)
+	if n >= 5 {
+		s := x[c-1] + x[c] + x[c+1]
+		mediana = s / 3.0
+	} else {
+		mediana = x[c]
+	}
+	return mediana
 }
 
 func checkErr(err error) {
@@ -4421,15 +4436,16 @@ func scp_process_conn(conn net.Conn) {
 					switch params[3] {
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
-						s := 0.0
 						n := 0.0
-						for i := 0; i <= 5; i++ {
+						var data []float64
+						for i := 0; i <= 7; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 && tmp <= 5 {
-								s += tmp
+								data = append(data, tmp)
 								n++
 							}
 						}
+
 						if s > 0 {
 							bio[ind].PHref[0] = s / n
 							fmt.Println("DEBUG CONFIG: Media Voltagem PH 4", bio[ind].PHref[0])
