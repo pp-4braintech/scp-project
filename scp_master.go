@@ -4479,7 +4479,9 @@ func scp_process_conn(conn net.Conn) {
 							var y_data = []float64{4, 7, 10}
 							// Executa a regressao linear
 							b0, b1 := estimateB0B1(X_data, y_data)
-							bio[ind].RegresPH = [2]float64{b0, b1}
+							bio[ind].RegresPH[0] = b0
+							bio[ind].RegresPH[1] = b1
+							fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
 						} else {
 							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
 						}
