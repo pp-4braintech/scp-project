@@ -4623,12 +4623,6 @@ func scp_process_conn(conn net.Conn) {
 			return
 		}
 
-		// id := params[2]
-		// if !stop_device(devtype, id) {
-		// 	fmt.Println("ERROR STOP: Nao foi possivel parar dispositivo", devtype, id)
-		// 	break
-		// }
-
 	case scp_get:
 		scp_object := params[1]
 		switch scp_object {
@@ -4884,19 +4878,6 @@ func scp_process_conn(conn net.Conn) {
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
 						set_valv_status(scp_ibc, ibcid, valvid, value_status)
-						// ibc[ind].Valvs[value_valve] = value_status
-
-						// ibcdev := ibc_cfg[ibcid].Deviceaddr
-						// valvaddr := ibc_cfg[ibcid].Valv_devs[value_valve]
-						// //ibcscr := bio_cfg[ibcid].Screenaddr
-						// if value_status == 1 {
-						// 	cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",1/END"
-						// } else if value_status == 0 {
-						// 	cmd2 = "CMD/" + ibcdev + "/PUT/" + valvaddr + ",0/END"
-						// }
-
-						// ret2 := scp_sendmsg_orch(cmd2)
-						// fmt.Println("RET CMD2 =", ret2)
 						conn.Write([]byte(scp_ack))
 					}
 				default:
@@ -4939,18 +4920,6 @@ func scp_process_conn(conn net.Conn) {
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
 						set_valv_status(scp_totem, totemid, valvid, value_status)
-						// totem[ind].Valvs[value_valve] = value_status
-
-						// totemdev := totem_cfg[totemid].Deviceaddr
-						// valvaddr := totem_cfg[totemid].Valv_devs[value_valve]
-						// if value_status == 1 {
-						// 	cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",1/END"
-						// } else if value_status == 0 {
-						// 	cmd2 = "CMD/" + totemdev + "/PUT/" + valvaddr + ",0/END"
-						// }
-
-						// ret2 := scp_sendmsg_orch(cmd2)
-						// fmt.Println("RET CMD2 =", ret2)
 						conn.Write([]byte(scp_ack))
 					}
 
