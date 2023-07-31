@@ -4411,40 +4411,52 @@ func scp_process_conn(conn net.Conn) {
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
+						n := 0.0
 						for n := 0; n < 5; n++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
+								n++
 							}
 						}
 						if s > 0 {
-							bio[ind].PHref[0] = s / 5.0
+							bio[ind].PHref[0] = s / n
+						} else {
+							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
 						}
 
 					case scp_par_ph7:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
 						s := 0.0
+						n := 0.0
 						for n := 0; n < 5; n++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
+								n++
 							}
 						}
 						if s > 0 {
-							bio[ind].PHref[1] = s / 5.0
+							bio[ind].PHref[1] = s / n
+						} else {
+							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
 						}
 
 					case scp_par_ph10:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
 						s := 0.0
+						n := 0.0
 						for n := 0; n < 5; n++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 0 {
 								s += tmp
+								n++
 							}
 						}
 						if s > 0 {
-							bio[ind].PHref[2] = s / 5.0
+							bio[ind].PHref[2] = s / n
+						} else {
+							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
 						}
 
 					case scp_par_calibrate:
