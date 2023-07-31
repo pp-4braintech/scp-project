@@ -1340,16 +1340,16 @@ func scp_get_ph_voltage(bioid string) float64 {
 	if len(bioaddr) > 0 {
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
-		fmt.Println("DEBUG SCP GET PH: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
 		params := scp_splitparam(ret_ph, "/")
 		if params[0] == scp_ack {
 			phint, _ := strconv.Atoi(params[1])
 			phfloat := float64(phint) / 100.0
-			fmt.Println("DEBUG SCP GET PH: Voltagem PH", bioid, phint, phfloat)
+			fmt.Println("DEBUG SCP GET PH VOLTAGE: Voltagem PH", bioid, phint, phfloat)
 			return phfloat
 		}
 	} else {
-		fmt.Println("ERROR SCP GET PH: ADDR Biorreator nao existe", bioid)
+		fmt.Println("ERROR SCP GET PH VOLTAGE: ADDR Biorreator nao existe", bioid)
 	}
 	return -1
 }
