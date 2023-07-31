@@ -1340,11 +1340,12 @@ func scp_get_ph_voltage(bioid string) float64 {
 	if len(bioaddr) > 0 {
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
-		fmt.Println("DEBUG SCP GET PH: Lendo PH do Biorreator", bioid, cmd_ph, ret_ph)
+		fmt.Println("DEBUG SCP GET PH: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
 		params := scp_splitparam(ret_ph, "/")
 		if params[0] == scp_ack {
 			phint, _ := strconv.Atoi(params[1])
 			phfloat := float64(phint) / 100.0
+			fmt.Println("DEBUG SCP GET PH: Voltagem PH", bioid, phint, phfloat)
 			return phfloat
 		}
 	} else {
@@ -4412,9 +4413,9 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						s := 0.0
 						n := 0.0
-						for n := 0; n < 5; n++ {
+						for i := 0; i < 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 {
+							if tmp >= 0 && tmp <= 5 {
 								s += tmp
 								n++
 							}
@@ -4429,9 +4430,9 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
 						s := 0.0
 						n := 0.0
-						for n := 0; n < 5; n++ {
+						for i := 0; i < 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 {
+							if tmp >= 0 && tmp <= 5 {
 								s += tmp
 								n++
 							}
@@ -4446,9 +4447,9 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
 						s := 0.0
 						n := 0.0
-						for n := 0; n < 5; n++ {
+						for i := 0; i < 5; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 {
+							if tmp >= 0 && tmp <= 14 {
 								s += tmp
 								n++
 							}
