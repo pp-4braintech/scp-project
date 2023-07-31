@@ -1404,7 +1404,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			case scp_dev_volusom:
 				vol_dev = bio_cfg[main_id].Vol_devs[0]
 			case scp_dev_vollaser:
-				vol_dev = bio_cfg[main_id].Valv_devs[1]
+				vol_dev = bio_cfg[main_id].Vol_devs[1]
 			default:
 				fmt.Println("ERROR SCP GET VOLUME: Disposito de volume invalido para o biorreator", main_id, vol_type)
 				return -1, -1
@@ -1423,7 +1423,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			case scp_dev_volusom:
 				vol_dev = ibc_cfg[main_id].Vol_devs[0]
 			case scp_dev_vollaser:
-				vol_dev = ibc_cfg[main_id].Valv_devs[1]
+				vol_dev = ibc_cfg[main_id].Vol_devs[1]
 			default:
 				fmt.Println("ERROR SCP GET VOLUME: Disposito de volume invalido para o IBC", main_id, vol_type)
 				return -1, -1
