@@ -442,6 +442,7 @@ func estimateB0B1(x []float64, y []float64) (float64, float64) {
 
 func calc_PH(x float64, b0 float64, b1 float64) float64 {
 	ph := b0 + b1*x
+	fmt.Println("DEBUG CALC PH: Equacao = ", b0, " + ", b1, "*", x, " = ", ph)
 	return ph
 }
 
