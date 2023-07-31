@@ -4440,15 +4440,15 @@ func scp_process_conn(conn net.Conn) {
 						var data []float64
 						for i := 0; i <= 7; i++ {
 							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 0 && tmp <= 5 {
+							if tmp >= 2 && tmp <= 5 {
 								data = append(data, tmp)
 								n++
 							}
 						}
-
-						if s > 0 {
-							bio[ind].PHref[0] = s / n
-							fmt.Println("DEBUG CONFIG: Media Voltagem PH 4", bio[ind].PHref[0])
+						mediana := calc_mediana(data)
+						if mediana > 0 {
+							bio[ind].PHref[0] = mediana
+							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 4", bio[ind].PHref[0])
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
 						}
