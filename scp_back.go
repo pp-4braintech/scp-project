@@ -35,8 +35,8 @@ const scp_config = "CONFIG"
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
 const scp_par_ph4 = "PH4"
-const scp_par_ph6 = "PH6"
-const scp_par_ph9 = "PH9"
+const scp_par_ph7 = "PH7"
+const scp_par_ph10 = "PH10"
 const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
@@ -686,8 +686,8 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 		bioid := r.FormValue("BioId")
 		ph4 := r.FormValue("PH4")
-		ph6 := r.FormValue("PH6")
-		ph9 := r.FormValue("PH9")
+		ph7 := r.FormValue("PH7")
+		ph10 := r.FormValue("PH10")
 		calibrate := r.FormValue("Calibrate")
 		saveconfig := r.FormValue("SaveConfig")
 		restart := r.FormValue("Restart")
@@ -700,15 +700,15 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 
-			if ph6 != "" {
-				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph6 + "/END"
+			if ph7 != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph7 + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
 
-			if ph9 != "" {
-				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph9 + "/END"
+			if ph10 != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph10 + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))

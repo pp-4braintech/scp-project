@@ -80,8 +80,8 @@ const scp_par_dec = "DEC"
 const scp_par_start = "START"
 const scp_par_stop = "STOP"
 const scp_par_ph4 = "PH4"
-const scp_par_ph6 = "PH6"
-const scp_par_ph9 = "PH9"
+const scp_par_ph7 = "PH7"
+const scp_par_ph10 = "PH10"
 const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
@@ -4421,8 +4421,8 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].PHref[0] = s / 5.0
 						}
 
-					case scp_par_ph6:
-						fmt.Println("DEBUG CONFIG: Ajustando PH 6.89")
+					case scp_par_ph7:
+						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
 						s := 0.0
 						for n := 0; n < 5; n++ {
 							tmp := scp_get_ph_voltage(bioid)
@@ -4434,8 +4434,8 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].PHref[1] = s / 5.0
 						}
 
-					case scp_par_ph9:
-						fmt.Println("DEBUG CONFIG: Ajustando PH 9.18")
+					case scp_par_ph10:
+						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
 						s := 0.0
 						for n := 0; n < 5; n++ {
 							tmp := scp_get_ph_voltage(bioid)
