@@ -1358,11 +1358,12 @@ func scp_get_ph(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
 		phvolt := scp_get_ph_voltage(bioid)
-		if phvolt >= 0 && phvolt <= 5 {
+		if phvolt >= 2 && phvolt <= 5 {
 			b0 := bio[ind].RegresPH[0]
 			b1 := bio[ind].RegresPH[1]
 			ph := calc_PH(phvolt, b0, b1)
 			if (ph >= 0) && (ph <= 14) {
+				fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
 				return ph
 			}
 		}
