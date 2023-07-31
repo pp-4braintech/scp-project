@@ -4436,7 +4436,7 @@ func scp_process_conn(conn net.Conn) {
 					switch params[3] {
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
-						n := 0.0
+						n := 0
 						var data []float64
 						for i := 0; i <= 7; i++ {
 							tmp := scp_get_ph_voltage(bioid)
@@ -4448,43 +4448,45 @@ func scp_process_conn(conn net.Conn) {
 						mediana := calc_mediana(data)
 						if mediana > 0 {
 							bio[ind].PHref[0] = mediana
-							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 4", bio[ind].PHref[0])
+							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
 						}
 
 					case scp_par_ph7:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
-						s := 0.0
-						n := 0.0
-						for i := 0; i <= 5; i++ {
+						n := 0
+						var data []float64
+						for i := 0; i <= 7; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 2 && tmp <= 5 {
-								s += tmp
+								data = append(data, tmp)
 								n++
 							}
 						}
-						if s > 0 {
-							bio[ind].PHref[1] = s / n
-							fmt.Println("DEBUG CONFIG: Media Voltagem PH 7", bio[ind].PHref[1])
+						mediana := calc_mediana(data)
+						if mediana > 0 {
+							bio[ind].PHref[1] = mediana
+							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
 						}
 
 					case scp_par_ph10:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
-						s := 0.0
-						n := 0.0
-						for i := 0; i <= 5; i++ {
+						n := 0
+						var data []float64
+						for i := 0; i <= 7; i++ {
 							tmp := scp_get_ph_voltage(bioid)
 							if tmp >= 2 && tmp <= 5 {
-								s += tmp
+								data = append(data, tmp)
 								n++
 							}
 						}
-						if s > 0 {
-							bio[ind].PHref[2] = s / n
-							fmt.Println("DEBUG CONFIG: Media Voltagem PH 10", bio[ind].PHref[2])
+						mediana := calc_mediana(data)
+						if mediana > 0 {
+							bio[ind].PHref[2] = mediana
+							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
 						} else {
 							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
 						}
