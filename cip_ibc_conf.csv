@@ -29,6 +29,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 2
 #
+SET/STATUS,CIP
 SET/STEP,2
 #
 # 2L de Blend1 pelo Totem 2 / P1 
@@ -63,6 +64,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 3
 #
+SET/STATUS,CIP
 SET/STEP,3
 #
 # Agua pelo sprayball
@@ -89,6 +91,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 4
 #
+SET/STATUS,CIP
 SET/STEP,4
 #
 # 2L de Blend2 pelo Totem 2 / P1 
