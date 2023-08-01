@@ -1803,7 +1803,7 @@ func scp_get_alldata() {
 						var vol0 float64 = -1
 						var dint int
 						dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-						if dint <= 0 {
+						if dint <= 0 || dint > 1 {
 							dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
 						}
 						if dint >= 0 {
