@@ -2328,6 +2328,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		if ibc[ind].Volume == 0 && ibc[ind].Vol0 != 0 {
+
 			for i := 0; i < 250 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
 				if ibc[ind].Vol0 == 0 {
 					break
