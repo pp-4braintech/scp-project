@@ -294,6 +294,7 @@ type Biofabrica struct {
 	Pumpwithdraw bool
 	Messages     []string
 	Status       string
+	VolumeOut    float64
 }
 
 type Path struct {
@@ -408,7 +409,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0,
 }
 
 var biobak = bio // Salva status atual
@@ -1465,7 +1466,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	cmd := "CMD/" + dev_addr + "/GET/" + vol_dev + "/END"
 	ret := scp_sendmsg_orch(cmd)
 	params := scp_splitparam(ret, "/")
-	fmt.Println("DEBUG SCP GET VOLUME: CMD", cmd, "  RET", ret)
+	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD", cmd, "  RET", ret)
 	var volume float64
 	var dint int
 	volume = -1
@@ -2137,17 +2138,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			set_valvs_value(pilha, 0, false)
 			return -1
 		}
-		var vol_out int32
+		var vol_out int64
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
-			vol_out = int32(vol_ini - vol_now)
+			vol_out = int64(vol_ini - vol_now)
 			if bio[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int32(bio[ind].Withdraw)) {
+			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(bio[ind].Withdraw)) {
 				fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
 				break
 			}
@@ -2303,17 +2304,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			ibc[ind].Status = prev_status
 			return -1
 		}
-		var vol_out int32
+		var vol_out int64
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
-			vol_out = int32(vol_ini - vol_now)
+			vol_out = int64(vol_ini - vol_now)
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now < vol_ini && vol_out >= int32(ibc[ind].Withdraw) {
+			if vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw) {
 				fmt.Println("DEBUG RUN WITHDRAW 36: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
 				break
 			}
@@ -3584,11 +3585,12 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				}
 				board_add_message("IDesenvase Automático do IBC " + ibcid + " para " + ibc[ind].OutID)
 				if scp_run_withdraw(scp_ibc, ibcid, false) < 0 {
+					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
 				} else {
 					ibc[ind].Organism = ""
 					ibc[ind].Withdraw = 0
-					ibc[ind].Volume = 0 // verificar
+					// ibc[ind].Volume = 0 // verificar
 				}
 
 			}
@@ -4493,9 +4495,9 @@ func scp_process_conn(conn net.Conn) {
 
 					case scp_par_calibrate:
 						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH")
-						X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
 						if bio[ind].PHref[0] > 0 && bio[ind].PHref[1] > 0 && bio[ind].PHref[2] > 0 {
-							var y_data = []float64{4, 7, 10}
+							X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
+							y_data := []float64{4, 7, 10}
 							// Executa a regressao linear
 							b0, b1 := estimateB0B1(X_data, y_data)
 							bio[ind].RegresPH[0] = b0
