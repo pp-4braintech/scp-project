@@ -22,6 +22,8 @@ import (
 	"gonum.org/v1/gonum/stat"
 )
 
+// antiga placa desenvase 05:C2DDBC
+
 var demo = false
 var devmode = false
 var testmode = false
