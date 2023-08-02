@@ -37,6 +37,8 @@ const (
 	scp_on  = 1
 	scp_off = 0
 
+	bio_escala = 1
+
 	scp_ack     = "ACK"
 	scp_err     = "ERR"
 	scp_get     = "GET"
@@ -1982,7 +1984,7 @@ func scp_get_alldata() {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
-					biofabrica.VolumeOut = 10 * (math.Trunc(vol_tmp / 10.0))
+					biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 				}
 			}
 
