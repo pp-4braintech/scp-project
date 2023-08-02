@@ -2174,18 +2174,22 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			return -1
 		}
 		var vol_out int64
+		_, vol_bio_out_start := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
+			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			if bio[ind].Withdraw == 0 {
 				break
 			}
 			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(bio[ind].Withdraw)) {
-				fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
-				break
+				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(bio[ind].Withdraw) {
+					fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
+					break
+				}
 			}
 			if t_elapsed > scp_maxtimewithdraw {
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
