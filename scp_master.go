@@ -2174,7 +2174,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			return -1
 		}
 		var vol_out int64
-		_, vol_bio_out_start := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+		var vol_bio_out_start float64
+		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
+			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+		} else {
+			vol_bio_out_start = -1
+		}
 		t_start := time.Now()
 		for {
 			vol_now := bio[ind].Volume
@@ -2344,18 +2349,26 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			return -1
 		}
 		var vol_out int64
+		var vol_bio_out_start float64
+		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
+			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+		} else {
+			vol_bio_out_start = -1
+		}
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
-			// t_now := time.Now()
 			t_elapsed := time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
+			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw) {
-				fmt.Println("DEBUG RUN WITHDRAW 36: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
-				break
+			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
+				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(ibc[ind].Withdraw) {
+					fmt.Println("DEBUG RUN WITHDRAW 11: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
+					break
+				}
 			}
 			if t_elapsed > scp_maxtimewithdraw {
 				fmt.Println("DEBUG RUN WITHDRAW 37: STOP Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
