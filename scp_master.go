@@ -149,7 +149,7 @@ const bio_v2_zero = 1502.0 // em mm
 const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
 
-const flow_ratio = 5.175
+const flow_ratio = 1
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
