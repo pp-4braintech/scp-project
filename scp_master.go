@@ -33,28 +33,30 @@ const control_ph = false
 const control_temp = false
 const control_foam = true
 
-const scp_on = 1
-const scp_off = 0
+const (
+	scp_on  = 1
+	scp_off = 0
 
-const scp_ack = "ACK"
-const scp_err = "ERR"
-const scp_get = "GET"
-const scp_put = "PUT"
-const scp_run = "RUN"
-const scp_die = "DIE"
-const scp_sched = "SCHED"
-const scp_start = "START"
-const scp_status = "STATUS"
-const scp_stop = "STOP"
-const scp_pause = "PAUSE"
-const scp_fail = "FAIL"
-const scp_netfail = "NETFAIL"
-const scp_ready = "READY"
+	scp_ack     = "ACK"
+	scp_err     = "ERR"
+	scp_get     = "GET"
+	scp_put     = "PUT"
+	scp_run     = "RUN"
+	scp_die     = "DIE"
+	scp_sched   = "SCHED"
+	scp_start   = "START"
+	scp_status  = "STATUS"
+	scp_stop    = "STOP"
+	scp_pause   = "PAUSE"
+	scp_fail    = "FAIL"
+	scp_netfail = "NETFAIL"
+	scp_ready   = "READY"
 
-const scp_state_JOIN0 = 10
-const scp_state_JOIN1 = 11
-const scp_state_TCP0 = 20
-const scp_state_TCPFAIL = 29
+	scp_state_JOIN0   = 10
+	scp_state_JOIN1   = 11
+	scp_state_TCP0    = 20
+	scp_state_TCPFAIL = 29
+)
 
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
@@ -65,6 +67,7 @@ const scp_dev_peris = "PERIS"
 const scp_dev_vol0 = "VOL0"
 const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
+const scp_dev_volfluxo = "VOLFLUXO"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -145,6 +148,8 @@ const bio_v1_zero = 1483.0 // em mm
 const bio_v2_zero = 1502.0 // em mm
 const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
+
+const flow_ratio = 0.45
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
@@ -1322,7 +1327,9 @@ func scp_setup_devices(mustall bool) {
 				var cmd []string
 				bfaddr := bf.Deviceaddr
 				cmd = make([]string, 0)
-				cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+				if bf.Deviceport[0] != 'C' {
+					cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+				}
 
 				nerr := 0
 				for k, c := range cmd {
@@ -1461,6 +1468,14 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			fmt.Println("ERROR SCP GET VOLUME: IBC inexistente", main_id)
 			return -1, -1
 		}
+	case scp_biofabrica:
+		if vol_type == scp_dev_volfluxo {
+			dev_addr = biofabrica_cfg["FBF01"].Deviceaddr
+			vol_dev = biofabrica_cfg["FBF01"].Deviceport
+		} else {
+			fmt.Println("ERROR SCP GET VOLUME: VOL_TYPE invalido para biofabrica", main_id, vol_type)
+			return -1, -1
+		}
 	default:
 		fmt.Println("ERROR SCP GET VOLUME: Tipo de dispositivo invalido", dev_type, main_id)
 		return -1, -1
@@ -1485,7 +1500,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		fmt.Println("ERROR SCP GET VOLUME: Retorno do ORCH com ERRO", main_id, ret)
 		return -1, -1
 	}
-	if dint == 0 {
+	if dint == 0 && vol_type != scp_dev_volfluxo {
 		fmt.Println("ERROR SCP GET VOLUME: LEITURA INVALIDA do SENSOR", main_id, vol_type, ret)
 		return -1, -1
 	}
@@ -1495,23 +1510,28 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	}
 	var area, dfloat float64
 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-	switch vol_type {
-	case scp_dev_volusom:
-		switch dev_type {
-		case scp_bioreactor:
-			dfloat = float64(bio[ind].Vol_zero[0]) - float64(dint)
-		case scp_ibc:
-			dfloat = float64(ibc[ind].Vol_zero[0]) - float64(dint)
+	if vol_type != scp_dev_volfluxo {
+		switch vol_type {
+		case scp_dev_volusom:
+			switch dev_type {
+			case scp_bioreactor:
+				dfloat = float64(bio[ind].Vol_zero[0]) - float64(dint)
+			case scp_ibc:
+				dfloat = float64(ibc[ind].Vol_zero[0]) - float64(dint)
+			}
+		case scp_dev_vollaser:
+			switch dev_type {
+			case scp_bioreactor:
+				dfloat = float64(bio[ind].Vol_zero[1]) - float64(dint)
+			case scp_ibc:
+				dfloat = float64(ibc[ind].Vol_zero[1]) - float64(dint)
+			}
 		}
-	case scp_dev_vollaser:
-		switch dev_type {
-		case scp_bioreactor:
-			dfloat = float64(bio[ind].Vol_zero[1]) - float64(dint)
-		case scp_ibc:
-			dfloat = float64(ibc[ind].Vol_zero[1]) - float64(dint)
-		}
+		volume = area * dfloat
+	} else {
+		volume = float64(dint) * flow_ratio
 	}
-	volume = area * dfloat
+
 	if volume < 0 {
 		fmt.Println("ERROR SCP GET VOLUME: VOLUME NEGATIVO encontrado", main_id, vol_type, dint, volume)
 		volume = 0
@@ -1955,6 +1975,14 @@ func scp_get_alldata() {
 				ibc_seq++
 				if ibc_seq >= len(ibc) {
 					ibc_seq = 0
+				}
+			}
+
+			if biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 {
+				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+				if count >= 0 {
+					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
+					biofabrica.VolumeOut = vol_tmp
 				}
 			}
 
