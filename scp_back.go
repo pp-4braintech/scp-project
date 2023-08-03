@@ -932,6 +932,9 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(stop) > 0 {
+			w.Write([]byte(scp_ack)) ////// tecla STOP desligada ate arrumar botao
+			return
+
 			stop_int, err := strconv.Atoi(stop)
 			if err != nil {
 				checkErr(err)
