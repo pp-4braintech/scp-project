@@ -2372,7 +2372,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		} else {
 			vol_bio_out_start = -1
 		}
-
+		var maxtime float64
+		if devmode || testmode {
+			maxtime = 60
+		} else {
+			maxtime = scp_maxtimewithdraw
+		}
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
@@ -2393,7 +2398,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 					break
 				}
 			}
-			if t_elapsed > scp_maxtimewithdraw {
+			if t_elapsed > maxtime {
 				fmt.Println("DEBUG RUN WITHDRAW 37: STOP Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
 				break
 			}
