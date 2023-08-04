@@ -739,7 +739,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if testm != "" {
-			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_testmode + "," + testm + "/END"
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_testmode + "/" + testm + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))

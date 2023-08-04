@@ -4591,10 +4591,20 @@ func scp_process_conn(conn net.Conn) {
 					scp_restart_services()
 
 				case scp_par_testmode:
-
-					// flag := params[3]
-					fmt.Println("DEBUG CONFIG: Mudando TESTMODE para")
-					scp_restart_services()
+					if len(params) > 4 {
+						flag_str := params[3]
+						fmt.Println("DEBUG CONFIG: Mudando TESTMODE para", flag)
+						flag, err := strconv.ParseBool(flag_str)
+						if err != nil {
+							checkErr(err)
+							conn.Write([]byte(scp_err))
+						} else {
+							biofabrica.TestMode = flag
+							conn.Write([]byte(scp_ack))
+						}
+					} else {
+						fmt.Println("ERROR CONFIG: BIOFABRICA TESTMODE - Numero de parametros invalido", params)
+					}
 				}
 
 			} else {
