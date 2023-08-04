@@ -2368,7 +2368,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		use_volfluxo := false
 		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
 			use_volfluxo = true
-			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+			var count int
+			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+			if count < 0 {
+				vol_bio_out_start = biofabrica.VolumeOut
+			}
 		} else {
 			vol_bio_out_start = -1
 		}
@@ -2385,7 +2389,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			vol_out = int64(vol_ini - vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			var vout float64
-			if use_volfluxo {
+			if use_volfluxo && vol_bio_out_start >= 0 {
 				vout = float64(ibc[ind].Withdraw) - vol_bio_out_now
 				fmt.Println("-------------    ibc=", float64(ibc[ind].Withdraw), "  flowout=", vol_bio_out_now)
 			} else {
