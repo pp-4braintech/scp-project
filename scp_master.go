@@ -4593,7 +4593,7 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_testmode:
 					if len(params) > 4 {
 						flag_str := params[3]
-						fmt.Println("DEBUG CONFIG: Mudando TESTMODE para", flag)
+						fmt.Println("DEBUG CONFIG: Mudando TESTMODE para", flag_str)
 						flag, err := strconv.ParseBool(flag_str)
 						if err != nil {
 							checkErr(err)
