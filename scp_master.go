@@ -2384,15 +2384,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			t_elapsed := time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
+			var vout float64
 			if use_volfluxo {
-				ibc[ind].VolumeOut = ibc[ind].Withdraw - uint32(vol_bio_out_now)
+				vout = float64(ibc[ind].Withdraw - uint32(vol_bio_out_now))
 
 			} else {
-				ibc[ind].VolumeOut = ibc[ind].Withdraw - uint32(vol_out)
+				vout = float64(ibc[ind].Withdraw - uint32(vol_out))
 			}
-			if ibc[ind].VolumeOut < 0 {
-				ibc[ind].VolumeOut = 0
+			if vout < 0 {
+				vout = 0
 			}
+			ibc[ind].VolumeOut = uint32(vout)
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
