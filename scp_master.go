@@ -93,6 +93,7 @@ const scp_par_ph10 = "PH10"
 const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
+const scp_par_testmode = "TESTMODE"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -305,6 +306,7 @@ type Biofabrica struct {
 	Messages     []string
 	Status       string
 	VolumeOut    float64
+	TestMode     bool
 }
 
 type Path struct {
@@ -419,7 +421,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, false,
 }
 
 var biobak = bio // Salva status atual
@@ -4587,6 +4589,12 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_restart:
 					fmt.Println("DEBUG CONFIG: Restartando Service")
 					scp_restart_services()
+
+				case scp_par_testmode:
+
+					// flag := params[3]
+					fmt.Println("DEBUG CONFIG: Mudando TESTMODE para")
+					scp_restart_services()
 				}
 
 			} else {
@@ -5161,6 +5169,7 @@ func main() {
 	}
 	testmode = test_file("/etc/scpd/scp_testmode.flag")
 	if testmode {
+		biofabrica.TestMode = true
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
 

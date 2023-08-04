@@ -40,6 +40,7 @@ const scp_par_ph10 = "PH10"
 const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
+const scp_par_testmode = "TESTMODE"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -691,6 +692,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		calibrate := r.FormValue("Calibrate")
 		saveconfig := r.FormValue("SaveConfig")
 		restart := r.FormValue("Restart")
+		testm := r.FormValue("TestMode")
 
 		if len(bioid) > 0 {
 			if ph4 != "" {
@@ -731,6 +733,13 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 		if restart != "" {
 			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_restart + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+		if testm != "" {
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_testmode + "," + testm + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
@@ -932,9 +941,6 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(stop) > 0 {
-			w.Write([]byte(scp_ack)) ////// tecla STOP desligada ate arrumar botao
-			return
-
 			stop_int, err := strconv.Atoi(stop)
 			if err != nil {
 				checkErr(err)
