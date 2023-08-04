@@ -2410,7 +2410,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		if linewash {
 			var pathclean string = ""
 			dest_type := get_scp_type(ibc[ind].OutID)
-			pathclean = "TOTEM02-CLEAN4"
+			if dest_type == scp_out {
+				pathclean = "TOTEM02-CLEAN9"
+			} else {
+				pathclean = "TOTEM02-CLEAN4"
+			}
 			pathstr = paths[pathclean].Path
 			if len(pathstr) == 0 {
 				fmt.Println("ERROR RUN WITHDRAW 40: path CLEAN linha nao existe", pathclean)
@@ -4585,6 +4589,7 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_save:
 					fmt.Println("DEBUG CONFIG: Salvando configuracoes")
 					save_all_data(data_filename)
+					conn.Write([]byte(scp_ack))
 
 				case scp_par_restart:
 					fmt.Println("DEBUG CONFIG: Restartando Service")
@@ -4600,6 +4605,7 @@ func scp_process_conn(conn net.Conn) {
 							conn.Write([]byte(scp_err))
 						} else {
 							biofabrica.TestMode = flag
+							testmode = flag
 							conn.Write([]byte(scp_ack))
 						}
 					} else {
