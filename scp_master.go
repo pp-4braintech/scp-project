@@ -2335,6 +2335,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			pilha = append([]string{p}, pilha...)
 		}
 		vol_ini := ibc[ind].Volume
+		ibc[ind].VolumeOut = ibc[ind].Withdraw
 		ibc[ind].Status = bio_unloading
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW 33: Ligando bomba", devid)
@@ -2351,17 +2352,25 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		}
 		var vol_out int64
 		var vol_bio_out_start float64
+		use_volfluxo := false
 		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
+			use_volfluxo = true
 			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
 		} else {
 			vol_bio_out_start = -1
 		}
+
 		t_start := time.Now()
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
+			if use_volfluxo {
+				ibc[ind].VolumeOut = ibc[ind].Withdraw - uint32(vol_bio_out_now)
+			} else {
+				ibc[ind].VolumeOut = ibc[ind].Withdraw - uint32(vol_out)
+			}
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
