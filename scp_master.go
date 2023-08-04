@@ -2232,9 +2232,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		set_valvs_value(pilha, 0, false)
 		// bio[ind].Status = bio_ready
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
+		dest_type := get_scp_type(bio[ind].OutID)
+		if dest_type == scp_ibc {
+			ind_ibc := get_ibc_index(bio[ind].OutID)
+			ibc[ind_ibc].Organism = bio[ind].Organism
+			ibc[ind_ibc].OrgCode = bio[ind].OrgCode
+		}
 		if linewash {
 			var pathclean string = ""
-			dest_type := get_scp_type(bio[ind].OutID)
 			if dest_type == scp_out || dest_type == scp_drop {
 				pathclean = "TOTEM02-CLEAN4"
 				board_add_message("IEnxague LINHAS 2/4")
