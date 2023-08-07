@@ -4810,7 +4810,11 @@ func scp_process_conn(conn net.Conn) {
 			if params[2] == "END" {
 				buf, err := json.Marshal(bio)
 				checkErr(err)
-				conn.Write([]byte(buf))
+				bio_etl := make([]Bioreact_ETL, 0)
+				json.Unmarshal(buf, &bio_etl)
+				buf2, err2 := json.Marshal(bio_etl)
+				checkErr(err2)
+				conn.Write([]byte(buf2))
 			} else {
 				ind := get_bio_index(params[2])
 				if ind >= 0 {
