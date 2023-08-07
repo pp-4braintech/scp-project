@@ -1683,7 +1683,7 @@ func scp_get_alldata() {
 						var vol1, vol1_pre float64
 						vol1 = -1
 						dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
-						if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
+						if dint == 1 || dint == 0 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
 							dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
 						}
 
