@@ -2613,19 +2613,22 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 		return false
 	}
 
-	tmax := scp_timewaitvalvs / 1000
-	for i := 0; i < tmax; i++ {
-		if bio[ind].MustPause || bio[ind].MustPause {
-			break
+	if changevalvs {
+		tmax := scp_timewaitvalvs / 1000
+		for i := 0; i < tmax; i++ {
+			if bio[ind].MustPause || bio[ind].MustPause {
+				break
+			}
+			time.Sleep(1000 * time.Millisecond)
 		}
-		time.Sleep(1000 * time.Millisecond)
 	}
+
 	if value == scp_on {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN ERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
 			if changevalvs {
 				set_valvs_value(dev_valvs, 1-value, false)
 			}
@@ -2953,7 +2956,7 @@ func pop_first_undojob(devtype string, main_id string, remove bool) string {
 
 func scp_adjust_ph(bioid string, ph float32) {
 	ind := get_bio_index(bioid)
-	fmt.Println("DEBUG SCP GROW BIO: Ajustando PH", bioid, bio[ind].PH, ph)
+	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, bio[ind].PH, ph)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
@@ -3048,6 +3051,12 @@ func scp_adjust_foam(bioid string) {
 	}
 }
 
+func scp_adjust_aero(bioid string, aero int) bool {
+	fmt.Println("DEBUG SCP ADJUST AERO: Ajustando Aerador do Biorreator", bioid, " para", aero)
+	ret := scp_turn_aero(bioid, false, scp_on, aero)
+	return ret
+}
+
 func scp_grow_bio(bioid string) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -3069,6 +3078,8 @@ func scp_grow_bio(bioid string) bool {
 	vol_start := bio[ind].Volume
 	pday := -1
 	var minph, maxph, worktemp float64
+	var aero int
+	aero_prev := -1
 	t_start := time.Now()
 	if control_foam {
 		scp_adjust_foam(bioid)
@@ -3097,6 +3108,7 @@ func scp_grow_bio(bioid string) bool {
 					checkErr(err)
 					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
 				}
+				aero = org.Aero[t_day]
 				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
 				worktemp = 28
 				pday = t_day
@@ -3108,6 +3120,12 @@ func scp_grow_bio(bioid string) bool {
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
+		}
+		if aero != aero_prev {
+			if !scp_adjust_aero(bioid, aero) {
+				fmt.Println("ERROR SCP GROW BIO: Falha ao ajustar aeracao", bioid, aero)
+			}
+			aero_prev = aero
 		}
 		if control_foam && ncontrol_foam < bio_max_foam && float64(bio[ind].Volume) > float64(vol_start)*1.05 {
 			scp_adjust_foam(bioid)
