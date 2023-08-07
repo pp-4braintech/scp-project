@@ -1375,7 +1375,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 		params := scp_splitparam(ret_ph, "/")
 		if params[0] == scp_ack {
 			phint, _ := strconv.Atoi(params[1])
-			phfloat := float64(phint) / 10.0
+			phfloat := float64(phint) / 100.0
 			fmt.Println("DEBUG SCP GET PH VOLTAGE: Voltagem PH", bioid, phint, phfloat)
 			return phfloat
 		}
