@@ -3362,7 +3362,12 @@ func scp_run_job_bio(bioid string, job string) bool {
 					fmt.Println("ERROR SCP RUN JOB: WAIT TIME invalido", time_str, params)
 					return false
 				}
-				time_dur := time.Duration(time_int)
+				var time_dur time.Duration
+				if !testmode {
+					time_dur = time.Duration(time_int)
+				} else {
+					time_dur = time.Duration(60)
+				}
 				fmt.Println("DEBUG SCP RUN JOB: WAIT de", time_dur.Seconds(), "segundos")
 				var n time.Duration
 				for n = 0; n < time_dur; n++ {
