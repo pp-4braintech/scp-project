@@ -259,6 +259,8 @@ type Bioreact_ETL struct {
 	MustStop     bool
 	MustPause    bool
 	ShowVol      bool
+	Messages     []string
+	PHref        [3]float64
 	RegresPH     [2]float64
 }
 
