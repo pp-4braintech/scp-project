@@ -293,6 +293,31 @@ type IBC struct {
 	VolumeOut    uint32
 }
 
+type IBC_ETL struct {
+	IBCID      string
+	Status     string
+	OrgCode    string
+	Organism   string
+	Vol0       int
+	Vol1       int32
+	Vol2       int32
+	Volume     uint32
+	Level      uint8
+	Pumpstatus bool
+	Valvs      [4]int
+	Step       [2]int
+	Timetotal  [2]int
+	Withdraw   uint32
+	OutID      string
+	Vol_zero   [2]float32
+	MustStop   bool
+	MustPause  bool
+	Selected   bool
+	LastStatus string
+	ShowVol    bool
+	VolumeOut  uint32
+}
+
 type Totem struct {
 	TotemID    string
 	Status     string
@@ -4837,7 +4862,11 @@ func scp_process_conn(conn net.Conn) {
 			if params[2] == "END" {
 				buf, err := json.Marshal(ibc)
 				checkErr(err)
-				conn.Write([]byte(buf))
+				ibc_etl := make([]IBC_ETL, 0)
+				json.Unmarshal(buf, &ibc_etl)
+				buf2, err2 := json.Marshal(ibc_etl)
+				checkErr(err2)
+				conn.Write([]byte(buf2))
 			} else {
 				ind := get_ibc_index(params[2])
 				if ind >= 0 {
