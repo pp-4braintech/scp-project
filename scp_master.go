@@ -1536,7 +1536,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		fmt.Println("ERROR SCP GET VOLUME: LEITURA INVALIDA do SENSOR", main_id, vol_type, ret)
 		return -1, -1
 	}
-	if dev_type == scp_dev_volusom && dint == 250 {
+	if vol_type == scp_dev_volusom && dint == 250 {
 		fmt.Println("ERROR SCP GET VOLUME: ULTRASSOM em DEADZONE", main_id, dint, ret)
 		return -1, -1
 	}
