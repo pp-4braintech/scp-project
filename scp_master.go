@@ -4819,9 +4819,14 @@ func scp_process_conn(conn net.Conn) {
 			case scp_par_start:
 				ibc[ind].OutID = "OUT"
 				fmt.Println(scp_ibc, ibc_id)
-				go scp_run_withdraw(scp_ibc, ibc_id, true)
-				fmt.Println("DEBUG WDPANEL: Executando Desenvase do", ibc_id, " volume", ibc[ind].Withdraw)
-				conn.Write([]byte(scp_ack))
+				if !withdrawrunning {
+					go scp_run_withdraw(scp_ibc, ibc_id, true)
+					fmt.Println("DEBUG WDPANEL: Executando Desenvase do", ibc_id, " volume", ibc[ind].Withdraw)
+					conn.Write([]byte(scp_ack))
+				} else {
+					fmt.Println("ERROR WDPANEL: Desenvase ja em andamento", ibc_id)
+					conn.Write([]byte(scp_err))
+				}
 
 			case scp_par_stop:
 				ibc[ind].Withdraw = 0
