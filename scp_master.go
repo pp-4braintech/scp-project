@@ -26,6 +26,7 @@ import (
 
 var demo = false
 var devmode = false
+var net192 = false
 var testmode = false
 var autowithdraw = false
 
@@ -5268,16 +5269,18 @@ func main() {
 	go scp_check_network()
 
 	addrs_type = make(map[string]DevAddrData, 0)
-
-	devmode = test_file("/etc/scpd/scp_devmode.flag")
-	if devmode {
-		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
+	net192 = test_file("/etc/scpd/scp_net192.flag")
+	if net192 {
+		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
 		execpath = "/home/paulo/work/iot/scp-project/"
-
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
 		mainrouter = "10.0.0.1"
+	}
+	devmode = test_file("/etc/scpd/scp_devmode.flag")
+	if devmode {
+		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
 	}
 	testmode = test_file("/etc/scpd/scp_testmode.flag")
 	if testmode {
