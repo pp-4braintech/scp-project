@@ -1,0 +1,14 @@
+[Unit]
+Description=SCP Master
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/home/paulo/work/iot/scp-project/scp_master
+ 
+[Install]
+WantedBy=multi-user.target
+
