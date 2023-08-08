@@ -2239,7 +2239,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
 		if bio[ind].Volume == 0 && bio[ind].Vol0 != 0 {
-			for i := 0; i < 200 && bio[ind].Withdraw != 0; i++ {
+			for i := 0; i < 300 && bio[ind].Withdraw != 0; i++ {
 				if bio[ind].Vol0 == 0 {
 					break
 				}
@@ -2444,7 +2444,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		}
 		if ibc[ind].Volume == 0 && ibc[ind].Vol0 != 0 {
 
-			for i := 0; i < 250 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
+			for i := 0; i < 300 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
 				if ibc[ind].Vol0 == 0 {
 					break
 				}
