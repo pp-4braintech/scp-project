@@ -2418,7 +2418,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 			var vout float64
 			if use_volfluxo && vol_bio_out_start >= 0 {
 				vout = float64(ibc[ind].Withdraw) - vol_bio_out_now
-				fmt.Println("-------------    ibc=", float64(ibc[ind].Withdraw), "  flowout=", vol_bio_out_now, "start=", vol_bio_out_start)
+				// fmt.Println("-------------    ibc=", float64(ibc[ind].Withdraw), "  flowout=", vol_bio_out_now, "start=", vol_bio_out_start)
 			} else {
 				vout = float64(ibc[ind].Withdraw) - float64(vol_out)
 			}
