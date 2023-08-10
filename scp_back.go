@@ -680,7 +680,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 		bioid := r.FormValue("BioId")
 		if len(bioid) > 0 {
-			cmd := "GET/BIOREACTOR/" + scp_par_getconfig + "/" + bioid + "/END"
+			cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		} else {
