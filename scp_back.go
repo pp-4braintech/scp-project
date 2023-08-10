@@ -33,6 +33,7 @@ const scp_wdpanel = "WDPANEL"
 const scp_config = "CONFIG"
 
 const scp_par_withdraw = "WITHDRAW"
+const scp_par_getconfig = "GETCONFIG"
 const scp_par_out = "OUT"
 const scp_par_ph4 = "PH4"
 const scp_par_ph7 = "PH7"
@@ -672,12 +673,19 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		w.Write([]byte("NAO IMPLEMENTADO"))
-		// var jsonStr []byte
-		// cmd := "GET/BIOFABRICA/END"
-		// jsonStr = []byte(scp_sendmsg_master(cmd))
-		// // os.Stdout.Write(jsonStr)
-		// w.Write([]byte(jsonStr))
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println("ParseForm() err: ", err)
+			return
+		}
+		bioid := r.FormValue("BioId")
+		if len(bioid) > 0 {
+			cmd := "GET/BIOREACTOR/" + scp_par_getconfig + "/" + bioid + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			w.Write([]byte(jsonStr))
+		} else {
+			w.Write([]byte("NAO IMPLEMENTADO"))
+		}
 
 	case "PUT":
 		err := r.ParseForm()
