@@ -991,13 +991,16 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	devmode = test_file("/etc/scpd/scp_devmode.flag")
-	if devmode {
-		fmt.Println("WARN:  EXECUTANDO EM DEVMODE\n\n\n")
+	net192 = test_file("/etc/scpd/scp_net192.flag")
+	if net192 {
+		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
 		execpath = "/home/paulo/work/iot/scp-project/"
+		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
+		mainrouter = "10.0.0.1"
 	}
+	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	//scp_bio_init()
 	if load_organisms(execpath+"organismos_conf.csv") < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
