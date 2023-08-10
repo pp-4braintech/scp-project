@@ -95,6 +95,7 @@ const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
+const scp_par_getconfig = "GETCONFIG"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -1705,7 +1706,7 @@ func scp_get_alldata() {
 							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
 						} else {
 							vol0 = float64(dint)
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, ibc_cfg[b.BioreactorID].Deviceaddr, dint, vol0)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol0)
 						}
 
 						var vol1, vol1_pre float64
@@ -4589,6 +4590,13 @@ func scp_process_conn(conn net.Conn) {
 				ind := get_bio_index(bioid)
 				if ind >= 0 {
 					switch params[3] {
+					case scp_par_getconfig:
+						biocfg, ok := bio_cfg[bioid]
+						if ok {
+							buf, err := json.Marshal(biocfg)
+							checkErr(err)
+							conn.Write([]byte(buf))
+						}
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						n := 0
