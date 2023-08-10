@@ -714,7 +714,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(jsonStr))
 			}
 			if scraddr != "" {
-				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_screenaddr + "/" + devaddr + "/END"
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_screenaddr + "/" + scraddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
