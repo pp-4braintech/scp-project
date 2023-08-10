@@ -96,6 +96,8 @@ const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
 const scp_par_getconfig = "GETCONFIG"
+const scp_par_deviceaddr = "DEVICEADDR"
+const scp_par_screenaddr = "SCREENADDR"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -4597,6 +4599,26 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+					case scp_par_deviceaddr:
+						if len(params) > 4 {
+							devaddr := params[4]
+							biocfg := bio_cfg[bioid]
+							biocfg.Deviceaddr = devaddr
+							bio_cfg[bioid] = biocfg
+							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biorreator", bioid, " para", devaddr, " = ", bio_cfg[bioid])
+							conn.Write([]byte(scp_ack))
+						}
+
+					case scp_par_screenaddr:
+						if len(params) > 4 {
+							devaddr := params[4]
+							biocfg := bio_cfg[bioid]
+							biocfg.Screenaddr = devaddr
+							bio_cfg[bioid] = biocfg
+							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco da tela do Biorreator", bioid, " para", devaddr, " = ", bio_cfg[bioid])
+							conn.Write([]byte(scp_ack))
+						}
+
 					case scp_par_ph4:
 						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
 						n := 0

@@ -42,6 +42,8 @@ const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
+const scp_par_deviceaddr = "DEVICEADDR"
+const scp_par_screenaddr = "SCREENADDR"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -694,6 +696,8 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		bioid := r.FormValue("BioId")
+		devaddr := r.FormValue("Deviceaddr")
+		scraddr := r.FormValue("Screenaddr")
 		ph4 := r.FormValue("PH4")
 		ph7 := r.FormValue("PH7")
 		ph10 := r.FormValue("PH10")
@@ -703,6 +707,18 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		testm := r.FormValue("TestMode")
 
 		if len(bioid) > 0 {
+			if devaddr != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if scraddr != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_screenaddr + "/" + devaddr + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			if ph4 != "" {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_ph4 + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
