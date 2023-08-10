@@ -17,6 +17,7 @@ import (
 
 // var demo = false
 var devmode = false
+var net192 = false
 
 // var testmode = false
 
@@ -995,10 +996,8 @@ func main() {
 	if net192 {
 		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
 		execpath = "/home/paulo/work/iot/scp-project/"
-		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
-		mainrouter = "10.0.0.1"
 	}
 	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	//scp_bio_init()
