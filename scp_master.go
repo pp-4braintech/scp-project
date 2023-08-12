@@ -1387,7 +1387,7 @@ func scp_setup_devices(mustall bool) {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
 					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA")
-				} else {
+				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
 				}
 			}
