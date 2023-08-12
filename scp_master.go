@@ -403,6 +403,7 @@ type DevAddrData struct {
 }
 
 var execpath string
+var localconfig_path string
 var mainrouter string
 
 var finishedsetup = false
@@ -944,46 +945,46 @@ func set_allvalvs_status() {
 
 func save_all_data(filename string) int {
 	buf1, _ := json.Marshal(bio)
-	err1 := os.WriteFile(execpath+filename+"_bio.json", []byte(buf1), 0644)
+	err1 := os.WriteFile(localconfig_path+filename+"_bio.json", []byte(buf1), 0644)
 	checkErr(err1)
 	buf2, _ := json.Marshal(ibc)
-	err2 := os.WriteFile(execpath+filename+"_ibc.json", []byte(buf2), 0644)
+	err2 := os.WriteFile(localconfig_path+filename+"_ibc.json", []byte(buf2), 0644)
 	checkErr(err2)
 	buf3, _ := json.Marshal(totem)
-	err3 := os.WriteFile(execpath+filename+"_totem.json", []byte(buf3), 0644)
+	err3 := os.WriteFile(localconfig_path+filename+"_totem.json", []byte(buf3), 0644)
 	checkErr(err3)
 	buf4, _ := json.Marshal(biofabrica)
-	err4 := os.WriteFile(execpath+filename+"_biofabrica.json", []byte(buf4), 0644)
+	err4 := os.WriteFile(localconfig_path+filename+"_biofabrica.json", []byte(buf4), 0644)
 	checkErr(err4)
 	buf5, _ := json.Marshal(schedule)
-	err5 := os.WriteFile(execpath+filename+"_schedule.json", []byte(buf5), 0644)
+	err5 := os.WriteFile(localconfig_path+filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
 	return 0
 }
 
 func load_all_data(filename string) int {
-	dat1, err1 := os.ReadFile(execpath + filename + "_bio.json")
+	dat1, err1 := os.ReadFile(localconfig_path + filename + "_bio.json")
 	checkErr(err1)
 	if err1 == nil {
 		json.Unmarshal([]byte(dat1), &bio)
 		fmt.Println("-- bio data = ", bio)
 	}
 
-	dat2, err2 := os.ReadFile(execpath + filename + "_ibc.json")
+	dat2, err2 := os.ReadFile(localconfig_path + filename + "_ibc.json")
 	checkErr(err2)
 	if err2 == nil {
 		json.Unmarshal([]byte(dat2), &ibc)
 		fmt.Println("-- ibc data = ", ibc)
 	}
 
-	dat3, err3 := os.ReadFile(execpath + filename + "_totem.json")
+	dat3, err3 := os.ReadFile(localconfig_path + filename + "_totem.json")
 	checkErr(err3)
 	if err3 == nil {
 		json.Unmarshal([]byte(dat3), &totem)
 		fmt.Println("-- totem data = ", totem)
 	}
 
-	dat4, err4 := os.ReadFile(execpath + filename + "_biofabrica.json")
+	dat4, err4 := os.ReadFile(localconfig_path + filename + "_biofabrica.json")
 	checkErr(err4)
 	if err4 == nil {
 		json.Unmarshal([]byte(dat4), &biofabrica)
@@ -991,7 +992,7 @@ func load_all_data(filename string) int {
 	}
 	set_allvalvs_status()
 
-	dat5, err5 := os.ReadFile(execpath + filename + "_schedule.json")
+	dat5, err5 := os.ReadFile(localconfig_path + filename + "_schedule.json")
 	checkErr(err5)
 	if err5 == nil {
 		json.Unmarshal([]byte(dat5), &schedule)
@@ -5298,6 +5299,7 @@ func main() {
 
 	go scp_check_network()
 
+	localconfig_path = "/etc/scpd"
 	addrs_type = make(map[string]DevAddrData, 0)
 	net192 = test_file("/etc/scpd/scp_net192.flag")
 	if net192 {
@@ -5334,35 +5336,27 @@ func main() {
 	if recipe == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP de IBC")
 	}
-	nibccfg := load_ibcs_conf(execpath + "ibc_conf.csv")
+	nibccfg := load_ibcs_conf(localconfig_path + "ibc_conf.csv")
 	if nibccfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos IBCs nao encontrado")
 	}
-	nbiocfg := load_bios_conf(execpath + "bio_conf.csv")
+	nbiocfg := load_bios_conf(localconfig_path + "bio_conf.csv")
 	if nbiocfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
 	}
-	ntotemcfg := load_totems_conf(execpath + "totem_conf.csv")
+	ntotemcfg := load_totems_conf(localconfig_path + "totem_conf.csv")
 	if ntotemcfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao dos Totems nao encontrado")
 	}
-	nbiofabricacfg := load_biofabrica_conf(execpath + "biofabrica_conf.csv")
+	nbiofabricacfg := load_biofabrica_conf(localconfig_path + "biofabrica_conf.csv")
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
-	npaths := load_paths_conf(execpath + "paths_conf.csv")
+	npaths := load_paths_conf(localconfig_path + "paths_conf.csv")
 	if npaths < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
 	}
-	// fmt.Println("BIO cfg", bio_cfg)
-	// fmt.Println("IBC cfg", ibc_cfg)
-	// fmt.Println("TOTEM cfg", totem_cfg)
-	// fmt.Println("Biofabrica cfg", biofabrica_cfg)
-	// fmt.Println("PATHs ", paths)
-	// fmt.Println("BIO ", bio)
-	// fmt.Println("IBC ", ibc)
-	// fmt.Println("TOTEM ", totem)
-	// fmt.Println("Biofabrica ", biofabrica)
+
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
 
