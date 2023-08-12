@@ -5299,7 +5299,7 @@ func main() {
 
 	go scp_check_network()
 
-	localconfig_path = "/etc/scpd"
+	localconfig_path = "/etc/scpd/"
 	addrs_type = make(map[string]DevAddrData, 0)
 	net192 = test_file("/etc/scpd/scp_net192.flag")
 	if net192 {
