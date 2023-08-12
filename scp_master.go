@@ -1370,9 +1370,9 @@ func scp_setup_devices(mustall bool) {
 
 				nerr := 0
 				for k, c := range cmd {
-					fmt.Print(k, "  ", c, " ")
+					fmt.Print()
 					ret := scp_sendmsg_orch(c)
-					fmt.Println(ret)
+					fmt.Println("DEBUG SETUP DEVICES: ", k, "  ", c, " ", ret)
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 					}
