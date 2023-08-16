@@ -141,12 +141,13 @@ const scp_mustupdate_ibc = 45
 const scp_timewaitvalvs = 15000
 const scp_timephwait = 5000
 const scp_timetempwait = 3000
+const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.1   // variacao de ph maximo em percentual
+const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto
 
 const bio_withdrawstep = 50
 
@@ -210,6 +211,7 @@ type Bioreact struct {
 	Level        uint8
 	Pumpstatus   bool
 	Aerator      bool
+	AeroRatio    int
 	Valvs        [8]int
 	Perist       [5]int
 	Heater       bool
@@ -429,12 +431,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
 }
 
 var ibc = []IBC{
@@ -1398,12 +1400,28 @@ func scp_setup_devices(mustall bool) {
 }
 
 func scp_get_ph_voltage(bioid string) float64 {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP GET PH VOLTAGE: Biorreator NAO ENCONTRO", bioid)
+		return -1
+	}
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	phdev := bio_cfg[bioid].PH_dev
+	aerostatus := bio[ind].Aerator
+	aeroratio := bio[ind].AeroRatio
+
 	if len(bioaddr) > 0 {
+		if aerostatus && !scp_turn_aero(bioid, false, 0, 0) {
+			fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
+			return -1
+		}
+		time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
+		if aerostatus && !scp_turn_aero(bioid, false, 1, aeroratio) {
+			fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
+		}
 		params := scp_splitparam(ret_ph, "/")
 		if params[0] == scp_ack {
 			phint, _ := strconv.Atoi(params[1])
@@ -2682,6 +2700,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		}
 	}
+	bio[ind].AeroRatio = percent
 
 	return true
 }
@@ -2992,7 +3011,7 @@ func pop_first_undojob(devtype string, main_id string, remove bool) string {
 	return ""
 }
 
-func scp_adjust_ph(bioid string, ph float32) {
+func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, bio[ind].PH, ph)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
@@ -3000,33 +3019,30 @@ func scp_adjust_ph(bioid string, ph float32) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
 		return
 	}
-	for n := 0; n < 3; n++ {
-		if bio[ind].MustPause || bio[ind].MustStop {
-			break
-		}
-		if ph*0.95 <= bio[ind].PH && bio[ind].PH <= ph*1.05 {
-			break
-		} else if bio[ind].PH > ph {
-			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
-				fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
-			} else {
-				time.Sleep(scp_timephwait * time.Millisecond)
-				if !scp_turn_peris(scp_bioreactor, bioid, "P1", 0) {
-					fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P1", bioid)
-				}
-			}
-		} else {
-			if !scp_turn_peris(scp_bioreactor, bioid, "P2", 1) {
-				fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P2", bioid)
-			} else {
-				time.Sleep(scp_timephwait * time.Millisecond)
-				if !scp_turn_peris(scp_bioreactor, bioid, "P2", 0) {
-					fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P2", bioid)
-				}
-			}
-		}
-		time.Sleep(scp_timephwait * time.Millisecond)
+	if bio[ind].MustPause || bio[ind].MustStop {
+		return
 	}
+
+	if bio[ind].PH > ph {
+		if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
+			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
+		} else {
+			time.Sleep(scp_timephwait * time.Millisecond)
+			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 0) {
+				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P1", bioid)
+			}
+		}
+	} else {
+		if !scp_turn_peris(scp_bioreactor, bioid, "P2", 1) {
+			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P2", bioid)
+		} else {
+			time.Sleep(scp_timephwait * time.Millisecond)
+			if !scp_turn_peris(scp_bioreactor, bioid, "P2", 0) {
+				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P2", bioid)
+			}
+		}
+	}
+
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
 		return
@@ -3119,6 +3135,8 @@ func scp_grow_bio(bioid string) bool {
 	var aero int
 	aero_prev := -1
 	t_start := time.Now()
+	t_start_ph := time.Now()
+
 	if control_foam {
 		scp_adjust_foam(bioid)
 	}
@@ -3172,14 +3190,18 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
 		}
-		if control_ph && bio[ind].PH < float32(minph*(1-bio_deltaph)) {
-			scp_adjust_ph(bioid, float32(minph))
-		}
-		if bio[ind].MustPause || bio[ind].MustStop {
-			break
-		}
-		if control_ph && bio[ind].PH > float32(maxph*(1+bio_deltaph)) {
-			scp_adjust_ph(bioid, float32(maxph))
+		t_elapsed_ph := time.Since(t_start_ph).Minutes()
+		if control_ph && t_elapsed_ph >= 10 {
+			ph_tmp := scp_get_ph(bioid)
+			if ph_tmp > 0 {
+				bio[ind].PH = float32(ph_tmp)
+				if bio[ind].PH < float32(minph-bio_deltaph) {
+					scp_adjust_ph(bioid, float32(minph))
+				} else if bio[ind].PH > float32(maxph+bio_deltaph) {
+					scp_adjust_ph(bioid, float32(maxph))
+				}
+				t_start_ph = time.Now()
+			}
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
