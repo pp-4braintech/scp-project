@@ -339,6 +339,8 @@ type Biofabrica struct {
 	Messages     []string
 	Status       string
 	VolumeOut    float64
+	VolOutPart   float64
+	LastCountOut uint32
 	TestMode     bool
 }
 
@@ -455,7 +457,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, false,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, false,
 }
 
 var biobak = bio // Salva status atual
@@ -1540,16 +1542,16 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	params := scp_splitparam(ret, "/")
 	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD", cmd, "  RET", ret)
 	var volume float64
-	var dint int
+	var dint int64
 	volume = -1
 	if params[0] == scp_ack {
-		dint, _ = strconv.Atoi(params[1])
+		dint, _ = strconv.ParseInt(params[1], 10, 32)
 		if vol_type == scp_dev_vol0 {
 			if dint != 0 && dint != 1 {
 				fmt.Println("ERROR SCP GET VOLUME: Retorno do ORCH para VOLUME0 com ERRO", main_id, dint, ret)
 				return -1, -1
 			}
-			return dint, float64(dint)
+			return int(dint), float64(dint)
 		}
 	} else {
 		fmt.Println("ERROR SCP GET VOLUME: Retorno do ORCH com ERRO", main_id, ret)
@@ -1584,14 +1586,17 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		}
 		volume = area * dfloat
 	} else {
-		volume = float64(dint) * flow_ratio
+		if dint < int64(biofabrica.LastCountOut) {
+			biofabrica.VolOutPart += math.MaxUint16
+		}
+		volume = (float64(dint) * flow_ratio) + biofabrica.VolOutPart
 	}
 
 	if volume < 0 {
 		fmt.Println("ERROR SCP GET VOLUME: VOLUME NEGATIVO encontrado", main_id, vol_type, dint, volume)
 		volume = 0
 	}
-	return dint, volume
+	return int(dint), volume
 }
 
 func scp_refresh_status() {
