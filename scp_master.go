@@ -2246,6 +2246,63 @@ func scp_run_linewash(lines string) bool {
 
 func scp_run_linecip(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: Executando CIP das linhas", lines)
+
+	var pathclean string = ""
+	totem := ""
+	switch lines {
+	case line_13:
+		pathclean = "TOTEM01-CLEAN3"
+		totem = "TOTEM01"
+	case line_14:
+		pathclean = "TOTEM01-CLEAN4"
+		totem = "TOTEM01"
+	case line_23:
+		pathclean = "TOTEM02-CLEAN3"
+		totem = "TOTEM02"
+	case line_24:
+		pathclean = "TOTEM02-CLEAN4"
+		totem = "TOTEM02"
+	default:
+		fmt.Println("ERROR SCP RUN LINEWASH: Linhas invalidas", lines)
+		return false
+	}
+
+	pathstr := paths[pathclean].Path
+	if len(pathstr) == 0 {
+		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
+		return false
+	}
+	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+	vpath := scp_splitparam(pathstr, ",")
+	all_peris := [2]string{"P1", "P2"}
+
+	for _, peris_str := range all_peris {
+		if !scp_turn_peris(scp_totem, totem, peris_str, 1) {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao ligar peristaltica em", totem, peris_str)
+			return false
+		}
+
+		time.Sleep(time.Duration(10000) * time.Millisecond) // VALIDAR TEMPO DE BLEND na LINHA
+
+		if !scp_turn_peris(scp_totem, totem, peris_str, 0) {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao desligar peristaltica em", totem, peris_str)
+			return false
+		}
+
+		if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
+			return false
+		}
+
+		time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+
+		if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
+			return false
+		}
+	}
+
+	board_add_message("ICIP concluído Linhas " + lines)
 	return true
 }
 
