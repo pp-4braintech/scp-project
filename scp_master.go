@@ -2188,12 +2188,12 @@ func turn_withdraw_var(value bool) {
 }
 
 func scp_run_linewash(lines string) bool {
-	fmt.Println("DEBUG SCP RUN LINEWASH: Executando enxague das linhas",lines)
+	fmt.Println("DEBUG SCP RUN LINEWASH: Executando enxague das linhas", lines)
 	return true
 }
 
 func scp_run_linecip(lines string) bool {
-	fmt.Println("DEBUG SCP RUN LINEWASH: Executando CIP das linhas",lines)
+	fmt.Println("DEBUG SCP RUN LINEWASH: Executando CIP das linhas", lines)
 	return true
 }
 
@@ -4848,12 +4848,13 @@ func scp_process_conn(conn net.Conn) {
 			switch cmdpar {
 			case scp_par_linewash:
 				scp_run_linewash(params[3])
-			
+
 			case scp_par_linecip:
 				scp_run_linecip(params[3])
 
 			default:
 				fmt.Println("ERROR START: Parametro de Biofabrica invalido", params)
+			}
 		}
 
 	case scp_stop:
