@@ -188,6 +188,11 @@ const bio_max_msg = 50
 const bioreactor_max_msg = 7
 const bio_max_foam = 4
 
+const line_13 = "1_3"
+const line_14 = "1_4"
+const line_23 = "2_3"
+const line_24 = "2_4"
+
 const TEMPMAX = 120
 
 type Organism struct {
@@ -371,6 +376,7 @@ type Bioreact_cfg struct {
 	Emergency    string
 	Heater       string
 }
+
 type IBC_cfg struct {
 	IBCID      string
 	Deviceaddr string
@@ -720,7 +726,7 @@ func save_bios_conf(filename string) int {
 		}
 		s += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s", b.Vol_devs[0], b.Vol_devs[1], b.PH_dev, b.Temp_dev, b.Levelhigh, b.Levellow, b.Emergency, b.Heater)
 		csvstr := scp_splitparam(s, ",")
-		fmt.Println("DEBUG SAVE", csvstr)
+		// fmt.Println("DEBUG SAVE", csvstr)
 		err = csvwriter.Write(csvstr)
 		if err != nil {
 			checkErr(err)
@@ -2195,6 +2201,46 @@ func turn_withdraw_var(value bool) {
 
 func scp_run_linewash(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: Executando enxague das linhas", lines)
+	var pathclean string = ""
+	totem := ""
+	switch lines {
+	case line_13:
+		pathclean = "TOTEM01-CLEAN3"
+		totem = "TOTEM01"
+	case line_14:
+		pathclean = "TOTEM01-CLEAN4"
+		totem = "TOTEM01"
+	case line_23:
+		pathclean = "TOTEM02-CLEAN3"
+		totem = "TOTEM02"
+	case line_24:
+		pathclean = "TOTEM02-CLEAN4"
+		totem = "TOTEM02"
+	default:
+		fmt.Println("ERROR SCP RUN LINEWASH: Linhas invalidas", lines)
+		return false
+	}
+
+	pathstr := paths[pathclean].Path
+	if len(pathstr) == 0 {
+		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
+		return false
+	}
+	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+	vpath := scp_splitparam(pathstr, ",")
+	if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
+		return false
+	}
+
+	time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+
+	if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
+		return false
+	}
+
+	board_add_message("IEnxague concluído Linhas " + lines)
 	return true
 }
 
