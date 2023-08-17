@@ -45,6 +45,8 @@ const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
 const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
+const scp_par_linewash = "LINEWASH"
+const scp_par_linecip = "LINECIP"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -650,6 +652,8 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		pump := r.FormValue("Pumpwithdraw")
 		valve := r.FormValue("Valve")
 		valve_status := r.FormValue("Status")
+		linewash := r.FormValue("Linewash")
+		linecip := r.FormValue("LineCIP")
 		// fmt.Println("Pumpwithdraw = ", pump)
 		// fmt.Println("Valve = ", valve)
 		// fmt.Println("Status = ", valve_status)
@@ -661,6 +665,18 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		}
 		if valve != "" {
 			cmd := "PUT/" + scp_biofabrica + "/" + scp_dev_valve + "," + valve + "," + valve_status + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+		if linewash != "" {
+			cmd := "START/" + scp_biofabrica + "/" + scp_par_linewash + "/" + linewash + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+		if linecip != "" {
+			cmd := "START/" + scp_biofabrica + "/" + scp_par_linecip + "/" + linecip + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))

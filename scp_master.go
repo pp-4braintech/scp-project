@@ -98,6 +98,8 @@ const scp_par_testmode = "TESTMODE"
 const scp_par_getconfig = "GETCONFIG"
 const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
+const scp_par_linewash = "LINEWASH"
+const scp_par_linecip = "LINECIP"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -139,7 +141,7 @@ const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
 
 const scp_timewaitvalvs = 15000
-const scp_timephwait = 5000
+const scp_timephwait = 10000 // Tempo que o ajuste de PH e aplicado durante o cultivo
 const scp_timetempwait = 3000
 const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 30000
@@ -696,6 +698,34 @@ func load_bios_conf(filename string) int {
 		}
 	}
 	return totalrecords
+}
+
+func save_bios_conf(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	for _, b := range bio_cfg {
+		s := fmt.Sprintf("%s,%s,%s,%d,%s,%s,%s,", b.BioreactorID, b.Deviceaddr, b.Screenaddr, b.Maxvolume, b.Pump_dev, b.Aero_dev, b.Aero_rele)
+		for _, p := range b.Peris_dev {
+			s += p + ","
+		}
+		for _, v := range b.Valv_devs {
+			s += v + ","
+		}
+		s += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s", b.Vol_devs[0], b.Vol_devs[1], b.PH_dev, b.Temp_dev, b.Levelhigh, b.Levellow, b.Emergency, b.Heater)
+		csvstr := scp_splitparam(s, ",")
+		err = csv.NewWriter(filecsv).Write(csvstr)
+		if err != nil {
+			checkErr(err)
+		} else {
+			n++
+		}
+	}
+	return n
 }
 
 func load_totems_conf(filename string) int {
@@ -2155,6 +2185,16 @@ func test_path(vpath []string, value int) bool {
 
 func turn_withdraw_var(value bool) {
 	withdrawrunning = value
+}
+
+func scp_run_linewash(lines string) bool {
+	fmt.Println("DEBUG SCP RUN LINEWASH: Executando enxague das linhas",lines)
+	return true
+}
+
+func scp_run_linecip(lines string) bool {
+	fmt.Println("DEBUG SCP RUN LINEWASH: Executando CIP das linhas",lines)
+	return true
 }
 
 func scp_run_withdraw(devtype string, devid string, linewash bool) int {
@@ -4802,6 +4842,18 @@ func scp_process_conn(conn net.Conn) {
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
+
+		case scp_biofabrica:
+			cmdpar := params[2]
+			switch cmdpar {
+			case scp_par_linewash:
+				scp_run_linewash(params[3])
+			
+			case scp_par_linecip:
+				scp_run_linecip(params[3])
+
+			default:
+				fmt.Println("ERROR START: Parametro de Biofabrica invalido", params)
 		}
 
 	case scp_stop:
