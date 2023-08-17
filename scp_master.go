@@ -993,6 +993,9 @@ func save_all_data(filename string) int {
 	buf5, _ := json.Marshal(schedule)
 	err5 := os.WriteFile(localconfig_path+filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
+
+	save_bios_conf(localconfig_path + "bio_conf.csv")
+
 	return 0
 }
 
