@@ -708,6 +708,8 @@ func save_bios_conf(filename string) int {
 	}
 	defer filecsv.Close()
 	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	defer csvwriter.Flush()
 	for _, b := range bio_cfg {
 		s := fmt.Sprintf("%s,%s,%s,%d,%s,%s,%s,", b.BioreactorID, b.Deviceaddr, b.Screenaddr, b.Maxvolume, b.Pump_dev, b.Aero_dev, b.Aero_rele)
 		for _, p := range b.Peris_dev {
@@ -719,7 +721,7 @@ func save_bios_conf(filename string) int {
 		s += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s", b.Vol_devs[0], b.Vol_devs[1], b.PH_dev, b.Temp_dev, b.Levelhigh, b.Levellow, b.Emergency, b.Heater)
 		csvstr := scp_splitparam(s, ",")
 		fmt.Println("DEBUG SAVE", csvstr)
-		err = csv.NewWriter(filecsv).Write(csvstr)
+		err = csvwriter.Write(csvstr)
 		if err != nil {
 			checkErr(err)
 		} else {
