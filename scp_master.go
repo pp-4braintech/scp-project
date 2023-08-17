@@ -718,6 +718,7 @@ func save_bios_conf(filename string) int {
 		}
 		s += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s", b.Vol_devs[0], b.Vol_devs[1], b.PH_dev, b.Temp_dev, b.Levelhigh, b.Levellow, b.Emergency, b.Heater)
 		csvstr := scp_splitparam(s, ",")
+		fmt.Println("DEBUG SAVE", csvstr)
 		err = csv.NewWriter(filecsv).Write(csvstr)
 		if err != nil {
 			checkErr(err)
