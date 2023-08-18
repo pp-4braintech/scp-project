@@ -2295,6 +2295,11 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
+		tmax := scp_timewaitvalvs / 100
+		for i := 0; i < tmax; i++ {
+			time.Sleep(100 * time.Millisecond)
+		}
+
 		if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao ligar peristaltica em", totem_str, peris_str)
 			return false
@@ -2315,6 +2320,10 @@ func scp_run_linecip(lines string) bool {
 		} else {
 			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath_peris)
 			return false
+		}
+
+		for i := 0; i < tmax; i++ {
+			time.Sleep(100 * time.Millisecond)
 		}
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 1) {
