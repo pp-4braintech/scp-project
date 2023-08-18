@@ -2277,7 +2277,7 @@ func scp_run_linecip(lines string) bool {
 	perisvalv := totem_str + "/V2"
 	n := len(vpath)
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath ", vpath)
-	vpath_peris := append(vpath[:n-1], perisvalv)
+	vpath_peris := append(vpath[1:n-1], perisvalv)
 	vpath_peris = append(vpath_peris, "END")
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
