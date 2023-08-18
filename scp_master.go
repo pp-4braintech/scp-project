@@ -5593,7 +5593,10 @@ func main() {
 	}
 	nbiocfg := load_bios_conf(localconfig_path + "bio_conf.csv")
 	if nbiocfg < 1 {
-		log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
+		nbiocfg_bak := load_bios_conf(localconfig_path + "bio_conf.csv.bak")
+		if nbiocfg_bak < 1 {
+			log.Fatal("FATAL: Arquivo de configuracao dos Bioreatores nao encontrado")
+		}
 	}
 	ntotemcfg := load_totems_conf(localconfig_path + "totem_conf.csv")
 	if ntotemcfg < 1 {
