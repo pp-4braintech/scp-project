@@ -2304,10 +2304,10 @@ func scp_run_linecip(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
 	all_peris := [2]string{"P1", "P2"}
-	if devmode || testmode {
-		tmax := scp_
-	}
 	tmax := scp_timewaitvalvs / 100
+	if devmode || testmode {
+		tmax = scp_timeoutdefault / 100
+	}
 
 	for _, peris_str := range all_peris {
 
