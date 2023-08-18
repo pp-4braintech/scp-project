@@ -2274,10 +2274,11 @@ func scp_run_linecip(lines string) bool {
 	}
 	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 	vpath := scp_splitparam(pathstr, ",")
+	vpath_peris := vpath
 	perisvalv := totem_str + "/V2"
 	n := len(vpath)
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath ", vpath)
-	vpath_peris := append(vpath[1:n-1], perisvalv)
+	vpath_peris = append(vpath_peris[1:n-1], perisvalv)
 	vpath_peris = append(vpath_peris, "END")
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
