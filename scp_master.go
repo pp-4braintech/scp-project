@@ -2276,22 +2276,22 @@ func scp_run_linecip(lines string) bool {
 	vpath := scp_splitparam(pathstr, ",")
 	perisvalv := totem_str + "/V2"
 	n := len(vpath)
-	fmt.Println("DEBUG SCP RUN LINEWASH: vpath antes ", vpath)
-	vpath = append(vpath[:n-1], perisvalv)
-	vpath = append(vpath, "END")
-	fmt.Println("DEBUG SCP RUN LINEWASH: vpath depois ", vpath)
+	fmt.Println("DEBUG SCP RUN LINEWASH: vpath ", vpath)
+	vpath_peris := append(vpath[:n-1], perisvalv)
+	vpath_peris = append(vpath_peris, "END")
+	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
 	all_peris := [2]string{"P1", "P2"}
 
 	for _, peris_str := range all_peris {
 
-		if test_path(vpath, 0) {
-			if set_valvs_value(vpath, 1, true) < 0 {
-				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao abrir valvulas no path ", vpath)
+		if test_path(vpath_peris, 0) {
+			if set_valvs_value(vpath_peris, 1, true) < 0 {
+				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao abrir valvulas no path ", vpath_peris)
 				return false
 			}
 		} else {
-			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath)
+			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath_peris)
 			return false
 		}
 
@@ -2307,13 +2307,13 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		if test_path(vpath, 1) {
-			if set_valvs_value(vpath, 0, true) < 0 {
-				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao fechar valvulas no path ", vpath)
+		if test_path(vpath_peris, 1) {
+			if set_valvs_value(vpath_peris, 0, true) < 0 {
+				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao fechar valvulas no path ", vpath_peris)
 				return false
 			}
 		} else {
-			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath)
+			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath_peris)
 			return false
 		}
 
