@@ -146,6 +146,7 @@ const scp_timetempwait = 3000
 const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
+const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
@@ -2274,12 +2275,12 @@ func scp_run_linecip(lines string) bool {
 	}
 	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 	vpath := scp_splitparam(pathstr, ",")
-	vpath_peris := vpath
+	vpath_peris := scp_splitparam(pathstr, ",")
 	perisvalv := totem_str + "/V2"
 	n := len(vpath)
-	fmt.Println("DEBUG SCP RUN LINEWASH: vpath ", vpath)
 	vpath_peris = append(vpath_peris[1:n-1], perisvalv)
 	vpath_peris = append(vpath_peris, "END")
+	fmt.Println("DEBUG SCP RUN LINEWASH: vpath ", vpath)
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
 	all_peris := [2]string{"P1", "P2"}
@@ -2306,7 +2307,7 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		time.Sleep(time.Duration(10000) * time.Millisecond) // VALIDAR TEMPO DE BLEND na LINHA
+		time.Sleep(scp_timelinecip * time.Second) // VALIDAR TEMPO DE BLEND na LINHA
 
 		if !scp_turn_peris(scp_totem, totem_str, peris_str, 0) {
 			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao desligar peristaltica em", totem_str, peris_str)
