@@ -70,7 +70,8 @@ const scp_dev_peris = "PERIS"
 const scp_dev_vol0 = "VOL0"
 const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
-const scp_dev_volfluxo = "VOLFLUXO"
+const scp_dev_volfluxo_out = "VOLFLUXO"
+const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -349,6 +350,9 @@ type Biofabrica struct {
 	VolumeOut    float64
 	VolOutPart   float64
 	LastCountOut uint32
+	VolumeIn1    float64
+	VolIn1Part   float64
+	LastCountIn1 uint32
 	TestMode     bool
 }
 
@@ -466,7 +470,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, false,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false,
 }
 
 var biobak = bio // Salva status atual
@@ -1569,9 +1573,12 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			return -1, -1
 		}
 	case scp_biofabrica:
-		if vol_type == scp_dev_volfluxo {
+		if vol_type == scp_dev_volfluxo_out {
 			dev_addr = biofabrica_cfg["FBF01"].Deviceaddr
 			vol_dev = biofabrica_cfg["FBF01"].Deviceport
+		} else if vol_type == scp_dev_volfluxo_in1 {
+			dev_addr = biofabrica_cfg["FBF02"].Deviceaddr
+			vol_dev = biofabrica_cfg["FBF02"].Deviceport
 		} else {
 			fmt.Println("ERROR SCP GET VOLUME: VOL_TYPE invalido para biofabrica", main_id, vol_type)
 			return -1, -1
@@ -1600,7 +1607,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		fmt.Println("ERROR SCP GET VOLUME: Retorno do ORCH com ERRO", main_id, ret)
 		return -1, -1
 	}
-	if dint == 0 && vol_type != scp_dev_volfluxo {
+	if dint == 0 && (vol_type != scp_dev_volfluxo_out || vol_type != scp_dev_volfluxo_in1) {
 		fmt.Println("ERROR SCP GET VOLUME: LEITURA INVALIDA do SENSOR", main_id, vol_type, ret)
 		return -1, -1
 	}
@@ -1610,7 +1617,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	}
 	var area, dfloat float64
 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-	if vol_type != scp_dev_volfluxo {
+	if vol_type != scp_dev_volfluxo_out {
 		switch vol_type {
 		case scp_dev_volusom:
 			switch dev_type {
@@ -1628,11 +1635,16 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			}
 		}
 		volume = area * dfloat
-	} else {
+	} else if vol_type == scp_dev_volfluxo_out {
 		if dint < int64(biofabrica.LastCountOut) {
 			biofabrica.VolOutPart += math.MaxUint16
 		}
 		volume = (float64(dint) * flow_ratio) + biofabrica.VolOutPart
+	} else if vol_type == scp_dev_volfluxo_in1 {
+		if dint < int64(biofabrica.LastCountIn1) {
+			biofabrica.VolIn1Part += math.MaxUint16
+		}
+		volume = (float64(dint) * flow_ratio) + biofabrica.VolIn1Part
 	}
 
 	if volume < 0 {
@@ -2088,10 +2100,18 @@ func scp_get_alldata() {
 			}
 
 			if mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 {
-				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
 					biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+				}
+			}
+
+			if mustupdate_bio || biofabrica.Valvs[1] == 1 {
+				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
+				if count >= 0 {
+					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
+					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 				}
 			}
 
@@ -2284,6 +2304,10 @@ func scp_run_linecip(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
 	all_peris := [2]string{"P1", "P2"}
+	if devmode || testmode {
+		tmax := scp_
+	}
+	tmax := scp_timewaitvalvs / 100
 
 	for _, peris_str := range all_peris {
 
@@ -2297,7 +2321,6 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		tmax := scp_timewaitvalvs / 100
 		for i := 0; i < tmax; i++ {
 			time.Sleep(100 * time.Millisecond)
 		}
@@ -2428,7 +2451,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		var vol_out int64
 		var vol_bio_out_start float64
 		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
-			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 		} else {
 			vol_bio_out_start = -1
 		}
@@ -2618,7 +2641,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
 			use_volfluxo = true
 			var count int
-			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo)
+			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 			if count < 0 {
 				vol_bio_out_start = biofabrica.VolumeOut
 			}
