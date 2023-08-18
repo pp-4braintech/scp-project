@@ -2248,20 +2248,20 @@ func scp_run_linecip(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: Executando CIP das linhas", lines)
 
 	var pathclean string = ""
-	totem := ""
+	totem_str := ""
 	switch lines {
 	case line_13:
 		pathclean = "TOTEM01-CLEAN3"
-		totem = "TOTEM01"
+		totem_str = "TOTEM01"
 	case line_14:
 		pathclean = "TOTEM01-CLEAN4"
-		totem = "TOTEM01"
+		totem_str = "TOTEM01"
 	case line_23:
 		pathclean = "TOTEM02-CLEAN3"
-		totem = "TOTEM02"
+		totem_str = "TOTEM02"
 	case line_24:
 		pathclean = "TOTEM02-CLEAN4"
-		totem = "TOTEM02"
+		totem_str = "TOTEM02"
 	default:
 		fmt.Println("ERROR SCP RUN LINEWASH: Linhas invalidas", lines)
 		return false
@@ -2274,29 +2274,55 @@ func scp_run_linecip(lines string) bool {
 	}
 	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 	vpath := scp_splitparam(pathstr, ",")
+	perisvalv := totem_str + "/V2"
+	n := len(vpath)
+	vpath = append(vpath[:n-1], perisvalv)
+	vpath = append(vpath, "END")
+
 	all_peris := [2]string{"P1", "P2"}
 
 	for _, peris_str := range all_peris {
-		if !scp_turn_peris(scp_totem, totem, peris_str, 1) {
-			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao ligar peristaltica em", totem, peris_str)
+
+		if test_path(vpath, 0) {
+			if set_valvs_value(vpath, 1, true) < 0 {
+				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao abrir valvulas no path ", vpath)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath)
+			return false
+		}
+
+		if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao ligar peristaltica em", totem_str, peris_str)
 			return false
 		}
 
 		time.Sleep(time.Duration(10000) * time.Millisecond) // VALIDAR TEMPO DE BLEND na LINHA
 
-		if !scp_turn_peris(scp_totem, totem, peris_str, 0) {
-			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao desligar peristaltica em", totem, peris_str)
+		if !scp_turn_peris(scp_totem, totem_str, peris_str, 0) {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao desligar peristaltica em", totem_str, peris_str)
 			return false
 		}
 
-		if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+		if test_path(vpath, 1) {
+			if set_valvs_value(vpath, 0, true) < 0 {
+				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao fechar valvulas no path ", vpath)
+				return false
+			}
+		} else {
+			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath)
+			return false
+		}
+
+		if !scp_turn_pump(scp_totem, totem_str, vpath, 1) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
 			return false
 		}
 
 		time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
 
-		if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+		if !scp_turn_pump(scp_totem, totem_str, vpath, 0) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
 			return false
 		}
