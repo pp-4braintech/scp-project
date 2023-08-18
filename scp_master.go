@@ -185,6 +185,7 @@ const bio_error = "ERRO"
 const bio_ready = "PRONTO"
 const bio_water = "AGUA"
 const bio_update = "ATUALIZANDO"
+const bio_circulate = "CIRCULANDO"
 const bio_max_valves = 8
 const bio_max_msg = 50
 const bioreactor_max_msg = 7
@@ -1007,8 +1008,6 @@ func save_all_data(filename string) int {
 	buf5, _ := json.Marshal(schedule)
 	err5 := os.WriteFile(localconfig_path+filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
-
-	save_bios_conf(localconfig_path + "bio_conf.csv")
 
 	return 0
 }
@@ -2304,7 +2303,7 @@ func scp_run_linecip(lines string) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: vpath peris ", vpath_peris)
 
 	all_peris := [2]string{"P1", "P2"}
-	tmax := scp_timewaitvalvs / 100
+	tmax := scp_timewaitvalvs * 10
 	if devmode || testmode {
 		tmax = scp_timeoutdefault / 100
 	}
@@ -4942,6 +4941,7 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_save:
 					fmt.Println("DEBUG CONFIG: Salvando configuracoes")
 					save_all_data(data_filename)
+					save_bios_conf(localconfig_path + "bio_conf.csv")
 					conn.Write([]byte(scp_ack))
 
 				case scp_par_restart:
