@@ -5257,8 +5257,10 @@ func scp_process_conn(conn net.Conn) {
 							if !status {
 								bio[ind].Status = bio[ind].LastStatus
 							} else {
-								bio[ind].LastStatus = bio[ind].Status
-								bio[ind].Status = bio_circulate
+								if bio[ind].Status != bio_circulate {
+									bio[ind].LastStatus = bio[ind].Status
+									bio[ind].Status = bio_circulate
+								}
 							}
 							conn.Write([]byte(scp_ack))
 						} else {
