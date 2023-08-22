@@ -5254,7 +5254,7 @@ func scp_process_conn(conn net.Conn) {
 						status, err := strconv.ParseBool(subparams[1])
 						checkErr(err)
 						if err == nil {
-							if status {
+							if !status {
 								bio[ind].Status = bio[ind].LastStatus
 							} else {
 								bio[ind].LastStatus = bio[ind].Status
