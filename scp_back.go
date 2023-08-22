@@ -411,7 +411,13 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			b_stop := r.FormValue("Stop")
 			b_start := r.FormValue("Start")
 			orgcode := r.FormValue("OrgCode")
+			recirc := r.FormValue("Recirculate")
 
+			if recirc != "" {
+				cmd := "PUT/IBC/" + ibc_id + "/" + scp_par_circulate + "," + recirc + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
 			if pump != "" {
 				cmd := "PUT/IBC/" + ibc_id + "/" + scp_dev_pump + "," + pump + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))

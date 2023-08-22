@@ -5386,6 +5386,27 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("ID de saida", outid, " nao existe")
 						conn.Write([]byte(scp_err))
 					}
+
+				case scp_par_circulate:
+					fmt.Println("DEBUG SCP PROCESS CONN: PAR CIRCULATE", params, subparams)
+					if len(subparams) >= 2 {
+						status, err := strconv.ParseBool(subparams[1])
+						checkErr(err)
+						if err == nil {
+							if !status {
+								ibc[ind].Status = ibc[ind].LastStatus
+							} else {
+								if ibc[ind].Status != bio_circulate {
+									ibc[ind].LastStatus = ibc[ind].Status
+									ibc[ind].Status = bio_circulate
+								}
+							}
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
+					}
+
 				case scp_par_withdraw:
 					vol, err := strconv.Atoi(subparams[1])
 					checkErr(err)
