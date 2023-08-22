@@ -101,6 +101,7 @@ const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
 const scp_par_linecip = "LINECIP"
+const scp_par_circulate = "CIRCULATE"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -1841,26 +1842,22 @@ func scp_get_alldata() {
 						var volc float64
 						volc = float64(bio[ind].Volume)
 						if vol0 == 0 {
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.BioreactorID)
-							volc = 0
-						} else if vol1 < 0 && vol2 < 0 {
-							fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.BioreactorID, vol1, vol2)
-						} else {
-							if bio[ind].Valvs[4] == 1 { // Desenvase
-								if vol1 < 0 {
-									if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
-										volc = vol2
-									} else if vol1 >= 0 {
-										volc = vol1
-									}
-								} else {
-									volc = vol1
-								}
-
-							} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
-								if bio[ind].Valvs[2] == 0 { // Sprayball desligado
+							if vol1 < 100 && vol2 < 100 {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.BioreactorID)
+								volc = 0
+							} else {
+								fmt.Println("ERROR GET ALLDATA: Volume ZERO DETECTADO e Vol1/Vol2 divergem", b.BioreactorID)
+								bio_add_message(b.BioreactorID, "AFavor verificar SENSOR de nivel 0")
+								volc = -1
+							}
+						}
+						if vol0 != 0 || volc == -1 {
+							if vol1 < 0 && vol2 < 0 {
+								fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.BioreactorID, vol1, vol2)
+							} else {
+								if bio[ind].Valvs[4] == 1 { // Desenvase
 									if vol1 < 0 {
-										if vol2 >= 0 && vol2 > float64(bio[ind].Volume) {
+										if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
 											volc = vol2
 										} else if vol1 >= 0 {
 											volc = vol1
@@ -1868,22 +1865,35 @@ func scp_get_alldata() {
 									} else {
 										volc = vol1
 									}
-								}
 
-							} else {
-								if bio[ind].Status == bio_producting {
-									if vol1 >= 0 {
-										volc = vol1
-									} else if vol2 >= 0 {
-										volc = vol2
+								} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
+									if bio[ind].Valvs[2] == 0 { // Sprayball desligado
+										if vol1 < 0 {
+											if vol2 >= 0 && vol2 > float64(bio[ind].Volume) {
+												volc = vol2
+											} else if vol1 >= 0 {
+												volc = vol1
+											}
+										} else {
+											volc = vol1
+										}
 									}
-								} else if bio[ind].Status == bio_cip && bio[ind].Valvs[2] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
-									fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.BioreactorID, vol1, vol2)
+
 								} else {
-									if vol1 >= 0 {
-										volc = vol1
-									} else if vol2 >= 0 {
-										volc = vol2
+									if bio[ind].Status == bio_producting {
+										if vol1 >= 0 {
+											volc = vol1
+										} else if vol2 >= 0 {
+											volc = vol2
+										}
+									} else if bio[ind].Status == bio_cip && bio[ind].Valvs[2] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
+										fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.BioreactorID, vol1, vol2)
+									} else {
+										if vol1 >= 0 {
+											volc = vol1
+										} else if vol2 >= 0 {
+											volc = vol2
+										}
 									}
 								}
 							}
@@ -1893,7 +1903,7 @@ func scp_get_alldata() {
 							if vol1 != -1 || vol2 != -1 {
 								bio[ind].Status = bio_ready
 							} else if !devmode {
-								board_add_message("IVerifique sensores de Volume do " + b.BioreactorID)
+								bio_add_message(b.BioreactorID, "AVerifique sensores de Volume")
 								bio[ind].Status = bio_error
 							}
 						}
@@ -5235,6 +5245,22 @@ func scp_process_conn(conn net.Conn) {
 						conn.Write([]byte(scp_ack))
 					} else {
 						fmt.Println("ID de saida", outid, " nao existe")
+						conn.Write([]byte(scp_err))
+					}
+
+				case scp_par_circulate:
+					status, err := strconv.ParseBool(subparams[1])
+					checkErr(err)
+					if err == nil {
+						if status {
+							bio[ind].Status = bio[ind].LastStatus
+						}
+						bio[ind]. = uint32(vol)
+						if bio[ind].Withdraw > 0 {
+							go scp_run_withdraw(scp_bioreactor, bioid, true)
+						}
+						conn.Write([]byte(scp_ack))
+					} else {
 						conn.Write([]byte(scp_err))
 					}
 
