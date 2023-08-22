@@ -1459,9 +1459,14 @@ func scp_get_ph_voltage(bioid string) float64 {
 	aeroratio := bio[ind].AeroRatio
 
 	if len(bioaddr) > 0 {
-		if aerostatus && !scp_turn_aero(bioid, false, 0, 0) {
-			fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
-			return -1
+		if aerostatus {
+			if bio[ind].Status != bio_producting {
+				return -1
+			}
+			if !scp_turn_aero(bioid, false, 0, 0) {
+				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
+				return -1
+			}
 		}
 		time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
