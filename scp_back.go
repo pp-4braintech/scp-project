@@ -47,6 +47,7 @@ const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
 const scp_par_linecip = "LINECIP"
+const scp_par_circulate = "CIRCULATE"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -503,6 +504,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			value_status := r.FormValue("Status")
 			withdraw := r.FormValue("Withdraw")
 			outdev := r.FormValue("Out")
+			recirc := r.FormValue("Recirculate")
 
 			if b_start != "" {
 				if orgcode != "" {
@@ -512,6 +514,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				} else {
 					fmt.Println("ERROR BIOREACTOR VIEW: Start faltando orgcode", r)
 				}
+			}
+			if recirc != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_circulate + "/" + recirc + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
 			}
 			if b_pause != "" {
 				cmd := "PAUSE/BIOREACTOR/" + bio_id + "/" + b_pause + "/END"
