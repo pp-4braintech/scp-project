@@ -5254,10 +5254,9 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						if status {
 							bio[ind].Status = bio[ind].LastStatus
-						}
-						bio[ind]. = uint32(vol)
-						if bio[ind].Withdraw > 0 {
-							go scp_run_withdraw(scp_bioreactor, bioid, true)
+						} else {
+							bio[ind].LastStatus = bio[ind].Status
+							bio[ind].Status = bio_circulate
 						}
 						conn.Write([]byte(scp_ack))
 					} else {
