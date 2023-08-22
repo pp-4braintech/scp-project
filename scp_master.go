@@ -5249,6 +5249,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 
 				case scp_par_circulate:
+					fmt.Println("DEBUG SCP PROCESS CONN: PAR CIRCULATE", params, subparams)
 					if len(subparams) >= 2 {
 						status, err := strconv.ParseBool(subparams[1])
 						checkErr(err)
