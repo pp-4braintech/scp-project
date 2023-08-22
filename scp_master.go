@@ -4720,7 +4720,7 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].MustStop = false
 			q := pop_first_sched(bio[ind].BioreactorID, false)
 
-			if len(q.Bioid) == 0 {
+			if len(q.Bioid) == 0 || true { // Verificar depois
 				if bio[ind].Volume == 0 {
 					bio[ind].Status = bio_empty
 				} else {
