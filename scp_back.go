@@ -516,7 +516,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if recirc != "" {
-				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_circulate + "/" + recirc + "/END"
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_circulate + "," + recirc + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
