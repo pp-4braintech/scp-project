@@ -3505,7 +3505,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_par_totaltime:
 				biototaltime_str := subpars[1]
 				if biototaltime_str == "DEFAULT" {
-					orgtime := organs[bio[ind].OrgCode].Timetotal
+					orgtime := organs[bio[ind].OrgCode].Timetotal * 60
 					fmt.Println("DEBUG SCP RUN JOB: Definindo Tempo DEFAULT ", bioid, bio[ind].OrgCode, orgtime)
 					if orgtime > 0 {
 						bio[ind].Timetotal[0] = int(orgtime / 60)
