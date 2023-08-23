@@ -3507,21 +3507,29 @@ func scp_run_job_bio(bioid string, job string) bool {
 				if biototaltime_str == "DEFAULT" {
 					orgtime := organs[bio[ind].OrgCode].Timetotal
 					if orgtime > 0 {
-						bio[ind].Timetotal[0] = orgtime
-						bio[ind].Timetotal[1] = orgtime
+						bio[ind].Timetotal[0] = int(orgtime / 60)
+						bio[ind].Timeleft[0] = int(orgtime / 60)
+						bio[ind].Timetotal[1] = int(orgtime % 60)
+						bio[ind].Timeleft[1] = int(orgtime % 60)
 					} else {
 						bio[ind].Timetotal[0] = 0
 						bio[ind].Timetotal[1] = 0
+						bio[ind].Timeleft[0] = 0
+						bio[ind].Timeleft[1] = 0
 						fmt.Println("ERROR SCP RUN JOB: Tempo DEFAULT invalido", flag, params, bio[ind].OrgCode, orgtime)
 					}
 				} else {
 					biototaltime, err := strconv.Atoi(biototaltime_str)
 					if err == nil {
-						bio[ind].Timetotal[0] = biototaltime
-						bio[ind].Timetotal[1] = biototaltime
+						bio[ind].Timetotal[0] = int(biototaltime / 60)
+						bio[ind].Timeleft[0] = int(biototaltime / 60)
+						bio[ind].Timetotal[1] = int(biototaltime % 60)
+						bio[ind].Timeleft[1] = int(biototaltime % 60)
 					} else {
 						bio[ind].Timetotal[0] = 0
 						bio[ind].Timetotal[1] = 0
+						bio[ind].Timeleft[0] = 0
+						bio[ind].Timeleft[1] = 0
 						fmt.Println("ERROR SCP RUN JOB: Tempo invalido", flag, params, biototaltime_str)
 						checkErr(err)
 					}
@@ -4542,8 +4550,11 @@ func scp_clock() {
 			if b.Status == bio_cip || b.Status == bio_producting {
 				ind := get_bio_index(b.BioreactorID)
 				t_elapsed := time.Since(t_start).Minutes()
-				if bio[ind].Timetotal[1] > 0 {
-					bio[ind].Timetotal[1] -= int(t_elapsed)
+				totalleft := bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1]
+				if totalleft > 0 {
+					totalleft -= int(t_elapsed)
+					bio[ind].Timeleft[0] = int(totalleft / 60)
+					bio[ind].Timeleft[1] = int(totalleft % 60)
 				}
 			}
 		}
@@ -4552,8 +4563,11 @@ func scp_clock() {
 			if b.Status == bio_cip {
 				ind := get_ibc_index(b.IBCID)
 				t_elapsed := time.Since(t_start).Minutes()
-				if ibc[ind].Timetotal[1] > 0 {
-					ibc[ind].Timetotal[1] -= int(t_elapsed)
+				totalleft := ibc[ind].Timetotal[0]*60 + ibc[ind].Timetotal[1]
+				if totalleft > 0 {
+					totalleft -= int(t_elapsed)
+					ibc[ind].Timetotal[0] = int(totalleft / 60)
+					ibc[ind].Timetotal[1] = int(totalleft % 60)
 				}
 			}
 		}
