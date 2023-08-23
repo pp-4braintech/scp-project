@@ -3498,6 +3498,9 @@ func scp_circulate(devtype string, main_id string, period int) {
 			}
 		}
 	}
+	if !scp_turn_pump(devtype, main_id, valvs, 0) {
+		fmt.Println("ERROR SCP CIRCULATE: Nao foi possivel desligar circulacao em ", main_id)
+	}
 }
 
 func scp_run_job_bio(bioid string, job string) bool {
