@@ -3478,7 +3478,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 	n := 0
 	stop := false
-	for stop {
+	for !stop {
 		time.Sleep(1 * time.Second)
 		n++
 		if period == 0 {
