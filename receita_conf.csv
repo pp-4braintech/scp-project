@@ -1,5 +1,6 @@
 # Inicio
 SET/MAXSTEP,6
+SET/TOTALTIME,DEFAULT
 #
 # Ligando Aerador
 ON/AERO,80,MUSTOFF
