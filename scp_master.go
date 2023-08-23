@@ -3450,6 +3450,56 @@ func scp_grow_bio(bioid string) bool {
 	return true
 }
 
+func scp_circulate(devtype string, main_id string, period int) {
+	var valvs []string
+	var ind int
+	switch devtype {
+	case scp_bioreactor:
+		ind = get_bio_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR SCP CIRCULATE: Biorreator nao encontrado", main_id)
+			return
+		}
+		valvs = []string{main_id + "/V4", main_id + "/V6"}
+	case scp_ibc:
+		ind = get_ibc_index(main_id)
+		if ind < 0 {
+			fmt.Println("ERROR SCP CIRCULATE: IBC nao encontrado", main_id)
+			return
+		}
+		valvs = []string{main_id + "/V1"}
+	default:
+		fmt.Println("ERROR SCP CIRCULATE: Tipo de dispositivo invalido", devtype, main_id)
+		return
+	}
+	if !scp_turn_pump(devtype, main_id, valvs, 1) {
+		fmt.Println("ERROR SCP CIRCULATE: Nao foi possivel ligar circulacao em ", main_id)
+		return
+	}
+	n := 0
+	stop := false
+	for stop {
+		time.Sleep(1 * time.Second)
+		n++
+		if period == 0 {
+			switch devtype {
+			case scp_bioreactor:
+				if bio[ind].Status != bio_circulate {
+					stop = true
+				}
+			case scp_ibc:
+				if ibc[ind].Status != bio_circulate {
+					stop = true
+				}
+			}
+		} else {
+			if n >= period {
+				stop = true
+			}
+		}
+	}
+}
+
 func scp_run_job_bio(bioid string, job string) bool {
 	if devmode {
 		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
@@ -5361,6 +5411,7 @@ func scp_process_conn(conn net.Conn) {
 								if bio[ind].Status != bio_circulate {
 									bio[ind].LastStatus = bio[ind].Status
 									bio[ind].Status = bio_circulate
+									go scp_circulate(scp_bioreactor, bioid, 0)
 								}
 							}
 							conn.Write([]byte(scp_ack))
@@ -5500,6 +5551,7 @@ func scp_process_conn(conn net.Conn) {
 								if ibc[ind].Status != bio_circulate {
 									ibc[ind].LastStatus = ibc[ind].Status
 									ibc[ind].Status = bio_circulate
+									go scp_circulate(scp_ibc, ibcid, 0)
 								}
 							}
 							conn.Write([]byte(scp_ack))
