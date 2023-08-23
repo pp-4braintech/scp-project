@@ -3993,8 +3993,8 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				} else {
 					biototaltime, err := strconv.Atoi(biototaltime_str)
 					if err == nil {
-						ibc[ind].Timetotal[0] = biototaltime
-						ibc[ind].Timetotal[1] = biototaltime
+						ibc[ind].Timetotal[0] = int(biototaltime / 60)
+						ibc[ind].Timetotal[1] = int(biototaltime % 60)
 					} else {
 						ibc[ind].Timetotal[0] = 0
 						ibc[ind].Timetotal[1] = 0
@@ -4547,7 +4547,7 @@ func scp_clock() {
 	t_start := time.Now()
 	for {
 		for _, b := range bio {
-			fmt.Println("CLOCK CHECANDo Biorreator", b.BioreactorID)
+			// fmt.Println("CLOCK CHECANDo Biorreator", b.BioreactorID)
 			if b.Status != bio_pause && b.Status != bio_error && b.Status != bio_nonexist && b.Status != bio_ready && b.Status != bio_empty {
 				ind := get_bio_index(b.BioreactorID)
 				t_elapsed := time.Since(t_start).Minutes()
@@ -4792,7 +4792,7 @@ func stop_device(devtype string, main_id string) bool {
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
-		board_add_message("ABiorreator " + main_id + " interrompido")
+		bio_add_message(main_id, "ABiorreator Interrompido")
 		if bio[ind].Status != bio_empty || true { // corrigir
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
@@ -4806,9 +4806,13 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustOffQueue = []string{}
 			bio[ind].MustStop = false
+			bio[ind].Timetotal[0] = 0
+			bio[ind].Timetotal[1] = 0
+			bio[ind].Timeleft[0] = 0
+			bio[ind].Timeleft[1] = 0
 			q := pop_first_sched(bio[ind].BioreactorID, false)
 
-			if len(q.Bioid) == 0 || true { // Verificar depois
+			if len(q.Bioid) == 0 { // Verificar depois
 				if bio[ind].Volume == 0 {
 					bio[ind].Status = bio_empty
 				} else {
@@ -4841,6 +4845,8 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].RedoQueue = []string{}
 			ibc[ind].MustOffQueue = []string{}
 			ibc[ind].MustStop = false
+			ibc[ind].Timetotal[0] = 0
+			ibc[ind].Timetotal[1] = 0
 			q := pop_first_sched(ibc[ind].IBCID, false)
 
 			if len(q.Bioid) == 0 {
