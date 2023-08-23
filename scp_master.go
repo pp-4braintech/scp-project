@@ -3507,18 +3507,18 @@ func scp_run_job_bio(bioid string, job string) bool {
 				if biototaltime_str == "DEFAULT" {
 					orgtime := organs[bio[ind].OrgCode].Timetotal * 60
 					fmt.Println("DEBUG SCP RUN JOB: Definindo Tempo DEFAULT ", bioid, bio[ind].OrgCode, orgtime)
-					if orgtime > 0 {
-						bio[ind].Timetotal[0] = int(orgtime / 60)
-						bio[ind].Timeleft[0] = int(orgtime / 60)
-						bio[ind].Timetotal[1] = int(orgtime % 60)
-						bio[ind].Timeleft[1] = int(orgtime % 60)
-					} else {
-						bio[ind].Timetotal[0] = 0
-						bio[ind].Timetotal[1] = 0
-						bio[ind].Timeleft[0] = 0
-						bio[ind].Timeleft[1] = 0
-						fmt.Println("ERROR SCP RUN JOB: Tempo DEFAULT invalido", flag, params, bio[ind].OrgCode, orgtime)
-					}
+					// if orgtime > 0 {
+					// 	bio[ind].Timetotal[0] = int(orgtime / 60)
+					// 	bio[ind].Timeleft[0] = int(orgtime / 60)
+					// 	bio[ind].Timetotal[1] = int(orgtime % 60)
+					// 	bio[ind].Timeleft[1] = int(orgtime % 60)
+					// } else {
+					// 	bio[ind].Timetotal[0] = 0
+					// 	bio[ind].Timetotal[1] = 0
+					// 	bio[ind].Timeleft[0] = 0
+					// 	bio[ind].Timeleft[1] = 0
+					// 	fmt.Println("ERROR SCP RUN JOB: Tempo DEFAULT invalido", flag, params, bio[ind].OrgCode, orgtime)
+					// }
 				} else {
 					biototaltime, err := strconv.Atoi(biototaltime_str)
 					if err == nil {
@@ -3668,6 +3668,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].RedoQueue = []string{}
 		bio[ind].MustOffQueue = []string{}
 		bio[ind].Step = [2]int{0, 0}
+		bio[ind].Timetotal = [2]int{0, 0}
+		bio[ind].Timeleft = [2]int{0, 0}
 		return true
 
 	case scp_job_wait:
