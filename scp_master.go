@@ -4547,10 +4547,12 @@ func scp_clock() {
 	t_start := time.Now()
 	for {
 		for _, b := range bio {
+			fmt.Println("CLOCK CHECANDo Biorreator", b.BioreactorID)
 			if b.Status != bio_pause && b.Status != bio_error && b.Status != bio_nonexist && b.Status != bio_ready {
 				ind := get_bio_index(b.BioreactorID)
 				t_elapsed := time.Since(t_start).Minutes()
 				totalleft := bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1]
+				fmt.Println("CLOCK TOTAL LEFT", b.BioreactorID, totalleft)
 				if totalleft > 0 {
 					totalleft -= int(t_elapsed)
 					bio[ind].Timeleft[0] = int(totalleft / 60)
