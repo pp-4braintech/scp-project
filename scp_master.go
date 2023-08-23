@@ -4593,11 +4593,11 @@ func scp_run_devs() {
 }
 
 func scp_scheduler() {
+	schedrunning = true
 	if !devsrunning {
 		scp_run_devs()
 		go scp_clock()
 	}
-	schedrunning = true
 	for schedrunning == true {
 		for k, b := range bio {
 			// fmt.Println(k, " bio =", b)
@@ -5774,4 +5774,8 @@ func main() {
 	go scp_setup_devices(true)
 	go scp_get_alldata()
 	scp_master_ipc()
+	time.Sleep(10 * time.Second)
+	if !schedrunning {
+		go scp_scheduler()
+	}
 }
