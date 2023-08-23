@@ -102,6 +102,7 @@ const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
 const scp_par_linecip = "LINECIP"
 const scp_par_circulate = "CIRCULATE"
+const scp_par_totaltime = "TOTALTIME"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -137,6 +138,7 @@ const scp_refresstatus = 15
 const scp_refreshsleep = 100
 const scp_timeout_ms = 5500
 const scp_schedwait = 500
+const scp_clockwait = 1000
 const scp_timetosave = 45
 const scp_checksetup = 60
 const scp_mustupdate_bio = 30
@@ -3500,6 +3502,30 @@ func scp_run_job_bio(bioid string, job string) bool {
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
 				bio[ind].Step[1] = biomaxstep
+			case scp_par_totaltime:
+				biototaltime_str := subpars[1]
+				if biototaltime_str == "DEFAULT" {
+					orgtime := organs[bio[ind].OrgCode].Timetotal
+					if orgtime > 0 {
+						bio[ind].Timetotal[0] = orgtime
+						bio[ind].Timetotal[1] = orgtime
+					} else {
+						bio[ind].Timetotal[0] = 0
+						bio[ind].Timetotal[1] = 0
+						fmt.Println("ERROR SCP RUN JOB: Tempo DEFAULT invalido", flag, params, bio[ind].OrgCode, orgtime)
+					}
+				} else {
+					biototaltime, err := strconv.Atoi(biototaltime_str)
+					if err == nil {
+						bio[ind].Timetotal[0] = biototaltime
+						bio[ind].Timetotal[1] = biototaltime
+					} else {
+						bio[ind].Timetotal[0] = 0
+						bio[ind].Timetotal[1] = 0
+						fmt.Println("ERROR SCP RUN JOB: Tempo invalido", flag, params, biototaltime_str)
+						checkErr(err)
+					}
+				}
 			default:
 				fmt.Println("ERROR SCP RUN JOB: Parametro invalido em", scp_job_set, flag, params)
 				return false
@@ -3952,6 +3978,22 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
 				ibc[ind].Step[1] = biomaxstep
+			case scp_par_totaltime:
+				biototaltime_str := subpars[1]
+				if biototaltime_str == "DEFAULT" {
+					fmt.Println("ERROR SCP RUN JOB: Tempo DEFAULT nao suportado", flag, params)
+				} else {
+					biototaltime, err := strconv.Atoi(biototaltime_str)
+					if err == nil {
+						ibc[ind].Timetotal[0] = biototaltime
+						ibc[ind].Timetotal[1] = biototaltime
+					} else {
+						ibc[ind].Timetotal[0] = 0
+						ibc[ind].Timetotal[1] = 0
+						fmt.Println("ERROR SCP RUN JOB: Tempo invalido", flag, params, biototaltime_str)
+						checkErr(err)
+					}
+				}
 			default:
 				fmt.Println("ERROR SCP RUN JOB: Parametro invalido em", scp_job_set, flag, params)
 				return false
@@ -4490,6 +4532,31 @@ func scp_run_ibc(ibcid string) {
 
 		}
 		time.Sleep(scp_schedwait * time.Millisecond)
+	}
+}
+
+func scp_clock() {
+	t_start := time.Now()
+	for {
+		for _, b := range bio {
+			if b.Status == bio_cip || b.Status == bio_producting {
+				ind := get_bio_index(b.BioreactorID)
+				t_elapsed := time.Since(t_start).Minutes()
+				bio[ind].Timetotal[1] -= int(t_elapsed)
+			}
+		}
+
+		for _, b := range ibc {
+			if b.Status == bio_cip {
+				ind := get_ibc_index(b.IBCID)
+				t_elapsed := time.Since(t_start).Minutes()
+				ibc[ind].Timetotal[1] -= int(t_elapsed)
+			}
+		}
+
+		t_start = time.Now()
+		time.Sleep(scp_clockwait * time.Millisecond)
+
 	}
 }
 
