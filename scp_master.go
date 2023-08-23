@@ -1985,7 +1985,10 @@ func scp_get_alldata() {
 						if vol0 == 0 {
 							if dint > 0 && float32(dint) >= (ibc_v1_zero*0.8) && float32(dint) <= (ibc_v1_zero*1.2) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.IBCID, dint)
-								ibc[ind].Vol_zero[0] = float32(dint)
+								//
+								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+								//
+								// ibc[ind].Vol_zero[0] = float32(dint)
 							} else {
 								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
 							}
@@ -2002,7 +2005,10 @@ func scp_get_alldata() {
 						if vol0 == 0 {
 							if dint > 0 && float32(dint) >= (ibc_v2_zero*0.8) && float32(dint) <= (ibc_v2_zero*1.2) {
 								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER", b.IBCID, dint)
-								ibc[ind].Vol_zero[1] = float32(dint)
+								//
+								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+								//
+								// ibc[ind].Vol_zero[1] = float32(dint)
 							} else {
 								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
 							}
