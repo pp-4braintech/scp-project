@@ -4542,7 +4542,9 @@ func scp_clock() {
 			if b.Status == bio_cip || b.Status == bio_producting {
 				ind := get_bio_index(b.BioreactorID)
 				t_elapsed := time.Since(t_start).Minutes()
-				bio[ind].Timetotal[1] -= int(t_elapsed)
+				if bio[ind].Timetotal[1] > 0 {
+					bio[ind].Timetotal[1] -= int(t_elapsed)
+				}
 			}
 		}
 
@@ -4550,7 +4552,9 @@ func scp_clock() {
 			if b.Status == bio_cip {
 				ind := get_ibc_index(b.IBCID)
 				t_elapsed := time.Since(t_start).Minutes()
-				ibc[ind].Timetotal[1] -= int(t_elapsed)
+				if ibc[ind].Timetotal[1] > 0 {
+					ibc[ind].Timetotal[1] -= int(t_elapsed)
+				}
 			}
 		}
 
@@ -4572,6 +4576,7 @@ func scp_run_devs() {
 func scp_scheduler() {
 	if !devsrunning {
 		scp_run_devs()
+		go scp_clock()
 	}
 	schedrunning = true
 	for schedrunning == true {
