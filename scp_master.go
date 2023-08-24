@@ -3282,6 +3282,7 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 			}
 		}
 	}
+	time.Sleep(20 * time.Second)
 
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
@@ -5838,7 +5839,7 @@ func main() {
 	go scp_get_alldata()
 	scp_master_ipc()
 	time.Sleep(10 * time.Second)
-	if !schedrunning {
-		go scp_scheduler()
-	}
+	// if !schedrunning {
+	// 	go scp_scheduler()
+	// }
 }
