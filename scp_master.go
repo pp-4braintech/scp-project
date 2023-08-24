@@ -1647,11 +1647,13 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 			biofabrica.VolOutPart += math.MaxUint16
 		}
 		volume = (float64(dint) * flow_ratio) + biofabrica.VolOutPart
+		biofabrica.LastCountOut = uint32(dint)
 	} else if vol_type == scp_dev_volfluxo_in1 {
 		if dint < int64(biofabrica.LastCountIn1) {
 			biofabrica.VolIn1Part += math.MaxUint16
 		}
 		volume = (float64(dint) * flow_ratio) + biofabrica.VolIn1Part
+		biofabrica.LastCountIn1 = uint32(dint)
 	}
 
 	if volume < 0 {
@@ -2121,7 +2123,7 @@ func scp_get_alldata() {
 				}
 			}
 
-			if mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 {
+			if biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 { // tirei o mustupdateibc
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
