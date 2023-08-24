@@ -136,7 +136,7 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 const scp_refreshwait = 50
 const scp_refresstatus = 15
 const scp_refreshsleep = 100
-const scp_timeout_ms = 5500
+const scp_timeout_ms = 2500
 const scp_schedwait = 500
 const scp_clockwait = 60000
 const scp_timetosave = 45
@@ -1220,6 +1220,7 @@ func scp_sendmsg_orch(cmd string) string {
 	ret := make([]byte, 1024)
 	_, err = con.Read(ret)
 	if err != nil {
+		fmt.Println("ERROR SCP SENDMSG ORCH: Timeout ao receber resposta do orchestrator, requisicao feita:", cmd)
 		checkErr(err)
 		return scp_err
 	}
