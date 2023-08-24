@@ -1644,13 +1644,13 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		volume = area * dfloat
 	} else if vol_type == scp_dev_volfluxo_out {
 		if dint < int64(biofabrica.LastCountOut) {
-			biofabrica.VolOutPart += math.MaxUint16
+			biofabrica.VolOutPart += float64(math.MaxUint16) * flow_ratio
 		}
 		volume = (float64(dint) * flow_ratio) + biofabrica.VolOutPart
 		biofabrica.LastCountOut = uint32(dint)
 	} else if vol_type == scp_dev_volfluxo_in1 {
 		if dint < int64(biofabrica.LastCountIn1) {
-			biofabrica.VolIn1Part += math.MaxUint16
+			biofabrica.VolIn1Part += float64(math.MaxUint16) * flow_ratio
 		}
 		volume = (float64(dint) * flow_ratio) + biofabrica.VolIn1Part
 		biofabrica.LastCountIn1 = uint32(dint)
