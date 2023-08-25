@@ -5394,7 +5394,7 @@ func scp_process_conn(conn net.Conn) {
 			//fmt.Println("obj=", scp_object)
 			bioid := params[2]
 			ind := get_bio_index(bioid)
-			if ind < 0 {
+			if bioid != "ALL" && ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
 				subparams := scp_splitparam(params[3], ",")
@@ -5402,20 +5402,22 @@ func scp_process_conn(conn net.Conn) {
 				// fmt.Println("subparams=", subparams)
 				switch scp_device {
 				case scp_par_out:
-					outid := subparams[1]
-					if outid == "Descarte" {
-						outid = "DROP"
-					} else if outid == "Externo" {
-						outid = "OUT"
-					}
-					tmp := bioid + "-" + outid
-					_, ok := paths[tmp]
-					if ok {
-						bio[ind].OutID = outid
-						conn.Write([]byte(scp_ack))
-					} else {
-						fmt.Println("ID de saida", outid, " nao existe")
-						conn.Write([]byte(scp_err))
+					if ind >= 0 {
+						outid := subparams[1]
+						if outid == "Descarte" {
+							outid = "DROP"
+						} else if outid == "Externo" {
+							outid = "OUT"
+						}
+						tmp := bioid + "-" + outid
+						_, ok := paths[tmp]
+						if ok {
+							bio[ind].OutID = outid
+							conn.Write([]byte(scp_ack))
+						} else {
+							fmt.Println("ID de saida", outid, " nao existe")
+							conn.Write([]byte(scp_err))
+						}
 					}
 
 				case scp_par_circulate:
@@ -5425,17 +5427,35 @@ func scp_process_conn(conn net.Conn) {
 						checkErr(err)
 						if err == nil {
 							if !status {
-								bio[ind].Status = bio[ind].LastStatus
-							} else {
-								if bio[ind].Status != bio_circulate {
-									rec_time := 5
-									if len(subparams) >= 3 {
-										rec_time, err = strconv.Atoi(subparams[2])
-										if err != nil {
-											checkErr(err)
-											rec_time = 5
+								if bioid == "ALL" {
+									for _, b := range bio {
+										i := get_bio_index(b.BioreactorID)
+										if bio[i].Status == bio_circulate {
+											bio[i].Status = bio[i].LastStatus
 										}
 									}
+								} else {
+									bio[ind].Status = bio[ind].LastStatus
+								}
+							} else {
+								rec_time := 5
+								if len(subparams) >= 3 {
+									rec_time, err = strconv.Atoi(subparams[2])
+									if err != nil {
+										checkErr(err)
+										rec_time = 5
+									}
+								}
+								if bioid == "ALL" {
+									for _, b := range bio {
+										i := get_bio_index(b.BioreactorID)
+										if bio[i].Status == bio_ready && bio[i].Volume > 0 {
+											bio[i].LastStatus = bio[i].Status
+											bio[i].Status = bio_circulate
+											go scp_circulate(scp_bioreactor, b.BioreactorID, rec_time)
+										}
+									}
+								} else if bio[ind].Status != bio_circulate {
 									bio[ind].LastStatus = bio[ind].Status
 									bio[ind].Status = bio_circulate
 									go scp_circulate(scp_bioreactor, bioid, rec_time)
