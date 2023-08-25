@@ -48,6 +48,8 @@ const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
 const scp_par_linecip = "LINECIP"
 const scp_par_circulate = "CIRCULATE"
+const scp_par_manydraw = "MANYDRAW"
+const scp_par_manyout = "MANYOUT"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -412,6 +414,26 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			b_start := r.FormValue("Start")
 			orgcode := r.FormValue("OrgCode")
 			recirc := r.FormValue("Recirculate")
+			manydraw := r.FormValue("ManyDraw")
+			// manyout := r.FormValue("ManyOut")
+
+			if manydraw != "" {
+				q := ""
+				for i := 1; i <= 7; i++ {
+					id_str := fmt.Sprintf("IBC%02d", i)
+					out_str := r.FormValue(id_str)
+					if len(out_str) > 0 {
+						q += id_str + "=" + out_str + ","
+					}
+				}
+				if len(q) > 0 {
+					cmd := "PUT/IBC/ALL/" + scp_par_manydraw + "/" + q + "0/END"
+					jsonStr := []byte(scp_sendmsg_master(cmd))
+					w.Write([]byte(jsonStr))
+				} else {
+					w.Write([]byte(scp_err))
+				}
+			}
 
 			if recirc != "" {
 				recirc_time_str := r.FormValue("Time")
@@ -525,6 +547,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 					fmt.Println("ERROR BIOREACTOR VIEW: Start faltando orgcode", r)
 				}
 			}
+
 			if recirc != "" {
 				recirc_time_str := r.FormValue("Time")
 				if len(recirc_time_str) == 0 {

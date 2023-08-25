@@ -103,6 +103,8 @@ const scp_par_linewash = "LINEWASH"
 const scp_par_linecip = "LINECIP"
 const scp_par_circulate = "CIRCULATE"
 const scp_par_totaltime = "TOTALTIME"
+const scp_par_manydraw = "MANYDRAW"
+const scp_par_manyout = "MANYOUT"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -5589,6 +5591,9 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("ID de saida", outid, " nao existe")
 						conn.Write([]byte(scp_err))
 					}
+
+				case scp_par_manydraw:
+					fmt.Println("DEBUG SCP PROCESS CONN: PAR MANYDRAW", params, subparams)
 
 				case scp_par_circulate:
 					fmt.Println("DEBUG SCP PROCESS CONN: PAR CIRCULATE", params, subparams)
