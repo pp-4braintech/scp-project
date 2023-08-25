@@ -3511,6 +3511,12 @@ func scp_circulate(devtype string, main_id string, period int) {
 	if !scp_turn_pump(devtype, main_id, valvs, 0) {
 		fmt.Println("ERROR SCP CIRCULATE: Nao foi possivel desligar circulacao em ", main_id)
 	}
+	switch devtype {
+	case scp_bioreactor:
+		bio[ind].Status = bio[ind].LastStatus
+	case scp_ibc:
+		ibc[ind].Status = ibc[ind].LastStatus
+	}
 }
 
 func scp_run_job_bio(bioid string, job string) bool {
