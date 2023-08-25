@@ -5578,9 +5578,17 @@ func scp_process_conn(conn net.Conn) {
 								ibc[ind].Status = ibc[ind].LastStatus
 							} else {
 								if ibc[ind].Status != bio_circulate {
+									rec_time := 5
+									if len(subparams) >= 3 {
+										rec_time, err = strconv.Atoi(subparams[2])
+										if err != nil {
+											checkErr(err)
+											rec_time = 5
+										}
+									}
 									ibc[ind].LastStatus = ibc[ind].Status
 									ibc[ind].Status = bio_circulate
-									go scp_circulate(scp_ibc, ibcid, 0)
+									go scp_circulate(scp_ibc, ibcid, rec_time)
 								}
 							}
 							conn.Write([]byte(scp_ack))
