@@ -3503,7 +3503,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 				}
 			}
 		} else {
-			if n >= period {
+			if n >= period*60 {
 				stop = true
 			}
 		}
