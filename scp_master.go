@@ -5435,7 +5435,9 @@ func scp_process_conn(conn net.Conn) {
 										}
 									}
 								} else {
-									bio[ind].Status = bio[ind].LastStatus
+									if bio[ind].Status == bio_circulate {
+										bio[ind].Status = bio[ind].LastStatus
+									}
 								}
 							} else {
 								rec_time := 5
@@ -5455,7 +5457,7 @@ func scp_process_conn(conn net.Conn) {
 											go scp_circulate(scp_bioreactor, b.BioreactorID, rec_time)
 										}
 									}
-								} else if bio[ind].Status != bio_circulate {
+								} else if bio[ind].Status == bio_ready && bio[ind].Volume > 0 {
 									bio[ind].LastStatus = bio[ind].Status
 									bio[ind].Status = bio_circulate
 									go scp_circulate(scp_bioreactor, bioid, rec_time)
@@ -5565,7 +5567,7 @@ func scp_process_conn(conn net.Conn) {
 		case scp_ibc:
 			ibcid := params[2]
 			ind := get_ibc_index(ibcid)
-			if ind < 0 {
+			if ibcid != "ALL" && ind < 0 {
 				conn.Write([]byte(scp_err))
 			} else {
 				subparams := scp_splitparam(params[3], ",")
@@ -5595,22 +5597,43 @@ func scp_process_conn(conn net.Conn) {
 						checkErr(err)
 						if err == nil {
 							if !status {
-								ibc[ind].Status = ibc[ind].LastStatus
-							} else {
-								if ibc[ind].Status != bio_circulate {
-									rec_time := 5
-									if len(subparams) >= 3 {
-										rec_time, err = strconv.Atoi(subparams[2])
-										if err != nil {
-											checkErr(err)
-											rec_time = 5
+								if ibcid == "ALL" {
+									for _, b := range ibc {
+										i := get_ibc_index(b.IBCID)
+										if ibc[i].Status == bio_circulate {
+											ibc[i].Status = ibc[i].LastStatus
 										}
 									}
+								} else {
+									if ibc[ind].Status == bio_circulate {
+										ibc[ind].Status = ibc[ind].LastStatus
+									}
+								}
+							} else {
+								rec_time := 5
+								if len(subparams) >= 3 {
+									rec_time, err = strconv.Atoi(subparams[2])
+									if err != nil {
+										checkErr(err)
+										rec_time = 5
+									}
+								}
+								if ibcid == "ALL" {
+									for _, b := range ibc {
+										i := get_ibc_index(b.IBCID)
+										if ibc[i].Status == bio_ready && ibc[i].Volume > 0 {
+											ibc[i].LastStatus = ibc[i].Status
+											ibc[i].Status = bio_circulate
+											go scp_circulate(scp_ibc, b.IBCID, rec_time)
+										}
+									}
+								} else if ibc[ind].Status == bio_ready && ibc[ind].Volume > 0 {
 									ibc[ind].LastStatus = ibc[ind].Status
 									ibc[ind].Status = bio_circulate
 									go scp_circulate(scp_ibc, ibcid, rec_time)
 								}
 							}
+
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
