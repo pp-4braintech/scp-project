@@ -5422,15 +5422,25 @@ func scp_process_conn(conn net.Conn) {
 								bio[ind].Status = bio[ind].LastStatus
 							} else {
 								if bio[ind].Status != bio_circulate {
+									rec_time := 5
+									if len(subparams) >= 3 {
+										rec_time, err = strconv.Atoi(subparams[2])
+										if err != nil {
+											checkErr(err)
+											rec_time = 5
+										}
+									}
 									bio[ind].LastStatus = bio[ind].Status
 									bio[ind].Status = bio_circulate
-									go scp_circulate(scp_bioreactor, bioid, 0)
+									go scp_circulate(scp_bioreactor, bioid, rec_time)
 								}
 							}
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
 						}
+					} else {
+						fmt.Println("ERROR PUT BIORREACTOR: Falta parametros em circulate", subparams)
 					}
 
 				case scp_par_withdraw:
