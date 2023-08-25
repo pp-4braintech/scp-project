@@ -360,6 +360,7 @@ type Biofabrica struct {
 	VolIn1Part   float64
 	LastCountIn1 uint32
 	TestMode     bool
+	TechMode     bool
 }
 
 type Path struct {
@@ -476,7 +477,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false,
 }
 
 var biobak = bio // Salva status atual
@@ -5612,7 +5613,9 @@ func scp_process_conn(conn net.Conn) {
 
 				case scp_par_manydraw:
 					fmt.Println("DEBUG SCP PROCESS CONN: PAR MANYDRAW", params, subparams)
-					go scp_run_manydraw(params[4])
+					if len(params) > 4 {
+						go scp_run_manydraw(params[4])
+					}
 
 				case scp_par_circulate:
 					fmt.Println("DEBUG SCP PROCESS CONN: PAR CIRCULATE", params, subparams)
@@ -5926,6 +5929,8 @@ func main() {
 
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
+
+	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
