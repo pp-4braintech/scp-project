@@ -25,7 +25,7 @@ const scp_state_JOIN1 = 11
 const scp_state_TCP0 = 20
 const scp_state_TCPFAIL = 29
 const scp_max_len = 512
-const scp_keepalive_time = 6
+const scp_keepalive_time = 7 // era 6
 const scp_timeout_ms = 1500
 const scp_buff_size = 512
 const scp_max_err = 7
@@ -86,10 +86,10 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 		err = scp_con.SetReadDeadline(time.Now().Add(time.Duration(scp_timeout_ms) * time.Millisecond))
 		checkErr(err)
 		var ret = make([]byte, scp_max_len)
-		_, err := scp_con.Read(ret)
+		nbytes, err := scp_con.Read(ret)
 		checkErr(err)
 		//fmt.Println("tcp recebido", string(ret))
-		return string(ret), err
+		return string(ret[:nbytes]), err
 	}
 	return scp_ack, err
 }
