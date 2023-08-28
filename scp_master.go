@@ -1605,7 +1605,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	cmd := "CMD/" + dev_addr + "/GET/" + vol_dev + "/END"
 	ret := scp_sendmsg_orch(cmd)
 	params := scp_splitparam(ret, "/")
-	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD", cmd, "  RET", ret)
+	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 	var volume float64
 	var dint int64
 	volume = -1
@@ -1632,7 +1632,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	}
 	var area, dfloat float64
 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-	if vol_type != scp_dev_volfluxo_out {
+	if vol_type != scp_dev_volfluxo_out && vol_type != scp_dev_volfluxo_in1 {
 		switch vol_type {
 		case scp_dev_volusom:
 			switch dev_type {
