@@ -2136,6 +2136,8 @@ func scp_get_alldata() {
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
 					biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+				} else {
+					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume OUTFLUXO", count, vol_tmp)
 				}
 			}
 
@@ -2144,6 +2146,8 @@ func scp_get_alldata() {
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
 					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+				} else {
+					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 				}
 			}
 
