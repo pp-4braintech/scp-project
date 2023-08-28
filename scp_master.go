@@ -1528,12 +1528,16 @@ func scp_get_temperature(bioid string) float64 {
 	if len(bioaddr) > 0 {
 		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 		ret_temp := scp_sendmsg_orch(cmd_temp)
-		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, cmd_temp, ret_temp)
 		params := scp_splitparam(ret_temp, "/")
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, cmd_temp, ret_temp, params)
 		if params[0] == scp_ack {
-			tempint, _ := strconv.Atoi(params[1])
-			tempfloat := float64(tempint) / 10.0
-			return tempfloat
+			tempint, err := strconv.Atoi(params[1])
+			if err == nil {
+				tempfloat := float64(tempint) / 10.0
+				return tempfloat
+			} else {
+				fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, nao numerico", bioid, ret_temp)
+			}
 		}
 	} else {
 		fmt.Println("ERROR SCP GET TEMPERATURE: ADDR Biorreator nao existe", bioid)
