@@ -4985,7 +4985,7 @@ func scp_restart_services() {
 	}
 }
 
-func scp_run_manydraw(data string) {
+func scp_run_manydraw_out(data string, dest string) {
 	ibc_par := scp_splitparam(data, ",")
 	for _, b := range ibc_par {
 		d := scp_splitparam(b, "=")
@@ -4993,7 +4993,7 @@ func scp_run_manydraw(data string) {
 		if i >= 0 && len(d) >= 2 {
 			vol, err := strconv.Atoi(d[1])
 			if err == nil {
-				ibc[i].OutID = "IBC07"
+				ibc[i].OutID = dest
 				ibc[i].Withdraw = uint32(vol)
 				scp_run_withdraw(scp_ibc, d[0], false)
 			} else {
@@ -5614,7 +5614,13 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_manydraw:
 					fmt.Println("DEBUG SCP PROCESS CONN: PAR MANYDRAW", params, subparams)
 					if len(params) > 4 {
-						go scp_run_manydraw(params[4])
+						go scp_run_manydraw_out(params[4], "IBC07")
+					}
+
+				case scp_par_manyout:
+					fmt.Println("DEBUG SCP PROCESS CONN: PAR MANYOUT", params, subparams)
+					if len(params) > 4 {
+						go scp_run_manydraw_out(params[4], "OUT")
 					}
 
 				case scp_par_circulate:
