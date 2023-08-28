@@ -4995,6 +4995,7 @@ func scp_run_manydraw_out(data string, dest string) {
 			if err == nil {
 				ibc[i].OutID = dest
 				ibc[i].Withdraw = uint32(vol)
+				fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
 				scp_run_withdraw(scp_ibc, d[0], false)
 			} else {
 				checkErr(err)
