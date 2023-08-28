@@ -70,7 +70,7 @@ const scp_dev_peris = "PERIS"
 const scp_dev_vol0 = "VOL0"
 const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
-const scp_dev_volfluxo_out = "VOLFLUXO"
+const scp_dev_volfluxo_out = "VOLFLUXO_OUT"
 const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
 
 const scp_par_withdraw = "WITHDRAW"
