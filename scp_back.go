@@ -415,9 +415,9 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 			orgcode := r.FormValue("OrgCode")
 			recirc := r.FormValue("Recirculate")
 			manydraw := r.FormValue("ManyDraw")
-			// manyout := r.FormValue("ManyOut")
+			manyout := r.FormValue("ManyOut")
 
-			if manydraw != "" {
+			if manydraw != "" || manyout != "" {
 				q := ""
 				for i := 1; i <= 7; i++ {
 					id_str := fmt.Sprintf("IBC%02d", i)
@@ -428,6 +428,9 @@ func ibc_view(w http.ResponseWriter, r *http.Request) {
 				}
 				if len(q) > 0 {
 					cmd := "PUT/IBC/ALL/" + scp_par_manydraw + "/" + q + "0/END"
+					if manyout != "" {
+						cmd = "PUT/IBC/ALL/" + scp_par_manyout + "/" + q + "0/END"
+					}
 					jsonStr := []byte(scp_sendmsg_master(cmd))
 					w.Write([]byte(jsonStr))
 				} else {
