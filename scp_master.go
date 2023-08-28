@@ -2127,7 +2127,7 @@ func scp_get_alldata() {
 				}
 			}
 
-			if biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 { // tirei o mustupdateibc
+			if mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
