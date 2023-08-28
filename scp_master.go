@@ -1529,7 +1529,7 @@ func scp_get_temperature(bioid string) float64 {
 		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 		ret_temp := scp_sendmsg_orch(cmd_temp)
 		params := scp_splitparam(ret_temp, "/")
-		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, cmd_temp, ret_temp, params)
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "ret=", ret_temp, "len=", len(ret_temp), "params=", params)
 		if params[0] == scp_ack {
 			tempint, err := strconv.Atoi(params[1])
 			if err == nil {
