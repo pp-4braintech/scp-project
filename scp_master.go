@@ -1746,14 +1746,37 @@ func scp_refresh_status() {
 	fmt.Println("\nDEBUG SCP REFRESH STATUS: ORCH STATUS  Devices:", nslaves, "\tOK:", nslavesok, "\tNOK:", nslavesnok)
 }
 
+func scp_sync_functions() {
+	t_start_save := time.Now()
+	t_start_status := time.Now()
+	for {
+		if finishedsetup {
+			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
+			if t_elapsed_save >= scp_timetosave {
+				save_all_data(data_filename)
+				t_start_save = time.Now()
+			}
+
+			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
+			if t_elapsed_status >= scp_refresstatus {
+				if finishedsetup {
+					scp_refresh_status()
+				}
+				t_start_status = time.Now()
+			}
+		}
+		time.Sleep(scp_refreshsleep * time.Millisecond)
+	}
+}
+
 func scp_get_alldata() {
 	if demo {
 		return
 	}
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
-	t_start_save := time.Now()
-	t_start_status := time.Now()
+	// t_start_save := time.Now()
+	// t_start_status := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
 	hasupdatevolin := false
@@ -2173,11 +2196,11 @@ func scp_get_alldata() {
 				}
 			}
 
-			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
-			if t_elapsed_save >= scp_timetosave {
-				save_all_data(data_filename)
-				t_start_save = time.Now()
-			}
+			// t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
+			// if t_elapsed_save >= scp_timetosave {
+			// 	save_all_data(data_filename)
+			// 	t_start_save = time.Now()
+			// }
 
 			firsttime = false
 
@@ -2197,13 +2220,13 @@ func scp_get_alldata() {
 				t_start_setup = time.Now()
 			}
 
-			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
-			if t_elapsed_status >= scp_refresstatus {
-				if finishedsetup {
-					scp_refresh_status()
-				}
-				t_start_status = time.Now()
-			}
+			// t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
+			// if t_elapsed_status >= scp_refresstatus {
+			// 	if finishedsetup {
+			// 		scp_refresh_status()
+			// 	}
+			// 	t_start_status = time.Now()
+			// }
 
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
@@ -5971,6 +5994,8 @@ func main() {
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
+	go scp_sync_functions()
+
 	scp_master_ipc()
 	time.Sleep(10 * time.Second)
 	// if !schedrunning {
