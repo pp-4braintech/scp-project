@@ -1840,7 +1840,7 @@ func scp_get_alldata() {
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										biovolin := vol_tmp - lastvolin
 										bio[ind].VolIn += biovolin
-										bio[ind].Volume += uint32(bio[ind].VolIn)
+										bio[ind].Volume = uint32(bio[ind].VolIn)
 									}
 									lastvolin = vol_tmp
 									hasupdatevolin = true
