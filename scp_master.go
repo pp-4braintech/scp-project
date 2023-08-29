@@ -1789,7 +1789,7 @@ func scp_get_alldata() {
 	// t_start_status := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
-	// hasupdatevolin := false
+	hasupdatevolin := false
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1802,6 +1802,9 @@ func scp_get_alldata() {
 				mustupdate_bio = true
 				t_start_bio = time.Now()
 			}
+
+			hasupdatevolin = false
+
 			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_bio_index(b.BioreactorID)
@@ -1825,8 +1828,6 @@ func scp_get_alldata() {
 						}
 					}
 
-					// hasupdatevolin = false
-
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
 						if biofabrica.Useflowin {
@@ -1840,7 +1841,7 @@ func scp_get_alldata() {
 										bio[ind].Volume += uint32(biovolin)
 									}
 									lastvolin = vol_tmp
-									// hasupdatevolin = true
+									hasupdatevolin = true
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -2200,7 +2201,7 @@ func scp_get_alldata() {
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
 					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-					if lastvolin < 0 { // era !hasupdatevolin
+					if !hasupdatevolin { // era !hasupdatevolin
 						lastvolin = vol_tmp
 					}
 				} else {
