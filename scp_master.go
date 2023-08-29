@@ -2200,7 +2200,7 @@ func scp_get_alldata() {
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
 					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-					if !hasupdatevolin {
+					if lastvolin < 0 { // era !hasupdatevolin
 						lastvolin = vol_tmp
 					}
 				} else {
