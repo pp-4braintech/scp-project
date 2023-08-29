@@ -1833,7 +1833,7 @@ func scp_get_alldata() {
 							if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp)
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										biovolin := lastvolin - vol_tmp
