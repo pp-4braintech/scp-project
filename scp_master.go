@@ -1825,7 +1825,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					hasupdatevolin = false
+					// hasupdatevolin = false
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
