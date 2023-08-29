@@ -222,7 +222,7 @@ type Bioreact struct {
 	Vol0         int
 	Vol1         int32
 	Vol2         int32
-	VolIn        float64
+	VolInOut     float64
 	Volume       uint32
 	Level        uint8
 	Pumpstatus   bool
@@ -1790,7 +1790,9 @@ func scp_get_alldata() {
 	// t_start_status := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
+	lastvolout := float64(-1)
 	hasupdatevolin := false
+	hasupdatevolout := false
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1805,6 +1807,7 @@ func scp_get_alldata() {
 			}
 
 			hasupdatevolin = false
+			hasupdatevolout = false
 
 			for _, b := range bio {
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
@@ -1839,11 +1842,26 @@ func scp_get_alldata() {
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										biovolin := vol_tmp - lastvolin
-										bio[ind].VolIn += biovolin
-										bio[ind].Volume = uint32(bio[ind].VolIn)
+										bio[ind].VolInOut += biovolin
+										bio[ind].Volume = uint32(bio[ind].VolInOut)
 									}
 									lastvolin = vol_tmp
 									hasupdatevolin = true
+								} else {
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+								}
+							} else if b.Valvs[4] == 1 && b.Pumpstatus && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+								if count >= 0 {
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
+									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolout && lastvolout > 0 {
+										biovolout := vol_tmp - lastvolout
+										bio[ind].VolInOut -= biovolout
+										bio[ind].Volume = uint32(bio[ind].VolInOut)
+									}
+									lastvolout = vol_tmp
+									hasupdatevolout = true
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -2188,11 +2206,12 @@ func scp_get_alldata() {
 				}
 			}
 
-			if mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 {
+			if !hasupdatevolout && (mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
 					biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+					lastvolout = vol_tmp
 				} else {
 					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume OUTFLUXO", count, vol_tmp)
 				}
