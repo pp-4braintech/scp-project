@@ -1780,6 +1780,25 @@ func scp_sync_functions() {
 	}
 }
 
+func scp_update_biolevel(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	level := (float64(bio[ind].Volume) / float64(bio_cfg[bioid].Maxvolume)) * 10.0
+	if level > 10 {
+		level = 10
+	}
+	level_int := uint8(level)
+	if level_int != bio[ind].Level {
+		bio[ind].Level = level_int
+		levels := fmt.Sprintf("%d", level_int)
+		cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
+		ret := scp_sendmsg_orch(cmd)
+		fmt.Println("SCREEN:", cmd, level, levels, ret)
+	}
+}
+
 func scp_get_alldata() {
 	if demo {
 		return
@@ -1847,6 +1866,7 @@ func scp_get_alldata() {
 									}
 									lastvolin = vol_tmp
 									hasupdatevolin = true
+									scp_update_biolevel(b.BioreactorID)
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -1865,6 +1885,7 @@ func scp_get_alldata() {
 									}
 									lastvolout = vol_tmp
 									hasupdatevolout = true
+									scp_update_biolevel(b.BioreactorID)
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -1999,15 +2020,7 @@ func scp_get_alldata() {
 
 							if volc >= 0 {
 								bio[ind].Volume = uint32(volc)
-								level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10.0
-								level_int := uint8(level)
-								if level_int != bio[ind].Level {
-									bio[ind].Level = level_int
-									levels := fmt.Sprintf("%d", level_int)
-									cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
-									ret := scp_sendmsg_orch(cmd)
-									fmt.Println("SCREEN:", cmd, level, levels, ret)
-								}
+								scp_update_biolevel(b.BioreactorID)
 								if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
 									bio[ind].Status = bio_empty
 								}
