@@ -1863,10 +1863,10 @@ func scp_get_alldata() {
 										biovolin := vol_tmp - lastvolin
 										bio[ind].VolInOut += biovolin
 										bio[ind].Volume = uint32(bio[ind].VolInOut)
+										scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolin = vol_tmp
 									hasupdatevolin = true
-									scp_update_biolevel(b.BioreactorID)
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -1882,10 +1882,10 @@ func scp_get_alldata() {
 											bio[ind].VolInOut = 0
 										}
 										bio[ind].Volume = uint32(bio[ind].VolInOut)
+										scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolout = vol_tmp
 									hasupdatevolout = true
-									scp_update_biolevel(b.BioreactorID)
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
