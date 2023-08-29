@@ -1826,112 +1826,103 @@ func scp_get_alldata() {
 					}
 
 					hasupdatevolin = false
-					if biofabrica.Useflowin {
-						if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
-							count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
-							if count >= 0 {
-								fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp)
-								biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-								if vol_tmp > lastvolin && lastvolin > 0 {
-									biovolin := lastvolin - vol_tmp
-									bio[ind].Volume += uint32(biovolin)
-								}
-								lastvolin = vol_tmp
-								hasupdatevolin = true
-							} else {
-								fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
-							}
-						}
-					} else if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
-						var vol0 float64 = -1
-						var dint int
-						dint, _ = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0)
-						if dint >= 0 {
-							bio[ind].Vol0 = dint
-						}
-						if bio[ind].Status == bio_cip && (bio[ind].Valvs[1] == 1 || bio[ind].Valvs[2] == 1 || bio[ind].Valvs[3] == 1) {
-							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
-						} else {
-							vol0 = float64(dint)
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol0)
-						}
+					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
-						var vol1, vol1_pre float64
-						vol1 = -1
-						dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
-						if dint == 1 || dint == 0 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
-							dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
-						}
-
-						if vol0 == 0 {
-							if dint > 0 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.3) {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.BioreactorID, dint)
-								//
-								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-								//
-								// bio[ind].Vol_zero[0] = float32(dint)
-							} else {
-								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.BioreactorID, dint)
-							}
-						}
-						if dint > 0 && vol1_pre >= 0 {
-							vol1 = 10 * (math.Trunc(vol1_pre / 10))
-						}
-						bio[ind].Vol1 = int32(vol1_pre)
-						fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol1_pre)
-
-						var vol2, vol2_pre float64
-						vol2 = -1
-						dint, vol2_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vollaser)
-						if vol0 == 0 {
-							if dint > 0 && float32(dint) >= (bio_v2_zero*0.7) && float32(dint) <= (bio_v2_zero*1.3) {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER ", b.BioreactorID, dint)
-								//
-								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-								//
-								//bio[ind].Vol_zero[1] = float32(dint)
-							} else {
-								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.BioreactorID, dint)
-							}
-						}
-						if dint > 0 && vol2_pre >= 0 {
-							vol2 = 10 * (math.Trunc(vol2_pre / 10))
-						}
-						bio[ind].Vol2 = int32(vol2_pre)
-						fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol2_pre)
-
-						var volc float64
-						volc = float64(bio[ind].Volume)
-						if vol0 == 0 {
-							if vol1 < 100 && vol2 < 100 {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.BioreactorID)
-								volc = 0
-							} else {
-								fmt.Println("ERROR GET ALLDATA: Volume ZERO DETECTADO e Vol1/Vol2 divergem", b.BioreactorID)
-								bio_add_message(b.BioreactorID, "AFavor verificar SENSOR de nivel 0")
-								volc = -1
-							}
-						}
-						if vol0 != 0 || volc == -1 {
-							if vol1 < 0 && vol2 < 0 {
-								fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.BioreactorID, vol1, vol2)
-							} else {
-								if bio[ind].Valvs[4] == 1 { // Desenvase
-									if vol1 < 0 {
-										if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
-											volc = vol2
-										} else if vol1 >= 0 {
-											volc = vol1
-										}
-									} else {
-										volc = vol1
+						if biofabrica.Useflowin {
+							if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
+								if count >= 0 {
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp)
+									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolin && lastvolin > 0 {
+										biovolin := lastvolin - vol_tmp
+										bio[ind].Volume += uint32(biovolin)
 									}
+									lastvolin = vol_tmp
+									hasupdatevolin = true
+								} else {
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+								}
+							}
 
-								} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
-									if bio[ind].Valvs[2] == 0 { // Sprayball desligado
+						} else {
+							var vol0 float64 = -1
+							var dint int
+							dint, _ = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0)
+							if dint >= 0 {
+								bio[ind].Vol0 = dint
+							}
+							if bio[ind].Status == bio_cip && (bio[ind].Valvs[1] == 1 || bio[ind].Valvs[2] == 1 || bio[ind].Valvs[3] == 1) {
+								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.BioreactorID)
+							} else {
+								vol0 = float64(dint)
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol0)
+							}
+
+							var vol1, vol1_pre float64
+							vol1 = -1
+							dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
+							if dint == 1 || dint == 0 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
+								dint, vol1_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_volusom)
+							}
+
+							if vol0 == 0 {
+								if dint > 0 && float32(dint) >= (bio_v1_zero*0.7) && float32(dint) <= (bio_v1_zero*1.3) {
+									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.BioreactorID, dint)
+									//
+									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+									//
+									// bio[ind].Vol_zero[0] = float32(dint)
+								} else {
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.BioreactorID, dint)
+								}
+							}
+							if dint > 0 && vol1_pre >= 0 {
+								vol1 = 10 * (math.Trunc(vol1_pre / 10))
+							}
+							bio[ind].Vol1 = int32(vol1_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol1_pre)
+
+							var vol2, vol2_pre float64
+							vol2 = -1
+							dint, vol2_pre = scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vollaser)
+							if vol0 == 0 {
+								if dint > 0 && float32(dint) >= (bio_v2_zero*0.7) && float32(dint) <= (bio_v2_zero*1.3) {
+									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER ", b.BioreactorID, dint)
+									//
+									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+									//
+									//bio[ind].Vol_zero[1] = float32(dint)
+								} else {
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.BioreactorID, dint)
+								}
+							}
+							if dint > 0 && vol2_pre >= 0 {
+								vol2 = 10 * (math.Trunc(vol2_pre / 10))
+							}
+							bio[ind].Vol2 = int32(vol2_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.BioreactorID, bio_cfg[b.BioreactorID].Deviceaddr, dint, vol2_pre)
+
+							var volc float64
+							volc = float64(bio[ind].Volume)
+							if vol0 == 0 {
+								if vol1 < 100 && vol2 < 100 {
+									fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.BioreactorID)
+									volc = 0
+								} else {
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO DETECTADO e Vol1/Vol2 divergem", b.BioreactorID)
+									bio_add_message(b.BioreactorID, "AFavor verificar SENSOR de nivel 0")
+									volc = -1
+								}
+							}
+							if vol0 != 0 || volc == -1 {
+								if vol1 < 0 && vol2 < 0 {
+									fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.BioreactorID, vol1, vol2)
+								} else {
+									if bio[ind].Valvs[4] == 1 { // Desenvase
 										if vol1 < 0 {
-											if vol2 >= 0 && vol2 > float64(bio[ind].Volume) {
+											if vol2 >= 0 && vol2 < float64(bio[ind].Volume) {
 												volc = vol2
 											} else if vol1 >= 0 {
 												volc = vol1
@@ -1939,58 +1930,71 @@ func scp_get_alldata() {
 										} else {
 											volc = vol1
 										}
-									}
 
-								} else {
-									if bio[ind].Status == bio_producting {
-										if vol1 >= 0 {
-											volc = vol1
-										} else if vol2 >= 0 {
-											volc = vol2
+									} else if bio[ind].Valvs[6] == 1 { // Carregando Agua
+										if bio[ind].Valvs[2] == 0 { // Sprayball desligado
+											if vol1 < 0 {
+												if vol2 >= 0 && vol2 > float64(bio[ind].Volume) {
+													volc = vol2
+												} else if vol1 >= 0 {
+													volc = vol1
+												}
+											} else {
+												volc = vol1
+											}
 										}
-									} else if bio[ind].Status == bio_cip && bio[ind].Valvs[2] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
-										fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.BioreactorID, vol1, vol2)
+
 									} else {
-										if vol1 >= 0 {
-											volc = vol1
-										} else if vol2 >= 0 {
-											volc = vol2
+										if bio[ind].Status == bio_producting {
+											if vol1 >= 0 {
+												volc = vol1
+											} else if vol2 >= 0 {
+												volc = vol2
+											}
+										} else if bio[ind].Status == bio_cip && bio[ind].Valvs[2] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
+											fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.BioreactorID, vol1, vol2)
+										} else {
+											if vol1 >= 0 {
+												volc = vol1
+											} else if vol2 >= 0 {
+												volc = vol2
+											}
 										}
 									}
 								}
 							}
-						}
 
-						if b.Status == bio_update {
-							if vol1 != -1 || vol2 != -1 {
-								bio[ind].Status = bio_ready
-							} else if !devmode {
-								bio_add_message(b.BioreactorID, "AVerifique sensores de Volume")
-								bio[ind].Status = bio_error
+							if b.Status == bio_update {
+								if vol1 != -1 || vol2 != -1 {
+									bio[ind].Status = bio_ready
+								} else if !devmode {
+									bio_add_message(b.BioreactorID, "AVerifique sensores de Volume")
+									bio[ind].Status = bio_error
+								}
 							}
-						}
 
-						if volc >= 0 {
-							bio[ind].Volume = uint32(volc)
-							level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10.0
-							level_int := uint8(level)
-							if level_int != bio[ind].Level {
-								bio[ind].Level = level_int
-								levels := fmt.Sprintf("%d", level_int)
-								cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
-								ret := scp_sendmsg_orch(cmd)
-								fmt.Println("SCREEN:", cmd, level, levels, ret)
-							}
-							if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
-								bio[ind].Status = bio_empty
+							if volc >= 0 {
+								bio[ind].Volume = uint32(volc)
+								level := (volc / float64(bio_cfg[b.BioreactorID].Maxvolume)) * 10.0
+								level_int := uint8(level)
+								if level_int != bio[ind].Level {
+									bio[ind].Level = level_int
+									levels := fmt.Sprintf("%d", level_int)
+									cmd := "CMD/" + bio_cfg[b.BioreactorID].Screenaddr + "/PUT/S231," + levels + "/END"
+									ret := scp_sendmsg_orch(cmd)
+									fmt.Println("SCREEN:", cmd, level, levels, ret)
+								}
+								if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
+									bio[ind].Status = bio_empty
+								}
 							}
 						}
-						if devmode && bio[ind].Status == bio_update {
-							if bio[ind].Volume == 0 {
-								bio[ind].Status = bio_empty
-							} else {
-								bio[ind].Status = bio_ready
-							}
+					}
+					if devmode && bio[ind].Status == bio_update {
+						if bio[ind].Volume == 0 {
+							bio[ind].Status = bio_empty
+						} else {
+							bio[ind].Status = bio_ready
 						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
