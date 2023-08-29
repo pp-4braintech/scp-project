@@ -1789,7 +1789,7 @@ func scp_get_alldata() {
 	// t_start_status := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
-	hasupdatevolin := false
+	// hasupdatevolin := false
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1840,7 +1840,7 @@ func scp_get_alldata() {
 										bio[ind].Volume += uint32(biovolin)
 									}
 									lastvolin = vol_tmp
-									hasupdatevolin = true
+									// hasupdatevolin = true
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
