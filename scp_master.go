@@ -1858,6 +1858,9 @@ func scp_get_alldata() {
 									if vol_tmp > lastvolout && lastvolout > 0 {
 										biovolout := vol_tmp - lastvolout
 										bio[ind].VolInOut -= biovolout
+										if bio[ind].VolInOut < 0 {
+											bio[ind].VolInOut = 0
+										}
 										bio[ind].Volume = uint32(bio[ind].VolInOut)
 									}
 									lastvolout = vol_tmp
@@ -2217,14 +2220,13 @@ func scp_get_alldata() {
 				}
 			}
 
-			if mustupdate_bio || biofabrica.Valvs[1] == 1 {
+			if !hasupdatevolin && (mustupdate_bio || biofabrica.Valvs[1] == 1) {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
 					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-					if !hasupdatevolin { // era !hasupdatevolin
-						lastvolin = vol_tmp
-					}
+					lastvolin = vol_tmp
+
 				} else {
 					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 				}
