@@ -361,6 +361,7 @@ type Biofabrica struct {
 	LastCountIn1 uint32
 	TestMode     bool
 	TechMode     bool
+	Useflowin    bool
 }
 
 type Path struct {
@@ -477,7 +478,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true,
 }
 
 var biobak = bio // Salva status atual
@@ -1754,6 +1755,8 @@ func scp_get_alldata() {
 	t_start_save := time.Now()
 	t_start_status := time.Now()
 	t_start_setup := time.Now()
+	lastvolin := float64(-1)
+	hasupdatevolin := false
 	firsttime := true
 	bio_seq := 0
 	ibc_seq := 0
@@ -1791,8 +1794,24 @@ func scp_get_alldata() {
 							}
 						}
 					}
-
-					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
+					hasupdatevolin = false
+					if biofabrica.Useflowin {
+						if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
+							count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
+							if count >= 0 {
+								fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp)
+								biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+								if vol_tmp > lastvolin && lastvolin > 0 {
+									biovolin := lastvolin - vol_tmp
+									bio[ind].Volume += uint32(biovolin)
+								}
+								lastvolin = vol_tmp
+								hasupdatevolin = true
+							} else {
+								fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+							}
+						}
+					} else if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
 						var vol0 float64 = -1
 						var dint int
@@ -2146,6 +2165,9 @@ func scp_get_alldata() {
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do Totem01 =", vol_tmp)
 					biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+					if !hasupdatevolin {
+						lastvolin = vol_tmp
+					}
 				} else {
 					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 				}
