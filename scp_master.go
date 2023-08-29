@@ -1475,8 +1475,8 @@ func scp_get_ph_voltage(bioid string) float64 {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
 				return -1
 			}
+			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		}
-		time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
@@ -1521,6 +1521,16 @@ func scp_get_ph(bioid string) float64 {
 		fmt.Println("ERROR SCP GET PH: Biorreator nao existe", bioid)
 	}
 	return -1
+}
+
+func scp_update_ph(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind >= 0 {
+		phtmp := scp_get_ph(bioid)
+		if phtmp >= 0 {
+			bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
+		}
+	}
 }
 
 func scp_get_temperature(bioid string) float64 {
@@ -1811,12 +1821,10 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Status == bio_producting || b.Valvs[1] == 1 {
 						if t_elapsed_bio%5 == 0 {
-							phtmp := scp_get_ph(b.BioreactorID)
-							if phtmp >= 0 {
-								bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
-							}
+							go scp_update_ph(b.BioreactorID)
 						}
 					}
+
 					hasupdatevolin = false
 					if biofabrica.Useflowin {
 						if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
