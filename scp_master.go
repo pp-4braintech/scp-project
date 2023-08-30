@@ -2765,7 +2765,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		if bio[ind].Volume == 0 {
 			bio[ind].Status = bio_empty
-			bio[ind].LastStatus = bio_empty
+			prev_status = bio_empty
 			bio[ind].Level = 0
 			bio[ind].Step = [2]int{0, 0}
 			bio[ind].Timetotal = [2]int{0, 0}
