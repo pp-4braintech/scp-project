@@ -2724,7 +2724,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				}
 				bio[ind].Volume = uint32(vol_tmp)
 				scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_screen(bio[ind].BioreactorID)
+				scp_update_screen(bio[ind].BioreactorID, false)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2756,7 +2756,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			bio[ind].ShowVol = true
 			scp_update_biolevel(bio[ind].BioreactorID)
-			scp_update_screen(bio[ind].BioreactorID)
+			scp_update_screen(bio[ind].BioreactorID, false)
 		}
 		bio[ind].Withdraw = 0
 
