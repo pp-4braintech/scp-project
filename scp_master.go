@@ -1589,6 +1589,8 @@ func scp_update_screen_steps(bioid string) {
 	step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
 	cmd := "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
 	ret := scp_sendmsg_orch(cmd)
+	ret = scp_sendmsg_orch(cmd)
+
 	fmt.Println("DEBUG SCP UPDATE SCREEN STEPS: cmd=", cmd, " ret=", ret)
 	if !strings.Contains(ret, "ACK") {
 		return
