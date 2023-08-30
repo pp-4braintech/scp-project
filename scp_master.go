@@ -2626,7 +2626,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		t_elapsed := float64(0)
 		mustwaittime := false
 		waittime := float64(0)
-		if untilempty && biofabrica.Useflowin {
+		if untilempty && biofabrica.Useflowin && get_scp_type(bio[ind].OutID) == scp_ibc {
 			// bio[ind].ShowVol = false
 			mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
@@ -2660,7 +2660,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && int32(t_elapsed)%5 == 0 {
+			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%5 == 0 {
 				volout := t_elapsed / bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
@@ -2683,7 +2683,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
-			} else {
+			} else if mustwaittime {
 				volout := t_elapsed * bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
