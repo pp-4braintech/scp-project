@@ -1538,15 +1538,12 @@ func scp_update_ph(bioid string) {
 	}
 }
 
-func scp_update_screen(bioid string, all bool) {
+func scp_update_screen_vol(bioid string) {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		return
 	}
-	var cmd, ret string
-
 	bioscr := bio_cfg[bioid].Screenaddr
-
 	if bio[ind].ShowVol {
 		vol_str := fmt.Sprintf("%d", bio[ind].Volume)
 		cmd = "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
@@ -1556,7 +1553,15 @@ func scp_update_screen(bioid string, all bool) {
 			return
 		}
 	}
+}
 
+func scp_update_screen_phtemp(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	var cmd, ret string
+	bioscr := bio_cfg[bioid].Screenaddr
 	ph_str := fmt.Sprintf("%d", int(bio[ind].PH))
 	cmd = "CMD/" + bioscr + "/PUT/S243," + ph_str + "/END"
 	ret = scp_sendmsg_orch(cmd)
@@ -1880,7 +1885,7 @@ func scp_sync_functions() {
 					go scp_update_screen_times(bio[n_bio].BioreactorID)
 					t_start_screens_full = time.Now()
 				} else {
-					go scp_update_screen(bio[n_bio].BioreactorID, false)
+					go scp_update_screen_phtemp(bio[n_bio].BioreactorID)
 				}
 				n_bio++
 				if n_bio >= len(bio) {
@@ -2752,7 +2757,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				}
 				bio[ind].Volume = uint32(vol_tmp)
 				// go scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_screen(bio[ind].BioreactorID, false)
+				scp_update_screen_vol(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2790,7 +2795,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 
 		// go scp_update_biolevel(bio[ind].BioreactorID)
-		scp_update_screen(bio[ind].BioreactorID, false)
+		scp_update_screen_vol(bio[ind].BioreactorID)
+		scp_update_screen_times(bio[ind].BioreactorID)
 
 		bio[ind].Withdraw = 0
 
