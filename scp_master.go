@@ -1537,7 +1537,7 @@ func scp_update_ph(bioid string) {
 	}
 }
 
-func scp_update_screen(bioid string) {
+func scp_update_screen(bioid string, all bool) {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		return
@@ -1562,7 +1562,49 @@ func scp_update_screen(bioid string) {
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
-	// if bio[ind].Step[0]
+	if bio[ind].Step[0] != 0 {
+		step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
+		cmd = "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+	}
+	if bio[ind].Step[1] != 0 {
+		step_str := fmt.Sprintf("%d", int(bio[ind].Step[1]))
+		cmd = "CMD/" + bioscr + "/PUT/S282," + step_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+	}
+	if all {
+		total_str := fmt.Sprintf("%d", int(bio[ind].Timetotal[0]))
+		cmd = "CMD/" + bioscr + "/PUT/S283," + total_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+		total_str = fmt.Sprintf("%d", int(bio[ind].Timetotal[1]))
+		cmd = "CMD/" + bioscr + "/PUT/S289," + total_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+
+		left_str := fmt.Sprintf("%d", int(bio[ind].Timeleft[0]))
+		cmd = "CMD/" + bioscr + "/PUT/S284," + left_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+		left_str = fmt.Sprintf("%d", int(bio[ind].Timeleft[1]))
+		cmd = "CMD/" + bioscr + "/PUT/S285," + left_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+	}
 }
 
 func scp_get_temperature(bioid string) float64 {
@@ -1811,7 +1853,7 @@ func scp_sync_functions() {
 
 			t_elapsed_screens := uint32(time.Since(t_start_screens).Seconds())
 			if t_elapsed_screens >= scp_refresscreens {
-				scp_update_screen(bio[n_bio].BioreactorID)
+				scp_update_screen(bio[n_bio].BioreactorID, true)
 				n_bio++
 				if n_bio >= len(bio) {
 					n_bio = 0
@@ -2698,6 +2740,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
+				bio[ind].Status = bio_empty
+				bio[ind].Level = 0
+				bio[ind].Step = [2]int{0, 0}
+				bio[ind].Timetotal = [2]int{0, 0}
+				bio[ind].Timeleft = [2]int{0, 0}
 			} else if mustwaittime {
 				volout := t_elapsed * bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
