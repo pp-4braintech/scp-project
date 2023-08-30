@@ -2729,7 +2729,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%5 == 0 {
+			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 {
 				volout := t_elapsed / bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
@@ -3816,7 +3816,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				bio[ind].Organism = organs[orgcode].Orgname
 				bio[ind].Timetotal = [2]int{organs[orgcode].Timetotal, 0}
 				bio[ind].Timeleft = [2]int{organs[orgcode].Timetotal, 0}
-				go scp_update_screen_times(bioid)
+				scp_update_screen_times(bioid)
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
 				return false
@@ -3838,7 +3838,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				biostep_str := subpars[1]
 				biostep, _ := strconv.Atoi(biostep_str)
 				bio[ind].Step[0] = biostep
-				go scp_update_screen_times(bioid)
+				scp_update_screen_times(bioid)
 			case scp_par_maxstep:
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
@@ -4011,7 +4011,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].Step = [2]int{0, 0}
 		bio[ind].Timetotal = [2]int{0, 0}
 		bio[ind].Timeleft = [2]int{0, 0}
-		go scp_update_screen_times(bioid)
+		scp_update_screen_times(bioid)
 		return true
 
 	case scp_job_wait:
