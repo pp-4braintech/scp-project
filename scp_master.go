@@ -142,7 +142,7 @@ const scp_refreshsleep = 100 // em ms
 const scp_refreshsync = 5    // em segundos
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
-const scp_clockwait = 100 // em ms
+const scp_clockwait = 60 // em segundos
 const scp_timetosave = 45
 const scp_checksetup = 60
 const scp_mustupdate_bio = 30
@@ -4955,7 +4955,7 @@ func scp_clock() {
 		}
 
 		t_start = time.Now()
-		time.Sleep(scp_clockwait * time.Millisecond)
+		time.Sleep(scp_clockwait * time.Second)
 
 	}
 }
