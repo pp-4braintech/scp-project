@@ -1586,9 +1586,16 @@ func scp_update_screen_steps(bioid string) {
 	}
 	bioscr := bio_cfg[bioid].Screenaddr
 
-	step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
-	cmd := "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
+	step_str := fmt.Sprintf("%d", int(bio[ind].Step[1]))
+	cmd := "CMD/" + bioscr + "/PUT/S282," + step_str + "/END"
 	ret := scp_sendmsg_orch(cmd)
+	fmt.Println("DEBUG SCP UPDATE SCREEN STEPS: cmd=", cmd, " ret=", ret)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+
+	step_str = fmt.Sprintf("%d", int(bio[ind].Step[0]))
+	cmd = "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
 	ret = scp_sendmsg_orch(cmd)
 
 	fmt.Println("DEBUG SCP UPDATE SCREEN STEPS: cmd=", cmd, " ret=", ret)
@@ -1596,13 +1603,6 @@ func scp_update_screen_steps(bioid string) {
 		return
 	}
 
-	step_str = fmt.Sprintf("%d", int(bio[ind].Step[1]))
-	cmd = "CMD/" + bioscr + "/PUT/S282," + step_str + "/END"
-	ret = scp_sendmsg_orch(cmd)
-	fmt.Println("DEBUG SCP UPDATE SCREEN STEPS: cmd=", cmd, " ret=", ret)
-	if !strings.Contains(ret, "ACK") {
-		return
-	}
 }
 
 func scp_update_screen_times(bioid string) {
