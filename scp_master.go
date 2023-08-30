@@ -2582,6 +2582,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		var vol_out int64
 		var vol_bio_out_start float64
+		vol_bio_init := bio[ind].Volume
 		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
 			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 		} else {
@@ -2633,7 +2634,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			if biofabrica.Useflowin && int32(t_elapsed)%5 == 0 {
 				volout := t_elapsed * bio_emptying_rate
-				bio[ind].Volume -= uint32(volout)
+				bio[ind].Volume = vol_bio_init - uint32(volout)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2651,7 +2652,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].VolInOut = 0
 			} else {
 				volout := t_elapsed * bio_emptying_rate
-				bio[ind].Volume -= uint32(volout)
+				bio[ind].Volume = vol_bio_init - uint32(volout)
 				bio[ind].VolInOut = volout
 			}
 			bio[ind].ShowVol = true
