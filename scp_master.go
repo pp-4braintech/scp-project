@@ -1536,6 +1536,33 @@ func scp_update_ph(bioid string) {
 	}
 }
 
+func scp_update_screen(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	bioscr := bio_cfg[bioid].Screenaddr
+	vol_str := fmt.Sprintf("%s", bio[ind].Volume)
+	cmd := "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
+	ret := scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+	ph_str := fmt.Sprintf("%s", bio[ind].PH)
+	cmd = "CMD/" + bioscr + "/PUT/S243," + ph_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+	temp_str := fmt.Sprintf("%s", bio[ind].Temperature)
+	cmd = "CMD/" + bioscr + "/PUT/S241," + temp_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+	// if bio[ind].Step[0]
+}
+
 func scp_get_temperature(bioid string) float64 {
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	tempdev := bio_cfg[bioid].Temp_dev
@@ -2635,6 +2662,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if biofabrica.Useflowin && int32(t_elapsed)%5 == 0 {
 				volout := t_elapsed / bio_emptying_rate
 				bio[ind].Volume = vol_bio_init - uint32(volout)
+				if bio[ind].Volume < 0 {
+					bio[ind].Volume = 0
+				}
+				scp_update_screen(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2653,6 +2684,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			} else {
 				volout := t_elapsed * bio_emptying_rate
 				bio[ind].Volume = vol_bio_init - uint32(volout)
+				if bio[ind].Volume < 0 {
+					bio[ind].Volume = 0
+				}
 				bio[ind].VolInOut = volout
 			}
 			bio[ind].ShowVol = true
