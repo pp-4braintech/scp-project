@@ -30,6 +30,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 2
 #
+SET/STATUS,CIP
 SET/STEP,2
 # Agua pelo sprayball
 ON/WATER,TOTEM01
@@ -55,6 +56,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 3
 #
+SET/STATUS,CIP
 SET/STEP,3
 #
 # Agua pelo sprayball
@@ -81,6 +83,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 4
 #
+SET/STATUS,CIP
 SET/STEP,4
 #
 # Agua pelo sprayball
@@ -137,6 +140,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 5
 #
+SET/STATUS,CIP
 SET/STEP,5
 #
 # Agua pelo sprayball
@@ -176,6 +180,7 @@ RUN/WITHDRAW,DROP
 #
 # PASSO 6
 #
+SET/STATUS,CIP
 SET/STEP,6
 #
 # Agua pelo sprayball
@@ -232,6 +237,7 @@ RUN/WITHDRAW,DROP
 #
 # FINAL
 #
+SET/STATUS,CIP
 SET/STEP,7
 #
 # Liga aerador por 30min = 1800seg  //  FOI ACORDADO QUE ELE FICARIA LIGADO DIRETO
