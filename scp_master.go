@@ -168,6 +168,8 @@ const ibc_v2_zero = 2652.0 // em mm
 
 const flow_ratio = 0.03445
 
+const bio_emptying_rate = 55.0 / 100.0
+
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
@@ -2498,7 +2500,7 @@ func scp_run_linecip(lines string) bool {
 	return true
 }
 
-func scp_run_withdraw(devtype string, devid string, linewash bool) int {
+func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bool) int {
 	withdrawmutex.Lock()
 	turn_withdraw_var(true)
 	defer withdrawmutex.Unlock()
@@ -2592,19 +2594,37 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 		} else {
 			maxtime = scp_maxtimewithdraw
 		}
+		t_elapsed := float64(0)
+		mustwaittime := false
+		waittime := float64(0)
+		if untilempty && biofabrica.Useflowin {
+			bio[ind].ShowVol = false
+			mustwaittime = true
+			waittime = float64(bio[ind].Volume) * bio_emptying_rate
+		}
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
-			t_elapsed := time.Since(t_start).Seconds()
+			t_elapsed = time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			if bio[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(bio[ind].Withdraw)) {
-				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(bio[ind].Withdraw) {
-					fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
+			if untilempty {
+				if mustwaittime {
+					if t_elapsed >= waittime {
+						break
+					}
+				} else if vol_now == 0 {
 					break
+				}
+			} else {
+				if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(bio[ind].Withdraw)) {
+					if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(bio[ind].Withdraw) {
+						fmt.Println("DEBUG RUN WITHDRAW 11: Volume de desenvase atingido", vol_ini, vol_now, bio[ind].Withdraw)
+						break
+					}
 				}
 			}
 			if t_elapsed > maxtime {
@@ -2621,7 +2641,18 @@ func scp_run_withdraw(devtype string, devid string, linewash bool) int {
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
+		if biofabrica.Useflowin {
+			if bio[ind].Withdraw != 0 {
+				bio[ind].Volume = 0
+				bio[ind].VolInOut = 0
+			} else {
+				volout := t_elapsed * bio_emptying_rate
+				bio[ind].Volume -= uint32(volout)
+				bio[ind].VolInOut = volout
+			}
+		}
 		bio[ind].Withdraw = 0
+
 		board_add_message("IDesenvase concluido")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 		bio[ind].Pumpstatus = false
@@ -3752,7 +3783,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					bio[ind].OutID = outid
 				}
 				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
-				if scp_run_withdraw(scp_bioreactor, bioid, false) < 0 {
+				if scp_run_withdraw(scp_bioreactor, bioid, false, true) < 0 {
 					return false
 				} else {
 					bio[ind].Organism = ""
@@ -4220,7 +4251,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					ibc[ind].OutID = outid
 				}
 				board_add_message("IDesenvase Automático do IBC " + ibcid + " para " + ibc[ind].OutID)
-				if scp_run_withdraw(scp_ibc, ibcid, false) < 0 {
+				if scp_run_withdraw(scp_ibc, ibcid, false, true) < 0 {
 					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
 				} else {
@@ -5098,7 +5129,7 @@ func scp_run_manydraw_out(data string, dest string) {
 				ibc[i].OutID = dest
 				ibc[i].Withdraw = uint32(vol)
 				fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
-				scp_run_withdraw(scp_ibc, d[0], false)
+				scp_run_withdraw(scp_ibc, d[0], false, false)
 			} else {
 				checkErr(err)
 			}
@@ -5418,7 +5449,7 @@ func scp_process_conn(conn net.Conn) {
 				ibc[ind].OutID = "OUT"
 				fmt.Println(scp_ibc, ibc_id)
 				if !withdrawrunning {
-					go scp_run_withdraw(scp_ibc, ibc_id, true)
+					go scp_run_withdraw(scp_ibc, ibc_id, true, false)
 					fmt.Println("DEBUG WDPANEL: Executando Desenvase do", ibc_id, " volume", ibc[ind].Withdraw)
 					conn.Write([]byte(scp_ack))
 				} else {
@@ -5601,7 +5632,11 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
 						if bio[ind].Withdraw > 0 {
-							go scp_run_withdraw(scp_bioreactor, bioid, true)
+							if get_scp_type(bio[ind].OutID) == scp_ibc {
+								go scp_run_withdraw(scp_bioreactor, bioid, true, true)
+							} else {
+								go scp_run_withdraw(scp_bioreactor, bioid, true, false)
+							}
 						}
 						conn.Write([]byte(scp_ack))
 					} else {
@@ -5782,7 +5817,7 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						ibc[ind].Withdraw = uint32(vol)
 						if ibc[ind].Withdraw > 0 {
-							go scp_run_withdraw(scp_ibc, ibcid, true)
+							go scp_run_withdraw(scp_ibc, ibcid, true, false)
 						}
 						conn.Write([]byte(scp_ack))
 					}
