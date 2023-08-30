@@ -137,8 +137,9 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
 const scp_refresstatus = 15
-const scp_refresscreens = 10
-const scp_refreshsleep = 100
+const scp_refresscreens = 10 // em segundos
+const scp_refreshsleep = 100 // em ms
+const scp_refreshsync = 10   // em segundos
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
 const scp_clockwait = 60000
@@ -1881,7 +1882,7 @@ func scp_sync_functions() {
 			}
 
 		}
-		time.Sleep(scp_refreshsleep * time.Millisecond)
+		time.Sleep(scp_refreshsync * time.Second)
 	}
 }
 
@@ -2773,11 +2774,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			bio[ind].Status = bio_empty
 			if prev_status == bio_ready {
 				prev_status = bio_empty
+				bio[ind].Step = [2]int{0, 0}
+				bio[ind].Timetotal = [2]int{0, 0}
+				bio[ind].Timeleft = [2]int{0, 0}
 			}
 			bio[ind].Level = 0
-			bio[ind].Step = [2]int{0, 0}
-			bio[ind].Timetotal = [2]int{0, 0}
-			bio[ind].Timeleft = [2]int{0, 0}
 		}
 
 		// go scp_update_biolevel(bio[ind].BioreactorID)
