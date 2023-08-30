@@ -139,10 +139,10 @@ const scp_refreshwait = 50
 const scp_refresstatus = 15
 const scp_refresscreens = 10 // em segundos
 const scp_refreshsleep = 100 // em ms
-const scp_refreshsync = 10   // em segundos
+const scp_refreshsync = 5    // em segundos
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
-const scp_clockwait = 100
+const scp_clockwait = 100 // em ms
 const scp_timetosave = 45
 const scp_checksetup = 60
 const scp_mustupdate_bio = 30
@@ -1889,10 +1889,11 @@ func scp_sync_functions() {
 			t_elapsed_screens_full := uint32(time.Since(t_start_screens_full).Seconds())
 			if t_elapsed_screens >= scp_refresscreens {
 				if t_elapsed_screens_full > scp_refresscreens*12 {
-					go scp_update_screen_times(bio[n_bio].BioreactorID)
+					scp_update_screen_times(bio[n_bio].BioreactorID)
 					t_start_screens_full = time.Now()
 				} else {
-					go scp_update_screen_phtemp(bio[n_bio].BioreactorID)
+					scp_update_screen_vol(bio[n_bio].BioreactorID)
+					scp_update_screen_phtemp(bio[n_bio].BioreactorID)
 				}
 				n_bio++
 				if n_bio >= len(bio) {
