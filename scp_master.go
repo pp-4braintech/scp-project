@@ -3878,6 +3878,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
 				bio[ind].Step[1] = biomaxstep
+				scp_update_screen_steps(bioid)
 			case scp_par_totaltime:
 				biototaltime_str := subpars[1]
 				if biototaltime_str == "DEFAULT" {
