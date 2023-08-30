@@ -1579,7 +1579,7 @@ func scp_update_screen_phtemp(bioid string) {
 	// }
 }
 
-func scp_update_screen_times(bioid string) {
+func scp_update_screen_steps(bioid string) {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		return
@@ -1588,22 +1588,29 @@ func scp_update_screen_times(bioid string) {
 
 	var cmd, ret string
 
-	if bio[ind].Step[0] != 0 {
-		step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
-		cmd = "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
+	step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
+	cmd = "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
 	}
-	if bio[ind].Step[1] != 0 {
-		step_str := fmt.Sprintf("%d", int(bio[ind].Step[1]))
-		cmd = "CMD/" + bioscr + "/PUT/S282," + step_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
+
+	step_str = fmt.Sprintf("%d", int(bio[ind].Step[1]))
+	cmd = "CMD/" + bioscr + "/PUT/S282," + step_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
 	}
+}
+
+func scp_update_screen_times(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	bioscr := bio_cfg[bioid].Screenaddr
+
+	var cmd, ret string
 
 	total_str := fmt.Sprintf("%d", int(bio[ind].Timetotal[0]))
 	cmd = "CMD/" + bioscr + "/PUT/S283," + total_str + "/END"
@@ -2796,6 +2803,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		// go scp_update_biolevel(bio[ind].BioreactorID)
 		scp_update_screen_vol(bio[ind].BioreactorID)
+		scp_update_screen_steps(bio[ind].BioreactorID)
 		scp_update_screen_times(bio[ind].BioreactorID)
 
 		bio[ind].Withdraw = 0
@@ -3864,7 +3872,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				biostep_str := subpars[1]
 				biostep, _ := strconv.Atoi(biostep_str)
 				bio[ind].Step[0] = biostep
-				scp_update_screen_times(bioid)
+				scp_update_screen_steps(bioid)
 			case scp_par_maxstep:
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
