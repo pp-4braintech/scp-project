@@ -137,6 +137,7 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
 const scp_refresstatus = 15
+const scp_refresscreens = 10
 const scp_refreshsleep = 100
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
@@ -1790,6 +1791,8 @@ func scp_refresh_status() {
 func scp_sync_functions() {
 	t_start_save := time.Now()
 	t_start_status := time.Now()
+	t_start_screens := time.Now()
+	n_bio := 0
 	for {
 		if finishedsetup {
 			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
@@ -1805,6 +1808,17 @@ func scp_sync_functions() {
 				}
 				t_start_status = time.Now()
 			}
+
+			t_elapsed_screens := uint32(time.Since(t_start_screens).Seconds())
+			if t_elapsed_screens >= scp_refresscreens {
+				scp_update_screen(bio[n_bio].BioreactorID)
+				n_bio++
+				if n_bio >= len(bio) {
+					n_bio = 0
+				}
+				t_start_screens = time.Now()
+			}
+
 		}
 		time.Sleep(scp_refreshsleep * time.Millisecond)
 	}
@@ -2679,7 +2693,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
-		if biofabrica.Useflowin {
+		if biofabrica.Useflowin && untilempty {
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
@@ -2700,7 +2714,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 
 		set_valvs_value(pilha, 0, false)
-		time.Sleep(scp_timewaitvalvs / 2 * time.Millisecond)
+		if untilempty {
+			time.Sleep((scp_timewaitvalvs / 3) * 2 * time.Millisecond)
+		}
 
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
@@ -2710,7 +2726,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
 
-		time.Sleep(scp_timewaitvalvs / 2 * time.Millisecond)
+		if untilempty {
+			time.Sleep(scp_timewaitvalvs / 3 * time.Millisecond)
+		} else {
+			time.Sleep(scp_timewaitvalvs * time.Millisecond)
+		}
 
 		// bio[ind].Status = bio_ready
 		dest_type := get_scp_type(bio[ind].OutID)
