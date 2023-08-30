@@ -2633,7 +2633,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				break
 			}
 			if biofabrica.Useflowin && int32(t_elapsed)%5 == 0 {
-				volout := t_elapsed * bio_emptying_rate
+				volout := t_elapsed / bio_emptying_rate
 				bio[ind].Volume = vol_bio_init - uint32(volout)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
