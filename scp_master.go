@@ -1562,6 +1562,20 @@ func scp_update_screen(bioid string, all bool) {
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
+	if all {
+		scp_update_screen_times(bioid)
+	}
+}
+
+func scp_update_screen_times(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	bioscr := bio_cfg[bioid].Screenaddr
+
+	var cmd, ret string
+
 	if bio[ind].Step[0] != 0 {
 		step_str := fmt.Sprintf("%d", int(bio[ind].Step[0]))
 		cmd = "CMD/" + bioscr + "/PUT/S281," + step_str + "/END"
@@ -1578,32 +1592,31 @@ func scp_update_screen(bioid string, all bool) {
 			return
 		}
 	}
-	if all {
-		total_str := fmt.Sprintf("%d", int(bio[ind].Timetotal[0]))
-		cmd = "CMD/" + bioscr + "/PUT/S283," + total_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
-		total_str = fmt.Sprintf("%d", int(bio[ind].Timetotal[1]))
-		cmd = "CMD/" + bioscr + "/PUT/S289," + total_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
 
-		left_str := fmt.Sprintf("%d", int(bio[ind].Timeleft[0]))
-		cmd = "CMD/" + bioscr + "/PUT/S284," + left_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
-		left_str = fmt.Sprintf("%d", int(bio[ind].Timeleft[1]))
-		cmd = "CMD/" + bioscr + "/PUT/S285," + left_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
+	total_str := fmt.Sprintf("%d", int(bio[ind].Timetotal[0]))
+	cmd = "CMD/" + bioscr + "/PUT/S283," + total_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+	total_str = fmt.Sprintf("%d", int(bio[ind].Timetotal[1]))
+	cmd = "CMD/" + bioscr + "/PUT/S289," + total_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+
+	left_str := fmt.Sprintf("%d", int(bio[ind].Timeleft[0]))
+	cmd = "CMD/" + bioscr + "/PUT/S284," + left_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
+	}
+	left_str = fmt.Sprintf("%d", int(bio[ind].Timeleft[1]))
+	cmd = "CMD/" + bioscr + "/PUT/S285," + left_str + "/END"
+	ret = scp_sendmsg_orch(cmd)
+	if !strings.Contains(ret, "ACK") {
+		return
 	}
 }
 
@@ -1853,7 +1866,7 @@ func scp_sync_functions() {
 
 			t_elapsed_screens := uint32(time.Since(t_start_screens).Seconds())
 			if t_elapsed_screens >= scp_refresscreens {
-				scp_update_screen(bio[n_bio].BioreactorID, true)
+				go scp_update_screen(bio[n_bio].BioreactorID, false)
 				n_bio++
 				if n_bio >= len(bio) {
 					n_bio = 0
@@ -2723,8 +2736,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					vol_tmp = 0
 				}
 				bio[ind].Volume = uint32(vol_tmp)
-				scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_screen(bio[ind].BioreactorID, false)
+				go scp_update_biolevel(bio[ind].BioreactorID)
+				go scp_update_screen(bio[ind].BioreactorID, false)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2755,8 +2768,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].VolInOut = vol_tmp
 			}
 			bio[ind].ShowVol = true
-			scp_update_biolevel(bio[ind].BioreactorID)
-			scp_update_screen(bio[ind].BioreactorID, false)
+			go scp_update_biolevel(bio[ind].BioreactorID)
+			go scp_update_screen(bio[ind].BioreactorID, false)
 		}
 		bio[ind].Withdraw = 0
 
@@ -3800,6 +3813,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				bio[ind].Organism = organs[orgcode].Orgname
 				bio[ind].Timetotal = [2]int{organs[orgcode].Timetotal, 0}
 				bio[ind].Timeleft = [2]int{organs[orgcode].Timetotal, 0}
+				go scp_update_screen_times(bioid)
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
 				return false
@@ -3821,6 +3835,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				biostep_str := subpars[1]
 				biostep, _ := strconv.Atoi(biostep_str)
 				bio[ind].Step[0] = biostep
+				go scp_update_screen_times(bioid)
 			case scp_par_maxstep:
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
@@ -3993,6 +4008,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].Step = [2]int{0, 0}
 		bio[ind].Timetotal = [2]int{0, 0}
 		bio[ind].Timeleft = [2]int{0, 0}
+		go scp_update_screen_times(bioid)
 		return true
 
 	case scp_job_wait:
