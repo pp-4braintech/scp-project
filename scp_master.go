@@ -1546,8 +1546,8 @@ func scp_update_screen_vol(bioid string) {
 	bioscr := bio_cfg[bioid].Screenaddr
 	if bio[ind].ShowVol {
 		vol_str := fmt.Sprintf("%d", bio[ind].Volume)
-		cmd = "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
-		ret = scp_sendmsg_orch(cmd)
+		cmd := "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
+		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP UPDATE SCREEN: cmd=", cmd, "ret=", ret)
 		if !strings.Contains(ret, "ACK") {
 			return
