@@ -1545,6 +1545,7 @@ func scp_update_screen(bioid string) {
 	vol_str := fmt.Sprintf("%s", bio[ind].Volume)
 	cmd := "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
 	ret := scp_sendmsg_orch(cmd)
+	fmt.Println("DEBUG SCP UPDATE SCREEN: cmd=", cmd, "ret=", ret)
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
@@ -2661,10 +2662,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			if biofabrica.Useflowin && int32(t_elapsed)%5 == 0 {
 				volout := t_elapsed / bio_emptying_rate
-				bio[ind].Volume = vol_bio_init - uint32(volout)
-				if bio[ind].Volume < 0 {
-					bio[ind].Volume = 0
+				vol_tmp := float64(vol_bio_init) - volout
+				if vol_tmp < 0 {
+					vol_tmp = 0
 				}
+				bio[ind].Volume = uint32(vol_tmp)
 				scp_update_screen(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
@@ -2683,11 +2685,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].VolInOut = 0
 			} else {
 				volout := t_elapsed * bio_emptying_rate
-				bio[ind].Volume = vol_bio_init - uint32(volout)
-				if bio[ind].Volume < 0 {
-					bio[ind].Volume = 0
+				vol_tmp := float64(vol_bio_init) - volout
+				if vol_tmp < 0 {
+					vol_tmp = 0
 				}
-				bio[ind].VolInOut = volout
+				bio[ind].Volume = uint32(vol_tmp)
+				bio[ind].VolInOut = vol_tmp
 			}
 			bio[ind].ShowVol = true
 		}
