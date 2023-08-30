@@ -1562,9 +1562,9 @@ func scp_update_screen(bioid string, all bool) {
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
-	if all {
-		scp_update_screen_times(bioid)
-	}
+	// if all {
+	// 	scp_update_screen_times(bioid)
+	// }
 }
 
 func scp_update_screen_times(bioid string) {
@@ -2737,7 +2737,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				}
 				bio[ind].Volume = uint32(vol_tmp)
 				// go scp_update_biolevel(bio[ind].BioreactorID)
-				go scp_update_screen(bio[ind].BioreactorID, false)
+				scp_update_screen(bio[ind].BioreactorID, false)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -2772,7 +2772,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 
 		// go scp_update_biolevel(bio[ind].BioreactorID)
-		go scp_update_screen(bio[ind].BioreactorID, false)
+		scp_update_screen(bio[ind].BioreactorID, false)
 
 		bio[ind].Withdraw = 0
 
