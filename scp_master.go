@@ -1542,14 +1542,20 @@ func scp_update_screen(bioid string, all bool) {
 	if ind < 0 {
 		return
 	}
+	var cmd, ret string
+
 	bioscr := bio_cfg[bioid].Screenaddr
-	vol_str := fmt.Sprintf("%d", bio[ind].Volume)
-	cmd := "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
-	ret := scp_sendmsg_orch(cmd)
-	fmt.Println("DEBUG SCP UPDATE SCREEN: cmd=", cmd, "ret=", ret)
-	if !strings.Contains(ret, "ACK") {
-		return
+
+	if bio[ind].ShowVol {
+		vol_str := fmt.Sprintf("%d", bio[ind].Volume)
+		cmd = "CMD/" + bioscr + "/PUT/S232," + vol_str + "/END"
+		ret = scp_sendmsg_orch(cmd)
+		fmt.Println("DEBUG SCP UPDATE SCREEN: cmd=", cmd, "ret=", ret)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
 	}
+
 	ph_str := fmt.Sprintf("%d", int(bio[ind].PH))
 	cmd = "CMD/" + bioscr + "/PUT/S243," + ph_str + "/END"
 	ret = scp_sendmsg_orch(cmd)
