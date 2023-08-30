@@ -2601,7 +2601,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		if untilempty && biofabrica.Useflowin {
 			// bio[ind].ShowVol = false
 			mustwaittime = true
-			waittime = float64(bio[ind].Volume) * bio_emptying_rate
+			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
 		for {
 			vol_now := bio[ind].Volume
