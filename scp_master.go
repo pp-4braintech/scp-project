@@ -2661,6 +2661,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		board_add_message("IDesenvase concluido")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
+		set_valvs_value(pilha, 0, false)
+
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
 		cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
@@ -2668,7 +2670,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		fmt.Println("DEBUG RUN WITHDRAW 14: CMD1 =", cmd1, " RET=", ret1)
 		ret2 = scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
-		set_valvs_value(pilha, 0, false)
+
 		// bio[ind].Status = bio_ready
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		dest_type := get_scp_type(bio[ind].OutID)
