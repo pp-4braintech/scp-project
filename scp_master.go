@@ -2753,11 +2753,6 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
-				bio[ind].Status = bio_empty
-				bio[ind].Level = 0
-				bio[ind].Step = [2]int{0, 0}
-				bio[ind].Timetotal = [2]int{0, 0}
-				bio[ind].Timeleft = [2]int{0, 0}
 			} else if mustwaittime {
 				volout := t_elapsed * bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
@@ -2767,10 +2762,18 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].Volume = uint32(vol_tmp)
 				bio[ind].VolInOut = vol_tmp
 			}
-			bio[ind].ShowVol = true
-			go scp_update_biolevel(bio[ind].BioreactorID)
-			go scp_update_screen(bio[ind].BioreactorID, false)
 		}
+		if bio[ind].Volume == 0 {
+			bio[ind].Status = bio_empty
+			bio[ind].Level = 0
+			bio[ind].Step = [2]int{0, 0}
+			bio[ind].Timetotal = [2]int{0, 0}
+			bio[ind].Timeleft = [2]int{0, 0}
+		}
+
+		go scp_update_biolevel(bio[ind].BioreactorID)
+		go scp_update_screen(bio[ind].BioreactorID, false)
+
 		bio[ind].Withdraw = 0
 
 		board_add_message("IDesenvase concluido")
