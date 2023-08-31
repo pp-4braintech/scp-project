@@ -2630,6 +2630,9 @@ func scp_run_linecip(lines string) bool {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
 			return false
 		}
+
+		time.Sleep(10000 * time.Millisecond)
+
 	}
 
 	board_add_message("ICIP concluído Linhas " + lines)
