@@ -2585,6 +2585,8 @@ func scp_run_linecip(lines string) bool {
 		// 	time.Sleep(100 * time.Millisecond)
 		// }
 
+		time.Sleep((scp_timewaitvalvs * time.Second))
+
 		fmt.Println("DEBUG SCP LINECIP: Ligando peristalticas do totem", totem_str, peris_str)
 
 		if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
@@ -2609,9 +2611,11 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		for i := 0; i < tmax; i++ {
-			time.Sleep(100 * time.Millisecond)
-		}
+		// for i := 0; i < tmax; i++ {
+		// 	time.Sleep(100 * time.Millisecond)
+		// }
+
+		time.Sleep((scp_timewaitvalvs * time.Second))
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 1) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
