@@ -2581,9 +2581,11 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		for i := 0; i < tmax; i++ {
-			time.Sleep(100 * time.Millisecond)
-		}
+		// for i := 0; i < tmax; i++ {
+		// 	time.Sleep(100 * time.Millisecond)
+		// }
+
+		fmt.Println("DEBUG SCP LINECIP: Ligando peristalticas do totem", totem_str, peris_str)
 
 		if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao ligar peristaltica em", totem_str, peris_str)
