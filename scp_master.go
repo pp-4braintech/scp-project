@@ -1648,6 +1648,7 @@ func scp_get_temperature(bioid string) float64 {
 	if len(bioaddr) > 0 {
 		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
 		ret_temp := scp_sendmsg_orch(cmd_temp)
+		ret_temp = scp_sendmsg_orch(cmd_temp)
 		params := scp_splitparam(ret_temp, "/")
 		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "ret=", ret_temp, "len=", len(ret_temp), "params=", params)
 		if params[0] == scp_ack {
