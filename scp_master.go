@@ -2570,6 +2570,7 @@ func scp_run_linecip(lines string) bool {
 
 	for _, peris_str := range all_peris {
 
+		fmt.Println("DEBUG SCP LINECIP: Ligando peristalticas", peris_str)
 		if test_path(vpath_peris, 0) {
 			if set_valvs_value(vpath_peris, 1, true) < 0 {
 				fmt.Println("ERROR SCP RUN LINEWASH: ERRO ao abrir valvulas no path ", vpath_peris)
