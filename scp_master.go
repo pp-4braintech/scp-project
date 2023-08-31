@@ -2920,7 +2920,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 01: IBC nao existe", devid)
 			return -1
 		}
-		prev_status := bio[ind].Status
+		prev_status := ibc[ind].Status
 		pathid := devid + "-" + ibc[ind].OutID
 		pathstr := paths[pathid].Path
 		if len(pathstr) == 0 {
