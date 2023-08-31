@@ -6242,6 +6242,7 @@ func main() {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
 	npaths := load_paths_conf(localconfig_path + "paths_conf.csv")
+	fmt.Println("PATHS === ", paths)
 	if npaths < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
 	}
