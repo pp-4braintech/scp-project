@@ -2564,9 +2564,9 @@ func scp_run_linecip(lines string) bool {
 
 	all_peris := [2]string{"P1", "P2"}
 	// tmax := scp_timewaitvalvs * 10
-	if devmode || testmode {
-		tmax = scp_timeoutdefault / 100
-	}
+	// if devmode || testmode {
+	// 	tmax = scp_timeoutdefault / 100
+	// }
 
 	for _, peris_str := range all_peris {
 
