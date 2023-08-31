@@ -169,6 +169,7 @@ const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
 
 const flow_ratio = 0.03445
+const flow_ratio_in1 = 0.0361725
 
 const bio_emptying_rate = 55.0 / 100.0
 
@@ -1779,9 +1780,9 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		biofabrica.LastCountOut = uint32(dint)
 	} else if vol_type == scp_dev_volfluxo_in1 {
 		if dint < int64(biofabrica.LastCountIn1) {
-			biofabrica.VolIn1Part += float64(math.MaxUint16) * flow_ratio
+			biofabrica.VolIn1Part += float64(math.MaxUint16) * flow_ratio_in1
 		}
-		volume = (float64(dint) * flow_ratio) + biofabrica.VolIn1Part
+		volume = (float64(dint) * flow_ratio_in1) + biofabrica.VolIn1Part
 		biofabrica.LastCountIn1 = uint32(dint)
 	}
 
