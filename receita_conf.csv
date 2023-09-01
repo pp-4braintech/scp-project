@@ -3,11 +3,12 @@ SET/MAXSTEP,6
 SET/TOTALTIME,DEFAULT
 #
 # Ligando Aerador
-MSG/Ligando Aerador para criar pressão positiva
+MSG/ILigando Aerador para criar pressão positiva
 ON/AERO,80,MUSTOFF
 #
 # Enchendo agua
 SET/STEP,1
+MSG/IEnchendo água
 SET/STATUS,CARREGANDO
 ON/WATER,TOTEM01
 WAIT/VOLUME,2000
@@ -18,6 +19,7 @@ COMMIT/1
 #
 # Pede Cloro
 SET/STEP,2
+MSG/APor favor adicione CLORO
 SET/STATUS,AGUARDANDO
 ASK/CLORO,WAIT
 #
@@ -25,6 +27,7 @@ ASK/CLORO,WAIT
 COMMIT/2
 #
 # Circula Cloro
+MSG/ICirculando CLORO por 20 minutos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
 WAIT/TIME,1200
