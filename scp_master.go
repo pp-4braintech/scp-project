@@ -4069,7 +4069,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					}
 					break
 				}
-				time.Sleep(scp_refreshwait * time.Millisecond)
+				time.Sleep(1000 * time.Millisecond)
 			}
 			scp_sendmsg_orch(scrmain)
 		} else {
