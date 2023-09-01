@@ -4378,6 +4378,17 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		subpars = scp_splitparam(params[1], ",")
 	}
 	switch params[0] {
+	case scp_job_msg:
+		if len(subpars) > 1 {
+			msg := subpars[0]
+			if len(msg) > 0 {
+				if msg[0] == '!' {
+					bio_add_message(ibcid, "A"+msg[1:])
+				} else {
+					bio_add_message(ibcid, "I"+msg)
+				}
+			}
+		}
 	case scp_job_org:
 		var orgcode string
 		if len(subpars) > 0 {
