@@ -3879,7 +3879,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			msg := subpars[0]
 			if len(msg) > 0 {
 				if msg[0] == '!' {
-					bio_add_message(bioid, "A"+msg)
+					bio_add_message(bioid, "A"+msg[1:])
 				} else {
 					bio_add_message(bioid, "I"+msg)
 				}
