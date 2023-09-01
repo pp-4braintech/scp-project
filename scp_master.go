@@ -3867,8 +3867,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 	}
 	switch params[0] {
 	case scp_job_msg:
-		if len(params) > 1 {
-			msg := params[1]
+		if len(subpars) > 1 {
+			msg := "I" + subpars[0]
 			if len(msg) > 0 {
 				bio_add_message(bioid, msg)
 			}
