@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const debug = false
+
 const scp_escape = '\x1b'
 const scp_ack = "ACK"
 const scp_cmd = "CMD"
@@ -88,7 +90,9 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 		var ret = make([]byte, scp_max_len)
 		nbytes, err := scp_con.Read(ret)
 		checkErr(err)
-		//fmt.Println("tcp recebido", string(ret))
+		if debug {
+			fmt.Println("tcp recebido", string(ret))
+		}
 		return string(ret[:nbytes]), err
 	}
 	return scp_ack, err
@@ -96,15 +100,17 @@ func scp_sendtcp(scp_con net.Conn, scp_message string, wait_ack bool) (string, e
 
 func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 	slave_data := *scp_slave
-	slave_addr := slave_data.slave_tcp_addr
-	fmt.Println("Enviando PING para", slave_addr)
+	if debug {
+		slave_addr := slave_data.slave_tcp_addr
+		fmt.Println("Enviando PING para", slave_addr)
+	}
 	ret, err := scp_sendtcp(slave_con, scp_ping, true)
 	// if err != nil || !strings.Contains(ret, scp_pong) {
 	if err != nil {
 		scp_slave.slave_errors++
-		fmt.Println(scp_slave.slave_scp_addr, "--->>>  ERR ao tratar PING", ret)
+		fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " --->>>  ERR ao tratar PING", ret)
 	} else {
-		fmt.Println(scp_slave.slave_scp_addr, " PING ret =", ret)
+		fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " PING ret =", ret)
 		scp_slave.slave_errors = 0
 	}
 }
@@ -112,18 +118,19 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 func scp_master_tcp_client(scp_slave *scp_slave_map) {
 	slave_data := *scp_slave
 	slave_addr := slave_data.slave_tcp_addr
-	fmt.Println("TCP con ", slave_addr)
 	slave_tcp_con, err := net.Dial("tcp", slave_addr)
 	checkErr(err)
 
 	if err == nil {
-		fmt.Println("Conexao TCP estabelecida com slave")
+		if debug {
+			fmt.Println("Conexao TCP estabelecida com slave", slave_addr)
+		}
 		slave_data.slave_scp_state = scp_state_TCP0
 		*scp_slave = slave_data
 		slave_data.go_chan <- scp_ack
 
 	} else {
-		fmt.Println("ERRO Conexao TCP com slave")
+		fmt.Println("ERRO Conexao TCP com slave", slave_addr)
 		checkErr(err)
 		slave_data.slave_scp_state = scp_state_TCPFAIL
 		*scp_slave = slave_data
@@ -138,7 +145,9 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 
 		select {
 		case chan_msg := <-slave_data.go_chan:
-			fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
+			if debug {
+				fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
+			}
 			if chan_msg == scp_destroy {
 				fmt.Println("TCP destroy recebido")
 				//slave_data.go_chan <- scp_ack
@@ -199,7 +208,9 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			fmt.Println("Destruindo SCP TCP")
 			go func() {
 				slave_data.go_chan <- scp_destroy
-				fmt.Println("destroy enviado com sucesso")
+				if debug {
+					fmt.Println("destroy enviado com sucesso")
+				}
 			}()
 			time.Sleep(50 * time.Millisecond)
 			// fmt.Println("fechando chain")
@@ -304,9 +315,11 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
 			//go func () {
 			slave_data.go_chan <- scp_msg_slavecmd
-			fmt.Println("CMD enviado para o CHANNEL")
+			if debug {
+				fmt.Println("CMD: ", scp_msg_slaveaddr, " enviado para o CHANNEL")
+			}
 			ret := <-slave_data.go_chan
-			fmt.Println("CMD ret=", ret)
+			fmt.Println("CMD: ", scp_msg_slaveaddr, " retornou =", ret)
 			_, err = con.WriteTo([]byte(ret), net_addr)
 			checkErr(err)
 			if ret == scp_die {
@@ -347,8 +360,10 @@ func scp_master_udp() {
 		p_size, net_addr, err := con.ReadFrom(reply)
 		checkErr(err)
 
-		fmt.Println("msg recebida:", string(reply))
-		fmt.Println("origem:", net_addr)
+		if debug {
+			fmt.Println("msg recebida:", string(reply))
+			fmt.Println("origem:", net_addr)
+		}
 
 		go scp_process_udp(con, reply, p_size, net_addr, &m)
 
