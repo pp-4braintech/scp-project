@@ -168,10 +168,10 @@ const bio_v2_zero = 1502.0 // em mm
 const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
 
-const flow_ratio = 0.03445
-const flow_ratio_in1 = 0.036525556
 const flow_corfactor_out = 1.1
 const flow_corfactor_in1 = 1.1
+const flow_ratio = 0.03445 * flow_corfactor_out
+const flow_ratio_in1 = 0.036525556 * flow_corfactor_in1
 
 const bio_emptying_rate = 51.0 / 100.0
 
@@ -1991,7 +1991,7 @@ func scp_get_alldata() {
 							if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
-									vol_tmp = vol_tmp * flow_corfactor_in1
+									vol_tmp = vol_tmp // * flow_corfactor_in1
 									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
@@ -2008,7 +2008,7 @@ func scp_get_alldata() {
 							} else if b.Valvs[4] == 1 && b.Valvs[5] == 1 && b.Pumpstatus && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
-									vol_tmp = vol_tmp * flow_corfactor_out
+									vol_tmp = vol_tmp // * flow_corfactor_out
 									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
 									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolout && lastvolout > 0 {
