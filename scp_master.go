@@ -173,7 +173,7 @@ const flow_corfactor_in1 = 1.1
 const flow_ratio = 0.03445 * flow_corfactor_out
 const flow_ratio_in1 = 0.036525556 * flow_corfactor_in1
 
-const bio_emptying_rate = 51.0 / 100.0
+const bio_emptying_rate = 50.0 / 100.0
 
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
