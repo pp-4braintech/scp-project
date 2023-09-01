@@ -116,6 +116,7 @@ const scp_job_run = "RUN"
 const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
 const scp_job_commit = "COMMIT"
+const scp_job_msg = "MSG"
 
 const scp_msg_cloro = "CLORO"
 const scp_msg_meio = "MEIO"
@@ -3865,6 +3866,13 @@ func scp_run_job_bio(bioid string, job string) bool {
 		subpars = scp_splitparam(params[1], ",")
 	}
 	switch params[0] {
+	case scp_job_msg:
+		if len(params) > 1 {
+			msg := params[1]
+			if len(msg) > 0 {
+				bio_add_message(bioid, msg)
+			}
+		}
 	case scp_job_org:
 		var orgcode string
 		if len(subpars) > 0 {
