@@ -3900,7 +3900,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		board_add_message("IIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
+		board_add_message("CIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
+		bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname)
 
 	case scp_job_set:
 		if len(subpars) > 1 {
