@@ -534,8 +534,11 @@ func calc_mediana(x []float64) float64 {
 	if n >= 5 {
 		s := x[c-1] + x[c] + x[c+1]
 		mediana = s / 3.0
-	} else {
+	} else if n > 0 {
 		mediana = x[c]
+	} else {
+		fmt.Println("ERROR CALC MEDIANA: Numero invalido de amostras para calculo de mediada", n, x)
+		return 0
 	}
 	return mediana
 }
