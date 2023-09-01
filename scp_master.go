@@ -30,8 +30,8 @@ var net192 = false
 var testmode = false
 var autowithdraw = false
 
-const control_ph = false
-const control_temp = false
+const control_ph = true
+const control_temp = true
 const control_foam = true
 
 const (
@@ -1977,7 +1977,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if mustupdate_this || b.Status == bio_producting || b.Valvs[1] == 1 {
+					if (mustupdate_this || b.Valvs[1] == 1) && b.Status != bio_producting {
 						if t_elapsed_bio%5 == 0 {
 							go scp_update_ph(b.BioreactorID)
 						}
@@ -3685,6 +3685,10 @@ func scp_grow_bio(bioid string) bool {
 	}
 	fmt.Println("DEBUG SCP GROW BIO: Iniciando cultivo de", org.Orgname, " no Biorreator", bioid, " tempo=", org.Timetotal)
 	ttotal := float64(org.Timetotal * 60)
+	if bio[ind].Timeleft[0] != 0 || bio[ind].Timeleft[1] != 0 {
+		ttotal = float64(bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1])
+	}
+	fmt.Println("DEBUG SCP GROW BIO: ", bioid, org.Orgname, " tempo total ajustado para", ttotal)
 	if devmode || testmode {
 		ttotal = scp_timeoutdefault / 60
 	}
@@ -3727,15 +3731,15 @@ func scp_grow_bio(bioid string) bool {
 				aero = org.Aero[t_day]
 				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
 				worktemp = 28
-				pday = t_day
 			}
 			if control_foam {
 				scp_adjust_foam(bioid)
 				ncontrol_foam++
 			}
+			pday = t_day
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
-			break
+			return false
 		}
 		if aero != aero_prev {
 			if !scp_adjust_aero(bioid, aero) {
@@ -3748,7 +3752,7 @@ func scp_grow_bio(bioid string) bool {
 			ncontrol_foam++
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
-			break
+			return false
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
 		if control_ph && t_elapsed_ph >= 10 {
@@ -3764,14 +3768,14 @@ func scp_grow_bio(bioid string) bool {
 			}
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
-			break
+			return false
 		}
 		if control_temp && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
 			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
 			scp_adjust_temperature(bioid, float32(worktemp))
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
-			break
+			return false
 		}
 		time.Sleep(scp_timegrowwait * time.Millisecond)
 	}
