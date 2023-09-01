@@ -146,18 +146,18 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 		select {
 		case chan_msg := <-slave_data.go_chan:
 			if debug {
-				fmt.Println("TCP CLIENT CHANNEL: ", chan_msg)
+				fmt.Println(scp_slave.slave_scp_addr, ":TCP CLIENT CHANNEL: ", chan_msg)
 			}
 			if chan_msg == scp_destroy {
-				fmt.Println("TCP destroy recebido")
+				fmt.Println(scp_slave.slave_scp_addr, ":TCP destroy recebido")
 				//slave_data.go_chan <- scp_ack
 				return
 			}
 			if scp_slave.slave_errors > scp_max_err {
-				fmt.Println("----->>>> TCP CLIENT com excesso de erros")
+				fmt.Println(scp_slave.slave_scp_addr, "----->>>> TCP CLIENT com excesso de erros")
 				slave_data.go_chan <- scp_die
 			} else {
-				fmt.Println("TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
+				fmt.Println(scp_slave.slave_scp_addr, ":TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
 				ret, err := scp_sendtcp(slave_tcp_con, chan_msg, true)
 				// if len(slave_data.go_chan) == 0 {
 				// 	fmt.Println("*** ERRO NO CHANNEL")
@@ -312,14 +312,14 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 				//fmt.Println(i, v, len(v))
 			}
 			scp_msg_slavecmd := cmd[0:tam]
-			fmt.Println("CMD para", scp_msg_slaveaddr, scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
+			fmt.Println(scp_msg_slaveaddr, ":CMD enviado", scp_msg_slavecmd, "len", len(scp_msg_slavecmd))
 			//go func () {
 			slave_data.go_chan <- scp_msg_slavecmd
 			if debug {
-				fmt.Println("CMD: ", scp_msg_slaveaddr, " enviado para o CHANNEL")
+				fmt.Println(scp_msg_slaveaddr, ":CMD enviado para o CHANNEL")
 			}
 			ret := <-slave_data.go_chan
-			fmt.Println("CMD: ", scp_msg_slaveaddr, " retornou =", ret)
+			fmt.Println(scp_msg_slaveaddr, ":CMD retornou =", ret)
 			_, err = con.WriteTo([]byte(ret), net_addr)
 			checkErr(err)
 			if ret == scp_die {
