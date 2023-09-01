@@ -1267,7 +1267,7 @@ func bio_add_message(bioid string, m string) {
 	if n < bioreactor_max_msg {
 		bio[ind].Messages = append(bio[ind].Messages, msg)
 	} else {
-		bio[ind].Messages = append(bio[ind].Messages[2:], msg)
+		bio[ind].Messages = append(bio[ind].Messages[1:], msg)
 	}
 }
 
