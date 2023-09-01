@@ -3868,9 +3868,13 @@ func scp_run_job_bio(bioid string, job string) bool {
 	switch params[0] {
 	case scp_job_msg:
 		if len(subpars) > 1 {
-			msg := "I" + subpars[0]
+			msg := subpars[0]
 			if len(msg) > 0 {
-				bio_add_message(bioid, msg)
+				if msg[0] == '!' {
+					bio_add_message(bioid, "A"+msg)
+				} else {
+					bio_add_message(bioid, "I"+msg)
+				}
 			}
 		}
 	case scp_job_org:

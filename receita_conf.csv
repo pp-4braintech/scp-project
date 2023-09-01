@@ -3,7 +3,7 @@ SET/MAXSTEP,6
 SET/TOTALTIME,DEFAULT
 #
 # Ligando Aerador
-MSG/ILigando Aerador para criar pressão positiva
+MSG/Ligando Aerador para criar pressão positiva
 ON/AERO,80,MUSTOFF
 #
 # Enchendo agua
@@ -19,7 +19,7 @@ COMMIT/1
 #
 # Pede Cloro
 SET/STEP,2
-MSG/APor favor adicione CLORO
+MSG/!Por favor adicione CLORO
 SET/STATUS,AGUARDANDO
 ASK/CLORO,WAIT
 #
@@ -27,7 +27,7 @@ ASK/CLORO,WAIT
 COMMIT/2
 #
 # Circula Cloro
-MSG/ICirculando CLORO por 20 minutos
+MSG/Circulando CLORO por 20 minutos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
 WAIT/TIME,1200
@@ -38,10 +38,12 @@ COMMIT/3
 #
 # Pede Meio
 SET/STEP,3
+MSG/!Por favor adicione MEIO
 SET/STATUS,AGUARDANDO
 ASK/MEIO,WAIT
 #
 # Circula Meio
+MSG/Circulando MEIO por 20 segundos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
 WAIT/TIME,20
@@ -52,10 +54,12 @@ COMMIT/4
 #
 # Pede Inoculo
 SET/STEP,4
+MSG/!Por favor adicione INÓCULO
 SET/STATUS,AGUARDANDO
 ASK/INOCULO,WAIT
 #
 # Circula Inoculo
+MSG/Circulando INÓCULO por 20 segundos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
 WAIT/TIME,20
@@ -65,6 +69,7 @@ OFF/PUMP,V4,V6
 COMMIT/5
 #
 # Inicia ciclo de Producao
+MSG/Iniciando ciclo de Produção
 SET/STATUS,PRODUZINDO
 SET/STEP,5
 RUN/GROW
@@ -73,6 +78,7 @@ RUN/GROW
 COMMIT/6
 #
 # Fim da Producao
+MSG/Produção concluída
 OFF/AERO
 DONE/NOP
 
