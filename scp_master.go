@@ -1352,14 +1352,17 @@ func scp_setup_devices(mustall bool) {
 
 				nerr := 0
 				for k, c := range cmd {
-					fmt.Print(k, "  ", c, " ")
 					ret := scp_sendmsg_orch(c)
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 					}
-					fmt.Println(ret, nerr)
+					fmt.Println(k, "  ", c, " ret =", ret, "erros = ", nerr)
 					if strings.Contains(ret, scp_die) {
 						fmt.Println("ERROR SETUP DEVICES: IBC DIE", ib.IBCID)
+						break
+					}
+					if nerr > 3 {
+						fmt.Println("ERROR SETUP DEVICES: IBC com EXCESSO de ERROS", ib.IBCID)
 						break
 					}
 					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
