@@ -6,6 +6,7 @@ SET/TOTALTIME,140
 # PASSO 1
 #
 SET/STEP,1
+MSG/Enchendo água e circulando por 90 segundos para uma primeira limpeza
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
@@ -25,6 +26,7 @@ OFF/PUMP,V4,V6
 COMMIT/2
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -32,6 +34,7 @@ RUN/WITHDRAW,DROP
 #
 SET/STATUS,CIP
 SET/STEP,2
+MSG/Enchendo água e circulando por 4 minutos 
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
@@ -51,6 +54,7 @@ OFF/PUMP,V3,V8,V6
 COMMIT/4
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -58,6 +62,7 @@ RUN/WITHDRAW,DROP
 #
 SET/STATUS,CIP
 SET/STEP,3
+MSG/Enchendo água e circulando por 4 minutos 
 #
 # Agua pelo sprayball
 ON/WATER,TOTEM01
@@ -78,6 +83,7 @@ OFF/PUMP,V2,V8,V6
 COMMIT/6
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -85,6 +91,7 @@ RUN/WITHDRAW,DROP
 #
 SET/STATUS,CIP
 SET/STEP,4
+MSG/Enchendo água e adicionando BLEND1
 #
 # Agua pelo sprayball
 ON/WATER,TOTEM01
@@ -105,6 +112,7 @@ OFF/PERIS,P3
 COMMIT/8
 #
 # Circula 600s
+MSG/Circulando por 10 minutos
 ON/PUMP,V4,V6
 ON/HEATER,40
 WAIT/TIME,600
@@ -115,6 +123,7 @@ OFF/PUMP,V4,V6
 COMMIT/9
 #
 # Circula Agua 600s pelo aerador
+MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
 ON/HEATER,40
 WAIT/TIME,600
@@ -125,9 +134,10 @@ OFF/PUMP,V2,V8,V6
 COMMIT/10
 #
 # Circula Agua 3600s pelo sprayball
+MSG/Circulando por 40 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
 ON/HEATER,40
-WAIT/TIME,3600
+WAIT/TIME,2400
 OFF/HEATER
 OFF/PUMP,V3,V8,V6
 #
@@ -135,6 +145,7 @@ OFF/PUMP,V3,V8,V6
 COMMIT/11
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -142,6 +153,7 @@ RUN/WITHDRAW,DROP
 #
 SET/STATUS,CIP
 SET/STEP,5
+MSG/Enchendo água
 #
 # Agua pelo sprayball
 ON/WATER,TOTEM01
@@ -153,20 +165,22 @@ OFF/WATER,TOTEM01
 # Step concluido
 COMMIT/12
 #
-# Circula Agua 6 * 90s pelo aerador
+# Circula Agua pelo aerador
+MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
 ON/HEATER,40
-WAIT/TIME,540
+WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V2,V8,V6
 #
 # Step concluido
 COMMIT/13
 #
-# Circula Agua 6 * 90s pelo sprayball
+# Circula Agua pelo sprayball
+MSG/Circulando por 10 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
 ON/HEATER,40
-WAIT/TIME,540
+WAIT/TIME,600
 OFF/HEATER,40
 OFF/PUMP,V3,V8,V6
 #
@@ -175,6 +189,7 @@ OFF/PUMP,V3,V8,V6
 COMMIT/14
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -182,6 +197,7 @@ RUN/WITHDRAW,DROP
 #
 SET/STATUS,CIP
 SET/STEP,6
+MSG/Enchendo água e adicionando BLEND2
 #
 # Agua pelo sprayball
 ON/WATER,TOTEM01
@@ -202,6 +218,7 @@ OFF/PERIS,P4
 COMMIT/16
 #
 # Circula 600s
+MSG/Circulando por 10 minutos
 ON/PUMP,V4,V6
 ON/HEATER,40
 WAIT/TIME,600
@@ -212,6 +229,7 @@ OFF/PUMP,V4,V6
 COMMIT/17
 #
 # Circula 600s pelo aerador
+MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
 ON/HEATER,40
 WAIT/TIME,600
@@ -222,6 +240,7 @@ OFF/PUMP,V2,V8,V6
 COMMIT/18
 #
 # Circula 1200s pelo sprayball
+MSG/Circulando por 20 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
 ON/HEATER,40
 WAIT/TIME,1200
@@ -232,6 +251,7 @@ OFF/PUMP,V3,V8,V6
 COMMIT/19
 #
 # Descarta Agua
+MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
@@ -241,6 +261,7 @@ SET/STATUS,CIP
 SET/STEP,7
 #
 # Liga aerador por 30min = 1800seg  //  FOI ACORDADO QUE ELE FICARIA LIGADO DIRETO
+MSG/CIP terminado. Aerador permanecerá ligado.
 ON/AERO,80
 # WAIT/TIME,1800
 # OFF/AERO
