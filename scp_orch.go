@@ -102,7 +102,7 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 	slave_data := *scp_slave
 	if debug {
 		slave_addr := slave_data.slave_tcp_addr
-		fmt.Println("Enviando PING para", slave_addr)
+		fmt.Println("Enviando PING para", slave_addr, scp_slave.slave_scp_addr)
 	}
 	ret, err := scp_sendtcp(slave_con, scp_ping, true)
 	// if err != nil || !strings.Contains(ret, scp_pong) {
