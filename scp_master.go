@@ -151,7 +151,7 @@ const scp_mustupdate_ibc = 45
 
 const scp_timewaitvalvs = 15000
 const scp_timephwait = 10000 // Tempo que o ajuste de PH e aplicado durante o cultivo
-const scp_timetempwait = 3000
+const scp_timetempwait = 10000
 const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
@@ -1667,7 +1667,12 @@ func scp_get_temperature(bioid string) float64 {
 			tempint, err := strconv.Atoi(params[1])
 			if err == nil {
 				tempfloat := float64(tempint) / 10.0
-				return tempfloat
+				if tempfloat > 0 && tempfloat < 120 {
+					return tempfloat
+				} else {
+					fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, ret_temp, tempfloat)
+					return -1
+				}
 			} else {
 				fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, nao numerico", bioid, ret_temp)
 			}
@@ -3349,6 +3354,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 		fmt.Println("ERROR SCP TURN HEATER: Biorreator nao existe", bioid)
 		return false
 	}
+	bio[ind].TempMax = maxtemp
 	devaddr := bio_cfg[bioid].Deviceaddr
 	heater_dev := bio_cfg[bioid].Heater
 	value_str := "0"
@@ -3363,7 +3369,6 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 		return false
 	}
 	bio[ind].Heater = value
-	bio[ind].TempMax = maxtemp
 	return true
 }
 
@@ -3626,34 +3631,27 @@ func scp_adjust_temperature(bioid string, temp float32) {
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST TEMP: Ajustando Temperatura", bioid, bio[ind].Temperature, temp)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
-		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
-		return
-	}
-	for n := 0; n < 3; n++ {
-		if bio[ind].MustPause || bio[ind].MustStop {
-			break
+	if bio[ind].Temperature < temp {
+		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+			return
 		}
-		if temp*0.95 <= bio[ind].Temperature && bio[ind].Temperature <= temp*1.05 {
-			break
-		} else if bio[ind].Temperature < temp {
-			if !scp_turn_heater(bioid, temp, true) {
-				fmt.Println("ERROR SCP ADJUST TEMP: Falha ao ligar aquecedor", bioid)
-			} else {
-				time.Sleep(scp_timetempwait * time.Millisecond)
-				if !scp_turn_heater(bioid, temp, false) {
-					fmt.Println("ERROR SCP ADJUST TEMP: Falha ao desligar aquecedor", bioid)
-				}
-			}
+
+		if !scp_turn_heater(bioid, temp, true) {
+			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao ligar aquecedor", bioid)
 		} else {
-			fmt.Println("WARN SCP ADJUST TEMP: Temperatura acima do limite em", bioid, bio[ind].Temperature, "/", temp)
-			break
+			time.Sleep(scp_timetempwait * time.Millisecond)
+			if !scp_turn_heater(bioid, temp, false) {
+				fmt.Println("ERROR SCP ADJUST TEMP: Falha ao desligar aquecedor", bioid)
+			}
 		}
-		time.Sleep(scp_timetempwait * time.Millisecond)
-	}
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
-		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
-		return
+
+		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+			return
+		}
+	} else {
+		fmt.Println("WARN SCP ADJUST TEMP: Temperatura acima do limite em", bioid, bio[ind].Temperature, "/", temp)
 	}
 }
 
