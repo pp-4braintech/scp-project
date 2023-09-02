@@ -864,6 +864,7 @@ func load_paths_conf(filename string) int {
 			pathstr += "END"
 			paths[path_id] = Path{from_id, to_id, clean_time, pathstr}
 			totalrecords++
+			fmt.Println("PATH id=", path_id, "path=", paths[path_id])
 		}
 	}
 	return totalrecords
@@ -2523,6 +2524,7 @@ func scp_run_linewash(lines string) bool {
 	}
 
 	pathstr := paths[pathclean].Path
+	fmt.Println("DEBUG SCP RUN LINEWASH:: Executando enxague - lines=", lines, "pathclean=", pathclean, "pathstr=", pathstr)
 	if len(pathstr) == 0 {
 		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
 		return false
@@ -6241,7 +6243,7 @@ func main() {
 	net192 = test_file("/etc/scpd/scp_net192.flag")
 	if net192 {
 		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
-		execpath = "/home/paulo/work/iot/scp-project/"
+		execpath = "/home/paulo/scp-project/"
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
@@ -6292,8 +6294,8 @@ func main() {
 	if nbiofabricacfg < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao da Biofabrica nao encontrado")
 	}
-	npaths := load_paths_conf(localconfig_path + "paths_conf.csv")
-	fmt.Println(npaths, "PATHS === ", paths)
+	npaths := load_paths_conf(execpath + "paths_conf.csv")
+	// fmt.Println(npaths, "PATHS === ", paths)
 	if npaths < 1 {
 		log.Fatal("FATAL: Arquivo de configuracao de PATHs invalido")
 	}

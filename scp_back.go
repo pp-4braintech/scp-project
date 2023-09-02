@@ -1055,7 +1055,7 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	net192 = test_file("")
+	net192 = test_file("/etc/scpd/scp_net192.flag")
 	if net192 {
 		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
 		execpath = "/home/paulo/scp-project/"
