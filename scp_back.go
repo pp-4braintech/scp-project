@@ -1055,14 +1055,14 @@ func withdraw_panel(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	net192 = test_file("/etc/scpd/scp_net192.flag")
+	net192 = test_file("")
 	if net192 {
 		fmt.Println("WARN:  EXECUTANDO EM NET192\n\n\n")
-		execpath = "/home/paulo/work/iot/scp-project/"
+		execpath = "/home/paulo/scp-project/"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
 	}
-	devmode = test_file("/etc/scpd/scp_devmode.flag")
+	devmode = test_file("")
 	//scp_bio_init()
 	if load_organisms(execpath+"organismos_conf.csv") < 0 {
 		fmt.Println("Não foi possivel ler o arquivo de organismos")
