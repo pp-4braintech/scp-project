@@ -259,6 +259,7 @@ type Bioreact struct {
 	Messages     []string
 	PHref        [3]float64
 	RegresPH     [2]float64
+	Temprunning  bool
 }
 
 type Bioreact_ETL struct {
@@ -463,12 +464,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false},
 }
 
 var ibc = []IBC{
@@ -1994,7 +1995,7 @@ func scp_get_alldata() {
 						}
 					}
 
-					if (mustupdate_this || b.Valvs[1] == 1) && b.Status != bio_producting {
+					if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
 						if t_elapsed_bio%5 == 0 {
 							go scp_update_ph(b.BioreactorID)
 						}
@@ -3633,28 +3634,47 @@ func scp_adjust_temperature(bioid string, temp float32) {
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST TEMP: Ajustando Temperatura", bioid, bio[ind].Temperature, temp)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
+	t_start := time.Now()
 	if bio[ind].Temperature < temp {
 		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
 			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+			bio[ind].Temprunning = false
 			return
 		}
-
 		if !scp_turn_heater(bioid, temp, true) {
 			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao ligar aquecedor", bioid)
-		} else {
-			time.Sleep(scp_timetempwait * time.Millisecond)
-			if !scp_turn_heater(bioid, temp, false) {
-				fmt.Println("ERROR SCP ADJUST TEMP: Falha ao desligar aquecedor", bioid)
-			}
-		}
-
-		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
-			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+			scp_turn_pump(scp_bioreactor, bioid, valvs, 0)
+			bio[ind].Temprunning = false
 			return
 		}
 	} else {
-		fmt.Println("WARN SCP ADJUST TEMP: Temperatura acima do limite em", bioid, bio[ind].Temperature, "/", temp)
+		bio[ind].Temprunning = false
+		return
 	}
+
+	for {
+		t_elapsed := time.Since(t_start).Minutes()
+		if t_elapsed >= 30 || !bio[ind].Temprunning {
+			break
+		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if bio[ind].Temperature >= temp {
+			fmt.Println("WARN SCP ADJUST TEMP: Temperatura >= limite em", bioid, bio[ind].Temperature, "/", temp)
+			break
+		}
+		time.Sleep(1 * time.Minute)
+	}
+	if !scp_turn_heater(bioid, temp, false) {
+		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
+	}
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+	}
+	time.Sleep(1 * time.Minute)
+	bio[ind].Temprunning = false
+	return
 }
 
 func scp_adjust_foam(bioid string) {
@@ -3744,10 +3764,10 @@ func scp_grow_bio(bioid string) bool {
 				aero = org.Aero[t_day]
 				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
 				worktemp = 28
-			}
-			if control_foam {
-				scp_adjust_foam(bioid)
-				ncontrol_foam++
+				if control_foam {
+					scp_adjust_foam(bioid)
+					ncontrol_foam++
+				}
 			}
 			pday = t_day
 		}
@@ -3783,15 +3803,17 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
-		if control_temp && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
+		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
 			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
-			scp_adjust_temperature(bioid, float32(worktemp))
+			bio[ind].Temprunning = true
+			go scp_adjust_temperature(bioid, float32(worktemp))
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
 		time.Sleep(scp_timegrowwait * time.Millisecond)
 	}
+	bio[ind].Temprunning = false
 	return true
 }
 
@@ -5501,6 +5523,22 @@ func scp_process_conn(conn net.Conn) {
 				}
 			} else {
 				fmt.Println("ERROR CONFIG: BIORREATOR - Numero de parametros invalido", params)
+			}
+		case scp_ibc:
+			if len(params) > 4 {
+				bioid := params[2]
+				ind := get_bio_index(bioid)
+				if ind >= 0 {
+					switch params[3] {
+					case scp_par_getconfig:
+						biocfg, ok := bio_cfg[bioid]
+						if ok {
+							buf, err := json.Marshal(biocfg)
+							checkErr(err)
+							conn.Write([]byte(buf))
+						}
+					}
+				}
 			}
 		case scp_biofabrica:
 			if len(params) > 3 {

@@ -79,6 +79,7 @@ COMMIT/6
 #
 # Fim da Producao
 MSG/Produção concluída
+SET/STATUS,PRONTO
 OFF/AERO
 DONE/NOP
 

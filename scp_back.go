@@ -745,12 +745,16 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		bioid := r.FormValue("BioId")
+		ibcid := r.FormValue("IBCId")
 		if len(bioid) > 0 {
 			cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
-		} else {
-			w.Write([]byte("NAO IMPLEMENTADO"))
+		}
+		if len(ibcid) > 0 {
+			cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_getconfig + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			w.Write([]byte(jsonStr))
 		}
 
 	case "PUT":
