@@ -747,13 +747,14 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 		bioid := r.FormValue("BioId")
 		ibcid := r.FormValue("IBCId")
-
 		if len(bioid) > 0 {
+			fmt.Println("DEBUG SET CONFIG: GET", bioid)
 			cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		}
 		if len(ibcid) > 0 {
+			fmt.Println("DEBUG SET CONFIG: GET", ibcid)
 			cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_getconfig + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
