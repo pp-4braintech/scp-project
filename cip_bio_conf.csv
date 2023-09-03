@@ -10,8 +10,9 @@ MSG/Enchendo água e circulando por 90 segundos para uma primeira limpeza
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
-# Volume de 25L
-WAIT/VOLUME,25,15,15
+# Volume de 35L
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -39,7 +40,8 @@ MSG/Enchendo água e circulando por 4 minutos
 ON/WATER,TOTEM01
 #
 # Volume de 25L ou 10seg
-WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -68,7 +70,8 @@ MSG/Enchendo água e circulando por 4 minutos
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -97,7 +100,8 @@ MSG/Enchendo água e adicionando BLEND1
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -159,7 +163,8 @@ MSG/Enchendo água
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -203,7 +208,8 @@ MSG/Enchendo água e adicionando BLEND2
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15
+WAIT/VOLUME,35
 OFF/WATER,TOTEM01
 #
 # Step concluido
