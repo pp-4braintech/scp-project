@@ -5615,6 +5615,15 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+					case scp_par_deviceaddr:
+						if len(params) > 4 {
+							devaddr := params[4]
+							ibccfg := ibc_cfg[ibcid]
+							ibccfg.Deviceaddr = devaddr
+							ibc_cfg[ibcid] = ibccfg
+							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do IBC", ibcid, " para", devaddr, " = ", ibc_cfg[ibcid])
+							conn.Write([]byte(scp_ack))
+						}
 					}
 				}
 			}
@@ -5636,12 +5645,18 @@ func scp_process_conn(conn net.Conn) {
 				}
 			}
 		case scp_biofabrica:
+			// fmt.Println("DEBUG:", params)
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
 				case scp_par_getconfig:
 					fmt.Println("DEBUG CONFIG: GET configuracoes biofabrica", biofabrica_cfg)
-					buf, err := json.Marshal(biofabrica_cfg)
+					v := make([][3]string, 0)
+					for _, e := range biofabrica_cfg {
+						e_str := [3]string{e.DeviceID, e.Deviceaddr, e.Deviceport}
+						v = append(v, e_str)
+					}
+					buf, err := json.Marshal(v)
 					checkErr(err)
 					conn.Write([]byte(buf))
 
