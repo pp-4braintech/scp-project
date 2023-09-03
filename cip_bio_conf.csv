@@ -118,7 +118,7 @@ COMMIT/8
 # Circula 600s
 MSG/Circulando por 10 minutos
 ON/PUMP,V4,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V4,V6
@@ -129,7 +129,7 @@ COMMIT/9
 # Circula Agua 600s pelo aerador
 MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V2,V8,V6
@@ -140,7 +140,7 @@ COMMIT/10
 # Circula Agua 3600s pelo sprayball
 MSG/Circulando por 40 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,2400
 OFF/HEATER
 OFF/PUMP,V3,V8,V6
@@ -173,7 +173,7 @@ COMMIT/12
 # Circula Agua pelo aerador
 MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V2,V8,V6
@@ -184,7 +184,7 @@ COMMIT/13
 # Circula Agua pelo sprayball
 MSG/Circulando por 10 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER,40
 OFF/PUMP,V3,V8,V6
@@ -226,7 +226,7 @@ COMMIT/16
 # Circula 600s
 MSG/Circulando por 10 minutos
 ON/PUMP,V4,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V4,V6
@@ -237,7 +237,7 @@ COMMIT/17
 # Circula 600s pelo aerador
 MSG/Circulando por 10 minutos pelo aerador
 ON/PUMP,V2,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,600
 OFF/HEATER
 OFF/PUMP,V2,V8,V6
@@ -248,7 +248,7 @@ COMMIT/18
 # Circula 1200s pelo sprayball
 MSG/Circulando por 20 minutos pelo sprayball
 ON/PUMP,V3,V8,V6
-ON/HEATER,40
+ON/HEATER,60
 WAIT/TIME,1200
 OFF/HEATER
 OFF/PUMP,V3,V8,V6
