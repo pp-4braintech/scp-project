@@ -2045,6 +2045,7 @@ func scp_get_alldata() {
 						if emerg == 1 && !b.MustPause {
 							emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
 							if emerg2 == 1 {
+								bio_add_message(b.BioreactorID, "ABotão de emergência pressionado")
 								pause_device(scp_bioreactor, b.BioreactorID, true)
 							}
 						}
