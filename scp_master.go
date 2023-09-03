@@ -1565,6 +1565,9 @@ func scp_get_ph_voltage(bioid string) float64 {
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	phdev := bio_cfg[bioid].PH_dev
 	aerostatus := bio[ind].Aerator
+	if bio[ind].Status == bio_producting {
+		aerostatus = true
+	}
 	aeroratio := bio[ind].AeroRatio
 
 	if len(bioaddr) > 0 {
@@ -1574,15 +1577,29 @@ func scp_get_ph_voltage(bioid string) float64 {
 			}
 			if !scp_turn_aero(bioid, false, 0, 0) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
+				scp_turn_aero(bioid, false, 1, aeroratio)
 				return -1
 			}
 			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		}
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
+		for i := 0; i < 5; i++ {
+			params := scp_splitparam(ret_ph, "/")
+			if len(params) > 1 {
+				phint, err := strconv.Atoi(params[1])
+				if err == nil {
+					fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", phint, "passo=", i)
+					break
+				}
+			}
+			ret_ph = scp_sendmsg_orch(cmd_ph)
+		}
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
-		if aerostatus && !scp_turn_aero(bioid, false, 1, aeroratio) {
-			fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
+		if aerostatus {
+			if !scp_turn_aero(bioid, false, 1, aeroratio) {
+				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
+			}
 		}
 		params := scp_splitparam(ret_ph, "/")
 		if params[0] == scp_ack {
@@ -1601,7 +1618,6 @@ func scp_get_ph(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
 		phvolt := scp_get_ph_voltage(bioid)
-		phvolt = scp_get_ph_voltage(bioid)
 		if phvolt >= 2 && phvolt <= 5 {
 			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
 				fmt.Println("ERROR SCP GET PH: Biorreator com PH NAO CALIBRADO", bioid)
@@ -3774,8 +3790,12 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	}
 }
 
-func scp_adjust_temperature(bioid string, temp float32) {
+func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	bio[ind].Temprunning = true
 	fmt.Println("DEBUG SCP ADJUST TEMP: Ajustando Temperatura", bioid, bio[ind].Temperature, temp)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
 	t_start := time.Now()
@@ -3798,7 +3818,7 @@ func scp_adjust_temperature(bioid string, temp float32) {
 
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
-		if t_elapsed >= 30 || !bio[ind].Temprunning {
+		if t_elapsed >= maxtime || !bio[ind].Temprunning {
 			break
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
@@ -3941,8 +3961,8 @@ func scp_grow_bio(bioid string) bool {
 				} else if bio[ind].PH > float32(maxph+bio_deltaph) {
 					scp_adjust_ph(bioid, float32(maxph))
 				}
-				t_start_ph = time.Now()
 			}
+			t_start_ph = time.Now()
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
@@ -3950,7 +3970,7 @@ func scp_grow_bio(bioid string) bool {
 		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
 			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
 			bio[ind].Temprunning = true
-			go scp_adjust_temperature(bioid, float32(worktemp))
+			go scp_adjust_temperature(bioid, float32(worktemp), ttotal)
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
@@ -5808,6 +5828,11 @@ func scp_process_conn(conn net.Conn) {
 			ind := get_bio_index(bioid)
 			if ind < 0 {
 				fmt.Println("ERROR START: Biorreator nao existe", bioid)
+				break
+			}
+			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
+				fmt.Println("ERROR START: Biorreator nao teve o PH Calibrado, impossivel iniciar cultivo", bioid)
+				bio_add_message(bioid, "EImpossível iniciar cultivo, sensor de PH não calibrado")
 				break
 			}
 			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
