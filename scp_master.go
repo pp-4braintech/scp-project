@@ -5601,13 +5601,15 @@ func scp_process_conn(conn net.Conn) {
 				fmt.Println("ERROR CONFIG: BIORREATOR - Numero de parametros invalido", params)
 			}
 		case scp_ibc:
-			if len(params) > 4 {
+			if len(params) > 3 {
 				ibcid := params[2]
-				ind := get_bio_index(ibcid)
+				fmt.Println("DEBUG CONFIG: IBC", ibcid, params)
+				ind := get_ibc_index(ibcid)
 				if ind >= 0 {
 					switch params[3] {
 					case scp_par_getconfig:
 						ibccfg, ok := ibc_cfg[ibcid]
+						fmt.Println("->", ind, ibccfg, ok)
 						if ok {
 							buf, err := json.Marshal(ibccfg)
 							checkErr(err)
@@ -5617,7 +5619,8 @@ func scp_process_conn(conn net.Conn) {
 				}
 			}
 		case scp_totem:
-			if len(params) > 4 {
+			if len(params) > 3 {
+				fmt.Println("DEBUG CONFIG: Totem", params)
 				totemid := params[2]
 				ind := get_totem_index(totemid)
 				if ind >= 0 {
@@ -5637,6 +5640,7 @@ func scp_process_conn(conn net.Conn) {
 				cmd := params[2]
 				switch cmd {
 				case scp_par_getconfig:
+					fmt.Println("DEBUG CONFIG: GET configuracoes biofabrica", biofabrica_cfg)
 					buf, err := json.Marshal(biofabrica_cfg)
 					checkErr(err)
 					conn.Write([]byte(buf))
