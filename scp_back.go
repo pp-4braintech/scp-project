@@ -770,7 +770,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(bfid) > 0 {
 			fmt.Println("DEBUG SET CONFIG: GET", bfid)
-			cmd := scp_config + "/" + scp_biofabrica + "/" + bfid + "/" + scp_par_getconfig + "/END"
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_getconfig + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		}
