@@ -1685,6 +1685,44 @@ func scp_get_temperature(bioid string) float64 {
 	return -1
 }
 
+func scp_get_emerg(main_id string, dev_type string) int {
+	var devaddr, emergdev string
+	ind := -1
+	switch dev_type {
+	case scp_bioreactor:
+		ind = get_bio_index(main_id)
+		if ind < 0 {
+			return -1
+		}
+		devaddr = bio_cfg[main_id].Deviceaddr
+		emergdev = bio_cfg[main_id].Emergency
+
+	case scp_ibc:
+		return -1
+		// ind = get_ibc_index(main_id)
+		// if ind < 0 {
+		// 	return -1
+		// }
+		// devaddr = ibc_cfg[main_id].Deviceaddr
+		//emergdev = ibc_cfg[main_id].Emergency
+	}
+	cmd := "CMD/" + devaddr + "/GET/" + emergdev + "/END"
+	ret := scp_sendmsg_orch(cmd)
+	params := scp_splitparam(ret, "/")
+	if len(params) > 1 && params[0] == scp_ack {
+		emergint, err := strconv.Atoi(params[1])
+		if err == nil {
+			fmt.Println("DEBUG SCP GET EMERG: ", main_id, " Retorno do botao de emergencia =", emergint)
+			return emergint
+		} else {
+			fmt.Println("ERROR SCP GET EMERG: Retorno invalido", main_id, ret, params)
+		}
+	} else {
+		fmt.Println("ERROR SCP GET EMERG: Retorno faltando parametros", main_id, ret, params)
+	}
+	return -1
+}
+
 func scp_get_volume(main_id string, dev_type string, vol_type string) (int, float64) {
 	var dev_addr, vol_dev string
 	var ind int
@@ -1998,6 +2036,16 @@ func scp_get_alldata() {
 					if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
 						if t_elapsed_bio%5 == 0 {
 							go scp_update_ph(b.BioreactorID)
+						}
+					}
+
+					if b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading {
+						emerg := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+						if emerg == 1 && !b.MustPause {
+							emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+							if emerg2 == 1 {
+								pause_device(scp_bioreactor, b.BioreactorID, true)
+							}
 						}
 					}
 
