@@ -30,6 +30,7 @@ const scp_dev_peris = "PERIS"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_bioreactor = "BIOREACTOR"
+const scp_ibc = "IBC"
 const scp_wdpanel = "WDPANEL"
 const scp_config = "CONFIG"
 
