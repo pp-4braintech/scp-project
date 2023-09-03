@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"math/rand"
 	"net"
 	"os"
 	"os/exec"
@@ -260,6 +261,7 @@ type Bioreact struct {
 	PHref        [3]float64
 	RegresPH     [2]float64
 	Temprunning  bool
+	Emergpress   bool
 }
 
 type Bioreact_ETL struct {
@@ -2039,14 +2041,26 @@ func scp_get_alldata() {
 						}
 					}
 
-					if b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading {
+					if rand.Intn(7) == 3 && (b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading) {
 						fmt.Println("DEBUG SCP GET ALL DATA: Verificando botao de emergencia do", b.BioreactorID)
 						emerg := scp_get_emerg(b.BioreactorID, scp_bioreactor)
-						if emerg == 1 && !b.MustPause {
-							emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
-							if emerg2 == 1 {
-								bio_add_message(b.BioreactorID, "ABotão de emergência pressionado")
-								pause_device(scp_bioreactor, b.BioreactorID, true)
+						if b.Emergpress {
+							if emerg == 0 {
+								emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+								if emerg2 == 0 {
+									bio_add_message(b.BioreactorID, "ABotão de emergência liberado")
+									b.Emergpress = false
+									pause_device(scp_bioreactor, b.BioreactorID, false)
+								}
+							}
+						} else {
+							if emerg == 1 && !b.MustPause {
+								emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+								if emerg2 == 1 {
+									bio_add_message(b.BioreactorID, "ABotão de emergência pressionado")
+									b.Emergpress = true
+									pause_device(scp_bioreactor, b.BioreactorID, true)
+								}
 							}
 						}
 					}
@@ -6336,6 +6350,7 @@ func scp_master_ipc() {
 
 func main() {
 
+	rand.Seed(time.Now().UnixNano())
 	go scp_check_network()
 
 	localconfig_path = "/etc/scpd/"
