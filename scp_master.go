@@ -5602,14 +5602,30 @@ func scp_process_conn(conn net.Conn) {
 			}
 		case scp_ibc:
 			if len(params) > 4 {
-				bioid := params[2]
-				ind := get_bio_index(bioid)
+				ibcid := params[2]
+				ind := get_bio_index(ibcid)
 				if ind >= 0 {
 					switch params[3] {
 					case scp_par_getconfig:
-						biocfg, ok := bio_cfg[bioid]
+						ibccfg, ok := ibc_cfg[ibcid]
 						if ok {
-							buf, err := json.Marshal(biocfg)
+							buf, err := json.Marshal(ibccfg)
+							checkErr(err)
+							conn.Write([]byte(buf))
+						}
+					}
+				}
+			}
+		case scp_totem:
+			if len(params) > 4 {
+				totemid := params[2]
+				ind := get_totem_index(totemid)
+				if ind >= 0 {
+					switch params[3] {
+					case scp_par_getconfig:
+						totemcfg, ok := totem_cfg[totemid]
+						if ok {
+							buf, err := json.Marshal(totemcfg)
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
@@ -5620,6 +5636,11 @@ func scp_process_conn(conn net.Conn) {
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
+				case scp_par_getconfig:
+					buf, err := json.Marshal(biofabrica_cfg)
+					checkErr(err)
+					conn.Write([]byte(buf))
+
 				case scp_par_save:
 					fmt.Println("DEBUG CONFIG: Salvando configuracoes")
 					save_all_data(data_filename)
