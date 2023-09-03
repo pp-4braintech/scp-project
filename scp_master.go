@@ -3734,11 +3734,11 @@ func scp_grow_bio(bioid string) bool {
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
-	if control_foam {
-		scp_adjust_foam(bioid)
-	}
+	// if control_foam {
+	// 	scp_adjust_foam(bioid)
+	// }
 
-	ncontrol_foam := 1
+	ncontrol_foam := 0
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= ttotal {
@@ -4003,7 +4003,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			cmd := subpars[0]
 			switch cmd {
 			case scp_par_grow:
-				scp_grow_bio(bioid)
+				return scp_grow_bio(bioid)
 
 			case scp_par_cip:
 				bio[ind].ShowVol = false
@@ -5156,6 +5156,9 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].Status = bio_pause
 			if !bio[ind].MustStop {
 				board_add_message("ABiorreator " + main_id + " pausado")
+				bio_add_message(main_id, "ABiorreator pausado")
+			} else {
+				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido")
 			}
 
 		} else if !pause {
@@ -5178,6 +5181,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].LastStatus = bio_pause
 			if !bio[ind].MustStop {
 				board_add_message("APausa no Biorreator " + main_id + " liberada")
+				bio_add_message(main_id, "APausa no Biorreator liberada")
 			}
 			if !schedrunning {
 				go scp_scheduler()
