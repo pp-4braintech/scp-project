@@ -3099,7 +3099,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				vout = 0
 			}
 			ibc[ind].VolumeOut = uint32(vout)
-			fmt.Println("vout=", vout, ibc[ind].VolumeOut)
+			// fmt.Println("vout=", vout, ibc[ind].VolumeOut)
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
