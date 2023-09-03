@@ -765,6 +765,86 @@ func save_bios_conf(filename string) int {
 	return n
 }
 
+func save_ibcs_conf(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	for _, b := range ibc_cfg {
+		s := fmt.Sprintf("%s,%s,%s,%d,%s,", b.IBCID, b.Deviceaddr, b.Screenaddr, b.Maxvolume, b.Pump_dev)
+		for _, p := range b.Valv_devs {
+			s += p + ","
+		}
+		s += fmt.Sprintf("%s,%s,%s", b.Vol_devs[0], b.Vol_devs[1], b.Levellow)
+		csvstr := scp_splitparam(s, ",")
+		// fmt.Println("DEBUG SAVE", csvstr)
+		err = csvwriter.Write(csvstr)
+		if err != nil {
+			checkErr(err)
+		} else {
+			n++
+		}
+	}
+	csvwriter.Flush()
+	return n
+}
+
+func save_totems_conf(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	for _, b := range totem_cfg {
+		s := fmt.Sprintf("%s,%s,%s,", b.TotemID, b.Deviceaddr, b.Pumpdev)
+		for _, p := range b.Peris_dev {
+			s += p + ","
+		}
+		s += fmt.Sprintf("%s,%s", b.Valv_devs[0], b.Valv_devs[1])
+		csvstr := scp_splitparam(s, ",")
+		// fmt.Println("DEBUG SAVE", csvstr)
+		err = csvwriter.Write(csvstr)
+		if err != nil {
+			checkErr(err)
+		} else {
+			n++
+		}
+	}
+	csvwriter.Flush()
+	return n
+}
+
+func save_bf_conf(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	for _, b := range biofabrica_cfg {
+		s := fmt.Sprintf("%s,%s,%s", b.DeviceID, b.Deviceaddr, b.Deviceport)
+		csvstr := scp_splitparam(s, ",")
+		// fmt.Println("DEBUG SAVE", csvstr)
+		err = csvwriter.Write(csvstr)
+		if err != nil {
+			checkErr(err)
+		} else {
+			n++
+		}
+	}
+	csvwriter.Flush()
+	return n
+}
+
 func load_totems_conf(filename string) int {
 	var totalrecords int
 	file, err := os.Open(filename)
@@ -5641,29 +5721,54 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+					case scp_par_deviceaddr:
+						if len(params) > 4 {
+							devaddr := params[4]
+							totemcfg := totem_cfg[totemid]
+							totemcfg.Deviceaddr = devaddr
+							totem_cfg[totemid] = totemcfg
+							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Totem", totemid, " para", devaddr, " = ", totem_cfg[totemid])
+							conn.Write([]byte(scp_ack))
+						}
 					}
 				}
 			}
 		case scp_biofabrica:
-			// fmt.Println("DEBUG:", params)
+			fmt.Println("DEBUG:", params)
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
 				case scp_par_getconfig:
 					fmt.Println("DEBUG CONFIG: GET configuracoes biofabrica", biofabrica_cfg)
-					v := make([][3]string, 0)
+					v := make([]Biofabrica_cfg, 0)
 					for _, e := range biofabrica_cfg {
-						e_str := [3]string{e.DeviceID, e.Deviceaddr, e.Deviceport}
-						v = append(v, e_str)
+						v = append(v, e)
 					}
 					buf, err := json.Marshal(v)
 					checkErr(err)
 					conn.Write([]byte(buf))
 
+				case scp_par_deviceaddr:
+					if len(params) > 4 {
+						devid := params[3]
+						devaddr := params[4]
+						devcfg, ok := biofabrica_cfg[devid]
+						if ok {
+							devcfg.Deviceaddr = devaddr
+							biofabrica_cfg[devid] = devcfg
+							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biofabrica", devid, " para", devaddr, " = ", biofabrica_cfg[devid])
+							conn.Write([]byte(scp_ack))
+						}
+
+					}
+
 				case scp_par_save:
 					fmt.Println("DEBUG CONFIG: Salvando configuracoes")
 					save_all_data(data_filename)
 					save_bios_conf(localconfig_path + "bio_conf.csv")
+					save_ibcs_conf(localconfig_path + "ibc_conf.csv")
+					save_totems_conf(localconfig_path + "totem_conf.csv")
+					save_bf_conf(localconfig_path + "biofabrica_conf.csv")
 					conn.Write([]byte(scp_ack))
 
 				case scp_par_restart:

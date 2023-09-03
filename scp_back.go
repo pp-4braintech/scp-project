@@ -782,6 +782,10 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		bioid := r.FormValue("BioId")
+		ibcid := r.FormValue("IBCId")
+		totemid := r.FormValue("TotemId")
+		bfid := r.FormValue("BFId")
+		devid := r.FormValue("Deviceid")
 		devaddr := r.FormValue("Deviceaddr")
 		scraddr := r.FormValue("Screenaddr")
 		ph4 := r.FormValue("PH4")
@@ -828,6 +832,33 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 			if calibrate != "" {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_calibrate + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(ibcid) > 0 {
+			if devaddr != "" {
+				cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(totemid) > 0 {
+			if devaddr != "" {
+				cmd := scp_config + "/" + scp_totem + "/" + totemid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(bfid) > 0 {
+			if devaddr != "" {
+				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_deviceaddr + "/" + devid + "/" + devaddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
