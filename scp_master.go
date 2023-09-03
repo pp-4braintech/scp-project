@@ -5252,6 +5252,10 @@ func stop_device(devtype string, main_id string) bool {
 			fmt.Println("ERROR STOP: Biorreator nao existe", main_id)
 			return false
 		}
+		if bio[ind].MustStop {
+			bio_add_message(main_id, "EBiorreator já sendo interrompido, aguarde")
+			return false
+		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
 		bio_add_message(main_id, "ABiorreator Interrompido")
@@ -5291,6 +5295,10 @@ func stop_device(devtype string, main_id string) bool {
 		ind := get_ibc_index(main_id)
 		if ind < 0 {
 			fmt.Println("ERROR STOP: IBC nao existe", main_id)
+			return false
+		}
+		if ibc[ind].MustStop {
+			board_add_message("EIBC " + main_id + " já sendo interrompido, aguarde")
 			return false
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
