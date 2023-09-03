@@ -2126,6 +2126,8 @@ func scp_get_alldata() {
 								bio[ind].Temperature = float32(t_tmp)
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
 									scp_turn_heater(b.BioreactorID, 0, false)
+								} else if bio[ind].Heater && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								}
 							}
 						}
