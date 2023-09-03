@@ -2041,29 +2041,29 @@ func scp_get_alldata() {
 						}
 					}
 
-					if rand.Intn(7) == 3 && (b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading) {
-						fmt.Println("DEBUG SCP GET ALL DATA: Verificando botao de emergencia do", b.BioreactorID)
-						emerg := scp_get_emerg(b.BioreactorID, scp_bioreactor)
-						if b.Emergpress {
-							if emerg == 0 {
-								emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
-								if emerg2 == 0 {
-									bio_add_message(b.BioreactorID, "ABotão de emergência liberado")
-									b.Emergpress = false
-									pause_device(scp_bioreactor, b.BioreactorID, false)
-								}
-							}
-						} else {
-							if emerg == 1 && !b.MustPause {
-								emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
-								if emerg2 == 1 {
-									bio_add_message(b.BioreactorID, "ABotão de emergência pressionado")
-									b.Emergpress = true
-									pause_device(scp_bioreactor, b.BioreactorID, true)
-								}
-							}
-						}
-					}
+					// if rand.Intn(7) == 3 && (b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading) {
+					// 	fmt.Println("DEBUG SCP GET ALL DATA: Verificando botao de emergencia do", b.BioreactorID)
+					// 	emerg := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+					// 	if b.Emergpress {
+					// 		if emerg == 0 {
+					// 			emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+					// 			if emerg2 == 0 {
+					// 				bio_add_message(b.BioreactorID, "ABotão de emergência liberado")
+					// 				b.Emergpress = false
+					// 				pause_device(scp_bioreactor, b.BioreactorID, false)
+					// 			}
+					// 		}
+					// 	} else {
+					// 		if emerg == 1 && !b.MustPause {
+					// 			emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
+					// 			if emerg2 == 1 {
+					// 				bio_add_message(b.BioreactorID, "ABotão de emergência pressionado")
+					// 				b.Emergpress = true
+					// 				pause_device(scp_bioreactor, b.BioreactorID, true)
+					// 			}
+					// 		}
+					// 	}
+					// }
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
