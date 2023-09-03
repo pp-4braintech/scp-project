@@ -2040,6 +2040,7 @@ func scp_get_alldata() {
 					}
 
 					if b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading {
+						fmt.Println("DEBUG SCP GET ALL DATA: Verificando botao de emergencia do", b.BioreactorID)
 						emerg := scp_get_emerg(b.BioreactorID, scp_bioreactor)
 						if emerg == 1 && !b.MustPause {
 							emerg2 := scp_get_emerg(b.BioreactorID, scp_bioreactor)
