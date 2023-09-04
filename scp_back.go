@@ -555,6 +555,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if cont != "" {
+				fmt.Println("CONTINUE PRESSIONADO ")
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_continue + "," + cont + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))

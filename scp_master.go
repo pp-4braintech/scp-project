@@ -6103,10 +6103,11 @@ func scp_process_conn(conn net.Conn) {
 					}
 
 				case scp_par_continue:
+					fmt.Println("DEBUG SCP PROCESS CONN: Continue pressionado", bioid, params)
 					if ind >= 0 {
 						bio[ind].Continue = true
 					} else {
-						fmt.Println("DEBUG SCP PROCESS CONN: Biorreator nao existe", bioid, params)
+						fmt.Println("ERROR SCP PROCESS CONN: Biorreator nao existe", bioid, params)
 					}
 
 				case scp_par_circulate:
