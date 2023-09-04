@@ -2089,11 +2089,10 @@ func scp_sync_functions() {
 			t_elapsed_screens_full := uint32(time.Since(t_start_screens_full).Seconds())
 			if t_elapsed_screens >= scp_refresscreens {
 				if t_elapsed_screens_full > scp_refresscreens*12 {
-					scp_update_screen_times(bio[n_bio].BioreactorID)
+					scp_update_screen(bio[n_bio].BioreactorID)
 					t_start_screens_full = time.Now()
 				} else {
-					scp_update_screen_vol(bio[n_bio].BioreactorID)
-					scp_update_screen_phtemp(bio[n_bio].BioreactorID)
+					scp_update_screen(bio[n_bio].BioreactorID)
 				}
 				n_bio++
 				if n_bio >= len(bio) {
