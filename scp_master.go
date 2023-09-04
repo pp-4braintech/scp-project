@@ -159,7 +159,7 @@ const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
 const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
-const bio_deltatemp = 3 // variacao de temperatura maximo em percentual
+const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
 const bio_deltaph = 0.3 // variacao de ph maximo em valor absoluto
 
 const bio_withdrawstep = 50
@@ -180,7 +180,7 @@ const bio_emptying_rate = 50.0 / 100.0
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
-const pingmax = 1.5
+const pingmax = 3
 const timetocheck = 30
 
 const bio_nonexist = "NULL"
@@ -3901,7 +3901,7 @@ func scp_grow_bio(bioid string) bool {
 	var minph, maxph, worktemp float64
 	var aero int
 	aero_prev := -1
-	worktemp = 28
+	worktemp =
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
