@@ -19,7 +19,7 @@ COMMIT/1
 #
 # Pede Cloro
 SET/STEP,2
-MSG/!Por favor adicione CLORO
+#MSG/!Por favor adicione CLORO
 SET/STATUS,AGUARDANDO
 ASK/CLORO,WAIT
 #
@@ -38,7 +38,7 @@ COMMIT/3
 #
 # Pede Meio
 SET/STEP,3
-MSG/!Por favor adicione MEIO
+#MSG/!Por favor adicione MEIO
 SET/STATUS,AGUARDANDO
 ASK/MEIO,WAIT
 #
@@ -54,7 +54,7 @@ COMMIT/4
 #
 # Pede Inoculo
 SET/STEP,4
-MSG/!Por favor adicione INÓCULO
+#MSG/!Por favor adicione INÓCULO
 SET/STATUS,AGUARDANDO
 ASK/INOCULO,WAIT
 #
