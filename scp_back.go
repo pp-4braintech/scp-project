@@ -51,6 +51,7 @@ const scp_par_linecip = "LINECIP"
 const scp_par_circulate = "CIRCULATE"
 const scp_par_manydraw = "MANYDRAW"
 const scp_par_manyout = "MANYOUT"
+const scp_par_continue = "CONTINUE"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -541,6 +542,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			withdraw := r.FormValue("Withdraw")
 			outdev := r.FormValue("Out")
 			recirc := r.FormValue("Recirculate")
+			cont := r.FormValue("Continue")
 
 			if b_start != "" {
 				if orgcode != "" {
@@ -552,6 +554,11 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			if cont != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_continue + "," + cont + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
 			if recirc != "" {
 				recirc_time_str := r.FormValue("Time")
 				if len(recirc_time_str) == 0 {

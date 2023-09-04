@@ -106,6 +106,7 @@ const scp_par_circulate = "CIRCULATE"
 const scp_par_totaltime = "TOTALTIME"
 const scp_par_manydraw = "MANYDRAW"
 const scp_par_manyout = "MANYOUT"
+const scp_par_continue = "CONTINUE"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -262,6 +263,7 @@ type Bioreact struct {
 	RegresPH     [2]float64
 	Temprunning  bool
 	Emergpress   bool
+	Continue     bool
 }
 
 type Bioreact_ETL struct {
@@ -466,12 +468,12 @@ var withdrawmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false},
 }
 
 var ibc = []IBC{
@@ -3120,7 +3122,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + " para " + ibc[ind].OutID)
+		board_add_message("CDesenvase iniciado" + devid + " para " + ibc[ind].OutID)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -4213,7 +4215,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			scraddr := bio_cfg[bioid].Screenaddr
 			var cmd1 string = ""
 			var msgask string = ""
-			scrmain := fmt.Sprintf("CMD/%s/PUT/S200,1/END", scraddr)
+			// scrmain := fmt.Sprintf("CMD/%s/PUT/S200,1/END", scraddr)
 			switch msg {
 			case scp_msg_cloro:
 				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
@@ -4234,23 +4236,28 @@ func scp_run_job_bio(bioid string, job string) bool {
 				fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao enviar PUT screen", scraddr, ret1)
 				return false
 			}
-			cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
+			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
 			board_add_message("ABiorreator " + bioid + " aguardando " + msgask)
+			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR")
+			bio[ind].Continue = false
 			t_start := time.Now()
 			for {
-				ret2 := scp_sendmsg_orch(cmd2)
-				// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
-				if !strings.Contains(ret2, scp_ack) && !devmode {
-					fmt.Println("ERROR SCP RUN JOB:", bioid, " ERRO ao envirar GET screen", scraddr, ret2)
-					scp_sendmsg_orch(scrmain)
-					return false
+				if bio[ind].Continue == true {
+					break
 				}
-				data := scp_splitparam(ret2, "/")
-				if len(data) > 1 {
-					if data[1] == "1" {
-						break
-					}
-				}
+				// ret2 := scp_sendmsg_orch(cmd2)
+				// // fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd2, "\tRET =", ret2)
+				// if !strings.Contains(ret2, scp_ack) && !devmode {
+				// 	fmt.Println("ERROR SCP RUN JOB:", bioid, " ERRO ao envirar GET screen", scraddr, ret2)
+				// 	scp_sendmsg_orch(scrmain)
+				// 	return false
+				// }
+				// data := scp_splitparam(ret2, "/")
+				// if len(data) > 1 {
+				// 	if data[1] == "1" {
+				// 		break
+				// 	}
+				// }
 				if bio[ind].MustPause || bio[ind].MustStop {
 					return false
 				}
@@ -4258,14 +4265,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 				if t_elapsed > scp_timeoutdefault {
 					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
 					if !devmode {
-						scp_sendmsg_orch(scrmain)
+						// scp_sendmsg_orch(scrmain)
 						return testmode
 					}
 					break
 				}
 				time.Sleep(1000 * time.Millisecond)
 			}
-			scp_sendmsg_orch(scrmain)
+			// scp_sendmsg_orch(scrmain)
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
@@ -6093,6 +6100,13 @@ func scp_process_conn(conn net.Conn) {
 							fmt.Println("ID de saida", outid, " nao existe")
 							conn.Write([]byte(scp_err))
 						}
+					}
+
+				case scp_par_continue:
+					if ind >= 0 {
+						bio[ind].Continue = true
+					} else {
+						fmt.Println("DEBUG SCP PROCESS CONN: Biorreator nao existe", bioid, params)
 					}
 
 				case scp_par_circulate:
