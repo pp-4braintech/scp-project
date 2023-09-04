@@ -1584,7 +1584,9 @@ func scp_get_ph_voltage(bioid string) float64 {
 		}
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
 		ret_ph = scp_sendmsg_orch(cmd_ph)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
 		for i := 0; i < 5; i++ {
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
@@ -1595,6 +1597,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 				}
 			}
 			ret_ph = scp_sendmsg_orch(cmd_ph)
+			fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
 		}
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
 		if aerostatus {
