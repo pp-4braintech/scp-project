@@ -160,7 +160,7 @@ const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.3 // variacao de ph maximo em valor absoluto
+const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto
 
 const bio_withdrawstep = 50
 
@@ -3901,7 +3901,7 @@ func scp_grow_bio(bioid string) bool {
 	var minph, maxph, worktemp float64
 	var aero int
 	aero_prev := -1
-	worktemp =
+	worktemp = 28
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
