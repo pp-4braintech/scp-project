@@ -100,6 +100,7 @@ const max_days = 60
 // }
 
 type Organism struct {
+	Index      string
 	Code       string
 	Orgname    string
 	Lifetime   int
@@ -188,19 +189,20 @@ func load_organisms(filename string) int {
 	}
 	orgs = make([]Organism, len(records))
 	for k, r := range records {
-		code := r[0]
-		name := r[1]
-		lifetime, _ := strconv.Atoi(strings.Replace(r[2], " ", "", -1))
-		volume, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
-		medium := strings.Replace(r[4], " ", "", -1)
-		tottime, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
-		aero1, _ := strconv.Atoi(strings.Replace(r[6], " ", "", -1))
-		aero2, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
-		aero3, _ := strconv.Atoi(strings.Replace(r[8], " ", "", -1))
-		ph1 := strings.Replace(r[9], " ", "", -1)
-		ph2 := strings.Replace(r[10], " ", "", -1)
-		ph3 := strings.Replace(r[11], " ", "", -1)
-		org := Organism{code, name, lifetime, volume, medium, tottime, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		ind := r[0]
+		code := r[1]
+		name := r[2]
+		lifetime, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
+		volume, _ := strconv.Atoi(strings.Replace(r[4], " ", "", -1))
+		medium := strings.Replace(r[5], " ", "", -1)
+		tottime, _ := strconv.Atoi(strings.Replace(r[6], " ", "", -1))
+		aero1, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[8], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[9], " ", "", -1))
+		ph1 := strings.Replace(r[10], " ", "", -1)
+		ph2 := strings.Replace(r[11], " ", "", -1)
+		ph3 := strings.Replace(r[12], " ", "", -1)
+		org := Organism{ind, code, name, lifetime, volume, medium, tottime, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
 		orgs[k] = org
 		totalrecords = k
 	}
