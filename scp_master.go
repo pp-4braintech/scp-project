@@ -1786,7 +1786,7 @@ func scp_update_screen(bioid string) {
 		}
 	}
 	org_index := "0"
-	if bio[ind].Status != bio_cip && bio[ind].Status != bio_error && bio[ind].Status != bio_water {
+	if bio[ind].Status != bio_cip && bio[ind].Status != bio_error && bio[ind].Status != bio_water && bio[ind].Status != bio_empty {
 		org_index = organs[bio[ind].OrgCode].Index
 	}
 	if len(org_index) > 0 {
