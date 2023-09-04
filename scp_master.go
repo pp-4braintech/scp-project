@@ -200,7 +200,7 @@ const bio_water = "AGUA"
 const bio_update = "ATUALIZANDO"
 const bio_circulate = "CIRCULANDO"
 
-var status_index = map[string]int{bio_cip: 1, bio_pause: 2, bio_wait: 3, bio_starting: 4, bio_loading: 5, bio_unloading: 6, bio_producting: 7,
+var status_codes = map[string]int{bio_cip: 1, bio_pause: 2, bio_wait: 3, bio_starting: 4, bio_loading: 5, bio_unloading: 6, bio_producting: 7,
 	bio_empty: 8, bio_done: 9, bio_storing: 10, bio_error: 11, bio_ready: 12, bio_water: 13, bio_update: 14, bio_circulate: 15}
 
 const bio_max_valves = 8
@@ -1765,6 +1765,33 @@ func scp_update_screen_times(bioid string) {
 	ret = scp_sendmsg_orch(cmd)
 	if !strings.Contains(ret, "ACK") {
 		return
+	}
+}
+
+func scp_update_screen(bioid string) {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		return
+	}
+	bioscr := bio_cfg[bioid].Screenaddr
+
+	var cmd, ret string
+
+	status_code, ok := status_codes[bio[ind].Status]
+	if ok {
+		cmd = fmt.Sprintf("CMD/%s/PUT/S247,%d/END", bioscr, status_code)
+		ret = scp_sendmsg_orch(cmd)
+		if !strings.Contains(ret, "ACK") {
+			return
+		}
+	}
+	org_index := "0"
+	if bio[ind].Status != bio_cip && bio[ind].Status != bio_error && bio[ind].Status != bio_water {
+		org_index = organs[bio[ind].OrgCode].Index
+	}
+	if len(org_index) > 0 {
+		cmd = "CMD/" + bioscr + "/PUT/S245," + org_index + "/END"
+		ret = scp_sendmsg_orch(cmd)
 	}
 }
 
@@ -3486,13 +3513,13 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	}
 
 	peris_dev := ""
-	scrdev := ""
+	// scrdev := ""
 	devaddr := ""
 	switch devtype {
 	case scp_bioreactor:
 		peris_dev = bio_cfg[bioid].Peris_dev[peris_int-1]
 		devaddr = bio_cfg[bioid].Deviceaddr
-		scrdev = bio_cfg[bioid].Screenaddr
+		// scrdev = bio_cfg[bioid].Screenaddr
 	case scp_totem:
 		peris_dev = totem_cfg[bioid].Peris_dev[peris_int-1]
 		devaddr = totem_cfg[bioid].Deviceaddr
@@ -3510,7 +3537,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 		fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", ret0)
 		return false
 	}
-	fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
+	// fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
 	switch devtype {
 	case scp_bioreactor:
 		bio[ind].Perist[peris_int-1] = value
@@ -5714,14 +5741,14 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].RegresPH[1] = b1
 							if b0 == 0 && b1 == 0 {
 								fmt.Println("ERROR CONFIG: Nao foi possivel efetuar Regressao Linear: b0=", b0, " b1=", b1)
-								bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10.")
+								bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10")
 							} else {
 								fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
-								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada.")
+								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada")
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
-							bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10.")
+							bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10")
 						}
 					}
 				} else {
