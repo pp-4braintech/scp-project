@@ -180,7 +180,7 @@ const bio_emptying_rate = 50.0 / 100.0
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
-const pingmax = 3
+const pingmax = 1.5
 const timetocheck = 30
 
 const bio_nonexist = "NULL"
@@ -3901,6 +3901,7 @@ func scp_grow_bio(bioid string) bool {
 	var minph, maxph, worktemp float64
 	var aero int
 	aero_prev := -1
+	worktemp = 28
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
