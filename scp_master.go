@@ -199,6 +199,10 @@ const bio_ready = "PRONTO"
 const bio_water = "AGUA"
 const bio_update = "ATUALIZANDO"
 const bio_circulate = "CIRCULANDO"
+
+var status_index = map[string]int{bio_cip: 1, bio_pause: 2, bio_wait: 3, bio_starting: 4, bio_loading: 5, bio_unloading: 6, bio_producting: 7,
+	bio_empty: 8, bio_done: 9, bio_storing: 10, bio_error: 11, bio_ready: 12, bio_water: 13, bio_update: 14, bio_circulate: 15}
+
 const bio_max_valves = 8
 const bio_max_msg = 50
 const bioreactor_max_msg = 7
@@ -519,6 +523,10 @@ func estimateB0B1(x []float64, y []float64) (float64, float64) {
 	meanY = stat.Mean(y, nil) //mean pf y
 	sumXY, sumXX = sumXYandXX(x, y, meanX, meanY)
 	// regression coefficients
+	if sumXX <= 0 {
+		fmt.Println("ERROR estimateB0B1: Valor invalido de sumXX", sumXX)
+		return 0, 0
+	}
 	b1 := sumXY / sumXX    // b1 or slope
 	b0 := meanY - b1*meanX // b0 or intercept
 	return b0, b1
@@ -5704,9 +5712,16 @@ func scp_process_conn(conn net.Conn) {
 							b0, b1 := estimateB0B1(X_data, y_data)
 							bio[ind].RegresPH[0] = b0
 							bio[ind].RegresPH[1] = b1
-							fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
+							if b0 == 0 && b1 == 0 {
+								fmt.Println("ERROR CONFIG: Nao foi possivel efetuar Regressao Linear: b0=", b0, " b1=", b1)
+								bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10.")
+							} else {
+								fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
+								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada.")
+							}
 						} else {
 							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
+							bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10.")
 						}
 					}
 				} else {
