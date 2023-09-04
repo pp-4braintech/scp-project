@@ -159,8 +159,8 @@ const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
 const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
-const bio_deltatemp = 0.1 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto
+const bio_deltatemp = 3 // variacao de temperatura maximo em percentual
+const bio_deltaph = 0.3 // variacao de ph maximo em valor absoluto
 
 const bio_withdrawstep = 50
 
@@ -3973,8 +3973,8 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
-		fmt.Println("ERROR SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, bio[ind].Temperature, float32(worktemp*(1-bio_deltatemp)))
-		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp*(1-bio_deltatemp)) {
+		fmt.Println("ERROR SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, bio[ind].Temperature, float32(worktemp-bio_deltatemp))
+		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp-bio_deltatemp) {
 			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
 			bio[ind].Temprunning = true
 			go scp_adjust_temperature(bioid, float32(worktemp), ttotal)
