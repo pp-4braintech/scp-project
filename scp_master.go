@@ -1591,7 +1591,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
 				phint, err := strconv.Atoi(params[1])
-				if err == nil && phint >= 3 && phint <= 5 {
+				if err == nil && phint >= 300 && phint <= 500 {
 					fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", phint, "passo=", i)
 					break
 				}
