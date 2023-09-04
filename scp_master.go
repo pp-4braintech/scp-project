@@ -1584,11 +1584,12 @@ func scp_get_ph_voltage(bioid string) float64 {
 		}
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 		ret_ph := scp_sendmsg_orch(cmd_ph)
+		ret_ph = scp_sendmsg_orch(cmd_ph)
 		for i := 0; i < 5; i++ {
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
 				phint, err := strconv.Atoi(params[1])
-				if err == nil {
+				if err == nil && phint >= 3 && phint <= 5 {
 					fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", phint, "passo=", i)
 					break
 				}
