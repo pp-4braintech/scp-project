@@ -2166,7 +2166,7 @@ func scp_get_alldata() {
 								bio[ind].Temperature = float32(t_tmp)
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
 									scp_turn_heater(b.BioreactorID, 0, false)
-								} else if bio[ind].Heater && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								}
 							}
@@ -5367,6 +5367,9 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
+			if bio[ind].Heater {
+				scp_turn_heater(bio[ind].BioreactorID, 0, false)
+			}
 			if !bio[ind].MustStop {
 				board_add_message("ABiorreator " + main_id + " pausado")
 				bio_add_message(main_id, "ABiorreator pausado")
@@ -5481,6 +5484,9 @@ func stop_device(devtype string, main_id string) bool {
 					break
 				}
 			} //
+			if bio[ind].Heater {
+				scp_turn_heater(bio[ind].BioreactorID, 0, false)
+			}
 			bio[ind].Queue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustOffQueue = []string{}
@@ -5893,6 +5899,29 @@ func scp_process_conn(conn net.Conn) {
 			}
 			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
 				fmt.Println("START", orgcode)
+				if orgcode == scp_par_cip {
+					if bio[ind].Status != bio_empty || bio[ind].Volume > 0 {
+						fmt.Println("ERROR START: CIP invalido, biorreator nao esta vazio", bioid)
+						if bio[ind].Volume > 0 {
+							bio_add_message(bioid, "ENão é possivel realizar CIP num biorretor que não esteja VAZIO")
+						} else if bio[ind].Status == bio_cip {
+							bio_add_message(bioid, "ECIP já iniciado no Biorreator. Aguarde")
+						} else {
+							bio_add_message(bioid, "EStatus "+bio[ind].Status+" não permite CIP")
+						}
+						return
+					}
+					bio[ind].Status = bio_cip
+				} else {
+					if bio[ind].Volume > 0 {
+						bio_add_message(bioid, "ENão é possivel iniciar cultivo num biorretor que não esteja VAZIO")
+						return
+					} else if bio[ind].Status != bio_empty {
+						bio_add_message(bioid, "EStatus "+bio[ind].Status+" não permite início de cultivo")
+						return
+					}
+					bio[ind].Status = bio_starting
+				}
 				biotask := []string{bioid + ",0," + orgcode}
 				n := create_sched(biotask)
 				if n > 0 && !schedrunning {
@@ -6207,10 +6236,20 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
+						if bio[ind].Status != bio_ready {
+							if bio[ind].Status == bio_unloading {
+								bio_add_message(bioid, "EDesenvase em andamento no Biorreator. Aguarde")
+								return
+							}
+							bio_add_message(bioid, "ENão é possível fazer desenvase em um biorreator que não esteja PRONTO")
+							return
+						}
 						if bio[ind].Withdraw > 0 {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
+								bio_add_message(bioid, "ITransferência iniciada")
 								go scp_run_withdraw(scp_bioreactor, bioid, true, true)
 							} else {
+								bio_add_message(bioid, "IDesenvase iniciado")
 								go scp_run_withdraw(scp_bioreactor, bioid, true, false)
 							}
 						}
@@ -6238,32 +6277,36 @@ func scp_process_conn(conn net.Conn) {
 					fmt.Println("RET CMD2 =", ret2)
 					ret3 := scp_sendmsg_orch(cmd3)
 					fmt.Println("RET CMD3 =", ret3)
+					if !value && bio[ind].Heater {
+						bio_add_message(bioid, "AATENÇÃO: Bomba foi DESLIGADA com resistência LIGADA! Efetuando desligamento automático")
+						scp_turn_heater(bioid, 0, false)
+					}
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_aero:
-					var cmd1, cmd2, cmd3 string
+					var cmd1, cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Aerator = value
 					biodev := bio_cfg[bioid].Deviceaddr
-					bioscr := bio_cfg[bioid].Screenaddr
+					// bioscr := bio_cfg[bioid].Screenaddr
 					aerodev := bio_cfg[bioid].Aero_dev
 					if value {
 						cmd1 = "CMD/" + biodev + "/PUT/D27,1/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",255/END"
-						cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
+						// cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
 
 					} else {
 						cmd1 = "CMD/" + biodev + "/PUT/D27,0/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",0/END"
-						cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
+						// cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
 					}
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
-					ret3 := scp_sendmsg_orch(cmd3)
-					fmt.Println("RET CMD3 =", ret3)
+					// ret3 := scp_sendmsg_orch(cmd3)
+					// fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
@@ -6271,6 +6314,10 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
+					if bio[ind].Heater && value_status == 0 {
+						bio_add_message(bioid, "AATENÇÃO: Válvulas sendo fechadas manualmente com resistência ligada. Efetuando desligamento automático")
+						scp_turn_heater(bioid, 0, false)
+					}
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
 						if set_valv_status(scp_bioreactor, bioid, valvid, value_status) {
