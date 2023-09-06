@@ -27,6 +27,7 @@ const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
 const scp_dev_peris = "PERIS"
+const scp_dev_heater = "HEATER"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_bioreactor = "BIOREACTOR"
@@ -545,6 +546,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			outdev := r.FormValue("Out")
 			recirc := r.FormValue("Recirculate")
 			cont := r.FormValue("Continue")
+			heater := r.FormValue("Heater")
 
 			if b_start != "" {
 				if orgcode != "" {
@@ -594,6 +596,12 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			}
 			if valve != "" {
 				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_valve + "," + valve + "," + value_status + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+
+			}
+			if heater != "" {
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_dev_heater + "," + heater + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 

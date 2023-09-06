@@ -71,6 +71,7 @@ const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
 const scp_dev_volfluxo_out = "VOLFLUXO_OUT"
 const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
+const scp_dev_heater = "HEATER"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -159,7 +160,7 @@ const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto
+const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 
 const bio_withdrawstep = 50
 
@@ -542,6 +543,9 @@ func calc_mediana(x []float64) float64 {
 	var mediana float64
 	sort.Float64s(x)
 	n := len(x)
+	if n == 0 {
+		return 0
+	}
 	c := int(n / 2)
 	if n >= 5 {
 		s := x[c-1] + x[c] + x[c+1]
@@ -918,6 +922,16 @@ func load_biofabrica_conf(filename string) int {
 			addrs_type[dev_addr] = DevAddrData{dev_addr, scp_biofabrica, dev_id}
 		} else {
 			fmt.Println("WARN LOAD BIOFABRICA CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
+		}
+	}
+	_, ok := biofabrica_cfg["FBF02"]
+	if !ok {
+		vbf01, okt := biofabrica_cfg["VBF01"]
+		if okt {
+			board_add_message("AFluxometro de entrada não presente nas configurações. Corrigindo problema automaticamente. Favor verificar configurações da Biofábrica")
+			biofabrica_cfg["FBF02"] = Biofabrica_cfg{"FBF02", vbf01.Deviceaddr, "C7"}
+		} else {
+			board_add_message("EATENÇÃO: Fluxometro de entrada e Válvula 01 não presentes nas configurações. Acionar time de suporte")
 		}
 	}
 	return totalrecords
@@ -1593,34 +1607,36 @@ func scp_get_ph_voltage(bioid string) float64 {
 			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		}
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-		ret_ph := scp_sendmsg_orch(cmd_ph)
-		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
-		ret_ph = scp_sendmsg_orch(cmd_ph)
-		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
-		for i := 0; i < 5; i++ {
+
+		n := 0
+		var data []float64
+		for i := 0; i <= 7; i++ {
+			ret_ph := scp_sendmsg_orch(cmd_ph)
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
 				phint, err := strconv.Atoi(params[1])
+				fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", bioid, phint, "passo=", i)
 				if err == nil && phint >= 300 && phint <= 500 {
-					fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", phint, "passo=", i)
-					break
+					data = append(data, float64(phint))
+					n++
 				}
+			} else {
+				fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado invalido =", bioid, ret_ph, "passo=", i)
 			}
-			ret_ph = scp_sendmsg_orch(cmd_ph)
-			fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
 		}
-		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
+		mediana := calc_mediana(data)
+		phfloat := mediana / 100.0
+
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
 		if aerostatus {
 			if !scp_turn_aero(bioid, false, 1, aeroratio) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
 		}
-		params := scp_splitparam(ret_ph, "/")
-		if params[0] == scp_ack {
-			phint, _ := strconv.Atoi(params[1])
-			phfloat := float64(phint) / 100.0
-			fmt.Println("DEBUG SCP GET PH VOLTAGE: Voltagem PH", bioid, phint, phfloat)
+		if phfloat >= 3.0 && phfloat <= 5.0 {
 			return phfloat
+		} else {
+			fmt.Println("ERROR SCP GET PH VOLTAGE: Valor invalido de PH Voltage", bioid, phfloat)
 		}
 	} else {
 		fmt.Println("ERROR SCP GET PH VOLTAGE: ADDR Biorreator nao existe", bioid)
@@ -1701,9 +1717,6 @@ func scp_update_screen_phtemp(bioid string) {
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
-	// if all {
-	// 	scp_update_screen_times(bioid)
-	// }
 }
 
 func scp_update_screen_steps(bioid string) {
@@ -1800,23 +1813,32 @@ func scp_get_temperature(bioid string) float64 {
 	tempdev := bio_cfg[bioid].Temp_dev
 	if len(bioaddr) > 0 {
 		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-		ret_temp := scp_sendmsg_orch(cmd_temp)
-		ret_temp = scp_sendmsg_orch(cmd_temp)
-		params := scp_splitparam(ret_temp, "/")
-		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "ret=", ret_temp, "len=", len(ret_temp), "params=", params)
-		if params[0] == scp_ack {
-			tempint, err := strconv.Atoi(params[1])
-			if err == nil {
-				tempfloat := float64(tempint) / 10.0
-				if tempfloat > 0 && tempfloat < 120 {
-					return tempfloat
-				} else {
-					fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, ret_temp, tempfloat)
-					return -1
+
+		n := 0
+		var data []float64
+		for i := 0; i <= 4; i++ {
+			ret_temp := scp_sendmsg_orch(cmd_temp)
+			params := scp_splitparam(ret_temp, "/")
+			if len(params) > 1 {
+				tempint, err := strconv.Atoi(params[1])
+				fmt.Println("DEBUG GET TEMPERATURE: Valor retornado =", bioid, tempint, "passo=", i)
+				if err == nil && tempint > 0 && tempint <= 1200 {
+					data = append(data, float64(tempint))
+					n++
 				}
 			} else {
-				fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, nao numerico", bioid, ret_temp)
+				fmt.Println("ERROR GET TEMPERATURE: Valor retornado =", bioid, ret_temp, "passo=", i)
 			}
+		}
+		mediana := calc_mediana(data)
+		tempfloat := mediana / 10.0
+
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "mediana=", mediana, "tempfloat=", tempfloat)
+		if tempfloat > 0 && tempfloat < 120 {
+			return tempfloat
+		} else {
+			fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, tempfloat)
+			return -1
 		}
 	} else {
 		fmt.Println("ERROR SCP GET TEMPERATURE: ADDR Biorreator nao existe", bioid)
@@ -2118,10 +2140,10 @@ func scp_update_biolevel(bioid string) {
 	level_int := uint8(level)
 	if level_int != bio[ind].Level {
 		bio[ind].Level = level_int
-		levels := fmt.Sprintf("%d", level_int)
-		cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
-		ret := scp_sendmsg_orch(cmd)
-		fmt.Println("SCREEN:", cmd, level, levels, ret)
+		// levels := fmt.Sprintf("%d", level_int)
+		// cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
+		// ret := scp_sendmsg_orch(cmd)
+		// fmt.Println("SCREEN:", cmd, level, levels, ret)
 	}
 }
 
@@ -2160,7 +2182,7 @@ func scp_get_alldata() {
 					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime || bio[ind].Status == bio_update
 
 					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Valvs[2] == 1 {
-						if t_elapsed_bio%5 == 0 {
+						if rand.Intn(21) == 7 {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
@@ -3565,6 +3587,10 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	value_str := "0"
 	if value {
 		value_str = "1"
+		if maxtemp <= 0 {
+			fmt.Println("ERROR SCP TURN HEATER: Não é permitido ligar heater sem definir temperatura máxima", bioid, maxtemp)
+			return false
+		}
 	}
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%s/END", devaddr, heater_dev, value_str)
 	ret0 := scp_sendmsg_orch(cmd0)
@@ -4228,7 +4254,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					outid := subpars[1]
 					bio[ind].OutID = outid
 				}
-				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
+				// board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
 				if scp_run_withdraw(scp_bioreactor, bioid, false, true) < 0 {
 					return false
 				} else {
@@ -4460,7 +4486,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_par_heater:
 				temp_str := subpars[1]
 				temp_int, err := strconv.Atoi(temp_str)
-				if err != nil {
+				if err != nil || temp_int <= 0 {
 					checkErr(err)
 					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
 					return false
@@ -5469,12 +5495,12 @@ func stop_device(devtype string, main_id string) bool {
 			return false
 		}
 		if bio[ind].MustStop {
-			bio_add_message(main_id, "EBiorreator já sendo interrompido, aguarde")
+			bio_add_message(main_id, "EBiorreator já sendo interrompido. Aguarde")
 			return false
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
-		bio_add_message(main_id, "ABiorreator Interrompido")
+		bio_add_message(main_id, "ABiorreator sendo Interrompido. Aguarde")
 		if bio[ind].Status != bio_empty || true { // corrigir
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
@@ -6280,6 +6306,26 @@ func scp_process_conn(conn net.Conn) {
 					if !value && bio[ind].Heater {
 						bio_add_message(bioid, "AATENÇÃO: Bomba foi DESLIGADA com resistência LIGADA! Efetuando desligamento automático")
 						scp_turn_heater(bioid, 0, false)
+					}
+					conn.Write([]byte(scp_ack))
+
+				case scp_dev_heater:
+					value, err := strconv.ParseBool(subparams[1])
+					if err != nil {
+						checkErr(err)
+						conn.Write([]byte(scp_err))
+						return
+					}
+					if value {
+						bio_add_message(bioid, "ENão é permitido ligar a resistência manualmente")
+						conn.Write([]byte(scp_err))
+						return
+					}
+					if !scp_turn_heater(bioid, 0, false) {
+						fmt.Println("SCP PROCESS CONN: Erro ao delisgar resistência")
+						bio_add_message(bioid, "EFALHA ao DESLIGAR RESISTÊNCIA")
+						conn.Write([]byte(scp_err))
+						return
 					}
 					conn.Write([]byte(scp_ack))
 
