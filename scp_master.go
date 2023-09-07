@@ -5920,7 +5920,7 @@ func scp_process_conn(conn net.Conn) {
 				fmt.Println("ERROR START: Biorreator nao existe", bioid)
 				break
 			}
-			if o rgcode != scp_par_cip && bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
+			if orgcode != scp_par_cip && bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
 				fmt.Println("ERROR START: Biorreator nao teve o PH Calibrado, impossivel iniciar cultivo", bioid)
 				bio_add_message(bioid, "EImpossível iniciar cultivo, sensor de PH não calibrado")
 				break
@@ -5954,7 +5954,7 @@ func scp_process_conn(conn net.Conn) {
 				if n > 0 && !schedrunning {
 					go scp_scheduler()
 				}
-				fmt.Println("DEBUG SCP START: biotaks=",biotask, "n=", n, "sched=", schedrunning)
+				fmt.Println("DEBUG SCP START: biotaks=", biotask, "n=", n, "sched=", schedrunning)
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
