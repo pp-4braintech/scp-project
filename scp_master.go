@@ -5287,11 +5287,12 @@ func scp_run_devs() {
 }
 
 func scp_scheduler() {
-	schedrunning = true
 	if !devsrunning {
 		scp_run_devs()
 		go scp_clock()
+		devsrunning = true
 	}
+	schedrunning = true
 	for schedrunning == true {
 		for k, b := range bio {
 			// fmt.Println(k, " bio =", b)
