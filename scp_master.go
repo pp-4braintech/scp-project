@@ -5287,6 +5287,7 @@ func scp_run_devs() {
 }
 
 func scp_scheduler() {
+	fmt.Println("DEBUG SCHEDULER: Iniciando Scheduler")
 	if !devsrunning {
 		scp_run_devs()
 		go scp_clock()
@@ -5297,6 +5298,7 @@ func scp_scheduler() {
 		for k, b := range bio {
 			// fmt.Println(k, " bio =", b)
 			r := pop_first_sched(b.BioreactorID, false)
+			// fmt.Println("DEBUG SCHEDULER: Sched ")
 			if len(r.Bioid) > 0 {
 				if b.Status == bio_empty && len(b.Queue) == 0 { // && b.Volume == 0
 					fmt.Println("\n", k, " Schedule inicial", schedule, "//", len(schedule), "POP de ", b.BioreactorID)
@@ -5939,7 +5941,7 @@ func scp_process_conn(conn net.Conn) {
 						}
 						return
 					}
-					bio[ind].Status = bio_cip
+					// bio[ind].Status = bio_cip
 				} else {
 					if bio[ind].Volume > 0 {
 						bio_add_message(bioid, "ENão é possivel iniciar cultivo num biorretor que não esteja VAZIO")
