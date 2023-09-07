@@ -5500,10 +5500,12 @@ func stop_device(devtype string, main_id string) bool {
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
+		bio[ind].MustStop = true
 		bio_add_message(main_id, "ABiorreator sendo Interrompido. Aguarde")
 		if bio[ind].Status != bio_empty || true { // corrigir
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
+			// t_start =
 			for {
 				time.Sleep(5000 * time.Millisecond)
 				if len(bio[ind].UndoQueue) == 0 {
@@ -5912,22 +5914,21 @@ func scp_process_conn(conn net.Conn) {
 		case scp_bioreactor:
 			bioid := params[2]
 			orgcode := params[3]
-			fmt.Println("START", bioid, orgcode, params)
+			fmt.Println("DEBUG SCP START: Iniciando ", bioid, orgcode, params)
 			ind := get_bio_index(bioid)
 			if ind < 0 {
 				fmt.Println("ERROR START: Biorreator nao existe", bioid)
 				break
 			}
-			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
+			if o rgcode != scp_par_cip && bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
 				fmt.Println("ERROR START: Biorreator nao teve o PH Calibrado, impossivel iniciar cultivo", bioid)
 				bio_add_message(bioid, "EImpossível iniciar cultivo, sensor de PH não calibrado")
 				break
 			}
 			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
-				fmt.Println("START", orgcode)
 				if orgcode == scp_par_cip {
-					if bio[ind].Status != bio_empty || bio[ind].Volume > 0 {
-						fmt.Println("ERROR START: CIP invalido, biorreator nao esta vazio", bioid)
+					if (bio[ind].Status != bio_empty && bio[ind].Status != bio_ready) || bio[ind].Volume > 0 {
+						fmt.Println("ERROR START: CIP invalido, biorreator nao esta vazio ou status invalido", bioid, bio[ind].Status, bio[ind].Volume)
 						if bio[ind].Volume > 0 {
 							bio_add_message(bioid, "ENão é possivel realizar CIP num biorretor que não esteja VAZIO")
 						} else if bio[ind].Status == bio_cip {
@@ -5953,6 +5954,7 @@ func scp_process_conn(conn net.Conn) {
 				if n > 0 && !schedrunning {
 					go scp_scheduler()
 				}
+				fmt.Println("DEBUG SCP START: biotaks=",biotask, "n=", n, "sched=", schedrunning)
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
