@@ -2219,7 +2219,7 @@ func scp_get_alldata() {
 					}
 
 					if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
-						if t_elapsed_bio%5 == 0 {
+						if rand.Intn(15) == 7 {
 							go scp_update_ph(b.BioreactorID)
 						}
 					}
@@ -3119,7 +3119,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 {
+			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
 				volout := t_elapsed / bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
@@ -3128,10 +3128,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].Volume = uint32(vol_tmp)
 				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout)
 				if ibc_ind >= 0 {
-					ibc[ind].VolInOut += volout
-					ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+					ibc[ibc_ind].VolInOut += volout
+					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 				}
 				scp_update_biolevel(bio[ind].BioreactorID)
+				scp_update_ibclevel(ibc[ibc_ind].IBCID)
 				// scp_update_screen_vol(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
@@ -3350,6 +3351,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			maxtime = scp_maxtimewithdraw
 		}
 		t_start := time.Now()
+		ibc7_ind := get_ibc_index(last_ibc)
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
@@ -3367,10 +3369,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			ibc[ind].VolumeOut = uint32(vout)
 			if ibc[ind].OutID == last_ibc {
-				ibc7_ind := get_ibc_index(last_ibc)
 				if ibc7_ind >= 0 {
 					ibc[ibc7_ind].VolInOut += vol_bio_out_now
 					ibc[ibc7_ind].Volume = uint32(ibc[ibc7_ind].VolInOut)
+					scp_update_ibclevel(ibc[ibc7_ind].IBCID)
 				} else {
 					fmt.Println("ERROR RUN WITHDRAW: Ultimo IBC nao existe", last_ibc)
 				}
@@ -4803,6 +4805,15 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
 				ibc[ind].Step[1] = biomaxstep
+			case scp_par_volume:
+				vol_str := subpars[1]
+				vol_int, err := strconv.Atoi(vol_str)
+				if err != nil {
+					checkErr(err)
+				} else {
+					ibc[ind].VolInOut = float64(vol_int)
+					ibc[ind].Volume = uint32(vol_int)
+				}
 			case scp_par_totaltime:
 				biototaltime_str := subpars[1]
 				if biototaltime_str == "DEFAULT" {
@@ -5063,13 +5074,13 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
 						return false
 					}
-					fmt.Println("npath=", pathstr)
+					// fmt.Println("npath=", pathstr)
 					vpath := scp_splitparam(pathstr, ",")
 					perisvalv := totem_str + "/V2"
 					n := len(vpath)
 					vpath = append(vpath[:n-1], perisvalv)
 					vpath = append(vpath, "END")
-					fmt.Println("DEBUG", vpath)
+					fmt.Println("DEBUG SCP JOB IBC: ON DEV PERIS", ibcid, vpath)
 					if test_path(vpath, 0) {
 						if set_valvs_value(vpath, 1, true) < 0 {
 							fmt.Println("ERROR SCP RUN JOB: ERRO ao abrir valvulas no path ", vpath)
