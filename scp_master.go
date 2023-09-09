@@ -39,6 +39,8 @@ const (
 
 	bio_escala = 1
 
+	last_ibc = "IBC07"
+
 	scp_ack     = "ACK"
 	scp_err     = "ERR"
 	scp_get     = "GET"
@@ -311,6 +313,7 @@ type IBC struct {
 	Vol0         int
 	Vol1         int32
 	Vol2         int32
+	VolInOut     float64
 	Volume       uint32
 	Level        uint8
 	Pumpstatus   bool
@@ -481,13 +484,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
 }
 
 var totem = []Totem{
@@ -2147,6 +2150,25 @@ func scp_update_biolevel(bioid string) {
 	}
 }
 
+func scp_update_ibclevel(ibcid string) {
+	ind := get_ibc_index(ibcid)
+	if ind < 0 {
+		return
+	}
+	level := (float64(ibc[ind].Volume) / float64(ibc_cfg[ibcid].Maxvolume)) * 10.0
+	if level > 10 {
+		level = 10
+	}
+	level_int := uint8(level)
+	if level_int != ibc[ind].Level {
+		ibc[ind].Level = level_int
+		// levels := fmt.Sprintf("%d", level_int)
+		// cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
+		// ret := scp_sendmsg_orch(cmd)
+		// fmt.Println("SCREEN:", cmd, level, levels, ret)
+	}
+}
+
 func scp_get_alldata() {
 	if demo {
 		return
@@ -2177,6 +2199,7 @@ func scp_get_alldata() {
 			hasupdatevolout = false
 
 			for _, b := range bio {
+
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_bio_index(b.BioreactorID)
 					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime || bio[ind].Status == bio_update
@@ -2266,6 +2289,22 @@ func scp_get_alldata() {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
 							}
+
+							// NOVO - Em 08/09/23
+							if b.Status == bio_update {
+								if bio[ind].Volume > 0 {
+									bio[ind].Status = bio_ready
+								} else {
+									bio[ind].Status = bio_empty
+								}
+							}
+							// if volc >= 0 {
+							// 	bio[ind].Volume = uint32(volc)
+							// 	scp_update_biolevel(b.BioreactorID)
+							// 	if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
+							// 		bio[ind].Status = bio_empty
+							// 	}
+							// }
 
 						} else {
 							var vol0 float64 = -1
@@ -2402,19 +2441,24 @@ func scp_get_alldata() {
 								}
 							}
 						}
-					}
-					if devmode && bio[ind].Status == bio_update {
-						if bio[ind].Volume == 0 {
-							bio[ind].Status = bio_empty
-						} else {
-							bio[ind].Status = bio_ready
+
+						if devmode && bio[ind].Status == bio_update {
+							if bio[ind].Volume == 0 {
+								bio[ind].Status = bio_empty
+							} else {
+								bio[ind].Status = bio_ready
+							}
 						}
+
 					}
+
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
 				}
+
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
+
 			if mustupdate_bio {
 				bio_seq++
 				if bio_seq >= len(bio) {
@@ -2431,160 +2475,212 @@ func scp_get_alldata() {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
 					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime || ibc[ind].Status == bio_update
+
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
 
-						var vol0 float64 = -1
-						var dint int
-						dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-						if dint <= 0 || dint > 1 {
-							dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-						}
-						if dint >= 0 {
-							ibc[ind].Vol0 = dint
-						}
-						if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
-							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
-						} else {
-							vol0 = float64(dint)
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
-						}
-
-						var vol1, vol1_pre float64
-						vol1 = -1
-						dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
-						if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
-							dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
-						}
-
-						if vol0 == 0 {
-							if dint > 0 && float32(dint) >= (ibc_v1_zero*0.8) && float32(dint) <= (ibc_v1_zero*1.2) {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.IBCID, dint)
-								//
-								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-								//
-								// ibc[ind].Vol_zero[0] = float32(dint)
-							} else {
-								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
-							}
-						}
-						if dint > 0 && vol1_pre >= 0 {
-							vol1 = 10 * (math.Trunc(vol1_pre / 10))
-						}
-						ibc[ind].Vol1 = int32(vol1_pre)
-						fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre)
-
-						var vol2, vol2_pre float64
-						vol2 = -1
-						dint, vol2_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vollaser)
-						if vol0 == 0 {
-							if dint > 0 && float32(dint) >= (ibc_v2_zero*0.8) && float32(dint) <= (ibc_v2_zero*1.2) {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER", b.IBCID, dint)
-								//
-								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-								//
-								// ibc[ind].Vol_zero[1] = float32(dint)
-							} else {
-								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
-							}
-						}
-						if dint > 0 && vol2_pre >= 0 {
-							vol2 = 10 * (math.Trunc(vol2_pre / 10))
-						}
-						ibc[ind].Vol2 = int32(vol2_pre)
-						fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre)
-
-						// cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
-						// ret2 := scp_sendmsg_orch(cmd2)
-						// params = scp_splitparam(ret2, "/")
-						// vol2 = -1
-						// if params[0] == scp_ack {
-						// 	dint, _ := strconv.Atoi(params[1])
-						// 	area = 0
-						// 	dfloat = 0
-						// 	if vol0 == 0 && (dint > 0 && float32(dint) >= (ibc_v2_zero*0.7) && float32(dint) <= (ibc_v2_zero*1.3)) {
-						// 		fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
-						// 		b.Vol_zero[1] = float32(dint)
-						// 	}
-						// 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-						// 	dfloat = float64(b.Vol_zero[1]) - float64(dint)
-						// 	vol2_pre := area * dfloat
-						// 	if dint > 0 {
-						// 		if vol2_pre >= 0 {
-						// 			vol2 = 10 * (math.Trunc(vol2_pre / 10))
-						// 		} else {
-						// 			vol2 = 0
-						// 		}
-						// 		ibc[ind].Vol2 = int32(vol2_pre)
-						// 	} else {
-						// 		ibc[ind].Vol2 = -1
-						// 	}
-
-						// 	fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
-						// } else {
-						// 	fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
-						// }
-
-						var volc float64
-						volc = float64(ibc[ind].Volume)
-						if vol0 == 0 {
-							fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
-							volc = 0
-						} else if vol1 < 0 && vol2 < 0 {
-							fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
-						} else {
-							if ibc[ind].Valvs[3] == 1 { // Desenvase
-								if vol1 < 0 {
-									if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
-										volc = vol2
+						if biofabrica.Useflowin {
+							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
+								if count >= 0 {
+									vol_tmp = vol_tmp // * flow_corfactor_in1
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
+									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolin && lastvolin > 0 {
+										ibcvolin := vol_tmp - lastvolin
+										ibc[ind].VolInOut += ibcvolin
+										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+										// scp_update_biolevel(b.BioreactorID)
 									}
+									lastvolin = vol_tmp
+									hasupdatevolin = true
 								} else {
-									volc = vol1
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
-							} else if ibc[ind].Valvs[2] == 1 { // Carregando
-								if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
+							} else if b.Valvs[3] == 1 && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+								if count >= 0 {
+									vol_tmp = vol_tmp // * flow_corfactor_out
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
+									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolout && lastvolout > 0 {
+										ibcvolout := vol_tmp - lastvolout
+										ibc[ind].VolInOut -= ibcvolout
+										if ibc[ind].VolInOut < 0 {
+											ibc[ind].VolInOut = 0
+										}
+										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+										// scp_update_biolevel(b.BioreactorID)
+									}
+									lastvolout = vol_tmp
+									hasupdatevolout = true
+								} else {
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+								}
+							}
+
+							if ibc[ind].Status == bio_update {
+								if ibc[ind].Volume == 0 {
+									ibc[ind].Status = bio_empty
+								} else {
+									ibc[ind].Status = bio_ready
+								}
+							}
+
+						} else {
+
+							var vol0 float64 = -1
+							var dint int
+							dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
+							if dint <= 0 || dint > 1 {
+								dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
+							}
+							if dint >= 0 {
+								ibc[ind].Vol0 = dint
+							}
+							if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
+								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
+							} else {
+								vol0 = float64(dint)
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
+							}
+
+							var vol1, vol1_pre float64
+							vol1 = -1
+							dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
+							if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
+								dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
+							}
+
+							if vol0 == 0 {
+								if dint > 0 && float32(dint) >= (ibc_v1_zero*0.8) && float32(dint) <= (ibc_v1_zero*1.2) {
+									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.IBCID, dint)
+									//
+									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+									//
+									// ibc[ind].Vol_zero[0] = float32(dint)
+								} else {
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
+								}
+							}
+							if dint > 0 && vol1_pre >= 0 {
+								vol1 = 10 * (math.Trunc(vol1_pre / 10))
+							}
+							ibc[ind].Vol1 = int32(vol1_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre)
+
+							var vol2, vol2_pre float64
+							vol2 = -1
+							dint, vol2_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vollaser)
+							if vol0 == 0 {
+								if dint > 0 && float32(dint) >= (ibc_v2_zero*0.8) && float32(dint) <= (ibc_v2_zero*1.2) {
+									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER", b.IBCID, dint)
+									//
+									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+									//
+									// ibc[ind].Vol_zero[1] = float32(dint)
+								} else {
+									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
+								}
+							}
+							if dint > 0 && vol2_pre >= 0 {
+								vol2 = 10 * (math.Trunc(vol2_pre / 10))
+							}
+							ibc[ind].Vol2 = int32(vol2_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre)
+
+							// cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
+							// ret2 := scp_sendmsg_orch(cmd2)
+							// params = scp_splitparam(ret2, "/")
+							// vol2 = -1
+							// if params[0] == scp_ack {
+							// 	dint, _ := strconv.Atoi(params[1])
+							// 	area = 0
+							// 	dfloat = 0
+							// 	if vol0 == 0 && (dint > 0 && float32(dint) >= (ibc_v2_zero*0.7) && float32(dint) <= (ibc_v2_zero*1.3)) {
+							// 		fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
+							// 		b.Vol_zero[1] = float32(dint)
+							// 	}
+							// 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
+							// 	dfloat = float64(b.Vol_zero[1]) - float64(dint)
+							// 	vol2_pre := area * dfloat
+							// 	if dint > 0 {
+							// 		if vol2_pre >= 0 {
+							// 			vol2 = 10 * (math.Trunc(vol2_pre / 10))
+							// 		} else {
+							// 			vol2 = 0
+							// 		}
+							// 		ibc[ind].Vol2 = int32(vol2_pre)
+							// 	} else {
+							// 		ibc[ind].Vol2 = -1
+							// 	}
+
+							// 	fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
+							// } else {
+							// 	fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
+							// }
+
+							var volc float64
+							volc = float64(ibc[ind].Volume)
+							if vol0 == 0 {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
+								volc = 0
+							} else if vol1 < 0 && vol2 < 0 {
+								fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
+							} else {
+								if ibc[ind].Valvs[3] == 1 { // Desenvase
 									if vol1 < 0 {
-										if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
+										if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
 											volc = vol2
 										}
 									} else {
 										volc = vol1
 									}
-								}
-							} else {
-								if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
-									fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
+								} else if ibc[ind].Valvs[2] == 1 { // Carregando
+									if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
+										if vol1 < 0 {
+											if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
+												volc = vol2
+											}
+										} else {
+											volc = vol1
+										}
+									}
 								} else {
-									if vol1 >= 0 {
-										volc = vol1
-									} else if vol2 >= 0 {
-										volc = vol2
+									if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
+										fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
+									} else {
+										if vol1 >= 0 {
+											volc = vol1
+										} else if vol2 >= 0 {
+											volc = vol2
+										}
 									}
 								}
 							}
-						}
 
-						if volc >= 0 {
-							ibc[ind].Volume = uint32(volc)
-							level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
-							level_int := uint8(level)
-							if level_int != ibc[ind].Level {
-								ibc[ind].Level = level_int
+							if volc >= 0 {
+								ibc[ind].Volume = uint32(volc)
+								level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
+								level_int := uint8(level)
+								if level_int != ibc[ind].Level {
+									ibc[ind].Level = level_int
+								}
+								if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
+									ibc[ind].Status = bio_empty
+								}
 							}
-							if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
-								ibc[ind].Status = bio_empty
+							if devmode && ibc[ind].Status == bio_update {
+								if ibc[ind].Volume == 0 {
+									ibc[ind].Status = bio_empty
+								} else {
+									ibc[ind].Status = bio_ready
+								}
 							}
-						}
-						if devmode && ibc[ind].Status == bio_update {
-							if ibc[ind].Volume == 0 {
-								ibc[ind].Status = bio_empty
-							} else {
-								ibc[ind].Status = bio_ready
-							}
-						}
 
+						}
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
@@ -2943,25 +3039,25 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
-		fmt.Println(pilha)
+		// fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
 		bio[ind].Status = bio_unloading
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW 07: Ligando bomba", devid)
 		biodev := bio_cfg[devid].Deviceaddr
-		bioscr := bio_cfg[devid].Screenaddr
+		// bioscr := bio_cfg[devid].Screenaddr
 		pumpdev := bio_cfg[devid].Pump_dev
 		bio[ind].Pumpstatus = true
 		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
-		cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
+		// cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 08: CMD1 =", cmd1, " RET=", ret1)
-		ret2 := scp_sendmsg_orch(cmd2)
-		fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
+		// ret2 := scp_sendmsg_orch(cmd2)
+		// fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERROR RUN WITHDRAW 10: BIORREATOR falha ao ligar bomba")
-			cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
-			scp_sendmsg_orch(cmd2)
+			// cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
+			// scp_sendmsg_orch(cmd2)
 			set_valvs_value(pilha, 0, false)
 			return -1
 		}
@@ -2969,7 +3065,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		var vol_bio_out_start float64
 		vol_bio_init := bio[ind].Volume
 		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
-			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+			var count int
+			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+			if count < 0 {
+				vol_bio_out_start = biofabrica.VolumeOut
+			}
 		} else {
 			vol_bio_out_start = -1
 		}
@@ -2983,7 +3083,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		t_elapsed := float64(0)
 		mustwaittime := false
 		waittime := float64(0)
+		ibc_ind := -1
 		if untilempty && biofabrica.Useflowin && get_scp_type(bio[ind].OutID) == scp_ibc {
+			ibc_ind = get_ibc_index(bio[ind].OutID)
 			// bio[ind].ShowVol = false
 			mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
@@ -3024,8 +3126,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					vol_tmp = 0
 				}
 				bio[ind].Volume = uint32(vol_tmp)
-				// go scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_screen_vol(bio[ind].BioreactorID)
+				if ibc_ind >= 0 {
+					ibc[ind].VolInOut += volout
+				}
+				scp_update_biolevel(bio[ind].BioreactorID)
+				// scp_update_screen_vol(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -3062,10 +3167,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			bio[ind].Level = 0
 		}
 
-		// go scp_update_biolevel(bio[ind].BioreactorID)
-		scp_update_screen_vol(bio[ind].BioreactorID)
-		scp_update_screen_steps(bio[ind].BioreactorID)
-		scp_update_screen_times(bio[ind].BioreactorID)
+		scp_update_biolevel(bio[ind].BioreactorID)
+		// scp_update_screen_vol(bio[ind].BioreactorID)
+		// scp_update_screen_steps(bio[ind].BioreactorID)
+		// scp_update_screen_times(bio[ind].BioreactorID)
 
 		bio[ind].Withdraw = 0
 
@@ -3079,11 +3184,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
-		cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
+		// cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 14: CMD1 =", cmd1, " RET=", ret1)
-		ret2 = scp_sendmsg_orch(cmd2)
-		fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
+		// ret2 = scp_sendmsg_orch(cmd2)
+		// fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
 
 		if untilempty {
 			time.Sleep(scp_timewaitvalvs / 3 * time.Millisecond)
@@ -3225,17 +3330,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		var vol_out int64
 		var vol_bio_out_start float64
-		use_volfluxo := false
-		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
-			use_volfluxo = true
-			var count int
-			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
-			if count < 0 {
-				vol_bio_out_start = biofabrica.VolumeOut
-			}
-		} else {
-			vol_bio_out_start = -1
+		use_volfluxo := true
+		// if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
+		// use_volfluxo = true
+		var count int
+		count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+		if count < 0 {
+			vol_bio_out_start = biofabrica.VolumeOut
 		}
+		// } else {
+		// 	vol_bio_out_start = -1
+		// }
 		var maxtime float64
 		if devmode || testmode {
 			maxtime = 60
@@ -3259,11 +3364,24 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				vout = 0
 			}
 			ibc[ind].VolumeOut = uint32(vout)
+			if ibc[ind].OutID == last_ibc {
+				ibc7_ind := get_ibc_index(last_ibc)
+				if ibc7_ind >= 0 {
+					ibc[ibc7_ind].VolInOut += vol_bio_out_now
+					ibc[ibc7_ind].Volume = uint32(ibc[ibc7_ind].VolInOut)
+				} else {
+					fmt.Println("ERROR RUN WITHDRAW: Ultimo IBC nao existe", last_ibc)
+				}
+			}
 			// fmt.Println("vout=", vout, ibc[ind].VolumeOut)
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
-			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
+			if untilempty {
+				if vol_now == 0 {
+					break
+				}
+			} else if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
 				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(ibc[ind].Withdraw) {
 					fmt.Println("DEBUG RUN WITHDRAW 11: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
 					break
@@ -4959,16 +5077,17 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
-					tmax := scp_timewaitvalvs / 100
-					for i := 0; i < tmax; i++ {
-						// switch devtype {
-						// case scp_bioreactor:
-						// 	if bio[ind].MustPause || bio[ind].MustPause {
-						// 		i = tmax
-						// 	}
-						// }
-						time.Sleep(100 * time.Millisecond)
-					}
+					time.Sleep(scp_timewaitvalvs * time.Millisecond)
+					// tmax := scp_timewaitvalvs / 100
+					// for i := 0; i < tmax; i++ {
+					// switch devtype {
+					// case scp_bioreactor:
+					// 	if bio[ind].MustPause || bio[ind].MustPause {
+					// 		i = tmax
+					// 	}
+					// }
+					// 	time.Sleep(100 * time.Millisecond)
+					// }
 					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
 						return false
@@ -5057,16 +5176,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
-					tmax := scp_timewaitvalvs / 100
-					for i := 0; i < tmax; i++ {
-						// switch devtype {
-						// case scp_bioreactor:
-						// 	if bio[ind].MustPause || bio[ind].MustPause {
-						// 		i = tmax
-						// 	}
-						// }
-						time.Sleep(100 * time.Millisecond)
-					}
+					time.Sleep(scp_timewaitvalvs * time.Millisecond)
 				}
 
 			case scp_dev_water:
@@ -5950,7 +6060,7 @@ func scp_process_conn(conn net.Conn) {
 						bio_add_message(bioid, "EStatus "+bio[ind].Status+" não permite início de cultivo")
 						return
 					}
-					bio[ind].Status = bio_starting
+					// bio[ind].Status = bio_starting
 				}
 				biotask := []string{bioid + ",0," + orgcode}
 				n := create_sched(biotask)
