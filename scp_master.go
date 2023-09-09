@@ -3153,6 +3153,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
+				if ibc_ind >= 0 {
+					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_bio_init)
+					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
+				}
 			} else if mustwaittime {
 				volout := t_elapsed * bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
