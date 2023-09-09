@@ -6394,7 +6394,7 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
-						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume > 0) {
+						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume == 0) {
 							if bio[ind].Status == bio_unloading {
 								bio_add_message(bioid, "EDesenvase em andamento no Biorreator. Aguarde")
 								return
