@@ -1195,9 +1195,9 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
-	board_add_message("ERETORNANDO de EMERGENCIA")
-	board_add_message("ANecessário aguardar 5 minutos até reestabelecimento dos equipamentos")
-	time.Sleep(300 * time.Second)
+	board_add_message("ERETORNANDO de PARADA de EMERGENCIA")
+	board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos")
+	time.Sleep(600 * time.Second)
 	scp_setup_devices(true)
 	for _, b := range ibc {
 		if b.Status == bio_nonexist || b.Status == bio_error {
@@ -5746,7 +5746,7 @@ func scp_restart_services() {
 		fmt.Println("Falha ao Restartar BACK")
 		return
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(30 * time.Second)
 	fmt.Println("Reestartando Servico MASTER")
 	cmd = exec.Command(cmdpath, "restart", "scp_master")
 	cmd.Dir = "/usr/bin"
