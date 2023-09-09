@@ -3081,11 +3081,15 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			maxtime = scp_maxtimewithdraw
 		}
 		t_elapsed := float64(0)
+		vol_ibc_ini := float64(-1)
 		mustwaittime := false
 		waittime := float64(0)
 		ibc_ind := -1
 		if untilempty && biofabrica.Useflowin && get_scp_type(bio[ind].OutID) == scp_ibc {
 			ibc_ind = get_ibc_index(bio[ind].OutID)
+			if ibc_ind >= 0 {
+				vol_ibc_ini = float64(ibc[ibc_ind].VolInOut)
+			}
 			// bio[ind].ShowVol = false
 			mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
@@ -3127,8 +3131,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				}
 				bio[ind].Volume = uint32(vol_tmp)
 				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout)
-				if ibc_ind >= 0 {
-					ibc[ibc_ind].VolInOut += volout
+				if ibc_ind >= 0 && vol_ibc_ini >= 0 {
+					ibc[ibc_ind].VolInOut = vol_ibc_ini + volout
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 				}
 				scp_update_biolevel(bio[ind].BioreactorID)
