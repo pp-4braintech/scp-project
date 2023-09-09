@@ -3126,6 +3126,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					vol_tmp = 0
 				}
 				bio[ind].Volume = uint32(vol_tmp)
+				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout)
 				if ibc_ind >= 0 {
 					ibc[ind].VolInOut += volout
 					ibc[ind].Volume = uint32(ibc[ind].VolInOut)
