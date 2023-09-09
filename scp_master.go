@@ -3128,6 +3128,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				bio[ind].Volume = uint32(vol_tmp)
 				if ibc_ind >= 0 {
 					ibc[ind].VolInOut += volout
+					ibc[ind].Volume = uint32(ibc[ind].VolInOut)
 				}
 				scp_update_biolevel(bio[ind].BioreactorID)
 				// scp_update_screen_vol(bio[ind].BioreactorID)
