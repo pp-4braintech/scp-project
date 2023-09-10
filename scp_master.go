@@ -108,6 +108,8 @@ const scp_par_totaltime = "TOTALTIME"
 const scp_par_manydraw = "MANYDRAW"
 const scp_par_manyout = "MANYOUT"
 const scp_par_continue = "CONTINUE"
+const scp_par_reconfigdev = "RECONFIGDEV"
+const scp_par_resetdata = "RESETDATA"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -5820,6 +5822,33 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+
+					case scp_par_resetdata:
+						if bio[ind].Status == bio_empty || bio[ind].Status == bio_ready {
+							bio_add_message(bioid, "ATodos os dados do Biorreator serão refinidos")
+							board_add_message("ATodos os dados do " + bioid + " serão refinidos")
+							bio[ind].OrgCode = "EMPTY"
+							bio[ind].Organism = ""
+							bio[ind].VolInOut = 0
+							bio[ind].Volume = 0
+							bio[ind].Level = 0
+							bio[ind].Status = bio_empty
+							bio[ind].Queue = []string{}
+							bio[ind].RedoQueue = []string{}
+							bio[ind].MustOffQueue = []string{}
+							bio[ind].MustStop = false
+							bio[ind].MustPause = false
+							bio[ind].Timetotal[0] = 0
+							bio[ind].Timetotal[1] = 0
+							bio[ind].Timeleft[0] = 0
+							bio[ind].Timeleft[1] = 0
+							bio[ind].Step[0] = 0
+							bio[ind].Step[1] = 0
+							bio[ind].ShowVol = true
+						} else {
+							bio_add_message(bioid, "ESó é possível redefinir um Biorreator se ele estiver VAZIO ou PRONTO")
+						}
+
 					case scp_par_deviceaddr:
 						if len(params) > 4 {
 							devaddr := params[4]
@@ -5948,6 +5977,28 @@ func scp_process_conn(conn net.Conn) {
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do IBC", ibcid, " para", devaddr, " = ", ibc_cfg[ibcid])
 							conn.Write([]byte(scp_ack))
 						}
+					case scp_par_resetdata:
+						if ibc[ind].Status == bio_empty || ibc[ind].Status == bio_ready {
+							board_add_message("ATodos os dados do " + ibcid + " serão refinidos")
+							ibc[ind].OrgCode = "EMPTY"
+							ibc[ind].Organism = ""
+							ibc[ind].VolInOut = 0
+							ibc[ind].Volume = 0
+							ibc[ind].Level = 0
+							ibc[ind].Status = bio_empty
+							ibc[ind].Queue = []string{}
+							ibc[ind].RedoQueue = []string{}
+							ibc[ind].MustOffQueue = []string{}
+							ibc[ind].MustStop = false
+							ibc[ind].Timetotal[0] = 0
+							ibc[ind].Timetotal[1] = 0
+							ibc[ind].Step[0] = 0
+							ibc[ind].Step[1] = 0
+							ibc[ind].ShowVol = true
+						} else {
+							board_add_message("ANão é possível redifinir os dados do " + ibcid + " se não estiver VAZIO ou PRONTO")
+						}
+
 					}
 				}
 			}
@@ -5991,6 +6042,10 @@ func scp_process_conn(conn net.Conn) {
 					buf, err := json.Marshal(v)
 					checkErr(err)
 					conn.Write([]byte(buf))
+
+				case scp_par_reconfigdev:
+					board_add_message("ATodos os Equipamentos serão reconfigurados")
+					scp_setup_devices(true)
 
 				case scp_par_deviceaddr:
 					if len(params) > 4 {

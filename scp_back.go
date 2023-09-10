@@ -53,6 +53,8 @@ const scp_par_circulate = "CIRCULATE"
 const scp_par_manydraw = "MANYDRAW"
 const scp_par_manyout = "MANYOUT"
 const scp_par_continue = "CONTINUE"
+const scp_par_reconfigdev = "RECONFIGDEV"
+const scp_par_resetdata = "RESETDATA"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -813,6 +815,8 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		saveconfig := r.FormValue("SaveConfig")
 		restart := r.FormValue("Restart")
 		testm := r.FormValue("TestMode")
+		reconfigdev := r.FormValue("ReconfigDev")
+		resetdata := r.FormValue("ResetData")
 
 		if len(bioid) > 0 {
 			if devaddr != "" {
@@ -854,11 +858,31 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
 			}
+
+			if resetdata != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_resetdata + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+		}
+
+		if len(reconfigdev) > 0 {
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_reconfigdev + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
 		}
 
 		if len(ibcid) > 0 {
 			if devaddr != "" {
 				cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if resetdata != "" {
+				cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_resetdata + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
