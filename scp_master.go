@@ -385,6 +385,8 @@ type Biofabrica struct {
 	TestMode     bool
 	TechMode     bool
 	Useflowin    bool
+	PIntStatus   string
+	POutStatus   string
 }
 
 type Path struct {
@@ -501,7 +503,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "",
 }
 
 var biobak = bio // Salva status atual
@@ -1545,7 +1547,10 @@ func scp_setup_devices(mustall bool) {
 	}
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIOFABRICA")
+
 	if mustall || biofabrica.Status == scp_fail {
+		biofabrica.POutStatus = bio_update
+		biofabrica.PIntStatus = bio_update
 		for _, bf := range biofabrica_cfg {
 			if len(bf.Deviceaddr) > 0 {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", bf.DeviceID, "-", bf.Deviceaddr)
@@ -1563,6 +1568,11 @@ func scp_setup_devices(mustall bool) {
 					fmt.Println("DEBUG SETUP DEVICES: ", k, "  ", c, " ", ret)
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
+						if strings.Contains(c, "VBF03") || strings.Contains(c, "VBF04") || strings.Contains(c, "VBF05") {
+							biofabrica.PIntStatus = bio_error
+						} else if strings.Contains(c, "VBF06") || strings.Contains(c, "VBF07") || strings.Contains(c, "VBF08") || strings.Contains(c, "VBF09") {
+							biofabrica.POutStatus = bio_error
+						}
 					}
 					if ret[0:2] == "DIE" {
 						fmt.Println("SLAVE ERROR - DIE")
@@ -1570,6 +1580,12 @@ func scp_setup_devices(mustall bool) {
 						break
 					}
 					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
+				}
+				if biofabrica.POutStatus == bio_update {
+					biofabrica.POutStatus = bio_ready
+				}
+				if biofabrica.PIntStatus == bio_update {
+					biofabrica.PIntStatus = bio_ready
 				}
 				if nerr > 0 && !devmode && biofabrica.Status != scp_fail {
 					biofabrica.Status = scp_fail
