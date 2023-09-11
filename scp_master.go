@@ -3157,6 +3157,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
 						fmt.Println("ERROR RUN WITHDRAW 03: nao foi possivel setar valvula", p)
+						board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+						bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 						set_valvs_value(pilha, 0, false) // undo
 						return -1
 					}
@@ -3435,7 +3437,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase iniciado"+devid+" para "+ibc[ind].OutID, "")
+		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -3449,6 +3451,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
 						fmt.Println("ERROR RUN WITHDRAW 29: nao foi possivel setar valvula", p)
+						board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 						return -1
 					}
 				} else if val == 1 {
