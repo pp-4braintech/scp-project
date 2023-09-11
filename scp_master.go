@@ -476,6 +476,7 @@ var cipibc []string
 
 var mainmutex sync.Mutex
 var withdrawmutex sync.Mutex
+var boardmutex sync.Mutex
 
 var withdrawrunning = false
 
@@ -1367,6 +1368,8 @@ func scp_sendmsg_orch(cmd string) string {
 }
 
 func board_has_message(id string) bool {
+	boardmutex.Lock()
+	defer boardmutex.Unlock()
 	msg_id := fmt.Sprintf("{%s}", id)
 	for _, m := range biofabrica.Messages {
 		if strings.Contains(m, msg_id) {
@@ -1376,10 +1379,36 @@ func board_has_message(id string) bool {
 	return false
 }
 
+func board_del_message(id string) bool {
+	boardmutex.Lock()
+	defer boardmutex.Unlock()
+	msg_id := fmt.Sprintf("{%s}", id)
+	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", biofabrica.Messages)
+	has_del := false
+	for i := 0; i < len(biofabrica.Messages); i++ {
+		if strings.Contains(biofabrica.Messages[i], msg_id) {
+			has_del = true
+			m1 := []string{}
+			if i > 0 {
+				m1 = biofabrica.Messages[:i-1]
+			}
+			m2 := []string{}
+			if i < len(biofabrica.Messages)-1 {
+				m2 = biofabrica.Messages[i+1 : len(biofabrica.Messages)-1]
+			}
+			biofabrica.Messages = append(m1, m2...)
+		}
+	}
+	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", biofabrica.Messages)
+	return has_del
+}
+
 func board_add_message(m string, id string) bool {
 	if len(id) > 0 && board_has_message(id) {
 		return false
 	}
+	boardmutex.Lock()
+	defer boardmutex.Unlock()
 	msg_id := id
 	if len(id) == 0 {
 		msg_id = "0"
@@ -4422,7 +4451,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 			cmd := subpars[0]
 			switch cmd {
 			case scp_par_grow:
-				return scp_grow_bio(bioid)
+				ret := scp_grow_bio(bioid)
+				return ret
 
 			case scp_par_cip:
 				bio[ind].ShowVol = false
@@ -4718,8 +4748,11 @@ func scp_run_job_bio(bioid string, job string) bool {
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+					board_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
+				} else {
+					board_del_message(bioid + "ONWATERBUSY")
 				}
 			}
 		} else {
