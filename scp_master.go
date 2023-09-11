@@ -1384,7 +1384,7 @@ func board_del_message(id string) bool {
 	boardmutex.Lock()
 	defer boardmutex.Unlock()
 	msg_id := fmt.Sprintf("{%s}", id)
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
 	has_del := false
 	for i := 0; i < len(biofabrica.Messages); i++ {
 		if strings.Contains(biofabrica.Messages[i], msg_id) {
@@ -1397,11 +1397,11 @@ func board_del_message(id string) bool {
 			if i < len(biofabrica.Messages)-1 {
 				m2 = biofabrica.Messages[i+1:]
 			}
-			fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
+			// fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
 			biofabrica.Messages = append(m1, m2...)
 		}
 	}
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(biofabrica.Messages), biofabrica.Messages)
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(biofabrica.Messages), biofabrica.Messages)
 	return has_del
 }
 
@@ -1452,7 +1452,7 @@ func bio_del_message(bioid string, id string) bool {
 	biomutex.Lock()
 	defer biomutex.Unlock()
 	msg_id := fmt.Sprintf("{%s}", id)
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(bio[ind].Messages), bio[ind].Messages)
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(bio[ind].Messages), bio[ind].Messages)
 	has_del := false
 	for i := 0; i < len(bio[ind].Messages); i++ {
 		if strings.Contains(bio[ind].Messages[i], msg_id) {
@@ -1465,11 +1465,11 @@ func bio_del_message(bioid string, id string) bool {
 			if i < len(bio[ind].Messages)-1 {
 				m2 = bio[ind].Messages[i+1:]
 			}
-			fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
+			// fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
 			bio[ind].Messages = append(m1, m2...)
 		}
 	}
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(bio[ind].Messages), bio[ind].Messages)
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(bio[ind].Messages), bio[ind].Messages)
 	return has_del
 }
 
