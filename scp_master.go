@@ -132,6 +132,7 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
+const scp_screen = "SCREEN"
 const scp_wdpanel = "WDPANEL"
 const scp_config = "CONFIG"
 const scp_out = "OUT"
@@ -747,6 +748,12 @@ func load_bios_conf(filename string) int {
 			} else {
 				fmt.Println("ERROR LOAD BIOS CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
 			}
+			old, ok = addrs_type[screen_addr]
+			if !ok {
+				addrs_type[screen_addr] = DevAddrData{screen_addr, scp_screen, id}
+			} else {
+				fmt.Println("ERROR LOAD BIOS CONF: ADDR", screen_addr, " já cadastrado na tabela de devices com tipo", old)
+			}
 			totalrecords += 1
 		} else if len(r) != 26 {
 			fmt.Println("ERROR BIO CFG: numero de parametros invalido", r)
@@ -935,10 +942,10 @@ func load_biofabrica_conf(filename string) int {
 	if !ok {
 		vbf01, okt := biofabrica_cfg["VBF01"]
 		if okt {
-			board_add_message("AFluxometro de entrada não presente nas configurações. Corrigindo problema automaticamente. Favor verificar configurações da Biofábrica")
+			board_add_message("AFluxometro de entrada não presente nas configurações. Corrigindo problema automaticamente. Favor verificar configurações da Biofábrica", "")
 			biofabrica_cfg["FBF02"] = Biofabrica_cfg{"FBF02", vbf01.Deviceaddr, "C7"}
 		} else {
-			board_add_message("EATENÇÃO: Fluxometro de entrada e Válvula 01 não presentes nas configurações. Acionar time de suporte")
+			board_add_message("EATENÇÃO: Fluxometro de entrada e Válvula 01 não presentes nas configurações. Acionar time de suporte", "")
 		}
 	}
 	return totalrecords
@@ -1199,20 +1206,20 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
-	board_add_message("ERETORNANDO de PARADA de EMERGENCIA")
-	board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos")
+	board_add_message("ERETORNANDO de PARADA de EMERGENCIA", "")
+	board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
 	time.Sleep(600 * time.Second)
 	scp_setup_devices(true)
 	for _, b := range ibc {
 		if b.Status == bio_nonexist || b.Status == bio_error {
-			board_add_message("AFavor checar IBC " + b.IBCID)
+			board_add_message("AFavor checar IBC "+b.IBCID, "")
 		}
 	}
 	for _, b := range bio {
 		if b.Status != bio_nonexist && b.Status != bio_error {
 			pause_device(scp_bioreactor, b.BioreactorID, false)
 		} else {
-			board_add_message("AFavor checar Biorreator " + b.BioreactorID)
+			board_add_message("AFavor checar Biorreator "+b.BioreactorID, "")
 		}
 	}
 	if !schedrunning {
@@ -1222,7 +1229,7 @@ func scp_run_recovery() {
 
 func scp_emergency_pause() {
 	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
-	board_add_message("EPARADA de EMERGENCIA")
+	board_add_message("EPARADA de EMERGENCIA", "")
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, true)
 	}
@@ -1359,10 +1366,27 @@ func scp_sendmsg_orch(cmd string) string {
 	return string(ret)
 }
 
-func board_add_message(m string) {
+func board_has_message(id string) bool {
+	msg_id := fmt.Sprintf("{%s}", id)
+	for _, m := range biofabrica.Messages {
+		if strings.Contains(m, msg_id) {
+			return true
+		}
+	}
+	return false
+}
+
+func board_add_message(m string, id string) bool {
+	if len(id) > 0 && board_has_message(id) {
+		return false
+	}
+	msg_id := id
+	if len(id) == 0 {
+		msg_id = "0"
+	}
 	n := len(biofabrica.Messages)
 	stime := time.Now().Format("15:04")
-	msg := fmt.Sprintf("%c%s [%s]", m[0], m[1:], stime)
+	msg := fmt.Sprintf("%c%s [%s]{%s}", m[0], m[1:], stime, msg_id)
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
@@ -1590,7 +1614,7 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 0 && !devmode && biofabrica.Status != scp_fail {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
-					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA")
+					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA", "")
 				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
 				}
@@ -2089,9 +2113,17 @@ func scp_refresh_status() {
 									fmt.Println("ERROR SCP REFRESH STATUS: TOMEM não existe na tabela", dev_id)
 								}
 
+							case scp_screen:
+								fmt.Println("ERROR SCP REFRESH STATUS: FALHA na TELA do Biorreator", dev_id)
+
 							case scp_biofabrica:
 								fmt.Println("DEBUG SCP REFRESH STATUS: FALHA na Biofabrica", dev_id)
 								biofabrica.Status = scp_fail
+								if strings.Contains(dev_id, "VBF03") || strings.Contains(dev_id, "VBF04") || strings.Contains(dev_id, "VBF05") {
+									biofabrica.PIntStatus = bio_error
+								} else if strings.Contains(dev_id, "VBF06") || strings.Contains(dev_id, "VBF07") || strings.Contains(dev_id, "VBF08") || strings.Contains(dev_id, "VBF09") {
+									biofabrica.POutStatus = bio_error
+								}
 
 							default:
 								fmt.Println("ERROR SCP REFRESH STATUS: TIPO INVALIDO na tabela", dev_addr)
@@ -2882,7 +2914,7 @@ func scp_run_linewash(lines string) bool {
 		return false
 	}
 
-	board_add_message("IEnxague concluído Linhas " + lines)
+	board_add_message("IEnxague concluído Linhas "+lines, "")
 	return true
 }
 
@@ -2995,7 +3027,7 @@ func scp_run_linecip(lines string) bool {
 
 	}
 
-	board_add_message("ICIP concluído Linhas " + lines)
+	board_add_message("ICIP concluído Linhas "+lines, "")
 	return true
 }
 
@@ -3024,7 +3056,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 02: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase " + devid + " para " + bio[ind].OutID)
+		board_add_message("CDesenvase "+devid+" para "+bio[ind].OutID, "")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -3203,7 +3235,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		bio[ind].Withdraw = 0
 
-		board_add_message("IDesenvase concluido")
+		board_add_message("IDesenvase concluido", "")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 
 		set_valvs_value(pilha, 0, false)
@@ -3236,10 +3268,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			var pathclean string = ""
 			if dest_type == scp_out || dest_type == scp_drop {
 				pathclean = "TOTEM02-CLEAN4"
-				board_add_message("IEnxague LINHAS 2/4")
+				board_add_message("IEnxague LINHAS 2/4", "")
 			} else if dest_type == scp_ibc {
 				pathclean = "TOTEM02-CLEAN3"
-				board_add_message("IEnxague LINHAS 2/3")
+				board_add_message("IEnxague LINHAS 2/3", "")
 			} else {
 				fmt.Println("ERROR RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 				return -1
@@ -3290,7 +3322,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				return -1
 			}
 			set_valvs_value(vpath, 0, false)
-			board_add_message("IEnxague concluído")
+			board_add_message("IEnxague concluído", "")
 		}
 		bio[ind].Status = prev_status
 
@@ -3312,7 +3344,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
 			return -1
 		}
-		board_add_message("CDesenvase iniciado" + devid + " para " + ibc[ind].OutID)
+		board_add_message("CDesenvase iniciado"+devid+" para "+ibc[ind].OutID, "")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -3437,7 +3469,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 		}
 		ibc[ind].Withdraw = 0
-		board_add_message("IDesenvase IBC " + devid + " concluido")
+		board_add_message("IDesenvase IBC "+devid+" concluido", "")
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
@@ -3467,7 +3499,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				ibc[ind].Status = prev_status
 				return -1
 			}
-			board_add_message("ILimpando LINHA 4")
+			board_add_message("ILimpando LINHA 4", "")
 			if set_valvs_value(vpath, 1, true) < 1 {
 				fmt.Println("ERROR RUN WITHDRAW 42: Falha ao abrir valvulas CLEAN linha", pathstr)
 				set_valvs_value(vpath, 0, false)
@@ -3505,7 +3537,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			set_valvs_value(vpath, 0, false)
 			time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			board_add_message("IEnxague concluído")
+			board_add_message("IEnxague concluído", "")
 			if dest_type == scp_ibc {
 				pathclean = "TOTEM02-CLEAN3"
 				pathstr = paths[pathclean].Path
@@ -3521,7 +3553,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					ibc[ind].Status = prev_status
 					return -1
 				}
-				board_add_message("ILimpando LINHA 3")
+				board_add_message("ILimpando LINHA 3", "")
 				if set_valvs_value(vpath, 1, true) < 1 {
 					fmt.Println("ERROR RUN WITHDRAW 52: Falha ao abrir valvulas CLEAN linha", pathstr)
 					set_valvs_value(vpath, 0, false)
@@ -3558,7 +3590,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					return -1
 				}
 				set_valvs_value(vpath, 0, false)
-				board_add_message("IEnxague concluído")
+				board_add_message("IEnxague concluído", "")
 			}
 		}
 		ibc[ind].Status = prev_status
@@ -4311,7 +4343,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		board_add_message("CIniciando Cultivo " + organs[orgcode].Orgname + " no " + bioid)
+		board_add_message("CIniciando Cultivo "+organs[orgcode].Orgname+" no "+bioid, "")
 		bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname)
 
 	case scp_job_set:
@@ -4397,7 +4429,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				qini = append(qini, cipbio...)
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
-				board_add_message("IExecutando CIP no biorreator " + bioid)
+				board_add_message("IExecutando CIP no biorreator "+bioid, "")
 				return true
 
 			case scp_par_withdraw:
@@ -4449,7 +4481,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				return false
 			}
 			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
-			board_add_message("ABiorreator " + bioid + " aguardando " + msgask)
+			board_add_message("ABiorreator "+bioid+" aguardando "+msgask, "")
 			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR")
 			bio[ind].Continue = false
 			t_start := time.Now()
@@ -4497,7 +4529,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			bio[ind].Status = bio_ready
 		}
 		bio[ind].ShowVol = true
-		board_add_message("CProcesso concluído no " + bioid)
+		board_add_message("CProcesso concluído no "+bioid, "")
 		bio[ind].UndoQueue = []string{}
 		bio[ind].RedoQueue = []string{}
 		bio[ind].MustOffQueue = []string{}
@@ -4891,7 +4923,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				qini = append(qini, cipibc...)
 				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", ibc[ind].Queue)
-				board_add_message("IExecutando CIP no IBC " + ibcid)
+				board_add_message("IExecutando CIP no IBC "+ibcid, "")
 				return true
 
 			case scp_par_withdraw:
@@ -4900,7 +4932,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					outid := subpars[1]
 					ibc[ind].OutID = outid
 				}
-				board_add_message("IDesenvase Automático do IBC " + ibcid + " para " + ibc[ind].OutID)
+				board_add_message("IDesenvase Automático do IBC "+ibcid+" para "+ibc[ind].OutID, "")
 				if scp_run_withdraw(scp_ibc, ibcid, false, true) < 0 {
 					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
@@ -4980,7 +5012,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 
 	case scp_job_done:
 		ibc[ind].Status = bio_ready
-		board_add_message("CProcesso concluído no " + ibcid)
+		board_add_message("CProcesso concluído no "+ibcid, "")
 		ibc[ind].UndoQueue = []string{}
 		ibc[ind].RedoQueue = []string{}
 		ibc[ind].MustOffQueue = []string{}
@@ -5553,7 +5585,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				scp_turn_heater(bio[ind].BioreactorID, 0, false)
 			}
 			if !bio[ind].MustStop {
-				board_add_message("ABiorreator " + main_id + " pausado")
+				board_add_message("ABiorreator "+main_id+" pausado", "")
 				bio_add_message(main_id, "ABiorreator pausado")
 			} else {
 				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido")
@@ -5578,7 +5610,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].MustStop = false
 			bio[ind].LastStatus = bio_pause
 			if !bio[ind].MustStop {
-				board_add_message("APausa no Biorreator " + main_id + " liberada")
+				board_add_message("APausa no Biorreator "+main_id+" liberada", "")
 				bio_add_message(main_id, "APausa no Biorreator liberada")
 			}
 			if !schedrunning {
@@ -5607,7 +5639,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].MustPause = true
 			ibc[ind].Status = bio_pause
 			if !ibc[ind].MustStop {
-				board_add_message("AIBC " + main_id + " pausado")
+				board_add_message("AIBC "+main_id+" pausado", "")
 			}
 
 		} else if !pause {
@@ -5629,7 +5661,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].MustStop = false
 			ibc[ind].LastStatus = bio_pause
 			if !ibc[ind].MustStop {
-				board_add_message("APausa no IBC " + main_id + " liberada")
+				board_add_message("APausa no IBC "+main_id+" liberada", "")
 			}
 			if !schedrunning {
 				go scp_scheduler()
@@ -5701,12 +5733,12 @@ func stop_device(devtype string, main_id string) bool {
 			return false
 		}
 		if ibc[ind].MustStop {
-			board_add_message("EIBC " + main_id + " já sendo interrompido, aguarde")
+			board_add_message("EIBC "+main_id+" já sendo interrompido, aguarde", "")
 			return false
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		ibc[ind].Withdraw = 0
-		board_add_message("AIBC " + main_id + " interrompido")
+		board_add_message("AIBC "+main_id+" interrompido", "")
 		if ibc[ind].Status != bio_empty || true { // corrigir
 			ibc[ind].MustStop = true
 			pause_device(devtype, main_id, true)
@@ -5846,7 +5878,7 @@ func scp_process_conn(conn net.Conn) {
 					case scp_par_resetdata:
 						if bio[ind].Status == bio_empty || bio[ind].Status == bio_ready {
 							bio_add_message(bioid, "ATodos os dados do Biorreator serão refinidos")
-							board_add_message("ATodos os dados do " + bioid + " serão refinidos")
+							board_add_message("ATodos os dados do "+bioid+" serão refinidos", "")
 							bio[ind].OrgCode = "EMPTY"
 							bio[ind].Organism = ""
 							bio[ind].VolInOut = 0
@@ -5999,7 +6031,7 @@ func scp_process_conn(conn net.Conn) {
 						}
 					case scp_par_resetdata:
 						if ibc[ind].Status == bio_empty || ibc[ind].Status == bio_ready {
-							board_add_message("ATodos os dados do " + ibcid + " serão refinidos")
+							board_add_message("ATodos os dados do "+ibcid+" serão refinidos", "")
 							ibc[ind].OrgCode = "EMPTY"
 							ibc[ind].Organism = ""
 							ibc[ind].VolInOut = 0
@@ -6016,7 +6048,7 @@ func scp_process_conn(conn net.Conn) {
 							ibc[ind].Step[1] = 0
 							ibc[ind].ShowVol = true
 						} else {
-							board_add_message("ANão é possível redifinir os dados do " + ibcid + " se não estiver VAZIO ou PRONTO")
+							board_add_message("ANão é possível redifinir os dados do "+ibcid+" se não estiver VAZIO ou PRONTO", "")
 						}
 
 					}
@@ -6064,7 +6096,7 @@ func scp_process_conn(conn net.Conn) {
 					conn.Write([]byte(buf))
 
 				case scp_par_reconfigdev:
-					board_add_message("ATodos os Equipamentos serão reconfigurados")
+					board_add_message("ATodos os Equipamentos serão reconfigurados", "")
 					scp_setup_devices(true)
 
 				case scp_par_deviceaddr:
