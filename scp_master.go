@@ -3062,7 +3062,7 @@ func scp_run_linecip(lines string) bool {
 				return false
 			}
 		} else {
-			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path ", vpath_peris)
+			fmt.Println("ERROR SCP RUN LINEWASH: ERRO nas valvulas no path - alguma valvula aberta ", vpath_peris)
 			return false
 		}
 
