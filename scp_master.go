@@ -3362,6 +3362,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		t_start := time.Now()
 		ibc7_ind := get_ibc_index(last_ibc)
+		ibc7_vol_ini := float64(-1)
+		if ibc7_ind >= 0 {
+			ibc7_vol_ini = ibc[ibc7_ind].VolInOut
+		}
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
@@ -3380,7 +3384,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			ibc[ind].VolumeOut = uint32(vout)
 			if ibc[ind].OutID == last_ibc {
 				if ibc7_ind >= 0 {
-					ibc[ibc7_ind].VolInOut += vol_bio_out_now
+					ibc[ibc7_ind].VolInOut = ibc7_vol_ini + vol_bio_out_now
 					ibc[ibc7_ind].Volume = uint32(ibc[ibc7_ind].VolInOut)
 					scp_update_ibclevel(ibc[ibc7_ind].IBCID)
 				} else {
