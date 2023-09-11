@@ -1417,7 +1417,9 @@ func board_add_message(m string, id string) bool {
 	}
 	n := len(biofabrica.Messages)
 	stime := time.Now().Format("15:04")
-	msg := fmt.Sprintf("%c%s [%s]{%s}", m[0], m[1:], stime, msg_id)
+	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
+	m_new = strings.Replace(m, "DROP", "Descarte", -1)
+	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new[0], m_new[1:], stime, msg_id)
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
@@ -1488,7 +1490,9 @@ func bio_add_message(bioid string, m string, id string) bool {
 	}
 	n := len(bio[ind].Messages)
 	stime := time.Now().Format("15:04")
-	msg := fmt.Sprintf("%c%s [%s]{%s}", m[0], m[1:], stime, msg_id)
+	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
+	m_new = strings.Replace(m, "DROP", "Descarte", -1)
+	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new[0], m_new[1:], stime, msg_id)
 	if n < bioreactor_max_msg {
 		bio[ind].Messages = append(bio[ind].Messages, msg)
 	} else {
