@@ -1390,7 +1390,7 @@ func board_del_message(id string) bool {
 			has_del = true
 			m1 := []string{}
 			if i > 0 {
-				m1 = biofabrica.Messages[:i-1]
+				m1 = biofabrica.Messages[:i]
 			}
 			m2 := []string{}
 			if i < len(biofabrica.Messages)-1 {
