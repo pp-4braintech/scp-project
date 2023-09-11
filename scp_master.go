@@ -6083,7 +6083,7 @@ func scp_process_conn(conn net.Conn) {
 								bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10", "")
 							} else {
 								fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
-								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada")
+								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada", "")
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
