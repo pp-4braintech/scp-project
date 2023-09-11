@@ -3141,6 +3141,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
 			fmt.Println("ERROR RUN WITHDRAW 02: falha de valvula no path", pathid)
+			board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+			bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 			return -1
 		}
 		board_add_message("CDesenvase "+devid+" para "+bio[ind].OutID, "")
@@ -3435,6 +3437,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
 			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
+			board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 			return -1
 		}
 		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
