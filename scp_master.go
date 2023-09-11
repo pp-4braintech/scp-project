@@ -1383,7 +1383,7 @@ func board_del_message(id string) bool {
 	boardmutex.Lock()
 	defer boardmutex.Unlock()
 	msg_id := fmt.Sprintf("{%s}", id)
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", biofabrica.Messages)
+	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
 	has_del := false
 	for i := 0; i < len(biofabrica.Messages); i++ {
 		if strings.Contains(biofabrica.Messages[i], msg_id) {
@@ -1396,11 +1396,11 @@ func board_del_message(id string) bool {
 			if i < len(biofabrica.Messages)-1 {
 				m2 = biofabrica.Messages[i+1:]
 			}
-			fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", m1, " m2=", m2)
+			fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
 			biofabrica.Messages = append(m1, m2...)
 		}
 	}
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", biofabrica.Messages)
+	fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(biofabrica.Messages), biofabrica.Messages)
 	return has_del
 }
 
