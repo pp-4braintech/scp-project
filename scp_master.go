@@ -4562,30 +4562,30 @@ func scp_run_job_bio(bioid string, job string) bool {
 	case scp_job_ask:
 		if len(subpars) > 0 {
 			msg := subpars[0]
-			scraddr := bio_cfg[bioid].Screenaddr
-			var cmd1 string = ""
+			// scraddr := bio_cfg[bioid].Screenaddr
+			// var cmd1 string = ""
 			var msgask string = ""
 			// scrmain := fmt.Sprintf("CMD/%s/PUT/S200,1/END", scraddr)
 			switch msg {
 			case scp_msg_cloro:
-				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
+				// cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,2/END", scraddr)
 				msgask = "CLORO"
 			case scp_msg_meio:
-				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,3/END", scraddr)
+				// cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,3/END", scraddr)
 				msgask = "MEIO"
 			case scp_msg_inoculo:
-				cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
+				// cmd1 = fmt.Sprintf("CMD/%s/PUT/S400,1/END", scraddr)
 				msgask = "INOCULO"
 			default:
 				fmt.Println("ERROR SCP RUN JOB:", bioid, " ASK invalido", subpars)
 				return false
 			}
-			ret1 := scp_sendmsg_orch(cmd1)
-			fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
-			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao enviar PUT screen", scraddr, ret1)
-				return false
-			}
+			// ret1 := scp_sendmsg_orch(cmd1)
+			// fmt.Println("DEBUG SCP RUN JOB:: CMD =", cmd1, "\tRET =", ret1)
+			// if !strings.Contains(ret1, scp_ack) && !devmode {
+			// 	fmt.Println("ERROR SCP RUN JOB:", bioid, " ERROR ao enviar PUT screen", scraddr, ret1)
+			// 	return false
+			// }
 			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
 			board_add_message("ABiorreator "+bioid+" aguardando "+msgask, "")
 			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR", "")
