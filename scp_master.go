@@ -2270,7 +2270,7 @@ func scp_get_alldata() {
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
-							} else if b.Valvs[4] == 1 && b.Valvs[5] == 1 && b.Pumpstatus && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
+							} else if b.Valvs[4] == 1 && b.Valvs[5] == 1 && b.Pumpstatus && (biofabrica.Valvs[6] == 1 || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_out
@@ -2501,7 +2501,7 @@ func scp_get_alldata() {
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
-							} else if b.Valvs[3] == 1 && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
+							} else if b.Valvs[3] == 1 && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_out
