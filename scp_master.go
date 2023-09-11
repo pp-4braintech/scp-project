@@ -1392,6 +1392,7 @@ func board_add_message(m string, id string) bool {
 	} else {
 		biofabrica.Messages = append(biofabrica.Messages[2:], msg)
 	}
+	return true
 }
 
 func bio_add_message(bioid string, m string) {
