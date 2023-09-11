@@ -1394,8 +1394,9 @@ func board_del_message(id string) bool {
 			}
 			m2 := []string{}
 			if i < len(biofabrica.Messages)-1 {
-				m2 = biofabrica.Messages[i+1 : len(biofabrica.Messages)-1]
+				m2 = biofabrica.Messages[i+1:]
 			}
+			fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", m1, " m2=", m2)
 			biofabrica.Messages = append(m1, m2...)
 		}
 	}
