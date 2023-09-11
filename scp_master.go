@@ -1399,7 +1399,7 @@ func board_del_message(id string) bool {
 			biofabrica.Messages = append(m1, m2...)
 		}
 	}
-	fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", biofabrica.Messages)
+	fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", biofabrica.Messages)
 	return has_del
 }
 
