@@ -3162,6 +3162,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					}
 				} else if val == 1 {
 					fmt.Println("ERROR RUN WITHDRAW 04: valvula ja aberta", p)
+					board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+					bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 					set_valvs_value(pilha, 0, false) // undo
 					return -1
 				} else {
@@ -3176,6 +3178,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
+		board_del_message(devid + "WITHDRAWBUSY")
+		bio_del_message(devid, "WITHDRAWBUSY")
 		// fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
 		bio[ind].Status = bio_unloading
@@ -3449,6 +3453,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					}
 				} else if val == 1 {
 					fmt.Println("ERROR RUN WITHDRAW 30: valvula ja aberta", p)
+					board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+					// bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 					return -1
 				} else {
 					fmt.Println("ERROR RUN WITHDRAW 31: valvula com erro", p)
@@ -3460,6 +3466,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
+		board_del_message(devid + "WITHDRAWBUSY")
+		// bio_del_message(devid, "WITHDRAWBUSY")
 		vol_ini := ibc[ind].Volume
 		ibc[ind].VolumeOut = ibc[ind].Withdraw
 		ibc[ind].Status = bio_unloading
@@ -4806,10 +4814,12 @@ func scp_run_job_bio(bioid string, job string) bool {
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
 					board_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
+					bio_add_message(bioid, "ABiorreator aguardando liberação da Linha", "ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				} else {
 					board_del_message(bioid + "ONWATERBUSY")
+					bio_del_message(bioid, "ONWATERBUSY")
 				}
 			}
 		} else {
