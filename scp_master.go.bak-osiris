@@ -39,8 +39,6 @@ const (
 
 	bio_escala = 1
 
-	last_ibc = "IBC07"
-
 	scp_ack     = "ACK"
 	scp_err     = "ERR"
 	scp_get     = "GET"
@@ -73,7 +71,6 @@ const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
 const scp_dev_volfluxo_out = "VOLFLUXO_OUT"
 const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
-const scp_dev_heater = "HEATER"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -108,8 +105,6 @@ const scp_par_totaltime = "TOTALTIME"
 const scp_par_manydraw = "MANYDRAW"
 const scp_par_manyout = "MANYOUT"
 const scp_par_continue = "CONTINUE"
-const scp_par_reconfigdev = "RECONFIGDEV"
-const scp_par_resetdata = "RESETDATA"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -143,7 +138,7 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
 const scp_refresstatus = 15
-const scp_refresscreens = 10 // em segundos
+const scp_refresscreens = 30 // em segundos
 const scp_refreshsleep = 100 // em ms
 const scp_refreshsync = 5    // em segundos
 const scp_timeout_ms = 2500
@@ -164,7 +159,7 @@ const scp_timelinecip = 20       // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
+const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto
 
 const bio_withdrawstep = 50
 
@@ -315,7 +310,6 @@ type IBC struct {
 	Vol0         int
 	Vol1         int32
 	Vol2         int32
-	VolInOut     float64
 	Volume       uint32
 	Level        uint8
 	Pumpstatus   bool
@@ -486,13 +480,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
-	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
+	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0},
 }
 
 var totem = []Totem{
@@ -548,9 +542,6 @@ func calc_mediana(x []float64) float64 {
 	var mediana float64
 	sort.Float64s(x)
 	n := len(x)
-	if n == 0 {
-		return 0
-	}
 	c := int(n / 2)
 	if n >= 5 {
 		s := x[c-1] + x[c] + x[c+1]
@@ -929,16 +920,6 @@ func load_biofabrica_conf(filename string) int {
 			fmt.Println("WARN LOAD BIOFABRICA CONF: ADDR", dev_addr, " já cadastrado na tabela de devices com tipo", old)
 		}
 	}
-	_, ok := biofabrica_cfg["FBF02"]
-	if !ok {
-		vbf01, okt := biofabrica_cfg["VBF01"]
-		if okt {
-			board_add_message("AFluxometro de entrada não presente nas configurações. Corrigindo problema automaticamente. Favor verificar configurações da Biofábrica")
-			biofabrica_cfg["FBF02"] = Biofabrica_cfg{"FBF02", vbf01.Deviceaddr, "C7"}
-		} else {
-			board_add_message("EATENÇÃO: Fluxometro de entrada e Válvula 01 não presentes nas configurações. Acionar time de suporte")
-		}
-	}
 	return totalrecords
 }
 
@@ -1197,9 +1178,9 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
-	board_add_message("ERETORNANDO de PARADA de EMERGENCIA")
-	board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos")
-	time.Sleep(600 * time.Second)
+	board_add_message("ERETORNANDO de EMERGENCIA")
+	board_add_message("ANecessário aguardar 5 minutos até reestabelecimento dos equipamentos")
+	time.Sleep(300 * time.Second)
 	scp_setup_devices(true)
 	for _, b := range ibc {
 		if b.Status == bio_nonexist || b.Status == bio_error {
@@ -1612,36 +1593,34 @@ func scp_get_ph_voltage(bioid string) float64 {
 			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 		}
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
-
-		n := 0
-		var data []float64
-		for i := 0; i <= 7; i++ {
-			ret_ph := scp_sendmsg_orch(cmd_ph)
+		ret_ph := scp_sendmsg_orch(cmd_ph)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
+		ret_ph = scp_sendmsg_orch(cmd_ph)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
+		for i := 0; i < 5; i++ {
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
 				phint, err := strconv.Atoi(params[1])
-				fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", bioid, phint, "passo=", i)
 				if err == nil && phint >= 300 && phint <= 500 {
-					data = append(data, float64(phint))
-					n++
+					fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", phint, "passo=", i)
+					break
 				}
-			} else {
-				fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado invalido =", bioid, ret_ph, "passo=", i)
 			}
+			ret_ph = scp_sendmsg_orch(cmd_ph)
+			fmt.Println("DEBUG SCP GET PH VOLTAGE: ", bioid, cmd_ph, ret_ph)
 		}
-		mediana := calc_mediana(data)
-		phfloat := mediana / 100.0
-
-		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, ret_ph)
 		if aerostatus {
 			if !scp_turn_aero(bioid, false, 1, aeroratio) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
 		}
-		if phfloat >= 3.0 && phfloat <= 5.0 {
+		params := scp_splitparam(ret_ph, "/")
+		if params[0] == scp_ack {
+			phint, _ := strconv.Atoi(params[1])
+			phfloat := float64(phint) / 100.0
+			fmt.Println("DEBUG SCP GET PH VOLTAGE: Voltagem PH", bioid, phint, phfloat)
 			return phfloat
-		} else {
-			fmt.Println("ERROR SCP GET PH VOLTAGE: Valor invalido de PH Voltage", bioid, phfloat)
 		}
 	} else {
 		fmt.Println("ERROR SCP GET PH VOLTAGE: ADDR Biorreator nao existe", bioid)
@@ -1722,6 +1701,9 @@ func scp_update_screen_phtemp(bioid string) {
 	if !strings.Contains(ret, "ACK") {
 		return
 	}
+	// if all {
+	// 	scp_update_screen_times(bioid)
+	// }
 }
 
 func scp_update_screen_steps(bioid string) {
@@ -1818,32 +1800,23 @@ func scp_get_temperature(bioid string) float64 {
 	tempdev := bio_cfg[bioid].Temp_dev
 	if len(bioaddr) > 0 {
 		cmd_temp := "CMD/" + bioaddr + "/GET/" + tempdev + "/END"
-
-		n := 0
-		var data []float64
-		for i := 0; i <= 4; i++ {
-			ret_temp := scp_sendmsg_orch(cmd_temp)
-			params := scp_splitparam(ret_temp, "/")
-			if len(params) > 1 {
-				tempint, err := strconv.Atoi(params[1])
-				fmt.Println("DEBUG GET TEMPERATURE: Valor retornado =", bioid, tempint, "passo=", i)
-				if err == nil && tempint > 0 && tempint <= 1200 {
-					data = append(data, float64(tempint))
-					n++
+		ret_temp := scp_sendmsg_orch(cmd_temp)
+		ret_temp = scp_sendmsg_orch(cmd_temp)
+		params := scp_splitparam(ret_temp, "/")
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "ret=", ret_temp, "len=", len(ret_temp), "params=", params)
+		if params[0] == scp_ack {
+			tempint, err := strconv.Atoi(params[1])
+			if err == nil {
+				tempfloat := float64(tempint) / 10.0
+				if tempfloat > 0 && tempfloat < 120 {
+					return tempfloat
+				} else {
+					fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, ret_temp, tempfloat)
+					return -1
 				}
 			} else {
-				fmt.Println("ERROR GET TEMPERATURE: Valor retornado =", bioid, ret_temp, "passo=", i)
+				fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, nao numerico", bioid, ret_temp)
 			}
-		}
-		mediana := calc_mediana(data)
-		tempfloat := mediana / 10.0
-
-		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "mediana=", mediana, "tempfloat=", tempfloat)
-		if tempfloat > 0 && tempfloat < 120 {
-			return tempfloat
-		} else {
-			fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, tempfloat)
-			return -1
 		}
 	} else {
 		fmt.Println("ERROR SCP GET TEMPERATURE: ADDR Biorreator nao existe", bioid)
@@ -2145,29 +2118,10 @@ func scp_update_biolevel(bioid string) {
 	level_int := uint8(level)
 	if level_int != bio[ind].Level {
 		bio[ind].Level = level_int
-		// levels := fmt.Sprintf("%d", level_int)
-		// cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
-		// ret := scp_sendmsg_orch(cmd)
-		// fmt.Println("SCREEN:", cmd, level, levels, ret)
-	}
-}
-
-func scp_update_ibclevel(ibcid string) {
-	ind := get_ibc_index(ibcid)
-	if ind < 0 {
-		return
-	}
-	level := (float64(ibc[ind].Volume) / float64(ibc_cfg[ibcid].Maxvolume)) * 10.0
-	if level > 10 {
-		level = 10
-	}
-	level_int := uint8(level)
-	if level_int != ibc[ind].Level {
-		ibc[ind].Level = level_int
-		// levels := fmt.Sprintf("%d", level_int)
-		// cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
-		// ret := scp_sendmsg_orch(cmd)
-		// fmt.Println("SCREEN:", cmd, level, levels, ret)
+		levels := fmt.Sprintf("%d", level_int)
+		cmd := "CMD/" + bio_cfg[bioid].Screenaddr + "/PUT/S231," + levels + "/END"
+		ret := scp_sendmsg_orch(cmd)
+		fmt.Println("SCREEN:", cmd, level, levels, ret)
 	}
 }
 
@@ -2201,19 +2155,18 @@ func scp_get_alldata() {
 			hasupdatevolout = false
 
 			for _, b := range bio {
-
 				if len(bio_cfg[b.BioreactorID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_bio_index(b.BioreactorID)
 					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime || bio[ind].Status == bio_update
 
 					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Valvs[2] == 1 {
-						if rand.Intn(21) == 7 {
+						if t_elapsed_bio%5 == 0 {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
 									scp_turn_heater(b.BioreactorID, 0, false)
-								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+								} else if bio[ind].Heater && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								}
 							}
@@ -2221,7 +2174,7 @@ func scp_get_alldata() {
 					}
 
 					if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
-						if rand.Intn(15) == 7 {
+						if t_elapsed_bio%5 == 0 {
 							go scp_update_ph(b.BioreactorID)
 						}
 					}
@@ -2291,22 +2244,6 @@ func scp_get_alldata() {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
 							}
-
-							// NOVO - Em 08/09/23
-							if b.Status == bio_update {
-								if bio[ind].Volume > 0 {
-									bio[ind].Status = bio_ready
-								} else {
-									bio[ind].Status = bio_empty
-								}
-							}
-							// if volc >= 0 {
-							// 	bio[ind].Volume = uint32(volc)
-							// 	scp_update_biolevel(b.BioreactorID)
-							// 	if volc == 0 && vol0 == 0 && bio[ind].Status != bio_producting && bio[ind].Status != bio_loading && bio[ind].Status != bio_cip {
-							// 		bio[ind].Status = bio_empty
-							// 	}
-							// }
 
 						} else {
 							var vol0 float64 = -1
@@ -2443,24 +2380,19 @@ func scp_get_alldata() {
 								}
 							}
 						}
-
-						if devmode && bio[ind].Status == bio_update {
-							if bio[ind].Volume == 0 {
-								bio[ind].Status = bio_empty
-							} else {
-								bio[ind].Status = bio_ready
-							}
-						}
-
 					}
-
+					if devmode && bio[ind].Status == bio_update {
+						if bio[ind].Volume == 0 {
+							bio[ind].Status = bio_empty
+						} else {
+							bio[ind].Status = bio_ready
+						}
+					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
 				}
-
 				time.Sleep(scp_refreshwait * time.Millisecond)
 			}
-
 			if mustupdate_bio {
 				bio_seq++
 				if bio_seq >= len(bio) {
@@ -2477,212 +2409,160 @@ func scp_get_alldata() {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
 					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime || ibc[ind].Status == bio_update
-
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {
 							fmt.Println("DEBUG GET ALLDATA: Lendo dados do IBC", b.IBCID)
 						}
 
-						if biofabrica.Useflowin {
-							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 {
-								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
-								if count >= 0 {
-									vol_tmp = vol_tmp // * flow_corfactor_in1
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
-									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-									if vol_tmp > lastvolin && lastvolin > 0 {
-										ibcvolin := vol_tmp - lastvolin
-										ibc[ind].VolInOut += ibcvolin
-										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
-										// scp_update_biolevel(b.BioreactorID)
-									}
-									lastvolin = vol_tmp
-									hasupdatevolin = true
-								} else {
-									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
-								}
-							} else if b.Valvs[3] == 1 && (biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
-								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
-								if count >= 0 {
-									vol_tmp = vol_tmp // * flow_corfactor_out
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
-									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
-									if vol_tmp > lastvolout && lastvolout > 0 {
-										ibcvolout := vol_tmp - lastvolout
-										ibc[ind].VolInOut -= ibcvolout
-										if ibc[ind].VolInOut < 0 {
-											ibc[ind].VolInOut = 0
-										}
-										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
-										// scp_update_biolevel(b.BioreactorID)
-									}
-									lastvolout = vol_tmp
-									hasupdatevolout = true
-								} else {
-									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
-								}
-							}
-
-							if ibc[ind].Status == bio_update {
-								if ibc[ind].Volume == 0 {
-									ibc[ind].Status = bio_empty
-								} else {
-									ibc[ind].Status = bio_ready
-								}
-							}
-
-						} else {
-
-							var vol0 float64 = -1
-							var dint int
+						var vol0 float64 = -1
+						var dint int
+						dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
+						if dint <= 0 || dint > 1 {
 							dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-							if dint <= 0 || dint > 1 {
-								dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-							}
-							if dint >= 0 {
-								ibc[ind].Vol0 = dint
-							}
-							if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
-								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
-							} else {
-								vol0 = float64(dint)
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
-							}
+						}
+						if dint >= 0 {
+							ibc[ind].Vol0 = dint
+						}
+						if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
+							fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
+						} else {
+							vol0 = float64(dint)
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
+						}
 
-							var vol1, vol1_pre float64
-							vol1 = -1
+						var vol1, vol1_pre float64
+						vol1 = -1
+						dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
+						if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
 							dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
-							if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
-								dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
-							}
+						}
 
-							if vol0 == 0 {
-								if dint > 0 && float32(dint) >= (ibc_v1_zero*0.8) && float32(dint) <= (ibc_v1_zero*1.2) {
-									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.IBCID, dint)
-									//
-									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-									//
-									// ibc[ind].Vol_zero[0] = float32(dint)
-								} else {
-									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
-								}
-							}
-							if dint > 0 && vol1_pre >= 0 {
-								vol1 = 10 * (math.Trunc(vol1_pre / 10))
-							}
-							ibc[ind].Vol1 = int32(vol1_pre)
-							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre)
-
-							var vol2, vol2_pre float64
-							vol2 = -1
-							dint, vol2_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vollaser)
-							if vol0 == 0 {
-								if dint > 0 && float32(dint) >= (ibc_v2_zero*0.8) && float32(dint) <= (ibc_v2_zero*1.2) {
-									fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER", b.IBCID, dint)
-									//
-									// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
-									//
-									// ibc[ind].Vol_zero[1] = float32(dint)
-								} else {
-									fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
-								}
-							}
-							if dint > 0 && vol2_pre >= 0 {
-								vol2 = 10 * (math.Trunc(vol2_pre / 10))
-							}
-							ibc[ind].Vol2 = int32(vol2_pre)
-							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre)
-
-							// cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
-							// ret2 := scp_sendmsg_orch(cmd2)
-							// params = scp_splitparam(ret2, "/")
-							// vol2 = -1
-							// if params[0] == scp_ack {
-							// 	dint, _ := strconv.Atoi(params[1])
-							// 	area = 0
-							// 	dfloat = 0
-							// 	if vol0 == 0 && (dint > 0 && float32(dint) >= (ibc_v2_zero*0.7) && float32(dint) <= (ibc_v2_zero*1.3)) {
-							// 		fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
-							// 		b.Vol_zero[1] = float32(dint)
-							// 	}
-							// 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-							// 	dfloat = float64(b.Vol_zero[1]) - float64(dint)
-							// 	vol2_pre := area * dfloat
-							// 	if dint > 0 {
-							// 		if vol2_pre >= 0 {
-							// 			vol2 = 10 * (math.Trunc(vol2_pre / 10))
-							// 		} else {
-							// 			vol2 = 0
-							// 		}
-							// 		ibc[ind].Vol2 = int32(vol2_pre)
-							// 	} else {
-							// 		ibc[ind].Vol2 = -1
-							// 	}
-
-							// 	fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
-							// } else {
-							// 	fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
-							// }
-
-							var volc float64
-							volc = float64(ibc[ind].Volume)
-							if vol0 == 0 {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
-								volc = 0
-							} else if vol1 < 0 && vol2 < 0 {
-								fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
+						if vol0 == 0 {
+							if dint > 0 && float32(dint) >= (ibc_v1_zero*0.8) && float32(dint) <= (ibc_v1_zero*1.2) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 USOM", b.IBCID, dint)
+								//
+								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+								//
+								// ibc[ind].Vol_zero[0] = float32(dint)
 							} else {
-								if ibc[ind].Valvs[3] == 1 { // Desenvase
+								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
+							}
+						}
+						if dint > 0 && vol1_pre >= 0 {
+							vol1 = 10 * (math.Trunc(vol1_pre / 10))
+						}
+						ibc[ind].Vol1 = int32(vol1_pre)
+						fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre)
+
+						var vol2, vol2_pre float64
+						vol2 = -1
+						dint, vol2_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vollaser)
+						if vol0 == 0 {
+							if dint > 0 && float32(dint) >= (ibc_v2_zero*0.8) && float32(dint) <= (ibc_v2_zero*1.2) {
+								fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudando Vol0 LASER", b.IBCID, dint)
+								//
+								// ATENCAO, DELISGUEI ATE IMPLEMENTAR O ZERO MANUAL
+								//
+								// ibc[ind].Vol_zero[1] = float32(dint)
+							} else {
+								fmt.Println("ERROR GET ALLDATA: Volume ZERO atingido, mas ULTRASSOM fora da faixa", b.IBCID, dint)
+							}
+						}
+						if dint > 0 && vol2_pre >= 0 {
+							vol2 = 10 * (math.Trunc(vol2_pre / 10))
+						}
+						ibc[ind].Vol2 = int32(vol2_pre)
+						fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre)
+
+						// cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
+						// ret2 := scp_sendmsg_orch(cmd2)
+						// params = scp_splitparam(ret2, "/")
+						// vol2 = -1
+						// if params[0] == scp_ack {
+						// 	dint, _ := strconv.Atoi(params[1])
+						// 	area = 0
+						// 	dfloat = 0
+						// 	if vol0 == 0 && (dint > 0 && float32(dint) >= (ibc_v2_zero*0.7) && float32(dint) <= (ibc_v2_zero*1.3)) {
+						// 		fmt.Println("DEBUG GET ALLDATA: Volume ZERO atingido, mudango Vol0", b.IBCID, dint)
+						// 		b.Vol_zero[1] = float32(dint)
+						// 	}
+						// 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
+						// 	dfloat = float64(b.Vol_zero[1]) - float64(dint)
+						// 	vol2_pre := area * dfloat
+						// 	if dint > 0 {
+						// 		if vol2_pre >= 0 {
+						// 			vol2 = 10 * (math.Trunc(vol2_pre / 10))
+						// 		} else {
+						// 			vol2 = 0
+						// 		}
+						// 		ibc[ind].Vol2 = int32(vol2_pre)
+						// 	} else {
+						// 		ibc[ind].Vol2 = -1
+						// 	}
+
+						// 	fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, area, dfloat, vol2, ret2)
+						// } else {
+						// 	fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
+						// }
+
+						var volc float64
+						volc = float64(ibc[ind].Volume)
+						if vol0 == 0 {
+							fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
+							volc = 0
+						} else if vol1 < 0 && vol2 < 0 {
+							fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
+						} else {
+							if ibc[ind].Valvs[3] == 1 { // Desenvase
+								if vol1 < 0 {
+									if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
+										volc = vol2
+									}
+								} else {
+									volc = vol1
+								}
+							} else if ibc[ind].Valvs[2] == 1 { // Carregando
+								if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
 									if vol1 < 0 {
-										if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
+										if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
 											volc = vol2
 										}
 									} else {
 										volc = vol1
 									}
-								} else if ibc[ind].Valvs[2] == 1 { // Carregando
-									if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
-										if vol1 < 0 {
-											if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
-												volc = vol2
-											}
-										} else {
-											volc = vol1
-										}
-									}
+								}
+							} else {
+								if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
+									fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
 								} else {
-									if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
-										fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
-									} else {
-										if vol1 >= 0 {
-											volc = vol1
-										} else if vol2 >= 0 {
-											volc = vol2
-										}
+									if vol1 >= 0 {
+										volc = vol1
+									} else if vol2 >= 0 {
+										volc = vol2
 									}
 								}
 							}
-
-							if volc >= 0 {
-								ibc[ind].Volume = uint32(volc)
-								level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
-								level_int := uint8(level)
-								if level_int != ibc[ind].Level {
-									ibc[ind].Level = level_int
-								}
-								if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
-									ibc[ind].Status = bio_empty
-								}
-							}
-							if devmode && ibc[ind].Status == bio_update {
-								if ibc[ind].Volume == 0 {
-									ibc[ind].Status = bio_empty
-								} else {
-									ibc[ind].Status = bio_ready
-								}
-							}
-
 						}
+
+						if volc >= 0 {
+							ibc[ind].Volume = uint32(volc)
+							level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
+							level_int := uint8(level)
+							if level_int != ibc[ind].Level {
+								ibc[ind].Level = level_int
+							}
+							if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
+								ibc[ind].Status = bio_empty
+							}
+						}
+						if devmode && ibc[ind].Status == bio_update {
+							if ibc[ind].Volume == 0 {
+								ibc[ind].Status = bio_empty
+							} else {
+								ibc[ind].Status = bio_ready
+							}
+						}
+
 					}
 				} else if b.Status == bio_nonexist || b.Status == bio_error {
 					needtorunsetup = true
@@ -2696,7 +2576,7 @@ func scp_get_alldata() {
 				}
 			}
 
-			if !hasupdatevolout && (mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1 || biofabrica.Valvs[6] == 1) {
+			if !hasupdatevolout && (mustupdate_ibc || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido no desenvase =", vol_tmp)
@@ -3041,25 +2921,25 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
-		// fmt.Println(pilha)
+		fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
 		bio[ind].Status = bio_unloading
 		time.Sleep(scp_timewaitvalvs * time.Millisecond)
 		fmt.Println("WARN RUN WITHDRAW 07: Ligando bomba", devid)
 		biodev := bio_cfg[devid].Deviceaddr
-		// bioscr := bio_cfg[devid].Screenaddr
+		bioscr := bio_cfg[devid].Screenaddr
 		pumpdev := bio_cfg[devid].Pump_dev
 		bio[ind].Pumpstatus = true
 		cmd1 := "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
-		// cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
+		cmd2 := "CMD/" + bioscr + "/PUT/S270,1/END"
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 08: CMD1 =", cmd1, " RET=", ret1)
-		// ret2 := scp_sendmsg_orch(cmd2)
-		// fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
+		ret2 := scp_sendmsg_orch(cmd2)
+		fmt.Println("DEBUG RUN WITHDRAW 09: CMD2 =", cmd2, " RET=", ret2)
 		if !strings.Contains(ret1, scp_ack) && !devmode {
 			fmt.Println("ERROR RUN WITHDRAW 10: BIORREATOR falha ao ligar bomba")
-			// cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
-			// scp_sendmsg_orch(cmd2)
+			cmd2 := "CMD/" + bioscr + "/PUT/S270,0/END"
+			scp_sendmsg_orch(cmd2)
 			set_valvs_value(pilha, 0, false)
 			return -1
 		}
@@ -3067,11 +2947,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		var vol_bio_out_start float64
 		vol_bio_init := bio[ind].Volume
 		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
-			var count int
-			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
-			if count < 0 {
-				vol_bio_out_start = biofabrica.VolumeOut
-			}
+			_, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 		} else {
 			vol_bio_out_start = -1
 		}
@@ -3083,15 +2959,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			maxtime = scp_maxtimewithdraw
 		}
 		t_elapsed := float64(0)
-		vol_ibc_ini := float64(-1)
 		mustwaittime := false
 		waittime := float64(0)
-		ibc_ind := -1
 		if untilempty && biofabrica.Useflowin && get_scp_type(bio[ind].OutID) == scp_ibc {
-			ibc_ind = get_ibc_index(bio[ind].OutID)
-			if ibc_ind >= 0 {
-				vol_ibc_ini = float64(ibc[ibc_ind].VolInOut)
-			}
 			// bio[ind].ShowVol = false
 			mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
@@ -3125,21 +2995,15 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
+			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 {
 				volout := t_elapsed / bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
 					vol_tmp = 0
 				}
 				bio[ind].Volume = uint32(vol_tmp)
-				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout)
-				if ibc_ind >= 0 && vol_ibc_ini >= 0 {
-					ibc[ibc_ind].VolInOut = vol_ibc_ini + volout
-					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
-				}
-				scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_ibclevel(ibc[ibc_ind].IBCID)
-				// scp_update_screen_vol(bio[ind].BioreactorID)
+				// go scp_update_biolevel(bio[ind].BioreactorID)
+				scp_update_screen_vol(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
@@ -3155,10 +3019,6 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if bio[ind].Withdraw != 0 {
 				bio[ind].Volume = 0
 				bio[ind].VolInOut = 0
-				if ibc_ind >= 0 {
-					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_bio_init)
-					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
-				}
 			} else if mustwaittime {
 				volout := t_elapsed * bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
@@ -3180,10 +3040,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			bio[ind].Level = 0
 		}
 
-		scp_update_biolevel(bio[ind].BioreactorID)
-		// scp_update_screen_vol(bio[ind].BioreactorID)
-		// scp_update_screen_steps(bio[ind].BioreactorID)
-		// scp_update_screen_times(bio[ind].BioreactorID)
+		// go scp_update_biolevel(bio[ind].BioreactorID)
+		scp_update_screen_vol(bio[ind].BioreactorID)
+		scp_update_screen_steps(bio[ind].BioreactorID)
+		scp_update_screen_times(bio[ind].BioreactorID)
 
 		bio[ind].Withdraw = 0
 
@@ -3197,11 +3057,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		bio[ind].Pumpstatus = false
 		cmd1 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
-		// cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
+		cmd2 = "CMD/" + bioscr + "/PUT/S270,0/END"
 		ret1 = scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG RUN WITHDRAW 14: CMD1 =", cmd1, " RET=", ret1)
-		// ret2 = scp_sendmsg_orch(cmd2)
-		// fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
+		ret2 = scp_sendmsg_orch(cmd2)
+		fmt.Println("DEBUG RUN WITHDRAW 15: CMD2 =", cmd2, " RET=", ret2)
 
 		if untilempty {
 			time.Sleep(scp_timewaitvalvs / 3 * time.Millisecond)
@@ -3343,17 +3203,17 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		var vol_out int64
 		var vol_bio_out_start float64
-		use_volfluxo := true
-		// if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
-		// use_volfluxo = true
-		var count int
-		count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
-		if count < 0 {
-			vol_bio_out_start = biofabrica.VolumeOut
+		use_volfluxo := false
+		if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
+			use_volfluxo = true
+			var count int
+			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
+			if count < 0 {
+				vol_bio_out_start = biofabrica.VolumeOut
+			}
+		} else {
+			vol_bio_out_start = -1
 		}
-		// } else {
-		// 	vol_bio_out_start = -1
-		// }
 		var maxtime float64
 		if devmode || testmode {
 			maxtime = 60
@@ -3361,7 +3221,6 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			maxtime = scp_maxtimewithdraw
 		}
 		t_start := time.Now()
-		ibc7_ind := get_ibc_index(last_ibc)
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
@@ -3378,24 +3237,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				vout = 0
 			}
 			ibc[ind].VolumeOut = uint32(vout)
-			if ibc[ind].OutID == last_ibc {
-				if ibc7_ind >= 0 {
-					ibc[ibc7_ind].VolInOut += vol_bio_out_now
-					ibc[ibc7_ind].Volume = uint32(ibc[ibc7_ind].VolInOut)
-					scp_update_ibclevel(ibc[ibc7_ind].IBCID)
-				} else {
-					fmt.Println("ERROR RUN WITHDRAW: Ultimo IBC nao existe", last_ibc)
-				}
-			}
 			// fmt.Println("vout=", vout, ibc[ind].VolumeOut)
 			if ibc[ind].Withdraw == 0 {
 				break
 			}
-			if untilempty {
-				if vol_now == 0 {
-					break
-				}
-			} else if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
+			if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
 				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(ibc[ind].Withdraw) {
 					fmt.Println("DEBUG RUN WITHDRAW 11: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
 					break
@@ -3719,10 +3565,6 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	value_str := "0"
 	if value {
 		value_str = "1"
-		if maxtemp <= 0 {
-			fmt.Println("ERROR SCP TURN HEATER: Não é permitido ligar heater sem definir temperatura máxima", bioid, maxtemp)
-			return false
-		}
 	}
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%s/END", devaddr, heater_dev, value_str)
 	ret0 := scp_sendmsg_orch(cmd0)
@@ -4386,7 +4228,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					outid := subpars[1]
 					bio[ind].OutID = outid
 				}
-				// board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
+				board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
 				if scp_run_withdraw(scp_bioreactor, bioid, false, true) < 0 {
 					return false
 				} else {
@@ -4618,7 +4460,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_par_heater:
 				temp_str := subpars[1]
 				temp_int, err := strconv.Atoi(temp_str)
-				if err != nil || temp_int <= 0 {
+				if err != nil {
 					checkErr(err)
 					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
 					return false
@@ -4815,15 +4657,6 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				biomaxstep_str := subpars[1]
 				biomaxstep, _ := strconv.Atoi(biomaxstep_str)
 				ibc[ind].Step[1] = biomaxstep
-			case scp_par_volume:
-				vol_str := subpars[1]
-				vol_int, err := strconv.Atoi(vol_str)
-				if err != nil {
-					checkErr(err)
-				} else {
-					ibc[ind].VolInOut = float64(vol_int)
-					ibc[ind].Volume = uint32(vol_int)
-				}
 			case scp_par_totaltime:
 				biototaltime_str := subpars[1]
 				if biototaltime_str == "DEFAULT" {
@@ -5084,13 +4917,13 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: path nao existe", pathid)
 						return false
 					}
-					// fmt.Println("npath=", pathstr)
+					fmt.Println("npath=", pathstr)
 					vpath := scp_splitparam(pathstr, ",")
 					perisvalv := totem_str + "/V2"
 					n := len(vpath)
 					vpath = append(vpath[:n-1], perisvalv)
 					vpath = append(vpath, "END")
-					fmt.Println("DEBUG SCP JOB IBC: ON DEV PERIS", ibcid, vpath)
+					fmt.Println("DEBUG", vpath)
 					if test_path(vpath, 0) {
 						if set_valvs_value(vpath, 1, true) < 0 {
 							fmt.Println("ERROR SCP RUN JOB: ERRO ao abrir valvulas no path ", vpath)
@@ -5100,17 +4933,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
-					time.Sleep(scp_timewaitvalvs * time.Millisecond)
-					// tmax := scp_timewaitvalvs / 100
-					// for i := 0; i < tmax; i++ {
-					// switch devtype {
-					// case scp_bioreactor:
-					// 	if bio[ind].MustPause || bio[ind].MustPause {
-					// 		i = tmax
-					// 	}
-					// }
-					// 	time.Sleep(100 * time.Millisecond)
-					// }
+					tmax := scp_timewaitvalvs / 100
+					for i := 0; i < tmax; i++ {
+						// switch devtype {
+						// case scp_bioreactor:
+						// 	if bio[ind].MustPause || bio[ind].MustPause {
+						// 		i = tmax
+						// 	}
+						// }
+						time.Sleep(100 * time.Millisecond)
+					}
 					if !scp_turn_peris(scp_totem, totem_str, peris_str, 1) {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar peristaltica em", totem_str, peris_str)
 						return false
@@ -5199,7 +5031,16 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERRO nas valvulas no path ", vpath)
 						return false
 					}
-					time.Sleep(scp_timewaitvalvs * time.Millisecond)
+					tmax := scp_timewaitvalvs / 100
+					for i := 0; i < tmax; i++ {
+						// switch devtype {
+						// case scp_bioreactor:
+						// 	if bio[ind].MustPause || bio[ind].MustPause {
+						// 		i = tmax
+						// 	}
+						// }
+						time.Sleep(100 * time.Millisecond)
+					}
 				}
 
 			case scp_dev_water:
@@ -5420,18 +5261,15 @@ func scp_run_devs() {
 }
 
 func scp_scheduler() {
-	fmt.Println("DEBUG SCHEDULER: Iniciando Scheduler")
+	schedrunning = true
 	if !devsrunning {
 		scp_run_devs()
 		go scp_clock()
-		devsrunning = true
 	}
-	schedrunning = true
 	for schedrunning == true {
 		for k, b := range bio {
 			// fmt.Println(k, " bio =", b)
 			r := pop_first_sched(b.BioreactorID, false)
-			// fmt.Println("DEBUG SCHEDULER: Sched ")
 			if len(r.Bioid) > 0 {
 				if b.Status == bio_empty && len(b.Queue) == 0 { // && b.Volume == 0
 					fmt.Println("\n", k, " Schedule inicial", schedule, "//", len(schedule), "POP de ", b.BioreactorID)
@@ -5529,9 +5367,6 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
-			if bio[ind].Heater {
-				scp_turn_heater(bio[ind].BioreactorID, 0, false)
-			}
 			if !bio[ind].MustStop {
 				board_add_message("ABiorreator " + main_id + " pausado")
 				bio_add_message(main_id, "ABiorreator pausado")
@@ -5631,26 +5466,21 @@ func stop_device(devtype string, main_id string) bool {
 			return false
 		}
 		if bio[ind].MustStop {
-			bio_add_message(main_id, "EBiorreator já sendo interrompido. Aguarde")
+			bio_add_message(main_id, "EBiorreator já sendo interrompido, aguarde")
 			return false
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		bio[ind].Withdraw = 0
-		bio[ind].MustStop = true
-		bio_add_message(main_id, "ABiorreator sendo Interrompido. Aguarde")
+		bio_add_message(main_id, "ABiorreator Interrompido")
 		if bio[ind].Status != bio_empty || true { // corrigir
 			bio[ind].MustStop = true
 			pause_device(devtype, main_id, true)
-			// t_start =
 			for {
 				time.Sleep(5000 * time.Millisecond)
 				if len(bio[ind].UndoQueue) == 0 {
 					break
 				}
 			} //
-			if bio[ind].Heater {
-				scp_turn_heater(bio[ind].BioreactorID, 0, false)
-			}
 			bio[ind].Queue = []string{}
 			bio[ind].RedoQueue = []string{}
 			bio[ind].MustOffQueue = []string{}
@@ -5748,7 +5578,7 @@ func scp_restart_services() {
 		fmt.Println("Falha ao Restartar BACK")
 		return
 	}
-	time.Sleep(30 * time.Second)
+	time.Sleep(10 * time.Second)
 	fmt.Println("Reestartando Servico MASTER")
 	cmd = exec.Command(cmdpath, "restart", "scp_master")
 	cmd.Dir = "/usr/bin"
@@ -5822,33 +5652,6 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
-
-					case scp_par_resetdata:
-						if bio[ind].Status == bio_empty || bio[ind].Status == bio_ready {
-							bio_add_message(bioid, "ATodos os dados do Biorreator serão refinidos")
-							board_add_message("ATodos os dados do " + bioid + " serão refinidos")
-							bio[ind].OrgCode = "EMPTY"
-							bio[ind].Organism = ""
-							bio[ind].VolInOut = 0
-							bio[ind].Volume = 0
-							bio[ind].Level = 0
-							bio[ind].Status = bio_empty
-							bio[ind].Queue = []string{}
-							bio[ind].RedoQueue = []string{}
-							bio[ind].MustOffQueue = []string{}
-							bio[ind].MustStop = false
-							bio[ind].MustPause = false
-							bio[ind].Timetotal[0] = 0
-							bio[ind].Timetotal[1] = 0
-							bio[ind].Timeleft[0] = 0
-							bio[ind].Timeleft[1] = 0
-							bio[ind].Step[0] = 0
-							bio[ind].Step[1] = 0
-							bio[ind].ShowVol = true
-						} else {
-							bio_add_message(bioid, "ESó é possível redefinir um Biorreator se ele estiver VAZIO ou PRONTO")
-						}
-
 					case scp_par_deviceaddr:
 						if len(params) > 4 {
 							devaddr := params[4]
@@ -5977,28 +5780,6 @@ func scp_process_conn(conn net.Conn) {
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do IBC", ibcid, " para", devaddr, " = ", ibc_cfg[ibcid])
 							conn.Write([]byte(scp_ack))
 						}
-					case scp_par_resetdata:
-						if ibc[ind].Status == bio_empty || ibc[ind].Status == bio_ready {
-							board_add_message("ATodos os dados do " + ibcid + " serão refinidos")
-							ibc[ind].OrgCode = "EMPTY"
-							ibc[ind].Organism = ""
-							ibc[ind].VolInOut = 0
-							ibc[ind].Volume = 0
-							ibc[ind].Level = 0
-							ibc[ind].Status = bio_empty
-							ibc[ind].Queue = []string{}
-							ibc[ind].RedoQueue = []string{}
-							ibc[ind].MustOffQueue = []string{}
-							ibc[ind].MustStop = false
-							ibc[ind].Timetotal[0] = 0
-							ibc[ind].Timetotal[1] = 0
-							ibc[ind].Step[0] = 0
-							ibc[ind].Step[1] = 0
-							ibc[ind].ShowVol = true
-						} else {
-							board_add_message("ANão é possível redifinir os dados do " + ibcid + " se não estiver VAZIO ou PRONTO")
-						}
-
 					}
 				}
 			}
@@ -6042,10 +5823,6 @@ func scp_process_conn(conn net.Conn) {
 					buf, err := json.Marshal(v)
 					checkErr(err)
 					conn.Write([]byte(buf))
-
-				case scp_par_reconfigdev:
-					board_add_message("ATodos os Equipamentos serão reconfigurados")
-					scp_setup_devices(true)
 
 				case scp_par_deviceaddr:
 					if len(params) > 4 {
@@ -6103,47 +5880,24 @@ func scp_process_conn(conn net.Conn) {
 		case scp_bioreactor:
 			bioid := params[2]
 			orgcode := params[3]
-			fmt.Println("DEBUG SCP START: Iniciando ", bioid, orgcode, params)
+			fmt.Println("START", bioid, orgcode, params)
 			ind := get_bio_index(bioid)
 			if ind < 0 {
 				fmt.Println("ERROR START: Biorreator nao existe", bioid)
 				break
 			}
-			if orgcode != scp_par_cip && bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
+			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
 				fmt.Println("ERROR START: Biorreator nao teve o PH Calibrado, impossivel iniciar cultivo", bioid)
 				bio_add_message(bioid, "EImpossível iniciar cultivo, sensor de PH não calibrado")
 				break
 			}
 			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
-				if orgcode == scp_par_cip {
-					if (bio[ind].Status != bio_empty && bio[ind].Status != bio_ready) || bio[ind].Volume > 0 {
-						fmt.Println("ERROR START: CIP invalido, biorreator nao esta vazio ou status invalido", bioid, bio[ind].Status, bio[ind].Volume)
-						if bio[ind].Volume > 0 {
-							bio_add_message(bioid, "ENão é possivel realizar CIP num biorretor que não esteja VAZIO")
-						} else if bio[ind].Status == bio_cip {
-							bio_add_message(bioid, "ECIP já iniciado no Biorreator. Aguarde")
-						} else {
-							bio_add_message(bioid, "EStatus "+bio[ind].Status+" não permite CIP")
-						}
-						return
-					}
-					// bio[ind].Status = bio_cip
-				} else {
-					if bio[ind].Volume > 0 {
-						bio_add_message(bioid, "ENão é possivel iniciar cultivo num biorretor que não esteja VAZIO")
-						return
-					} else if bio[ind].Status != bio_empty {
-						bio_add_message(bioid, "EStatus "+bio[ind].Status+" não permite início de cultivo")
-						return
-					}
-					// bio[ind].Status = bio_starting
-				}
+				fmt.Println("START", orgcode)
 				biotask := []string{bioid + ",0," + orgcode}
 				n := create_sched(biotask)
 				if n > 0 && !schedrunning {
 					go scp_scheduler()
 				}
-				fmt.Println("DEBUG SCP START: biotaks=", biotask, "n=", n, "sched=", schedrunning)
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
@@ -6453,20 +6207,10 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					if err == nil {
 						bio[ind].Withdraw = uint32(vol)
-						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume == 0) {
-							if bio[ind].Status == bio_unloading {
-								bio_add_message(bioid, "EDesenvase em andamento no Biorreator. Aguarde")
-								return
-							}
-							bio_add_message(bioid, "ENão é possível fazer desenvase em um biorreator que não esteja PRONTO")
-							return
-						}
 						if bio[ind].Withdraw > 0 {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
-								bio_add_message(bioid, "ITransferência iniciada")
 								go scp_run_withdraw(scp_bioreactor, bioid, true, true)
 							} else {
-								bio_add_message(bioid, "IDesenvase iniciado")
 								go scp_run_withdraw(scp_bioreactor, bioid, true, false)
 							}
 						}
@@ -6494,56 +6238,32 @@ func scp_process_conn(conn net.Conn) {
 					fmt.Println("RET CMD2 =", ret2)
 					ret3 := scp_sendmsg_orch(cmd3)
 					fmt.Println("RET CMD3 =", ret3)
-					if !value && bio[ind].Heater {
-						bio_add_message(bioid, "AATENÇÃO: Bomba foi DESLIGADA com resistência LIGADA! Efetuando desligamento automático")
-						scp_turn_heater(bioid, 0, false)
-					}
-					conn.Write([]byte(scp_ack))
-
-				case scp_dev_heater:
-					value, err := strconv.ParseBool(subparams[1])
-					if err != nil {
-						checkErr(err)
-						conn.Write([]byte(scp_err))
-						return
-					}
-					if value {
-						bio_add_message(bioid, "ENão é permitido ligar a resistência manualmente")
-						conn.Write([]byte(scp_err))
-						return
-					}
-					if !scp_turn_heater(bioid, 0, false) {
-						fmt.Println("SCP PROCESS CONN: Erro ao delisgar resistência")
-						bio_add_message(bioid, "EFALHA ao DESLIGAR RESISTÊNCIA")
-						conn.Write([]byte(scp_err))
-						return
-					}
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_aero:
-					var cmd1, cmd2 string
+					var cmd1, cmd2, cmd3 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					bio[ind].Aerator = value
 					biodev := bio_cfg[bioid].Deviceaddr
-					// bioscr := bio_cfg[bioid].Screenaddr
+					bioscr := bio_cfg[bioid].Screenaddr
 					aerodev := bio_cfg[bioid].Aero_dev
 					if value {
 						cmd1 = "CMD/" + biodev + "/PUT/D27,1/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",255/END"
-						// cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S271,1/END"
 
 					} else {
 						cmd1 = "CMD/" + biodev + "/PUT/D27,0/END"
 						cmd2 = "CMD/" + biodev + "/PUT/" + aerodev + ",0/END"
-						// cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
+						cmd3 = "CMD/" + bioscr + "/PUT/S271,0/END"
 					}
 					ret1 := scp_sendmsg_orch(cmd1)
 					fmt.Println("RET CMD1 =", ret1)
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
-					// ret3 := scp_sendmsg_orch(cmd3)
-					// fmt.Println("RET CMD3 =", ret3)
+					ret3 := scp_sendmsg_orch(cmd3)
+					fmt.Println("RET CMD3 =", ret3)
 					conn.Write([]byte(scp_ack))
 
 				case scp_dev_valve:
@@ -6551,10 +6271,6 @@ func scp_process_conn(conn net.Conn) {
 					checkErr(err)
 					value_status, err := strconv.Atoi(subparams[2])
 					checkErr(err)
-					if bio[ind].Heater && value_status == 0 {
-						bio_add_message(bioid, "AATENÇÃO: Válvulas sendo fechadas manualmente com resistência ligada. Efetuando desligamento automático")
-						scp_turn_heater(bioid, 0, false)
-					}
 					if (value_valve >= 0) && (value_valve < bio_max_valves) {
 						valvid := fmt.Sprintf("V%d", value_valve+1)
 						if set_valv_status(scp_bioreactor, bioid, valvid, value_status) {
