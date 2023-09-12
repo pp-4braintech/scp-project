@@ -58,6 +58,7 @@ const (
 	scp_netfail = "NETFAIL"
 	scp_ready   = "READY"
 	scp_sysstop = "SYSSTOP"
+	scp_stopall = "STOPALL"
 
 	scp_state_JOIN0   = 10
 	scp_state_JOIN1   = 11
@@ -1260,6 +1261,9 @@ func scp_emergency_pause() {
 
 func scp_check_network() {
 	for {
+		if biofabrica.Critical == scp_stopall {
+			return
+		}
 		fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
 		if !tcp_host_isalive(mainrouter, "80", pingmax) {
 			if biofabrica.Critical != scp_netfail {
@@ -2348,6 +2352,9 @@ func scp_get_alldata() {
 	bio_seq := 0
 	ibc_seq := 0
 	for {
+		if biofabrica.Critical == scp_stopall {
+			return
+		}
 		if finishedsetup {
 			needtorunsetup := false
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
@@ -7208,11 +7215,12 @@ func scp_master_ipc() {
 func master_shutdown(sigs chan os.Signal) {
 	<-sigs
 	fmt.Println("WARN SCP MASTER Shutdown started...")
-	biofabrica.Critical = scp_sysstop
+	biofabrica.Critical = scp_stopall
 	scp_emergency_pause()
+	time.Sleep(30 * time.Second)
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
-	time.Sleep(30 * time.Second)
+	time.Sleep(5 * time.Second)
 	os.Exit(0)
 }
 
