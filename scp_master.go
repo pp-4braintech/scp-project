@@ -1274,7 +1274,7 @@ func scp_check_network() {
 				save_all_data(data_filename)
 			}
 		} else {
-			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter, biofabrica)
+			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Critical == scp_netfail || biofabrica.Critical == scp_sysstop {
 				if finishedsetup {
 					scp_run_recovery()
@@ -1443,8 +1443,8 @@ func board_add_message(m string, id string) bool {
 	n := len(biofabrica.Messages)
 	stime := time.Now().Format("15:04")
 	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
-	m_new = strings.Replace(m, "DROP", "Descarte", -1)
-	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new[0], m_new[1:], stime, msg_id)
+	m_new2 := strings.Replace(m_new, "DROP", "Descarte", -1)
+	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new2[0], m_new2[1:], stime, msg_id)
 	if n < bio_max_msg {
 		biofabrica.Messages = append(biofabrica.Messages, msg)
 	} else {
@@ -3472,7 +3472,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 			return -1
 		}
-		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
+		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, devid+"WITHDRAW")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -3603,6 +3603,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		ibc[ind].Withdraw = 0
 		// board_add_message("IDesenvase IBC "+devid+" concluido", "")
+		board_del_message(devid + "WITHDRAW")
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
@@ -5188,7 +5189,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				qini = append(qini, cipibc...)
 				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", ibc[ind].Queue)
-				board_add_message("IExecutando CIP no IBC "+ibcid, "")
+				board_add_message("IExecutando CIP no "+ibcid, "")
 				return true
 
 			case scp_par_withdraw:
@@ -5197,7 +5198,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					outid := subpars[1]
 					ibc[ind].OutID = outid
 				}
-				board_add_message("IDesenvase Automático do "+ibcid+" para "+ibc[ind].OutID, ibcid+"WDOUT")
+				// board_add_message("IDesenvase Automático do "+ibcid+" para "+ibc[ind].OutID, ibcid+"WDOUT")
 				if scp_run_withdraw(scp_ibc, ibcid, false, true) < 0 {
 					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
@@ -5206,7 +5207,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					ibc[ind].Withdraw = 0
 					// ibc[ind].Volume = 0 // verificar
 				}
-				board_del_message(ibcid + "WDOUT")
+				// board_del_message(ibcid + "WDOUT")
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
