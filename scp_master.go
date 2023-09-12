@@ -7212,7 +7212,7 @@ func master_shutdown(sigs chan os.Signal) {
 	scp_emergency_pause()
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
-	time.Sleep(5 * time.Second)
+	time.Sleep(30 * time.Second)
 	os.Exit(0)
 }
 
