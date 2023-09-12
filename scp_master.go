@@ -5844,8 +5844,8 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				scp_turn_heater(bio[ind].BioreactorID, 0, false)
 			}
 			if !bio[ind].MustStop {
-				board_add_message("ABiorreator "+main_id+" pausado", "")
-				bio_add_message(main_id, "ABiorreator pausado", "")
+				board_add_message("ABiorreator "+main_id+" pausado", main_id+"PAUSE")
+				bio_add_message(main_id, "ABiorreator pausado", "PAUSE")
 			} else {
 				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido", "")
 			}
@@ -5869,8 +5869,10 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			bio[ind].MustStop = false
 			bio[ind].LastStatus = bio_pause
 			if !bio[ind].MustStop {
-				board_add_message("APausa no Biorreator "+main_id+" liberada", "")
-				bio_add_message(main_id, "APausa no Biorreator liberada", "")
+				// board_add_message("APausa no Biorreator "+main_id+" liberada", "")
+				// bio_add_message(main_id, "APausa no Biorreator liberada", "")
+				board_del_message(main_id + "PAUSE")
+				bio_del_message(main_id, "PAUSE")
 			}
 			if !schedrunning {
 				go scp_scheduler()
@@ -5899,7 +5901,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].Status = bio_pause
 			ibc[ind].Withdraw = 0 // VALIDAR
 			if !ibc[ind].MustStop {
-				board_add_message("AIBC "+main_id+" pausado", "")
+				board_add_message("AIBC "+main_id+" pausado", main_id+"PAUSE")
 			}
 
 		} else if !pause {
@@ -5921,7 +5923,8 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].MustStop = false
 			ibc[ind].LastStatus = bio_pause
 			if !ibc[ind].MustStop {
-				board_add_message("APausa no IBC "+main_id+" liberada", "")
+				// board_add_message("APausa no IBC "+main_id+" liberada", "")
+				board_del_message(main_id + "PAUSE")
 			}
 			if !schedrunning {
 				go scp_scheduler()
