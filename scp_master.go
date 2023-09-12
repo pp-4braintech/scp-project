@@ -392,6 +392,7 @@ type Biofabrica struct {
 	Useflowin    bool
 	PIntStatus   string
 	POutStatus   string
+	Critical     string
 }
 
 type Path struct {
@@ -1254,18 +1255,18 @@ func scp_check_network() {
 	for {
 		fmt.Println("DEBUG CHECK NETWORK: Testando comunicacao com MAINROUTER", mainrouter, pingmax)
 		if !tcp_host_isalive(mainrouter, "80", pingmax) {
-			if biofabrica.Status != scp_netfail {
+			if biofabrica.Critical != scp_netfail {
 				fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-				biofabrica.Status = scp_netfail
+				biofabrica.Critical = scp_netfail
 				save_all_data(data_filename)
 				scp_emergency_pause()
 				save_all_data(data_filename)
 			}
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter, biofabrica)
-			if biofabrica.Status == scp_netfail || biofabrica.Status == scp_sysstop {
+			if biofabrica.Critical == scp_netfail || biofabrica.Critical == scp_sysstop {
 				if finishedsetup {
-					biofabrica.Status = scp_ready
+					biofabrica.Critical = scp_ready
 					scp_run_recovery()
 				}
 			}
@@ -7198,7 +7199,7 @@ func master_shutdown(sigs chan os.Signal) {
 	<-sigs
 	fmt.Println("WARN SCP MASTER Shutdown started...")
 	scp_emergency_pause()
-	biofabrica.Status = scp_sysstop
+	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
 	os.Exit(0)
 }
