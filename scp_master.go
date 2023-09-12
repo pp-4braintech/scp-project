@@ -13,11 +13,13 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"gonum.org/v1/gonum/stat"
@@ -55,6 +57,7 @@ const (
 	scp_fail    = "FAIL"
 	scp_netfail = "NETFAIL"
 	scp_ready   = "READY"
+	scp_sysstop = "SYSSTOP"
 
 	scp_state_JOIN0   = 10
 	scp_state_JOIN1   = 11
@@ -1225,6 +1228,13 @@ func scp_run_recovery() {
 			board_add_message("AFavor checar Biorreator "+b.BioreactorID, "")
 		}
 	}
+	for _, b := range ibc {
+		if b.Status != bio_nonexist && b.Status != bio_error {
+			pause_device(scp_ibc, b.IBCID, false)
+		} else {
+			board_add_message("AFavor checar IBC "+b.IBCID, "")
+		}
+	}
 	if !schedrunning {
 		go scp_scheduler()
 	}
@@ -1232,9 +1242,16 @@ func scp_run_recovery() {
 
 func scp_emergency_pause() {
 	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
-	board_add_message("EPARADA de EMERGENCIA", "")
+	board_add_message("EPARADA de TOTAL em PROGRESSO", "")
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, true)
+		ind := get_bio_index(b.BioreactorID)
+		bio[ind].Withdraw = 0
+	}
+	for _, b := range ibc {
+		pause_device(scp_ibc, b.IBCID, true)
+		ind := get_ibc_index(b.IBCID)
+		ibc[ind].Withdraw = 0
 	}
 }
 
@@ -1251,7 +1268,7 @@ func scp_check_network() {
 			}
 		} else {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
-			if biofabrica.Status == scp_netfail {
+			if biofabrica.Status == scp_netfail || biofabrica.Status == scp_sysstop {
 				if finishedsetup {
 					biofabrica.Status = scp_ready
 					scp_run_recovery()
@@ -5819,6 +5836,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
 			bio[ind].Status = bio_pause
+			bio[ind].Withdraw = 0 // VALIDAR
 			if bio[ind].Heater {
 				scp_turn_heater(bio[ind].BioreactorID, 0, false)
 			}
@@ -5876,6 +5894,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			ibc[ind].MustPause = true
 			ibc[ind].Status = bio_pause
+			ibc[ind].Withdraw = 0 // VALIDAR
 			if !ibc[ind].MustStop {
 				board_add_message("AIBC "+main_id+" pausado", "")
 			}
@@ -7180,6 +7199,15 @@ func scp_master_ipc() {
 	}
 }
 
+func master_shutdown(sigs chan os.Signal) {
+	<-sigs
+	fmt.Println("WARN SCP MASTER Shutdown started...")
+	scp_emergency_pause()
+	biofabrica.Status = scp_sysstop
+	save_all_data(data_filename)
+	os.Exit(0)
+}
+
 func main() {
 
 	rand.Seed(time.Now().UnixNano())
@@ -7255,6 +7283,10 @@ func main() {
 	go scp_setup_devices(true)
 	go scp_get_alldata()
 	go scp_sync_functions()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go master_shutdown(sigs)
 
 	scp_master_ipc()
 	time.Sleep(10 * time.Second)
