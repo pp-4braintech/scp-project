@@ -3896,7 +3896,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bool {
 	var devaddr, pumpdev string
 	var ind int
-	scraddr := ""
+	// scraddr := ""
 	switch devtype {
 	case scp_bioreactor:
 		ind = get_bio_index(main_id)
@@ -3906,7 +3906,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		}
 		devaddr = bio_cfg[main_id].Deviceaddr
 		pumpdev = bio_cfg[main_id].Pump_dev
-		scraddr = bio_cfg[main_id].Screenaddr
+		// scraddr = bio_cfg[main_id].Screenaddr
 
 	case scp_ibc:
 		ind = get_ibc_index(main_id)
@@ -3925,6 +3925,13 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		}
 		devaddr = totem_cfg[main_id].Deviceaddr
 		pumpdev = totem_cfg[main_id].Pumpdev
+	case scp_biofabrica:
+		devaddr = biofabrica_cfg["PBF01"].Deviceaddr
+		if len(devaddr) == 0 {
+			fmt.Println("ERROR SCP TURN PUMP: Valvula PBF01 nao existe", main_id)
+			return false
+		}
+		pumpdev = biofabrica_cfg["PBF01"].Deviceport
 
 	default:
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
@@ -3949,15 +3956,17 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			ibc[ind].Pumpstatus = false
 		case scp_totem:
 			totem[ind].Pumpstatus = false
+		case scp_biofabrica:
+			biofabrica.Pumpwithdraw = false
 		}
-		if len(scraddr) > 0 {
-			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
-			rets := scp_sendmsg_orch(cmds)
-			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-			if !strings.Contains(rets, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
-			}
-		}
+		// if len(scraddr) > 0 {
+		// 	cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
+		// 	rets := scp_sendmsg_orch(cmds)
+		// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		// 	if !strings.Contains(rets, scp_ack) && !devmode {
+		// 		fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
+		// 	}
+		// }
 	}
 
 	musttest := value == 1
@@ -4001,15 +4010,17 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 			ibc[ind].Pumpstatus = true
 		case scp_totem:
 			totem[ind].Pumpstatus = true
+		case scp_biofabrica:
+			biofabrica.Pumpwithdraw = true
 		}
-		if len(scraddr) > 0 {
-			cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
-			rets := scp_sendmsg_orch(cmds)
-			fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-			if !strings.Contains(rets, scp_ack) && !devmode {
-				fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
-			}
-		}
+		// if len(scraddr) > 0 {
+		// 	cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
+		// 	rets := scp_sendmsg_orch(cmds)
+		// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		// 	if !strings.Contains(rets, scp_ack) && !devmode {
+		// 		fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
+		// 	}
+		// }
 	}
 	return true
 }
@@ -4406,6 +4417,11 @@ func scp_fullstop_bio(bioid string) bool {
 		fmt.Println("ERROR FULLSTOP BIO: Biorreator nao encontrado", bioid)
 		return false
 	}
+	if bio[ind].Status != bio_ready && bio[ind].Status != bio_empty {
+		bio_add_message(bioid, "EEquipamento deve estar PRONTO ou VAZIO para Parada TOTAL", "")
+		return false
+	}
+	bio_add_message(bioid, "AParada TOTAL solicitada", "")
 	ret := true
 	ret_heater := scp_turn_heater(bioid, 0, false)
 	if !ret_heater {
@@ -4441,6 +4457,11 @@ func scp_fullstop_ibc(ibcid string) bool {
 		fmt.Println("ERROR FULLSTOP IBC: IBC nao encontrado", ibcid)
 		return false
 	}
+	if ibc[ind].Status != bio_ready && ibc[ind].Status != bio_empty {
+		board_add_message("EEquipamento "+ibcid+" deve estar PRONTO ou VAZIO para Parada TOTAL", "")
+		return false
+	}
+	board_add_message("AParada TOTAL solicitada para "+ibcid, "")
 	valvs := []string{ibcid + "/V1", ibcid + "/V2", ibcid + "/V3", ibcid + "/V4"}
 	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0)
 	if !ret {
@@ -4455,6 +4476,7 @@ func scp_fullstop_totem(totemid string) bool {
 		fmt.Println("ERROR FULLSTOP IBC: TOTEM nao encontrado", totemid)
 		return false
 	}
+	board_add_message("AParada TOTAL solicitada para "+totemid, "")
 	ret := true
 	ret_peris := scp_turn_peris(scp_totem, totemid, "P1", 0)
 	ret_peris = ret_peris && scp_turn_peris(scp_totem, totemid, "P2", 0)
@@ -4472,7 +4494,19 @@ func scp_fullstop_totem(totemid string) bool {
 }
 
 func scp_fullstop_biofabrica() bool {
-	return true
+	board_add_message("AParada TOTAL solicitada para válvulas e bomba da Biofábrica", "")
+	valvs := []string{}
+	for _, e := range biofabrica_cfg {
+		if strings.Contains(e.DeviceID, "VBF") {
+			dev := "BIOFABRICA/" + e.DeviceID
+			valvs = append(valvs, dev)
+		}
+	}
+	ret_pump := scp_turn_pump(scp_biofabrica, "BF01", valvs, 0)
+	if !ret_pump {
+		fmt.Println("SCP FULLSTOP BIOFABRICA: Falha ao desligar bomba e valvulas da Biofabrica")
+	}
+	return ret_pump
 }
 
 func scp_fullstop_device(devid string, devtype string) bool {
