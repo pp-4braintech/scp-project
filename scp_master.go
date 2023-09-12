@@ -511,7 +511,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "",
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "",
 }
 
 var biobak = bio // Salva status atual
