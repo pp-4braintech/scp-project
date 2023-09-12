@@ -5464,8 +5464,11 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+					board_add_message("A"+ibcid+" aguardando liberação da Linha", ibcid+"ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
 					return false
+				} else {
+					board_del_message(ibcid + "ONWATERBUSY")
 				}
 			}
 		} else {
