@@ -4426,7 +4426,7 @@ func scp_fullstop_bio(bioid string) bool {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar aerador do", bioid)
 	}
 	ret = ret && ret_aero
-	valvs := []string{bioid + "V3", bioid + "V4", bioid + "V5", bioid + "V6", bioid + "V7", bioid + "V8"}
+	valvs := []string{bioid + "/V3", bioid + "/V4", bioid + "/V5", bioid + "/V6", bioid + "/V7", bioid + "/V8"}
 	ret_pump := scp_turn_pump(scp_bioreactor, bioid, valvs, 0)
 	if !ret_pump {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar bomba e valvulas do", bioid)
@@ -4441,7 +4441,7 @@ func scp_fullstop_ibc(ibcid string) bool {
 		fmt.Println("ERROR FULLSTOP IBC: IBC nao encontrado", ibcid)
 		return false
 	}
-	valvs := []string{ibcid + "V1", ibcid + "V2", ibcid + "V3", ibcid + "V4"}
+	valvs := []string{ibcid + "/V1", ibcid + "/V2", ibcid + "/V3", ibcid + "/V4"}
 	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0)
 	if !ret {
 		fmt.Println("SCP FULLSTOP IBC: Falha ao desligar bomba e valvulas do", ibcid)
@@ -4462,7 +4462,7 @@ func scp_fullstop_totem(totemid string) bool {
 		fmt.Println("SCP FULLSTOP TOTEM: Falha ao desligar peristalticas do", totemid)
 	}
 	ret = ret && ret_peris
-	valvs := []string{totemid + "V1", totemid + "V2"}
+	valvs := []string{totemid + "/V1", totemid + "/V2"}
 	ret_pump := scp_turn_pump(scp_totem, totemid, valvs, 0)
 	if !ret_pump {
 		fmt.Println("SCP FULLSTOP TOTEM: Falha ao desligar bomba e valvulas do", totemid)
