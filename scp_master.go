@@ -4699,6 +4699,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				}
 				// board_add_message("IDesenvase Automático do biorreator " + bioid + " para " + bio[ind].OutID)
 				if scp_run_withdraw(scp_bioreactor, bioid, false, true) < 0 {
+					fmt.Println("ERROR SCP RUN JOB BIO: Falha ao fazer o desenvase do BIO", bio[ind].BioreactorID)
 					return false
 				} else {
 					bio[ind].Organism = ""
@@ -5198,11 +5199,13 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					outid := subpars[1]
 					ibc[ind].OutID = outid
 				}
+				fmt.Println("DEBUG SCP RUN JOB IBC: Run Withdraw ", ibcid)
 				// board_add_message("IDesenvase Automático do "+ibcid+" para "+ibc[ind].OutID, ibcid+"WDOUT")
 				if scp_run_withdraw(scp_ibc, ibcid, false, true) < 0 {
 					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
 				} else {
+					fmt.Println("DEBUG SCP RUN JOB IBC: Run Withdraw SEM ERROS ", ibcid)
 					ibc[ind].Organism = ""
 					ibc[ind].Withdraw = 0
 					// ibc[ind].Volume = 0 // verificar
