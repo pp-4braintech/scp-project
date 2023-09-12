@@ -5620,7 +5620,7 @@ func scp_run_bio(bioid string) {
 			}
 
 		}
-		time.Sleep(scp_schedwait * time.Millisecond)
+		time.Sleep(time.Duration(rand.Intn(7)) * scp_schedwait * time.Millisecond)
 	}
 }
 
@@ -5679,7 +5679,7 @@ func scp_run_ibc(ibcid string) {
 			}
 
 		}
-		time.Sleep(scp_schedwait * time.Millisecond)
+		time.Sleep(time.Duration(rand.Intn(7)) * scp_schedwait * time.Millisecond)
 	}
 }
 
