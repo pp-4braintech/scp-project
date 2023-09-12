@@ -1234,6 +1234,7 @@ func scp_run_recovery() {
 		}
 	}
 	if !schedrunning {
+		time.Sleep(60 * time.Second)
 		go scp_scheduler()
 	}
 }
@@ -3354,7 +3355,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 
 		bio[ind].Withdraw = 0
 
-		board_add_message("IDesenvase concluido", "")
+		// board_add_message("IDesenvase concluido", "")
 		fmt.Println("WARN RUN WITHDRAW 13: Desligando bomba", devid)
 
 		set_valvs_value(pilha, 0, false)
@@ -3441,7 +3442,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				return -1
 			}
 			set_valvs_value(vpath, 0, false)
-			board_add_message("IEnxague concluído", "")
+			// board_add_message("IEnxague concluído", "")
 		}
 		bio[ind].Status = prev_status
 
@@ -3594,7 +3595,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 		}
 		ibc[ind].Withdraw = 0
-		board_add_message("IDesenvase IBC "+devid+" concluido", "")
+		// board_add_message("IDesenvase IBC "+devid+" concluido", "")
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
@@ -3662,7 +3663,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			set_valvs_value(vpath, 0, false)
 			time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			board_add_message("IEnxague concluído", "")
+			// board_add_message("IEnxague concluído", "")
 			if dest_type == scp_ibc {
 				pathclean = "TOTEM02-CLEAN3"
 				pathstr = paths[pathclean].Path
@@ -3715,7 +3716,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					return -1
 				}
 				set_valvs_value(vpath, 0, false)
-				board_add_message("IEnxague concluído", "")
+				// board_add_message("IEnxague concluído", "")
 			}
 		}
 		ibc[ind].Status = prev_status
@@ -7208,6 +7209,7 @@ func master_shutdown(sigs chan os.Signal) {
 	scp_emergency_pause()
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
+	time.Sleep(5 * time.Second)
 	os.Exit(0)
 }
 
