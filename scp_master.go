@@ -110,6 +110,7 @@ const scp_par_manyout = "MANYOUT"
 const scp_par_continue = "CONTINUE"
 const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
+const scp_par_stopall = "STOPALL"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -4399,6 +4400,96 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 }
 
+func scp_fullstop_bio(bioid string) bool {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR FULLSTOP BIO: Biorreator nao encontrado", bioid)
+		return false
+	}
+	ret := true
+	ret_heater := scp_turn_heater(bioid, 0, false)
+	if !ret_heater {
+		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar resistência do", bioid)
+	}
+	ret = ret && ret_heater
+	ret_peris := scp_turn_peris(scp_bioreactor, bioid, "P1", 0)
+	ret_peris = ret_peris && scp_turn_peris(scp_bioreactor, bioid, "P2", 0)
+	ret_peris = ret_peris && scp_turn_peris(scp_bioreactor, bioid, "P3", 0)
+	ret_peris = ret_peris && scp_turn_peris(scp_bioreactor, bioid, "P4", 0)
+	ret_peris = ret_peris && scp_turn_peris(scp_bioreactor, bioid, "P5", 0)
+	if !ret_peris {
+		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar peristalticas do", bioid)
+	}
+	ret = ret && ret_peris
+	ret_aero := scp_turn_aero(bioid, true, 0, 0)
+	if !ret_aero {
+		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar aerador do", bioid)
+	}
+	ret = ret && ret_aero
+	valvs := []string{bioid + "V3", bioid + "V4", bioid + "V5", bioid + "V6", bioid + "V7", bioid + "V8"}
+	ret_pump := scp_turn_pump(scp_bioreactor, bioid, valvs, 0)
+	if !ret_pump {
+		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar bomba e valvulas do", bioid)
+	}
+	ret = ret && ret_pump
+	return ret
+}
+
+func scp_fullstop_ibc(ibcid string) bool {
+	ind := get_ibc_index(ibcid)
+	if ind < 0 {
+		fmt.Println("ERROR FULLSTOP IBC: IBC nao encontrado", ibcid)
+		return false
+	}
+	valvs := []string{ibcid + "V1", ibcid + "V2", ibcid + "V3", ibcid + "V4"}
+	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0)
+	if !ret {
+		fmt.Println("SCP FULLSTOP IBC: Falha ao desligar bomba e valvulas do", ibcid)
+	}
+	return ret
+}
+
+func scp_fullstop_totem(totemid string) bool {
+	ind := get_totem_index(totemid)
+	if ind < 0 {
+		fmt.Println("ERROR FULLSTOP IBC: TOTEM nao encontrado", totemid)
+		return false
+	}
+	ret := true
+	ret_peris := scp_turn_peris(scp_totem, totemid, "P1", 0)
+	ret_peris = ret_peris && scp_turn_peris(scp_totem, totemid, "P2", 0)
+	if !ret_peris {
+		fmt.Println("SCP FULLSTOP TOTEM: Falha ao desligar peristalticas do", totemid)
+	}
+	ret = ret && ret_peris
+	valvs := []string{totemid + "V1", totemid + "V2"}
+	ret_pump := scp_turn_pump(scp_totem, totemid, valvs, 0)
+	if !ret_pump {
+		fmt.Println("SCP FULLSTOP TOTEM: Falha ao desligar bomba e valvulas do", totemid)
+	}
+	ret = ret && ret_pump
+	return ret
+}
+
+func scp_fullstop_biofabrica() bool {
+	return true
+}
+
+func scp_fullstop_device(devid string, devtype string) bool {
+	switch devtype {
+	case scp_bioreactor:
+		return scp_fullstop_bio(devid)
+	case scp_ibc:
+		return scp_fullstop_ibc(devid)
+	case scp_totem:
+		return scp_fullstop_totem(devid)
+	case scp_biofabrica:
+		return scp_fullstop_biofabrica()
+	}
+	fmt.Println("ERROR FULLSTOP DEVICE: Tipo de Dispositivo invalido", devtype, devid)
+	return false
+}
+
 func scp_run_job_bio(bioid string, job string) bool {
 	if devmode {
 		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
@@ -4535,7 +4626,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				qini = append(qini, cipbio...)
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
-				board_add_message("IExecutando CIP no biorreator "+bioid, "")
+				board_add_message("IExecutando CIP no "+bioid, "")
 				return true
 
 			case scp_par_withdraw:
@@ -4587,8 +4678,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 			// 	return false
 			// }
 			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
-			board_add_message("ABiorreator "+bioid+" aguardando "+msgask, "")
-			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR", "")
+			board_add_message("ABiorreator "+bioid+" aguardando "+msgask, bioid+"ASKPROD")
+			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR", "ASKPROD")
 			bio[ind].Continue = false
 			t_start := time.Now()
 			for {
@@ -4622,6 +4713,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 				}
 				time.Sleep(1000 * time.Millisecond)
 			}
+			board_del_message(bioid + "ASKPROD")
+			bio_del_message(bioid, "ASKPROD")
 			// scp_sendmsg_orch(scrmain)
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
@@ -5985,6 +6078,12 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+					case scp_par_stopall:
+						if scp_fullstop_device(bioid, scp_bioreactor) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
 
 					case scp_par_resetdata:
 						if bio[ind].Status == bio_empty || bio[ind].Status == bio_ready {
@@ -6123,6 +6222,12 @@ func scp_process_conn(conn net.Conn) {
 				ind := get_ibc_index(ibcid)
 				if ind >= 0 {
 					switch params[3] {
+					case scp_par_stopall:
+						if scp_fullstop_device(ibcid, scp_ibc) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
 					case scp_par_getconfig:
 						ibccfg, ok := ibc_cfg[ibcid]
 						fmt.Println("->", ind, ibccfg, ok)
@@ -6172,6 +6277,12 @@ func scp_process_conn(conn net.Conn) {
 				ind := get_totem_index(totemid)
 				if ind >= 0 {
 					switch params[3] {
+					case scp_par_stopall:
+						if scp_fullstop_device(totemid, scp_totem) {
+							conn.Write([]byte(scp_ack))
+						} else {
+							conn.Write([]byte(scp_err))
+						}
 					case scp_par_getconfig:
 						totemcfg, ok := totem_cfg[totemid]
 						if ok {
@@ -6196,6 +6307,12 @@ func scp_process_conn(conn net.Conn) {
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
+				case scp_par_stopall:
+					if scp_fullstop_device("ALL", scp_biofabrica) {
+						conn.Write([]byte(scp_ack))
+					} else {
+						conn.Write([]byte(scp_err))
+					}
 				case scp_par_getconfig:
 					fmt.Println("DEBUG CONFIG: GET configuracoes biofabrica", biofabrica_cfg)
 					v := make([]Biofabrica_cfg, 0)

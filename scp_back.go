@@ -55,6 +55,7 @@ const scp_par_manyout = "MANYOUT"
 const scp_par_continue = "CONTINUE"
 const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
+const scp_par_stopall = "STOPALL"
 
 const scp_sched = "SCHED"
 const bio_nonexist = "NULL"
@@ -817,8 +818,15 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		testm := r.FormValue("TestMode")
 		reconfigdev := r.FormValue("ReconfigDev")
 		resetdata := r.FormValue("ResetData")
+		stopall := r.FormValue("StopAll")
 
 		if len(bioid) > 0 {
+			if stopall != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_stopall + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			if devaddr != "" {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -875,6 +883,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(ibcid) > 0 {
+			if stopall != "" {
+				cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_stopall + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			if devaddr != "" {
 				cmd := scp_config + "/" + scp_ibc + "/" + ibcid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -890,6 +904,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(totemid) > 0 {
+			if stopall != "" {
+				cmd := scp_config + "/" + scp_totem + "/" + totemid + "/" + scp_par_stopall + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			if devaddr != "" {
 				cmd := scp_config + "/" + scp_totem + "/" + totemid + "/" + scp_par_deviceaddr + "/" + devaddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
@@ -899,6 +919,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(bfid) > 0 {
+			if stopall != "" {
+				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_stopall + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
 			if devaddr != "" {
 				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_deviceaddr + "/" + devid + "/" + devaddr + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
