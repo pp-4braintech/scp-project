@@ -5573,7 +5573,7 @@ func scp_run_bio(bioid string) {
 		return
 	}
 	for bio[ind].Status != bio_die {
-		if len(bio[ind].Queue) > 0 && devmode {
+		if len(bio[ind].Queue) > 0 && (devmode || testmode) {
 			fmt.Println("\n\nBIO", bioid, " status", bio[ind].Status)
 			fmt.Println("\nQUEUE:", bio[ind].Queue)
 			fmt.Println("\nUNDOQUEUE:", bio[ind].UndoQueue)
@@ -5632,7 +5632,7 @@ func scp_run_ibc(ibcid string) {
 		return
 	}
 	for ibc[ind].Status != bio_die {
-		if len(ibc[ind].Queue) > 0 {
+		if len(ibc[ind].Queue) > 0 && (devmode || testmode) {
 			fmt.Println("\n\nIBC", ibcid, " status", ibc[ind].Status)
 			fmt.Println("\nQUEUE:", ibc[ind].Queue)
 			fmt.Println("\nUNDOQUEUE:", ibc[ind].UndoQueue)
