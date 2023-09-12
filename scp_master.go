@@ -5190,7 +5190,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					outid := subpars[1]
 					ibc[ind].OutID = outid
 				}
-				board_add_message("IDesenvase Automático do IBC "+ibcid+" para "+ibc[ind].OutID, "")
+				board_add_message("IDesenvase Automático do "+ibcid+" para "+ibc[ind].OutID, ibcid+"WDOUT")
 				if scp_run_withdraw(scp_ibc, ibcid, false, true) < 0 {
 					fmt.Println("ERROR SCP RUN JOB IBC: Falha ao fazer o desenvase do IBC", ibc[ind].IBCID)
 					return false
@@ -5199,7 +5199,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					ibc[ind].Withdraw = 0
 					// ibc[ind].Volume = 0 // verificar
 				}
-
+				board_del_message(ibcid + "WDOUT")
 			}
 		} else {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_run, params)
