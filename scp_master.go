@@ -1214,8 +1214,10 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
 	board_add_message("ERETORNANDO de PARADA TOTAL", "")
-	board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
-	time.Sleep(600 * time.Second)
+	if biofabrica.Critical != scp_sysstop {
+		board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
+		time.Sleep(600 * time.Second)
+	}
 	scp_setup_devices(true)
 	for _, b := range bio {
 		if b.Status != bio_nonexist && b.Status != bio_error {
@@ -1238,7 +1240,11 @@ func scp_run_recovery() {
 
 func scp_emergency_pause() {
 	fmt.Println("\n\nCRITICAL EMERGENCY PAUSE: Executando EMERGENCY PAUSE da Biofabrica")
-	board_add_message("EPARADA de TOTAL em PROGRESSO", "")
+	if biofabrica.Critical == scp_sysstop {
+		board_add_message("EPARADA de TOTAL para MANUTENÇÃO do SISTEMA em PROGRESSO", "")
+	} else {
+		board_add_message("EPARADA de TOTAL em PROGRESSO", "")
+	}
 	for _, b := range bio {
 		pause_device(scp_bioreactor, b.BioreactorID, true)
 		ind := get_bio_index(b.BioreactorID)
@@ -1266,8 +1272,8 @@ func scp_check_network() {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter, biofabrica)
 			if biofabrica.Critical == scp_netfail || biofabrica.Critical == scp_sysstop {
 				if finishedsetup {
-					biofabrica.Critical = scp_ready
 					scp_run_recovery()
+					biofabrica.Critical = scp_ready
 				}
 			}
 		}
@@ -7198,6 +7204,7 @@ func scp_master_ipc() {
 func master_shutdown(sigs chan os.Signal) {
 	<-sigs
 	fmt.Println("WARN SCP MASTER Shutdown started...")
+	biofabrica.Critical = scp_sysstop
 	scp_emergency_pause()
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
