@@ -6926,7 +6926,7 @@ func scp_process_conn(conn net.Conn) {
 										bio_add_message(bioid, "ITransferência iniciada", "")
 										go scp_run_withdraw(scp_bioreactor, bioid, true, true)
 									} else {
-										bio_add_message(bioid, "EAtual volume do IBC não suporte a transferência", "")
+										bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
 									}
 								}
 							} else {
