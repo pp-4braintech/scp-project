@@ -381,6 +381,7 @@ type Biofabrica struct {
 	Valvs        [9]int
 	Pumpwithdraw bool
 	Messages     []string
+	WaitList     []string
 	Status       string
 	VolumeOut    float64
 	VolOutPart   float64
@@ -484,6 +485,7 @@ var mainmutex sync.Mutex
 var withdrawmutex sync.Mutex
 var boardmutex sync.Mutex
 var biomutex sync.Mutex
+var waitlistmutex sync.Mutex
 
 var withdrawrunning = false
 
@@ -512,7 +514,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "",
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "",
 }
 
 var biobak = bio // Salva status atual
@@ -1522,6 +1524,66 @@ func bio_add_message(bioid string, m string, id string) bool {
 		bio[ind].Messages = append(bio[ind].Messages, msg)
 	} else {
 		bio[ind].Messages = append(bio[ind].Messages[1:], msg)
+	}
+	return true
+}
+
+func waitlist_has_message(id string) bool {
+	waitlistmutex.Lock()
+	defer waitlistmutex.Unlock()
+	msg_id := fmt.Sprintf("{%s}", id)
+	for _, m := range biofabrica.WaitList {
+		if strings.Contains(m, msg_id) {
+			return true
+		}
+	}
+	return false
+}
+
+func waitlist_del_message(id string) bool {
+	waitlistmutex.Lock()
+	defer waitlistmutex.Unlock()
+	msg_id := fmt.Sprintf("{%s}", id)
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
+	has_del := false
+	for i := 0; i < len(biofabrica.WaitList); i++ {
+		if strings.Contains(biofabrica.WaitList[i], msg_id) {
+			has_del = true
+			m1 := []string{}
+			if i > 0 {
+				m1 = biofabrica.WaitList[:i]
+			}
+			m2 := []string{}
+			if i < len(biofabrica.WaitList)-1 {
+				m2 = biofabrica.WaitList[i+1:]
+			}
+			// fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
+			biofabrica.WaitList = append(m1, m2...)
+		}
+	}
+	// fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(biofabrica.Messages), biofabrica.Messages)
+	return has_del
+}
+
+func waitlist_add_message(m string, id string) bool {
+	if len(id) > 0 && waitlist_has_message(id) {
+		return false
+	}
+	waitlistmutex.Lock()
+	defer waitlistmutex.Unlock()
+	msg_id := id
+	if len(id) == 0 {
+		msg_id = "0"
+	}
+	n := len(biofabrica.WaitList)
+	stime := time.Now().Format("15:04")
+	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
+	m_new2 := strings.Replace(m_new, "DROP", "Descarte", -1)
+	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new2[0], m_new2[1:], stime, msg_id)
+	if n < bio_max_msg {
+		biofabrica.WaitList = append(biofabrica.WaitList, msg)
+	} else {
+		biofabrica.WaitList = append(biofabrica.WaitList[2:], msg)
 	}
 	return true
 }
@@ -3176,7 +3238,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
 			fmt.Println("ERROR RUN WITHDRAW 02: falha de valvula no path", pathid)
-			board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+			waitlist_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 			bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 			return -1
 		}
@@ -3194,14 +3256,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
 						fmt.Println("ERROR RUN WITHDRAW 03: nao foi possivel setar valvula", p)
-						board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+						waitlist_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 						bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 						set_valvs_value(pilha, 0, false) // undo
 						return -1
 					}
 				} else if val == 1 {
 					fmt.Println("ERROR RUN WITHDRAW 04: valvula ja aberta", p)
-					board_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+					waitlist_add_message("ADesenvase do Biorreator "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 					bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 					set_valvs_value(pilha, 0, false) // undo
 					return -1
@@ -3217,7 +3279,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
-		board_del_message(devid + "WITHDRAWBUSY")
+		waitlist_del_message(devid + "WITHDRAWBUSY")
 		bio_del_message(devid, "WITHDRAWBUSY")
 		// fmt.Println(pilha)
 		vol_ini := bio[ind].Volume
@@ -3472,10 +3534,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		vpath := scp_splitparam(pathstr, ",")
 		if !test_path(vpath, 0) {
 			fmt.Println("ERROR RUN WITHDRAW 28: falha de valvula no path", pathid)
-			board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+			waitlist_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 			return -1
 		}
-		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, devid+"WITHDRAW")
+		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -3489,12 +3551,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if val == 0 {
 					if !set_valv_status(dtype, sub[0], sub[1], 1) {
 						fmt.Println("ERROR RUN WITHDRAW 29: nao foi possivel setar valvula", p)
-						board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+						waitlist_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 						return -1
 					}
 				} else if val == 1 {
 					fmt.Println("ERROR RUN WITHDRAW 30: valvula ja aberta", p)
-					board_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
+					waitlist_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 					// bio_add_message(devid, "ABiorreator aguardando liberação da Linha", "WITHDRAWBUSY")
 					return -1
 				} else {
@@ -3507,7 +3569,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			pilha = append([]string{p}, pilha...)
 		}
-		board_del_message(devid + "WITHDRAWBUSY")
+		waitlist_del_message(devid + "WITHDRAWBUSY")
 		// bio_del_message(devid, "WITHDRAWBUSY")
 		vol_ini := ibc[ind].Volume
 		ibc[ind].VolumeOut = ibc[ind].Withdraw
@@ -3606,7 +3668,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		ibc[ind].Withdraw = 0
 		// board_add_message("IDesenvase IBC "+devid+" concluido", "")
-		board_del_message(devid + "WITHDRAW")
+		// board_del_message(devid + "WITHDRAW")
 		fmt.Println("WARN RUN WITHDRAW 38: Desligando bomba biofabrica", pumpdev)
 		biofabrica.Pumpwithdraw = false
 		cmd1 = "CMD/" + pumpdev + "/PUT/" + pumpport + ",0/END"
@@ -3636,7 +3698,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				ibc[ind].Status = prev_status
 				return -1
 			}
-			board_add_message("ILimpando LINHA 4", "")
+			board_add_message("IEnxague LINHA 4", "")
 			if set_valvs_value(vpath, 1, true) < 1 {
 				fmt.Println("ERROR RUN WITHDRAW 42: Falha ao abrir valvulas CLEAN linha", pathstr)
 				set_valvs_value(vpath, 0, false)
@@ -4744,7 +4806,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			// 	return false
 			// }
 			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
-			board_add_message("ABiorreator "+bioid+" aguardando "+msgask, bioid+"ASKPROD")
+			waitlist_add_message("ABiorreator "+bioid+" aguardando "+msgask, bioid+"ASKPROD")
 			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR", "ASKPROD")
 			bio[ind].Continue = false
 			t_start := time.Now()
@@ -4779,7 +4841,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				}
 				time.Sleep(1000 * time.Millisecond)
 			}
-			board_del_message(bioid + "ASKPROD")
+			waitlist_del_message(bioid + "ASKPROD")
 			bio_del_message(bioid, "ASKPROD")
 			// scp_sendmsg_orch(scrmain)
 		} else {
@@ -4982,12 +5044,12 @@ func scp_run_job_bio(bioid string, job string) bool {
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
-					board_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
+					waitlist_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
 					bio_add_message(bioid, "ABiorreator aguardando liberação da Linha", "ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				} else {
-					board_del_message(bioid + "ONWATERBUSY")
+					waitlist_del_message(bioid + "ONWATERBUSY")
 					bio_del_message(bioid, "ONWATERBUSY")
 				}
 			}
@@ -5470,11 +5532,11 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
-					board_add_message("A"+ibcid+" aguardando liberação da Linha", ibcid+"ONWATERBUSY")
+					waitlist_add_message("A"+ibcid+" aguardando liberação da Linha", ibcid+"ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
 					return false
 				} else {
-					board_del_message(ibcid + "ONWATERBUSY")
+					waitlist_del_message(ibcid + "ONWATERBUSY")
 				}
 			}
 		} else {
@@ -5863,7 +5925,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				scp_turn_heater(bio[ind].BioreactorID, 0, false)
 			}
 			if !bio[ind].MustStop {
-				board_add_message("ABiorreator "+main_id+" pausado", main_id+"PAUSE")
+				waitlist_add_message("ABiorreator "+main_id+" pausado", main_id+"PAUSE")
 				bio_add_message(main_id, "ABiorreator pausado", "PAUSE")
 			} else {
 				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido", "")
@@ -5890,7 +5952,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			if !bio[ind].MustStop {
 				// board_add_message("APausa no Biorreator "+main_id+" liberada", "")
 				// bio_add_message(main_id, "APausa no Biorreator liberada", "")
-				board_del_message(main_id + "PAUSE")
+				waitlist_del_message(main_id + "PAUSE")
 				bio_del_message(main_id, "PAUSE")
 			}
 			// if !schedrunning {
@@ -5920,7 +5982,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].Status = bio_pause
 			ibc[ind].Withdraw = 0 // VALIDAR
 			if !ibc[ind].MustStop {
-				board_add_message("AIBC "+main_id+" pausado", main_id+"PAUSE")
+				waitlist_add_message("AIBC "+main_id+" pausado", main_id+"PAUSE")
 			}
 
 		} else if !pause {
@@ -5943,7 +6005,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			ibc[ind].LastStatus = bio_pause
 			if !ibc[ind].MustStop {
 				// board_add_message("APausa no IBC "+main_id+" liberada", "")
-				board_del_message(main_id + "PAUSE")
+				waitlist_del_message(main_id + "PAUSE")
 			}
 			// if !schedrunning {
 			// 	go scp_scheduler()
