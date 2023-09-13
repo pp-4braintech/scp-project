@@ -6983,6 +6983,12 @@ func scp_process_conn(conn net.Conn) {
 											}
 											time.Sleep(2 * time.Second)
 										}
+										if ibc[ibc_ind].Volume > 0 {
+											ibc[ibc_ind].OrgCode = bio[ind].OrgCode
+											ibc[ibc_ind].Organism = bio[ind].Organism
+											ibc[ibc_ind].Status = bio_ready
+										}
+
 									} else {
 										bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
 									}
