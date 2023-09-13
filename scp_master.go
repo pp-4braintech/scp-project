@@ -5666,7 +5666,7 @@ func scp_run_bio(bioid string) {
 		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", bioid)
 		return
 	}
-	for bio[ind].Status != bio_die && biofabrica.Critical != scp_stopall {
+	for bio[ind].Status != bio_die {
 		if len(bio[ind].Queue) > 0 && (devmode || testmode) {
 			fmt.Println("\n\nBIO", bioid, " status", bio[ind].Status)
 			fmt.Println("\nQUEUE:", bio[ind].Queue)
@@ -5726,7 +5726,7 @@ func scp_run_ibc(ibcid string) {
 		fmt.Println("ERROR SCP RUN BIO: Biorreator nao existe", ibcid)
 		return
 	}
-	for ibc[ind].Status != bio_die && biofabrica.Critical != scp_stopall {
+	for ibc[ind].Status != bio_die {
 		if len(ibc[ind].Queue) > 0 && (devmode || testmode) {
 			fmt.Println("\n\nIBC", ibcid, " status", ibc[ind].Status)
 			fmt.Println("\nQUEUE:", ibc[ind].Queue)
