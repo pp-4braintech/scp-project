@@ -1234,10 +1234,10 @@ func scp_run_recovery() {
 			board_add_message("AFavor checar IBC "+b.IBCID, "")
 		}
 	}
-	if !schedrunning {
-		time.Sleep(60 * time.Second)
-		go scp_scheduler()
-	}
+	// if !schedrunning {
+	// 	time.Sleep(60 * time.Second)
+	// 	go scp_scheduler()
+	// }
 }
 
 func scp_emergency_pause() {
@@ -2294,6 +2294,9 @@ func scp_sync_functions() {
 
 		}
 		time.Sleep(scp_refreshsync * time.Second)
+		if !schedrunning {
+			go scp_scheduler()
+		}
 	}
 }
 
@@ -5746,13 +5749,13 @@ func scp_run_devs() {
 }
 
 func scp_scheduler() {
+	schedrunning = true
 	fmt.Println("DEBUG SCHEDULER: Iniciando Scheduler")
 	if !devsrunning {
 		scp_run_devs()
 		go scp_clock()
 		devsrunning = true
 	}
-	schedrunning = true
 	for schedrunning == true {
 		for k, b := range bio {
 			// fmt.Println(k, " bio =", b)
@@ -5890,9 +5893,9 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				board_del_message(main_id + "PAUSE")
 				bio_del_message(main_id, "PAUSE")
 			}
-			if !schedrunning {
-				go scp_scheduler()
-			}
+			// if !schedrunning {
+			// 	go scp_scheduler()
+			// }
 		}
 
 	case scp_ibc:
@@ -5942,9 +5945,9 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				// board_add_message("APausa no IBC "+main_id+" liberada", "")
 				board_del_message(main_id + "PAUSE")
 			}
-			if !schedrunning {
-				go scp_scheduler()
-			}
+			// if !schedrunning {
+			// 	go scp_scheduler()
+			// }
 		}
 	default:
 		fmt.Println("ERROR PAUSE DEVICE: Tipo de dispositivo invalido", devtype, main_id)
