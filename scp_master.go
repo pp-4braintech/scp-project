@@ -6951,7 +6951,14 @@ func scp_process_conn(conn net.Conn) {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
 								if ibc_ind >= 0 {
 									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume {
-										bio_add_message(bioid, "ITransferência iniciada", "")
+										board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
+										bio_add_message(bioid, "IEnxague de Linha antes da Transferência", "")
+										if devmode || testmode {
+											scp_run_linewash(line_23, 10)
+										} else {
+											scp_run_linewash(line_23, 180)
+										}
+										// bio_add_message(bioid, "ITransferência iniciada", "")
 										go scp_run_withdraw(scp_bioreactor, bioid, true, true)
 									} else {
 										bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
