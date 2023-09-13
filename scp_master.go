@@ -6983,7 +6983,7 @@ func scp_process_conn(conn net.Conn) {
 											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
 												break
 											}
-											if scp_run_withdraw(scp_bioreactor, bioid, true, true) > 0 {
+											if scp_run_withdraw(scp_bioreactor, bioid, true, true) >= 0 {
 												break
 											}
 											time.Sleep(2 * time.Second)
@@ -7006,7 +7006,7 @@ func scp_process_conn(conn net.Conn) {
 									if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
 										break
 									}
-									if scp_run_withdraw(scp_bioreactor, bioid, true, false) > 0 {
+									if scp_run_withdraw(scp_bioreactor, bioid, true, false) >= 0 {
 										break
 									}
 									time.Sleep(2 * time.Second)
@@ -7224,7 +7224,7 @@ func scp_process_conn(conn net.Conn) {
 								if ibc[ind].MustPause || ibc[ind].MustStop || biofabrica.Critical == scp_stopall {
 									break
 								}
-								if scp_run_withdraw(scp_ibc, ibcid, true, false) > 0 {
+								if scp_run_withdraw(scp_ibc, ibcid, true, false) >= 0 {
 									break
 								}
 								time.Sleep(2 * time.Second)
