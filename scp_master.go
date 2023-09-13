@@ -6953,11 +6953,25 @@ func scp_process_conn(conn net.Conn) {
 									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume {
 										board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
 										bio_add_message(bioid, "IEnxague de Linha antes da Transferência", "")
-										if devmode || testmode {
-											scp_run_linewash(line_23, 10)
-										} else {
-											scp_run_linewash(line_23, 180)
+										for {
+											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+												break
+											}
+											wtime := 180
+											if devmode || testmode {
+												wtime = 30
+											}
+											if scp_run_linewash(line_23, wtime) {
+												break
+											} else {
+												waitlist_add_message("A"+bioid+" aguardando linha para enxague", bioid+"WAITLINEWASH")
+												bio_add_message(bioid, "AAguardando linha para enxague", "WAITLINEWASH")
+											}
+											time.Sleep(2 * time.Second)
 										}
+										waitlist_del_message(bioid + "WAITLINEWASH")
+										bio_del_message(bioid, "WAITLINEWASH")
+
 										// bio_add_message(bioid, "ITransferência iniciada", "")
 										go scp_run_withdraw(scp_bioreactor, bioid, true, true)
 									} else {
