@@ -168,6 +168,7 @@ const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
 const scp_timelinecip = 20       // em segundos
+const time_cipline_blend = 30    // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
@@ -3189,7 +3190,14 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		time.Sleep(scp_timelinecip * time.Second) // VALIDAR TEMPO DE BLEND na LINHA
+		// time.Sleep(scp_timelinecip * time.Second) // VALIDAR TEMPO DE BLEND na LINHAv
+
+		for i := 0; i < time_cipline_blend*10; i++ {
+			if biofabrica.Critical == scp_stopall {
+				break
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
 
 		if !scp_turn_peris(scp_totem, totem_str, peris_str, 0) {
 			fmt.Println("ERROR SCP RUN LINEWASH: ERROR ao desligar peristaltica em", totem_str, peris_str)
@@ -3210,6 +3218,10 @@ func scp_run_linecip(lines string) bool {
 		// 	time.Sleep(100 * time.Millisecond)
 		// }
 
+		if biofabrica.Critical == scp_stopall {
+			return false
+		}
+
 		time.Sleep((scp_timewaitvalvs * time.Microsecond))
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 1) {
@@ -3217,7 +3229,7 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+		time.Sleep(time.Duration(time__clean) * time.Millisecond)
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 0) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
