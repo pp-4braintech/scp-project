@@ -3092,7 +3092,7 @@ func scp_run_linewash(lines string, washtime int) bool {
 	}
 
 	pathstr := paths[pathclean].Path
-	fmt.Println("DEBUG SCP RUN LINEWASH:: Executando enxague - lines=", lines, "pathclean=", pathclean, "pathstr=", pathstr)
+	fmt.Println("DEBUG SCP RUN LINEWASH:: Executando enxague - lines=", lines, "time=", washtime, "pathclean=", pathclean, "pathstr=", pathstr)
 	if len(pathstr) == 0 {
 		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
 		return false
