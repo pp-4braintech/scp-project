@@ -2324,6 +2324,11 @@ func scp_sync_functions() {
 	n_bio := 0
 	for {
 		if finishedsetup {
+
+			if biofabrica.Critical == scp_stopall {
+				return
+			}
+
 			t_elapsed_save := uint32(time.Since(t_start_save).Seconds())
 			if t_elapsed_save >= scp_timetosave {
 				save_all_data(data_filename)
