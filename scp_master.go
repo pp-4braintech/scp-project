@@ -6972,18 +6972,35 @@ func scp_process_conn(conn net.Conn) {
 										waitlist_del_message(bioid + "WAITLINEWASH")
 										bio_del_message(bioid, "WAITLINEWASH")
 
-										// bio_add_message(bioid, "ITransferência iniciada", "")
-										go scp_run_withdraw(scp_bioreactor, bioid, true, true)
+										bio_add_message(bioid, "ITransferência iniciada", "")
+										conn.Write([]byte(scp_ack))
+										for {
+											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+												break
+											}
+											if scp_run_withdraw(scp_bioreactor, bioid, true, true) > 0 {
+												break
+											}
+											time.Sleep(2 * time.Second)
+										}
 									} else {
 										bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
 									}
 								}
 							} else {
 								bio_add_message(bioid, "IDesenvase iniciado", "")
-								go scp_run_withdraw(scp_bioreactor, bioid, true, false)
+								conn.Write([]byte(scp_ack))
+								for {
+									if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+										break
+									}
+									if scp_run_withdraw(scp_bioreactor, bioid, true, false) > 0 {
+										break
+									}
+									time.Sleep(2 * time.Second)
+								}
 							}
 						}
-						conn.Write([]byte(scp_ack))
 					} else {
 						conn.Write([]byte(scp_err))
 					}
@@ -7190,11 +7207,20 @@ func scp_process_conn(conn net.Conn) {
 					if err == nil {
 						ibc[ind].Withdraw = uint32(vol)
 						if ibc[ind].Withdraw > 0 {
-							go scp_run_withdraw(scp_ibc, ibcid, true, false)
+							conn.Write([]byte(scp_ack))
+							for {
+								if ibc[ind].MustPause || ibc[ind].MustStop || biofabrica.Critical == scp_stopall {
+									break
+								}
+								if scp_run_withdraw(scp_ibc, ibcid, true, false) > 0 {
+									break
+								}
+								time.Sleep(2 * time.Second)
+							}
 						}
-						conn.Write([]byte(scp_ack))
+					} else {
+						conn.Write([]byte(scp_err))
 					}
-					conn.Write([]byte(scp_err))
 
 				case scp_dev_pump:
 					var cmd2 string
