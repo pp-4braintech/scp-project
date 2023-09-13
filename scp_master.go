@@ -169,6 +169,7 @@ const scp_timegrowwait = 30000
 const scp_maxtimewithdraw = 1800 // separar nas funcoes do JOB
 const scp_timelinecip = 20       // em segundos
 const time_cipline_blend = 30    // em segundos
+const time_cipline_clean = 30    // em segundos
 const scp_timeoutdefault = 60
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
@@ -3148,7 +3149,7 @@ func scp_run_linecip(lines string) bool {
 		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
 		return false
 	}
-	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+	// var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 	vpath := scp_splitparam(pathstr, ",")
 	vpath_peris := scp_splitparam(pathstr, ",")
 	perisvalv := totem_str + "/V2"
@@ -3229,7 +3230,7 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		time.Sleep(time.Duration(time__clean) * time.Millisecond)
+		time.Sleep(time.Duration(time_cipline_clean) * time.Millisecond)
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 0) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
