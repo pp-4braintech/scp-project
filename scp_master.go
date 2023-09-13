@@ -1828,9 +1828,9 @@ func scp_get_ph_voltage(bioid string) float64 {
 			if bio[ind].Status != bio_producting {
 				return -1
 			}
-			if !scp_turn_aero(bioid, false, 0, 0) {
+			if !scp_turn_aero(bioid, false, 0, 0, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
-				scp_turn_aero(bioid, false, 1, aeroratio)
+				scp_turn_aero(bioid, false, 1, aeroratio, false)
 				return -1
 			}
 			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
@@ -1858,7 +1858,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
 		if aerostatus {
-			if !scp_turn_aero(bioid, false, 1, aeroratio) {
+			if !scp_turn_aero(bioid, false, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
 		}
@@ -3822,7 +3822,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 	return 0
 }
 
-func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool {
+func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, musttest bool) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP TURN: Biorreator nao existe", bioid)
@@ -3856,7 +3856,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int) bool 
 	}
 
 	if changevalvs {
-		musttest := value == 1
+		// musttest := value == 1
 		if test_path(dev_valvs, 1-value) || !musttest {
 			if set_valvs_value(dev_valvs, value, musttest) < 0 {
 				fmt.Println("ERROR SCP TURN AERO: ERROR ao definir valor [", value, "] das valvulas", dev_valvs)
@@ -4349,7 +4349,7 @@ func scp_adjust_foam(bioid string) {
 
 func scp_adjust_aero(bioid string, aero int) bool {
 	fmt.Println("DEBUG SCP ADJUST AERO: Ajustando Aerador do Biorreator", bioid, " para", aero)
-	ret := scp_turn_aero(bioid, false, scp_on, aero)
+	ret := scp_turn_aero(bioid, false, scp_on, aero, false)
 	return ret
 }
 
@@ -4553,7 +4553,7 @@ func scp_fullstop_bio(bioid string) bool {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar peristalticas do", bioid)
 	}
 	ret = ret && ret_peris
-	ret_aero := scp_turn_aero(bioid, true, 0, 0)
+	ret_aero := scp_turn_aero(bioid, true, 0, 0, false)
 	if !ret_aero {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar aerador do", bioid)
 	}
@@ -4997,7 +4997,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					fmt.Println("ERROR SCP RUN JOB: Parametros invalido em", scp_job_on, params)
 					return false
 				}
-				if !scp_turn_aero(bioid, true, 1, perc_int) {
+				if !scp_turn_aero(bioid, true, 1, perc_int, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aerador em", bioid)
 					return false
 				}
@@ -5085,7 +5085,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			device := subpars[0]
 			switch device {
 			case scp_dev_aero:
-				if !scp_turn_aero(bioid, true, 0, 0) {
+				if !scp_turn_aero(bioid, true, 0, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar aerador em", bioid)
 					return false
 				}
@@ -6718,7 +6718,7 @@ func scp_process_conn(conn net.Conn) {
 
 			case scp_par_start:
 				ibc[ind].OutID = "OUT"
-				fmt.Println(scp_ibc, ibc_id)
+				fmt.Println("DEBUG WDPANEL START: ", scp_ibc, ibc_id)
 				if !withdrawrunning {
 					go scp_run_withdraw(scp_ibc, ibc_id, true, false)
 					fmt.Println("DEBUG WDPANEL: Executando Desenvase do", ibc_id, " volume", ibc[ind].Withdraw)
