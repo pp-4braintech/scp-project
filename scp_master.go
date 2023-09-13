@@ -6072,16 +6072,22 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].Timeleft[1] = 0
 			bio[ind].Step[0] = 0
 			bio[ind].Step[1] = 0
-			q := pop_first_sched(bio[ind].BioreactorID, false)
-
-			if len(q.Bioid) == 0 { // Verificar depois
-				if bio[ind].Volume == 0 {
-					bio[ind].Status = bio_empty
-				} else {
-					bio[ind].Status = bio_ready
+			waitlist_del_message(bio[ind].BioreactorID)
+			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
+				q := pop_first_sched(bio[ind].BioreactorID, true)
+				if len(q.Bioid) == 0 {
+					break
 				}
-				bio[ind].MustPause = false
 			}
+
+			// if len(q.Bioid) == 0 { // Verificar depois
+			if bio[ind].Volume == 0 {
+				bio[ind].Status = bio_empty
+			} else {
+				bio[ind].Status = bio_ready
+			}
+			bio[ind].MustPause = false
+			// }
 			bio[ind].ShowVol = true
 		}
 
@@ -6115,16 +6121,24 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].Timetotal[1] = 0
 			ibc[ind].Step[0] = 0
 			ibc[ind].Step[1] = 0
-			q := pop_first_sched(ibc[ind].IBCID, false)
+			waitlist_del_message(ibc[ind].IBCID)
 
-			if len(q.Bioid) == 0 {
-				if ibc[ind].Volume == 0 {
-					ibc[ind].Status = bio_empty
-				} else {
-					ibc[ind].Status = bio_ready
+			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
+				q := pop_first_sched(ibc[ind].IBCID, true)
+				if len(q.Bioid) == 0 {
+					break
 				}
-				ibc[ind].MustPause = false
 			}
+
+			// q := pop_first_sched(ibc[ind].IBCID, false)
+			// if len(q.Bioid) == 0 {
+			if ibc[ind].Volume == 0 {
+				ibc[ind].Status = bio_empty
+			} else {
+				ibc[ind].Status = bio_ready
+			}
+			ibc[ind].MustPause = false
+			// }
 			ibc[ind].ShowVol = true
 		}
 	}
