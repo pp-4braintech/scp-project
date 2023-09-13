@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -3220,7 +3221,16 @@ func scp_run_linecip(lines string) bool {
 	return true
 }
 
+func MutexLocked(m *sync.Mutex) bool {
+	const mutexLocked = 1
+	state := reflect.ValueOf(m).Elem().FieldByName("state")
+	return state.Int()&mutexLocked == mutexLocked
+}
+
 func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bool) int {
+	if MutexLocked(&withdrawmutex) {
+		waitlist_add_message("A"+devid+" aguardando termino de outro desenvase", devid+"WITHDRAWBUSY")
+	}
 	withdrawmutex.Lock()
 	turn_withdraw_var(true)
 	defer withdrawmutex.Unlock()
