@@ -3234,16 +3234,19 @@ func MutexLocked(m *sync.Mutex) bool {
 
 func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bool) int {
 	if MutexLocked(&withdrawmutex) {
-		waitlist_add_message("A"+devid+" aguardando termino de outro desenvase", devid+"WITHDRAWBUSY")
+		waitlist_add_message("A"+devid+" aguardando termino de outro desenvase", devid+"WDBUSY")
 		if devtype == scp_bioreactor {
-			bio_add_message(devid, "ABiorreator aguardando termino de outro desenvase", "WITHDRAWBUSY")
+			bio_add_message(devid, "ABiorreator aguardando termino de outro desenvase", "WDBUSY")
 		}
 	}
 	withdrawmutex.Lock()
 	turn_withdraw_var(true)
 	defer withdrawmutex.Unlock()
 	defer turn_withdraw_var(false)
-
+	waitlist_del_message(devid + "WDBUSY")
+	if devtype == scp_bioreactor {
+		bio_del_message(devid, "WDBUSY")
+	}
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
