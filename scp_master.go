@@ -3116,8 +3116,8 @@ func scp_run_linewash(lines string, washtime int) bool {
 		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
 		return false
 	}
-
-	board_add_message("IEnxague concluído Linhas "+lines, "")
+	sl := strings.Replace(lines, "_", "/", -1)
+	board_add_message("IEnxague concluído LINHAS "+sl, "")
 	return true
 }
 
@@ -6979,6 +6979,7 @@ func scp_process_conn(conn net.Conn) {
 
 										bio_add_message(bioid, "ITransferência iniciada", "")
 										conn.Write([]byte(scp_ack))
+										ibc[ibc_ind].Status = bio_loading
 										for {
 											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
 												break
@@ -6989,7 +6990,7 @@ func scp_process_conn(conn net.Conn) {
 											time.Sleep(2 * time.Second)
 										}
 										if ibc[ibc_ind].Volume > 0 {
-											board_add_message("APASSEI AQUI", "")
+											// board_add_message("APASSEI AQUI", "")
 											ibc[ibc_ind].OrgCode = bio[ind].OrgCode
 											ibc[ibc_ind].Organism = bio[ind].Organism
 											ibc[ibc_ind].Status = bio_ready
