@@ -1541,29 +1541,34 @@ func waitlist_has_message(id string) bool {
 	return false
 }
 
-func waitlist_del_message(id string) bool {
+func waitlist_del_message(id string) {
 	waitlistmutex.Lock()
 	defer waitlistmutex.Unlock()
 	msg_id := fmt.Sprintf("{%s", id)
 	// fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
-	has_del := false
-	for i := 0; i < len(biofabrica.WaitList); i++ {
-		if strings.Contains(biofabrica.WaitList[i], msg_id) {
-			has_del = true
-			m1 := []string{}
-			if i > 0 {
-				m1 = biofabrica.WaitList[:i]
+	for {
+		has_del := false
+		for i := 0; i < len(biofabrica.WaitList); i++ {
+			if strings.Contains(biofabrica.WaitList[i], msg_id) {
+				has_del = true
+				m1 := []string{}
+				if i > 0 {
+					m1 = biofabrica.WaitList[:i]
+				}
+				m2 := []string{}
+				if i < len(biofabrica.WaitList)-1 {
+					m2 = biofabrica.WaitList[i+1:]
+				}
+				// fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
+				biofabrica.WaitList = append(m1, m2...)
+				break
 			}
-			m2 := []string{}
-			if i < len(biofabrica.WaitList)-1 {
-				m2 = biofabrica.WaitList[i+1:]
-			}
-			// fmt.Println("DEBUG BOARD DEL MESSAGE: m1=", len(m1), m1, " m2=", len(m2), m2)
-			biofabrica.WaitList = append(m1, m2...)
+		}
+		if !has_del {
+			break
 		}
 	}
 	// fmt.Println("DEBUG BOARD DEL MESSAGE: board final=", len(biofabrica.Messages), biofabrica.Messages)
-	return has_del
 }
 
 func waitlist_add_message(m string, id string) bool {
