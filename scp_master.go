@@ -3513,52 +3513,57 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("ERROR RUN WITHDRAW 16: destino para clean desconhecido", dest_type)
 				return 0
 			}
-			pathstr = paths[pathclean].Path
-			if len(pathstr) == 0 {
-				fmt.Println("ERROR RUN WITHDRAW 17: path WASH linha nao existe", pathclean)
-				return 0
+			if pathclean == "TOTEM02-CLEAN4" {
+				scp_run_linewash(line_24, 30)
+			} else if pathclean == "TOTEM02-CLEAN3" {
+				scp_run_linewash(line_23, 30)
 			}
-			var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
-			vpath = scp_splitparam(pathstr, ",")
-			if !test_path(vpath, 0) {
-				fmt.Println("ERROR RUN WITHDRAW 18: falha de valvula no path", pathstr)
-				return 0
-			}
-			if set_valvs_value(vpath, 1, true) < 1 {
-				fmt.Println("ERROR RUN WITHDRAW 19: Falha ao abrir valvulas CLEAN linha", pathstr)
-				set_valvs_value(vpath, 0, false)
-			}
-			time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			fmt.Println("WARN RUN WITHDRAW 20: Ligando bomba TOTEM02", devid)
-			tind := get_totem_index("TOTEM02")
-			if tind < 0 {
-				fmt.Println("WARN RUN WITHDRAW 21: TOTEM02 nao encontrado", totem)
-			}
-			totemdev := totem_cfg["TOTEM02"].Deviceaddr
-			pumpdev = totem_cfg["TOTEM02"].Pumpdev
-			totem[tind].Pumpstatus = true
-			cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
-			ret1 = scp_sendmsg_orch(cmd1)
-			fmt.Println("DEBUG RUN WITHDRAW 22: CMD1 =", cmd1, " RET=", ret1)
-			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERROR RUN WITHDRAW 23: BIORREATOR falha ao ligar bomba TOTEM02")
-				totem[tind].Pumpstatus = false
-				set_valvs_value(vpath, 0, false)
-				return 0
-			}
-			time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
-			fmt.Println("WARN RUN WITHDRAW 24: Desligando bomba TOTEM02", devid)
-			totem[tind].Pumpstatus = false
-			cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
-			ret1 = scp_sendmsg_orch(cmd1)
-			fmt.Println("DEBUG RUN WITHDRAW 25: CMD1 =", cmd1, " RET=", ret1)
-			if !strings.Contains(ret1, scp_ack) && !devmode {
-				fmt.Println("ERROR RUN WITHDRAW 26: BIORREATOR falha ao ligar bomba TOTEM02")
-				totem[tind].Pumpstatus = false
-				set_valvs_value(vpath, 0, false)
-				return 0
-			}
-			set_valvs_value(vpath, 0, false)
+			// pathstr = paths[pathclean].Path
+			// if len(pathstr) == 0 {
+			// 	fmt.Println("ERROR RUN WITHDRAW 17: path WASH linha nao existe", pathclean)
+			// 	return 0
+			// }
+			// var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+			// vpath = scp_splitparam(pathstr, ",")
+			// if !test_path(vpath, 0) {
+			// 	fmt.Println("ERROR RUN WITHDRAW 18: falha de valvula no path", pathstr)
+			// 	return 0
+			// }
+			// if set_valvs_value(vpath, 1, true) < 1 {
+			// 	fmt.Println("ERROR RUN WITHDRAW 19: Falha ao abrir valvulas CLEAN linha", pathstr)
+			// 	set_valvs_value(vpath, 0, false)
+			// }
+			// time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			// fmt.Println("WARN RUN WITHDRAW 20: Ligando bomba TOTEM02", devid)
+			// tind := get_totem_index("TOTEM02")
+			// if tind < 0 {
+			// 	fmt.Println("WARN RUN WITHDRAW 21: TOTEM02 nao encontrado", totem)
+			// }
+			// totemdev := totem_cfg["TOTEM02"].Deviceaddr
+			// pumpdev = totem_cfg["TOTEM02"].Pumpdev
+			// totem[tind].Pumpstatus = true
+			// cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",1/END"
+			// ret1 = scp_sendmsg_orch(cmd1)
+			// fmt.Println("DEBUG RUN WITHDRAW 22: CMD1 =", cmd1, " RET=", ret1)
+			// if !strings.Contains(ret1, scp_ack) && !devmode {
+			// 	fmt.Println("ERROR RUN WITHDRAW 23: BIORREATOR falha ao ligar bomba TOTEM02")
+			// 	totem[tind].Pumpstatus = false
+			// 	set_valvs_value(vpath, 0, false)
+			// 	return 0
+			// }
+			// time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+			// fmt.Println("WARN RUN WITHDRAW 24: Desligando bomba TOTEM02", devid)
+			// totem[tind].Pumpstatus = false
+			// cmd1 = "CMD/" + totemdev + "/PUT/" + pumpdev + ",0/END"
+			// ret1 = scp_sendmsg_orch(cmd1)
+			// fmt.Println("DEBUG RUN WITHDRAW 25: CMD1 =", cmd1, " RET=", ret1)
+			// if !strings.Contains(ret1, scp_ack) && !devmode {
+			// 	fmt.Println("ERROR RUN WITHDRAW 26: BIORREATOR falha ao ligar bomba TOTEM02")
+			// 	totem[tind].Pumpstatus = false
+			// 	set_valvs_value(vpath, 0, false)
+			// 	return 0
+			// }
+			// set_valvs_value(vpath, 0, false)
 			// board_add_message("IEnxague concluído", "")
 		}
 		bio[ind].Status = prev_status
