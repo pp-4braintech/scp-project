@@ -1544,7 +1544,7 @@ func waitlist_has_message(id string) bool {
 func waitlist_del_message(id string) bool {
 	waitlistmutex.Lock()
 	defer waitlistmutex.Unlock()
-	msg_id := fmt.Sprintf("{%s}", id)
+	msg_id := fmt.Sprintf("{%s", id)
 	// fmt.Println("DEBUG BOARD DEL MESSAGE: board inicial=", len(biofabrica.Messages), biofabrica.Messages)
 	has_del := false
 	for i := 0; i < len(biofabrica.WaitList); i++ {
