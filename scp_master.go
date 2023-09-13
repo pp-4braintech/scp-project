@@ -3067,7 +3067,7 @@ func turn_withdraw_var(value bool) {
 	withdrawrunning = value
 }
 
-func scp_run_linewash(lines string) bool {
+func scp_run_linewash(lines string, washtime int) bool {
 	fmt.Println("DEBUG SCP RUN LINEWASH: Executando enxague das linhas", lines)
 	var pathclean string = ""
 	totem := ""
@@ -3095,14 +3095,20 @@ func scp_run_linewash(lines string) bool {
 		fmt.Println("ERROR SCP RUN LINEWASH:: path WASH linha nao existe", pathclean)
 		return false
 	}
-	var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+	// var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
+	time_to_clean := washtime * 10
 	vpath := scp_splitparam(pathstr, ",")
 	if !scp_turn_pump(scp_totem, totem, vpath, 1) {
 		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
 		return false
 	}
 
-	time.Sleep(time.Duration(time_to_clean) * time.Millisecond)
+	for i := 0; i < time_to_clean; i++ {
+		if biofabrica.Critical == scp_stopall {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 
 	if !scp_turn_pump(scp_totem, totem, vpath, 0) {
 		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
@@ -6632,7 +6638,13 @@ func scp_process_conn(conn net.Conn) {
 			cmdpar := params[2]
 			switch cmdpar {
 			case scp_par_linewash:
-				scp_run_linewash(params[3])
+				time_str := params[4]
+				time_int, err := strconv.Atoi(time_str)
+				if err != nil {
+					checkErr(err)
+					time_int = 30
+				}
+				scp_run_linewash(params[3], time_int)
 
 			case scp_par_linecip:
 				scp_run_linecip(params[3])

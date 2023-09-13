@@ -722,6 +722,7 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 		valve := r.FormValue("Valve")
 		valve_status := r.FormValue("Status")
 		linewash := r.FormValue("Linewash")
+		lw_time := r.FormValue("Time")
 		linecip := r.FormValue("LineCIP")
 		// fmt.Println("Pumpwithdraw = ", pump)
 		// fmt.Println("Valve = ", valve)
@@ -739,7 +740,11 @@ func biofabrica_view(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(jsonStr))
 		}
 		if linewash != "" {
-			cmd := "START/" + scp_biofabrica + "/" + scp_par_linewash + "/" + linewash + "/END"
+			time_str := "30"
+			if len(lw_time) > 0 {
+				time_str = lw_time
+			}
+			cmd := "START/" + scp_biofabrica + "/" + scp_par_linewash + "/" + linewash + "/" + time_str + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))
