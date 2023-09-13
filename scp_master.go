@@ -5946,7 +5946,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido", "")
 			}
 
-		} else if !pause {
+		} else if !pause && bio[ind].Status == bio_pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
@@ -6000,7 +6000,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				waitlist_add_message("AIBC "+main_id+" pausado", main_id+"PAUSE")
 			}
 
-		} else if !pause {
+		} else if !pause && ibc[ind].Status == bio_pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando IBC", main_id)
 			ibc[ind].Queue = append(ibc[ind].RedoQueue, ibc[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
@@ -6072,7 +6072,6 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].Timeleft[1] = 0
 			bio[ind].Step[0] = 0
 			bio[ind].Step[1] = 0
-			waitlist_del_message(bio[ind].BioreactorID)
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(bio[ind].BioreactorID, true)
 				if len(q.Bioid) == 0 {
@@ -6089,6 +6088,7 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].MustPause = false
 			// }
 			bio[ind].ShowVol = true
+			waitlist_del_message(bio[ind].BioreactorID)
 		}
 
 	case scp_ibc:
@@ -6121,7 +6121,6 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].Timetotal[1] = 0
 			ibc[ind].Step[0] = 0
 			ibc[ind].Step[1] = 0
-			waitlist_del_message(ibc[ind].IBCID)
 
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(ibc[ind].IBCID, true)
@@ -6140,6 +6139,7 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].MustPause = false
 			// }
 			ibc[ind].ShowVol = true
+			waitlist_del_message(ibc[ind].IBCID)
 		}
 	}
 	save_all_data(data_filename)
