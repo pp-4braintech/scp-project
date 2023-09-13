@@ -3235,6 +3235,9 @@ func MutexLocked(m *sync.Mutex) bool {
 func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bool) int {
 	if MutexLocked(&withdrawmutex) {
 		waitlist_add_message("A"+devid+" aguardando termino de outro desenvase", devid+"WITHDRAWBUSY")
+		if devtype == scp_bioreactor {
+			bio_add_message(devid, "ABiorreator aguardando termino de outro desenvase", "WITHDRAWBUSY")
+		}
 	}
 	withdrawmutex.Lock()
 	turn_withdraw_var(true)
@@ -3557,7 +3560,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			waitlist_add_message("ADesenvase do "+devid+" aguardando liberação da Linha", devid+"WITHDRAWBUSY")
 			return -1
 		}
-		board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
+		// board_add_message("CDesenvase iniciado "+devid+" para "+ibc[ind].OutID, "")
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
