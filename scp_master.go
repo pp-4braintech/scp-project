@@ -6106,12 +6106,12 @@ func stop_device(devtype string, main_id string) bool {
 			return false
 		}
 		if ibc[ind].MustStop {
-			board_add_message("EIBC "+main_id+" já sendo interrompido, aguarde", "")
+			board_add_message("E"+main_id+" já sendo interrompido, aguarde", "")
 			return false
 		}
 		fmt.Println("\n\nDEBUG STOP: Executando STOP para", main_id)
 		ibc[ind].Withdraw = 0
-		board_add_message("AIBC "+main_id+" interrompido", "")
+		board_add_message("A"+main_id+" interrompido", "")
 		if ibc[ind].Status != bio_empty || true { // corrigir
 			ibc[ind].MustStop = true
 			pause_device(devtype, main_id, true)
