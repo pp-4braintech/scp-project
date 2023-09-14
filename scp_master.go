@@ -1284,7 +1284,7 @@ func scp_check_lastversion() {
 
 	fmt.Println("DEBUG CHECK LASTVERSION: Checando ultima versao do software")
 	res, err := http.Get("https://simulador-back.hubioagro.com.br/biofabrica_view")
-
+	fmt.Println("RES=", res)
 	if err != nil {
 		checkErr(err)
 		return
