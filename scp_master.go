@@ -6151,6 +6151,7 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].Timeleft[1] = 0
 			bio[ind].Step[0] = 0
 			bio[ind].Step[1] = 0
+			bio[ind].RunningCIP = false
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(bio[ind].BioreactorID, true)
 				if len(q.Bioid) == 0 {
@@ -6200,6 +6201,7 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].Timetotal[1] = 0
 			ibc[ind].Step[0] = 0
 			ibc[ind].Step[1] = 0
+			ibc[ind].RunningCIP = false
 
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(ibc[ind].IBCID, true)
