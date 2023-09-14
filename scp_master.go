@@ -169,6 +169,7 @@ const scp_checksetup = 60
 const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
 
+const scp_timetocheckversion = 5 // em minutos
 const scp_timewaitvalvs = 15000
 const scp_timephwait = 10000 // Tempo que o ajuste de PH e aplicado durante o cultivo
 const scp_timetempwait = 10000
@@ -2368,6 +2369,7 @@ func scp_sync_functions() {
 	t_start_status := time.Now()
 	t_start_screens := time.Now()
 	t_start_screens_full := time.Now()
+	t_start_version := time.Now()
 
 	n_bio := 0
 	for {
@@ -2408,7 +2410,10 @@ func scp_sync_functions() {
 			}
 
 		}
-		go scp_check_lastversion()
+		t_elapsed_version := uint32(time.Since(t_start_version).Minutes())
+		if t_elapsed_version > scp_timetocheckversion {
+			go scp_check_lastversion()
+		}
 		time.Sleep(scp_refreshsync * time.Second)
 		if !schedrunning {
 			go scp_scheduler()
