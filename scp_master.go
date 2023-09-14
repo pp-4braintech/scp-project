@@ -119,6 +119,7 @@ const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
+const scp_par_version = "SYSVERSION"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -388,26 +389,26 @@ type Totem struct {
 }
 
 type Biofabrica struct {
-	BiofabricaID  string
-	Valvs         [9]int
-	Pumpwithdraw  bool
-	Messages      []string
-	WaitList      []string
-	Status        string
-	VolumeOut     float64
-	VolOutPart    float64
-	LastCountOut  uint32
-	VolumeIn1     float64
-	VolIn1Part    float64
-	LastCountIn1  uint32
-	TestMode      bool
-	TechMode      bool
-	Useflowin     bool
-	PIntStatus    string
-	POutStatus    string
-	Critical      string
-	Version       string
-	HasNewVersion bool
+	BiofabricaID string
+	Valvs        [9]int
+	Pumpwithdraw bool
+	Messages     []string
+	WaitList     []string
+	Status       string
+	VolumeOut    float64
+	VolOutPart   float64
+	LastCountOut uint32
+	VolumeIn1    float64
+	VolIn1Part   float64
+	LastCountIn1 uint32
+	TestMode     bool
+	TechMode     bool
+	Useflowin    bool
+	PIntStatus   string
+	POutStatus   string
+	Critical     string
+	Version      string
+	LastVersion  string
 }
 
 type Path struct {
@@ -527,7 +528,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "", "", true,
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "", "", "",
 }
 
 var biobak = bio // Salva status atual
@@ -6588,6 +6589,11 @@ func scp_process_conn(conn net.Conn) {
 				case scp_par_upgrade:
 					fmt.Println("DEBUG CONFIG: Upgrade em andamento")
 					system_upgrade()
+
+				case scp_par_version:
+					buf, err := json.Marshal(biofabrica.Version)
+					checkErr(err)
+					conn.Write([]byte(buf))
 
 				case scp_par_testmode:
 					if len(params) > 4 {
