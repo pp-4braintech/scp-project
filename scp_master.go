@@ -2569,6 +2569,7 @@ func scp_get_alldata() {
 											bio[ind].VolInOut = 0
 										}
 										bio[ind].Volume = uint32(bio[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " NOVO volume =", bio[ind].VolInOut)
 										scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolout = vol_tmp
@@ -2774,12 +2775,13 @@ func scp_get_alldata() {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_in1
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										ibcvolin := vol_tmp - lastvolin
 										ibc[ind].VolInOut += ibcvolin
 										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " NOVO volume =", ibc[ind].VolInOut)
 										// scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolin = vol_tmp
@@ -2791,7 +2793,7 @@ func scp_get_alldata() {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_out
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.IBCID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
 									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolout && lastvolout > 0 {
 										ibcvolout := vol_tmp - lastvolout
@@ -2800,6 +2802,7 @@ func scp_get_alldata() {
 											ibc[ind].VolInOut = 0
 										}
 										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " NOVO volume =", ibc[ind].VolInOut)
 										// scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolout = vol_tmp
