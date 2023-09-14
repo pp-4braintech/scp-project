@@ -828,7 +828,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		resetdata := r.FormValue("ResetData")
 		stopall := r.FormValue("StopAll")
 		upgrade := r.FormValue("Upgrade")
-		sysversion := r.FormValue("Version")
+		// sysversion := r.FormValue("Version")
 
 		if len(bioid) > 0 {
 			if stopall != "" {
