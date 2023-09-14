@@ -1280,13 +1280,17 @@ func scp_emergency_pause() {
 }
 
 func scp_check_lastversion() {
+	var last_biofabrica Biofabrica
 
+	fmt.Println("DEBUG CHECK LASTVERSION: Checando ultima versao do software")
 	res, err := http.Get("https://simulador-back.hubioagro.com.br/biofabrica_view")
 
 	if err != nil {
 		checkErr(err)
 		return
 	}
+
+	fmt.Println(res)
 
 	rdata, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -1295,6 +1299,8 @@ func scp_check_lastversion() {
 	}
 
 	fmt.Println(string(rdata))
+	json.Unmarshal(rdata, &last_biofabrica)
+	fmt.Println(last_biofabrica)
 }
 
 func scp_check_network() {
