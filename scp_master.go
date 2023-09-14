@@ -118,6 +118,7 @@ const scp_par_continue = "CONTINUE"
 const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
+const scp_par_upgrade = "SYSUPGRADE"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -6584,6 +6585,10 @@ func scp_process_conn(conn net.Conn) {
 					save_all_data(data_filename)
 					scp_restart_services()
 
+				case scp_par_upgrade:
+					fmt.Println("DEBUG CONFIG: Upgrade em andamento")
+					system_upgrade()
+
 				case scp_par_testmode:
 					if len(params) > 4 {
 						flag_str := params[3]
@@ -7442,6 +7447,32 @@ func scp_master_ipc() {
 			go scp_process_conn(conn)
 		}
 	}
+}
+
+func system_upgrade() {
+	fmt.Println("WARN SCP MASTER UPGRADEstarted... Necessario aguardar cerca de 10 minutos...")
+	board_add_message("EParando Biofábrica e Atualizando Software", "")
+	biofabrica.Critical = scp_stopall
+	scp_emergency_pause()
+	time.Sleep(60 * time.Second)
+	biofabrica.Critical = scp_sysstop
+	save_all_data(data_filename)
+	time.Sleep(5 * time.Second)
+	cmdpath, _ := filepath.Abs(execpath + "upgrade.sh")
+	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
+	cmd := exec.Command(cmdpath)
+	cmd.Dir = execpath
+	output, err := cmd.CombinedOutput()
+	if len(output) > 0 {
+		fmt.Println("OUPUT", string(output))
+	}
+	if err != nil {
+		checkErr(err)
+		fmt.Println("Falha ao Executar shell de upgrade")
+		board_add_message("EFalha ao Atualizar Software", "")
+		return
+	}
+	os.Exit(0)
 }
 
 func master_shutdown(sigs chan os.Signal) {
