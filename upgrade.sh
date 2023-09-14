@@ -3,6 +3,7 @@
 cd /home/scpadm/scp-project
 
 rm scp_master scp_orch scp_back
+git config --global --add safe.directory /home/scpadm/scp-project
 git stash
 git pull
 

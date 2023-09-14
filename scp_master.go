@@ -1015,7 +1015,7 @@ func load_paths_conf(filename string) int {
 			pathstr += "END"
 			paths[path_id] = Path{from_id, to_id, clean_time, pathstr}
 			totalrecords++
-			fmt.Println("PATH id=", path_id, "path=", paths[path_id])
+			// fmt.Println("PATH id=", path_id, "path=", paths[path_id])
 		}
 	}
 	return totalrecords
