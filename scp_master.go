@@ -52,6 +52,7 @@ const (
 	scp_put     = "PUT"
 	scp_run     = "RUN"
 	scp_die     = "DIE"
+	scp_null    = "NULL"
 	scp_sched   = "SCHED"
 	scp_start   = "START"
 	scp_status  = "STATUS"
@@ -119,7 +120,8 @@ const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
-const scp_par_version = "SYSVERSION"
+
+// const scp_par_version = "SYSVERSION"
 
 const scp_job_org = "ORG"
 const scp_job_on = "ON"
@@ -6590,10 +6592,10 @@ func scp_process_conn(conn net.Conn) {
 					fmt.Println("DEBUG CONFIG: Upgrade em andamento")
 					system_upgrade()
 
-				case scp_par_version:
-					buf, err := json.Marshal(biofabrica.Version)
-					checkErr(err)
-					conn.Write([]byte(buf))
+				// case scp_par_version:
+				// 	buf, err := json.Marshal(biofabrica.Version)
+				// 	checkErr(err)
+				// 	conn.Write([]byte(buf))
 
 				case scp_par_testmode:
 					if len(params) > 4 {
@@ -7565,7 +7567,7 @@ func main() {
 
 	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 	biofabrica.Version = scp_version
-	biofabrica.LastVersion = scp_version
+	biofabrica.LastVersion = scp_null
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
