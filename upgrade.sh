@@ -15,6 +15,8 @@ unzip build10.zip
 mv build10/* .
 chmod -R a+r *
 
+cd /home/scpadm/scp-project
+
 echo "Restartando Orquestrador"
 go build scp_orch.go
 systemctl restart scp_orch
