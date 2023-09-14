@@ -3,6 +3,7 @@
 cd /home/scpadm/scp-project
 
 rm scp_master scp_orch scp_back
+git stash
 git pull
 
 echo "Atualizando Front End"
