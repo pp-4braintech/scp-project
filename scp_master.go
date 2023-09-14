@@ -6183,6 +6183,7 @@ func stop_device(devtype string, main_id string) bool {
 
 func scp_restart_services() {
 	// fmt.Println("Reestartando Servico ORCH")
+
 	biofabrica.Critical = scp_stopall
 	cmdpath, _ := filepath.Abs("/usr/bin/systemctl")
 	cmd := exec.Command(cmdpath, "restart", "scp_orch")
@@ -6565,6 +6566,7 @@ func scp_process_conn(conn net.Conn) {
 
 				case scp_par_restart:
 					fmt.Println("DEBUG CONFIG: Restartando Service")
+					save_all_data(data_filename)
 					scp_restart_services()
 
 				case scp_par_testmode:
