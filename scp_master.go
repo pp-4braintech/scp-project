@@ -7,10 +7,12 @@ import (
 	// "filepath"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -1277,6 +1279,24 @@ func scp_emergency_pause() {
 	}
 }
 
+func scp_check_lastversion() {
+
+	res, err := http.Get("https://simulador-back.hubioagro.com.br/biofabrica_view")
+
+	if err != nil {
+		checkErr(err)
+		return
+	}
+
+	rdata, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		checkErr(err)
+		return
+	}
+
+	fmt.Println(string(rdata))
+}
+
 func scp_check_network() {
 	for {
 		if biofabrica.Critical == scp_stopall {
@@ -2381,6 +2401,7 @@ func scp_sync_functions() {
 			}
 
 		}
+		go scp_check_lastversion()
 		time.Sleep(scp_refreshsync * time.Second)
 		if !schedrunning {
 			go scp_scheduler()
