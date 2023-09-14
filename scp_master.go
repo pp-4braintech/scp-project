@@ -6183,6 +6183,7 @@ func stop_device(devtype string, main_id string) bool {
 
 func scp_restart_services() {
 	// fmt.Println("Reestartando Servico ORCH")
+	biofabrica.Critical = scp_stopall
 	cmdpath, _ := filepath.Abs("/usr/bin/systemctl")
 	cmd := exec.Command(cmdpath, "restart", "scp_orch")
 	cmd.Dir = "/usr/bin"
@@ -6193,9 +6194,11 @@ func scp_restart_services() {
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar ORCH")
+		board_add_message("EFalha ao reiniciar Orquestrador", "")
 		return
 	}
-	time.Sleep(10 * time.Second)
+	board_add_message("EOrquestrador reiniciado", "")
+	time.Sleep(20 * time.Second)
 	fmt.Println("Reestartando Servico BACKEND")
 	cmd = exec.Command(cmdpath, "restart", "scp_back")
 	cmd.Dir = "/usr/bin"
@@ -6206,8 +6209,10 @@ func scp_restart_services() {
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar BACK")
+		board_add_message("EFalha ao reiniciar Backend", "")
 		return
 	}
+	board_add_message("EBackend reiniciado", "")
 	time.Sleep(30 * time.Second)
 	fmt.Println("Reestartando Servico MASTER")
 	cmd = exec.Command(cmdpath, "restart", "scp_master")
@@ -6219,6 +6224,7 @@ func scp_restart_services() {
 	if err != nil {
 		checkErr(err)
 		fmt.Println("Falha ao Restartar MASTER")
+		board_add_message("EFalha ao reiniciar MASTER", "")
 		return
 	}
 }
@@ -6323,6 +6329,7 @@ func scp_process_conn(conn net.Conn) {
 							bio_cfg[bioid] = biocfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biorreator", bioid, " para", devaddr, " = ", bio_cfg[bioid])
 							conn.Write([]byte(scp_ack))
+							save_bios_conf(localconfig_path + "bio_conf.csv")
 						}
 
 					case scp_par_screenaddr:
@@ -6448,6 +6455,7 @@ func scp_process_conn(conn net.Conn) {
 							ibc_cfg[ibcid] = ibccfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do IBC", ibcid, " para", devaddr, " = ", ibc_cfg[ibcid])
 							conn.Write([]byte(scp_ack))
+							save_ibcs_conf(localconfig_path + "ibc_conf.csv")
 						}
 					case scp_par_resetdata:
 						if ibc[ind].Status == bio_empty || ibc[ind].Status == bio_ready {
@@ -6502,6 +6510,7 @@ func scp_process_conn(conn net.Conn) {
 							totem_cfg[totemid] = totemcfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Totem", totemid, " para", devaddr, " = ", totem_cfg[totemid])
 							conn.Write([]byte(scp_ack))
+							save_totems_conf(localconfig_path + "totem_conf.csv")
 						}
 					}
 				}
@@ -6542,7 +6551,7 @@ func scp_process_conn(conn net.Conn) {
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biofabrica", devid, " para", devaddr, " = ", biofabrica_cfg[devid])
 							conn.Write([]byte(scp_ack))
 						}
-
+						save_bf_conf(localconfig_path + "biofabrica_conf.csv")
 					}
 
 				case scp_par_save:
