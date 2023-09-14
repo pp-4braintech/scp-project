@@ -7528,6 +7528,7 @@ func main() {
 
 	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 	biofabrica.Version = scp_version
+	biofabrica.HasNewVersion = true
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
