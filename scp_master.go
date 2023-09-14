@@ -6327,6 +6327,7 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].Step[0] = 0
 							bio[ind].Step[1] = 0
 							bio[ind].ShowVol = true
+							bio[ind].RunningCIP = false
 						} else {
 							bio_add_message(bioid, "ESó é possível redefinir um Biorreator se ele estiver VAZIO ou PRONTO", "")
 						}
@@ -6485,6 +6486,7 @@ func scp_process_conn(conn net.Conn) {
 							ibc[ind].Step[0] = 0
 							ibc[ind].Step[1] = 0
 							ibc[ind].ShowVol = true
+							ibc[ind].RunningCIP = false
 						} else {
 							board_add_message("ANão é possível redifinir os dados do "+ibcid+" se não estiver VAZIO ou PRONTO", "")
 						}
