@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.0"
+	scp_version = "1.2.5" // 2023-09-14
 
 	scp_on  = 1
 	scp_off = 0
@@ -1299,7 +1299,8 @@ func scp_check_lastversion() {
 	}
 	// fmt.Println(string(rdata))
 	json.Unmarshal(rdata, &last_biofabrica)
-	fmt.Println(last_biofabrica)
+	// fmt.Println(last_biofabrica)
+	fmt.Println("DEBUG CHECK LASTVERSION: Ajustando ultima versão para:", last_biofabrica.Version)
 	biofabrica.LastVersion = last_biofabrica.Version
 }
 
