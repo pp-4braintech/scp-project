@@ -37,6 +37,8 @@ const control_temp = true
 const control_foam = true
 
 const (
+	scp_version = "1.2.0"
+
 	scp_on  = 1
 	scp_off = 0
 
@@ -403,6 +405,7 @@ type Biofabrica struct {
 	PIntStatus   string
 	POutStatus   string
 	Critical     string
+	Version      string
 }
 
 type Path struct {
@@ -7523,6 +7526,7 @@ func main() {
 	load_all_data(data_filename)
 
 	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
+	biofabrica.Version = scp_version
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
