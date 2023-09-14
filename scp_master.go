@@ -2413,6 +2413,7 @@ func scp_sync_functions() {
 		t_elapsed_version := uint32(time.Since(t_start_version).Minutes())
 		if t_elapsed_version > scp_timetocheckversion {
 			go scp_check_lastversion()
+			t_start_version = time.Now()
 		}
 		time.Sleep(scp_refreshsync * time.Second)
 		if !schedrunning {
