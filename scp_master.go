@@ -179,6 +179,7 @@ const scp_timelinecip = 20       // em segundos
 const time_cipline_blend = 30    // em segundos
 const time_cipline_clean = 30    // em segundos
 const scp_timeoutdefault = 60
+const scp_maxwaitvolume = 30 // em minutos
 
 const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
 const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
@@ -1284,23 +1285,22 @@ func scp_check_lastversion() {
 
 	fmt.Println("DEBUG CHECK LASTVERSION: Checando ultima versao do software")
 	res, err := http.Get("http://biofabrica-main.hubioagro.com.br/biofabrica_view")
-	fmt.Println("RES=", res)
+	// fmt.Println("RES=", res)
 	if err != nil {
 		checkErr(err)
 		return
 	}
 
-	fmt.Println(res)
-
+	// fmt.Println(res)
 	rdata, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		checkErr(err)
 		return
 	}
-
-	fmt.Println(string(rdata))
+	// fmt.Println(string(rdata))
 	json.Unmarshal(rdata, &last_biofabrica)
 	fmt.Println(last_biofabrica)
+	biofabrica.LastVersion = last_biofabrica.Version
 }
 
 func scp_check_network() {
@@ -2548,6 +2548,7 @@ func scp_get_alldata() {
 										biovolin := vol_tmp - lastvolin
 										bio[ind].VolInOut += biovolin
 										bio[ind].Volume = uint32(bio[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " NOVO volume =", bio[ind].VolInOut)
 										scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolin = vol_tmp
@@ -5006,7 +5007,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					return false
 				}
 
-				time_max := scp_timeoutdefault
+				time_max := scp_maxwaitvolume * 60
 				time_min := 0
 				par_time := false
 				if len(subpars) > 3 {
@@ -5035,14 +5036,18 @@ func scp_run_job_bio(bioid string, job string) bool {
 				for {
 					vol_now := uint64(bio[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
-					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
-						break
+					if vol_now >= vol_max {
+						if !par_time {
+							break
+						} else if t_elapsed >= float64(time_min) {
+							break
+						}
 					}
 					if bio[ind].MustPause || bio[ind].MustStop {
 						return false
 					}
 					if t_elapsed > float64(time_max) {
-						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de withdraw esgotado", t_elapsed, scp_maxtimewithdraw)
+						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de WAIT VOLUME esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
 						if !devmode && !par_time {
 							return testmode
 						}
