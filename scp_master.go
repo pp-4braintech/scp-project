@@ -387,25 +387,26 @@ type Totem struct {
 }
 
 type Biofabrica struct {
-	BiofabricaID string
-	Valvs        [9]int
-	Pumpwithdraw bool
-	Messages     []string
-	WaitList     []string
-	Status       string
-	VolumeOut    float64
-	VolOutPart   float64
-	LastCountOut uint32
-	VolumeIn1    float64
-	VolIn1Part   float64
-	LastCountIn1 uint32
-	TestMode     bool
-	TechMode     bool
-	Useflowin    bool
-	PIntStatus   string
-	POutStatus   string
-	Critical     string
-	Version      string
+	BiofabricaID  string
+	Valvs         [9]int
+	Pumpwithdraw  bool
+	Messages      []string
+	WaitList      []string
+	Status        string
+	VolumeOut     float64
+	VolOutPart    float64
+	LastCountOut  uint32
+	VolumeIn1     float64
+	VolIn1Part    float64
+	LastCountIn1  uint32
+	TestMode      bool
+	TechMode      bool
+	Useflowin     bool
+	PIntStatus    string
+	POutStatus    string
+	Critical      string
+	Version       string
+	HasNewVersion bool
 }
 
 type Path struct {
@@ -525,7 +526,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "", "",
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "", "", true,
 }
 
 var biobak = bio // Salva status atual
