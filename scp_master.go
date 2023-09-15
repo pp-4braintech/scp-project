@@ -3435,7 +3435,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
 		t_last_volchange := time.Now()
-		abort_due_novolchange := false
+		// abort_due_novolchange := false
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
@@ -3448,7 +3448,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if vol_now == vol_bio_last {
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
-					abort_due_novolchange = true
+					// abort_due_novolchange = true
 					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
 					break
 				}
