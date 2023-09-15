@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.11" // 2023-09-14
+	scp_version = "1.2.12" // 2023-09-14
 
 	scp_on  = 1
 	scp_off = 0
@@ -84,6 +84,7 @@ const scp_dev_vollaser = "VOLLASER"
 const scp_dev_volfluxo_out = "VOLFLUXO_OUT"
 const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
 const scp_dev_heater = "HEATER"
+const scp_dev_all = "ALL"
 
 const scp_par_withdraw = "WITHDRAW"
 const scp_par_out = "OUT"
@@ -3434,6 +3435,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
 		t_last_volchange := time.Now()
+		abort_due_novolchange := false
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
@@ -3446,6 +3448,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if vol_now == vol_bio_last {
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
+					abort_due_novolchange = true
 					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
 					break
 				}
@@ -5194,6 +5197,11 @@ func scp_run_job_bio(bioid string, job string) bool {
 		if len(subpars) > 0 {
 			device := subpars[0]
 			switch device {
+			case scp_dev_all:
+				if !scp_fullstop_device(bioid, scp_bioreactor) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar todos os dispositivos em", bioid)
+					return false
+				}
 			case scp_dev_aero:
 				if !scp_turn_aero(bioid, true, 0, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar aerador em", bioid)
@@ -5682,6 +5690,11 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		if len(subpars) > 0 {
 			device := subpars[0]
 			switch device {
+			case scp_dev_all:
+				if !scp_fullstop_device(ibcid, scp_ibc) {
+					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar todos os dispositivos em", ibcid)
+					return false
+				}
 			case scp_dev_pump:
 				valvs := []string{}
 				for k := 1; k < len(subpars) && subpars[k] != "END"; k++ {
