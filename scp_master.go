@@ -3402,6 +3402,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		var vol_out int64
 		var vol_bio_out_start float64
 		vol_bio_init := bio[ind].Volume
+		vol_bio_last := bio[ind].Volume
 		if bio[ind].OutID == scp_out || bio[ind].OutID == scp_drop {
 			var count int
 			count, vol_bio_out_start = scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
@@ -3432,6 +3433,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
+		t_last_volchange := time.Now()
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
@@ -3440,6 +3442,16 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			if bio[ind].Withdraw == 0 {
 				break
+			}
+			if vol_now == vol_bio_last {
+				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
+				if t_elapsed_volchage > 25 {
+					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
+					break
+				}
+			} else {
+				vol_bio_last = vol_now
+				t_last_volchange = time.Now()
 			}
 			if untilempty {
 				if mustwaittime {
@@ -3710,6 +3722,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			maxtime = scp_maxtimewithdraw
 		}
 		t_start := time.Now()
+		vol_bio_last := ibc[ind].Volume
+		t_last_volchange := time.Now()
 		ibc7_ind := get_ibc_index(last_ibc)
 		ibc7_vol_ini := float64(-1)
 		if ibc7_ind >= 0 {
@@ -3743,6 +3757,16 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			// fmt.Println("vout=", vout, ibc[ind].VolumeOut)
 			if ibc[ind].Withdraw == 0 {
 				break
+			}
+			if vol_now == vol_bio_last {
+				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
+				if t_elapsed_volchage > 25 {
+					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
+					break
+				}
+			} else {
+				vol_bio_last = vol_now
+				t_last_volchange = time.Now()
 			}
 			if untilempty {
 				if vol_now == 0 {
