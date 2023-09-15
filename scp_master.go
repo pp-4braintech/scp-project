@@ -123,6 +123,8 @@ const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
+const scp_par_lock = "LOCK"
+const scp_par_unlock = "UNLOCK"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -5710,6 +5712,27 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				if len(subpars) > 3 {
 					peris_str := subpars[1]
 					totem_str := subpars[2]
+					lock_par := ""
+					lock_valv := ""
+					if len(subpars) > 3 {
+						lock_par = subpars[3]
+						if lock_par == scp_par_lock {
+							if len(subpars) > 4 {
+								lock_valv = "BIOFABRICA/" + subpars[4]
+								// if lock_valv
+							} else {
+								lock_par = ""
+								fmt.Println("ERROR SCP RUN JOB: OFF Faltou valvula no LOCK", ibcid, subpars)
+							}
+						} else {
+							fmt.Println("ERROR SCP RUN JOB: OFF Parametro LOCK esperado", ibcid, subpars)
+						}
+					}
+					if len(lock_valv) > 0 {
+						if set_valvs_value([]string{lock_valv}, 3, false) < 0 {
+							fmt.Println("ERROR SCP RUN JOB: Não foi possivel dar lock na valvula", ibcid, lock_valv)
+						}
+					}
 					pathid := totem_str + "-" + ibcid
 					pathstr := paths[pathid].Path
 					if len(pathstr) == 0 {
