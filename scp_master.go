@@ -5202,7 +5202,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_dev_all:
 				if !scp_fullstop_device(bioid, scp_bioreactor) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar todos os dispositivos em", bioid)
-					return false
+					return true
 				}
 			case scp_dev_aero:
 				if !scp_turn_aero(bioid, true, 0, 0, false) {
