@@ -70,6 +70,11 @@ const (
 	scp_state_JOIN1   = 11
 	scp_state_TCP0    = 20
 	scp_state_TCPFAIL = 29
+
+	mainstatus_cip   = "CIP"
+	mainstatus_grow  = "CULTIVO"
+	mainstatus_org   = "ORGANISMO"
+	mainstatus_empty = "VAZIO"
 )
 
 const scp_dev_pump = "PUMP"
@@ -294,7 +299,7 @@ type Bioreact struct {
 	Temprunning  bool
 	Emergpress   bool
 	Continue     bool
-	RunningCIP   bool
+	MainStatus   string
 }
 
 type Bioreact_ETL struct {
@@ -329,7 +334,7 @@ type Bioreact_ETL struct {
 	Messages    []string
 	PHref       [3]float64
 	RegresPH    [2]float64
-	RunningCIP  bool
+	MainStatus  bool
 }
 
 type IBC struct {
@@ -360,7 +365,7 @@ type IBC struct {
 	LastStatus   string
 	ShowVol      bool
 	VolumeOut    uint32
-	RunningCIP   bool
+	MainStatus   string
 }
 
 type IBC_ETL struct {
@@ -386,7 +391,7 @@ type IBC_ETL struct {
 	LastStatus string
 	ShowVol    bool
 	VolumeOut  uint32
-	RunningCIP bool
+	MainStatus bool
 }
 
 type Totem struct {
@@ -4876,6 +4881,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			cmd := subpars[0]
 			switch cmd {
 			case scp_par_grow:
+				bio[ind].MainStatus = mainstatus_grow
 				ret := scp_grow_bio(bioid)
 				return ret
 
@@ -4886,7 +4892,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
 				board_add_message("IExecutando CIP no "+bioid, "")
-				bio[ind].RunningCIP = true
+				bio[ind].MainStatus = mainstatus_cip
 				return true
 
 			case scp_par_withdraw:
@@ -4996,7 +5002,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].Step = [2]int{0, 0}
 		bio[ind].Timetotal = [2]int{0, 0}
 		bio[ind].Timeleft = [2]int{0, 0}
-		bio[ind].RunningCIP = false
+		if bio[ind].MainStatus == mainstatus_cip {
+			bio[ind].MainStatus = mainstatus_empty
+		} else if bio[ind].MainStatus == mainstatus_grow {
+			bio[ind].MainStatus = mainstatus_org
+		} else {
+			bio[ind].MainStatus = mainstatus_empty
+		}
+
 		// scp_update_screen_times(bioid)
 		return true
 
@@ -5399,7 +5412,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				ibc[ind].Queue = append(qini, ibc[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", ibc[ind].Queue)
 				board_add_message("IExecutando CIP no "+ibcid, "")
-				ibc[ind].RunningCIP = true
+				ibc[ind].MainStatus = mainstatus_cip
 				return true
 
 			case scp_par_withdraw:
@@ -5496,7 +5509,12 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		ibc[ind].MustOffQueue = []string{}
 		ibc[ind].Step = [2]int{0, 0}
 		ibc[ind].ShowVol = true
-		ibc[ind].RunningCIP = false
+		if ibc[ind].MainStatus == mainstatus_cip {
+			ibc[ind].MainStatus = mainstatus_empty
+		} else {
+			ibc[ind].MainStatus = mainstatus_org
+		}
+
 		return true
 
 	case scp_job_wait:
@@ -6228,7 +6246,7 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].Timeleft[1] = 0
 			bio[ind].Step[0] = 0
 			bio[ind].Step[1] = 0
-			bio[ind].RunningCIP = false
+			bio[ind].MainStatus = mainstatus_empty
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(bio[ind].BioreactorID, true)
 				if len(q.Bioid) == 0 {
@@ -6278,7 +6296,7 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].Timetotal[1] = 0
 			ibc[ind].Step[0] = 0
 			ibc[ind].Step[1] = 0
-			ibc[ind].RunningCIP = false
+			ibc[ind].MainStatus = mainstatus_empty
 
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(ibc[ind].IBCID, true)
@@ -6441,7 +6459,7 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].Step[0] = 0
 							bio[ind].Step[1] = 0
 							bio[ind].ShowVol = true
-							bio[ind].RunningCIP = false
+							bio[ind].MainStatus = mainstatus_empty
 						} else {
 							bio_add_message(bioid, "ESó é possível redefinir um Biorreator se ele estiver VAZIO ou PRONTO", "")
 						}
@@ -6600,7 +6618,7 @@ func scp_process_conn(conn net.Conn) {
 							ibc[ind].Step[0] = 0
 							ibc[ind].Step[1] = 0
 							ibc[ind].ShowVol = true
-							ibc[ind].RunningCIP = false
+							ibc[ind].MainStatus = mainstatus_empty
 						} else {
 							board_add_message("ANão é possível redifinir os dados do "+ibcid+" se não estiver VAZIO ou PRONTO", "")
 						}
