@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.12" // 2023-09-14
+	scp_version = "1.2.13" // 2023-09-17
 
 	scp_on  = 1
 	scp_off = 0
@@ -334,7 +334,7 @@ type Bioreact_ETL struct {
 	Messages    []string
 	PHref       [3]float64
 	RegresPH    [2]float64
-	MainStatus  bool
+	MainStatus  string
 }
 
 type IBC struct {
@@ -391,7 +391,7 @@ type IBC_ETL struct {
 	LastStatus string
 	ShowVol    bool
 	VolumeOut  uint32
-	MainStatus bool
+	MainStatus string
 }
 
 type Totem struct {
@@ -518,22 +518,22 @@ var waitlistmutex sync.Mutex
 var withdrawrunning = false
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
-	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, false},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 10}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 15}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{5, 5}, [2]int{0, 0}, [2]int{72, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
+	{"BIOR06", bio_update, "PA", "Priestia Aryabhattai", 0, 0, 0, 0, 1000, 5, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
-	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, true},
+	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
 }
 
 var totem = []Totem{
@@ -1278,14 +1278,19 @@ func scp_emergency_pause() {
 		board_add_message("EPARADA de TOTAL em PROGRESSO", "")
 	}
 	for _, b := range bio {
-		pause_device(scp_bioreactor, b.BioreactorID, true)
-		ind := get_bio_index(b.BioreactorID)
-		bio[ind].Withdraw = 0
+		if b.Status != bio_nonexist {
+			pause_device(scp_bioreactor, b.BioreactorID, true)
+			ind := get_bio_index(b.BioreactorID)
+			bio[ind].Withdraw = 0
+		}
+
 	}
 	for _, b := range ibc {
-		pause_device(scp_ibc, b.IBCID, true)
-		ind := get_ibc_index(b.IBCID)
-		ibc[ind].Withdraw = 0
+		if b.Status != bio_nonexist {
+			pause_device(scp_ibc, b.IBCID, true)
+			ind := get_ibc_index(b.IBCID)
+			ibc[ind].Withdraw = 0
+		}
 	}
 }
 
