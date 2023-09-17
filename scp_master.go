@@ -4646,17 +4646,19 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 }
 
-func scp_fullstop_bio(bioid string) bool {
+func scp_fullstop_bio(bioid string, check_status bool) bool {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR FULLSTOP BIO: Biorreator nao encontrado", bioid)
 		return false
 	}
-	if bio[ind].Status != bio_ready && bio[ind].Status != bio_empty {
-		bio_add_message(bioid, "EEquipamento deve estar PRONTO ou VAZIO para Parada TOTAL", "")
-		return false
+	if check_status {
+		if bio[ind].Status != bio_ready && bio[ind].Status != bio_empty {
+			bio_add_message(bioid, "EEquipamento deve estar PRONTO ou VAZIO para Parada TOTAL", "")
+			return false
+		}
+		bio_add_message(bioid, "AParada TOTAL solicitada", "")
 	}
-	bio_add_message(bioid, "AParada TOTAL solicitada", "")
 	ret := true
 	ret_heater := scp_turn_heater(bioid, 0, false)
 	if !ret_heater {
@@ -4686,17 +4688,19 @@ func scp_fullstop_bio(bioid string) bool {
 	return ret
 }
 
-func scp_fullstop_ibc(ibcid string) bool {
+func scp_fullstop_ibc(ibcid string, check_status bool) bool {
 	ind := get_ibc_index(ibcid)
 	if ind < 0 {
 		fmt.Println("ERROR FULLSTOP IBC: IBC nao encontrado", ibcid)
 		return false
 	}
-	if ibc[ind].Status != bio_ready && ibc[ind].Status != bio_empty {
-		board_add_message("EEquipamento "+ibcid+" deve estar PRONTO ou VAZIO para Parada TOTAL", "")
-		return false
+	if check_status {
+		if ibc[ind].Status != bio_ready && ibc[ind].Status != bio_empty {
+			board_add_message("EEquipamento "+ibcid+" deve estar PRONTO ou VAZIO para Parada TOTAL", "")
+			return false
+		}
+		board_add_message("AParada TOTAL solicitada para "+ibcid, "")
 	}
-	board_add_message("AParada TOTAL solicitada para "+ibcid, "")
 	valvs := []string{ibcid + "/V1", ibcid + "/V2", ibcid + "/V3", ibcid + "/V4"}
 	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0)
 	if !ret {
@@ -4744,12 +4748,12 @@ func scp_fullstop_biofabrica() bool {
 	return ret_pump
 }
 
-func scp_fullstop_device(devid string, devtype string) bool {
+func scp_fullstop_device(devid string, devtype string, check_status bool) bool {
 	switch devtype {
 	case scp_bioreactor:
-		return scp_fullstop_bio(devid)
+		return scp_fullstop_bio(devid, check_status)
 	case scp_ibc:
-		return scp_fullstop_ibc(devid)
+		return scp_fullstop_ibc(devid, check_status)
 	case scp_totem:
 		return scp_fullstop_totem(devid)
 	case scp_biofabrica:
@@ -5218,7 +5222,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			device := subpars[0]
 			switch device {
 			case scp_dev_all:
-				if !scp_fullstop_device(bioid, scp_bioreactor) {
+				if !scp_fullstop_device(bioid, scp_bioreactor, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar todos os dispositivos em", bioid)
 					return true
 				}
@@ -5716,9 +5720,9 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 			device := subpars[0]
 			switch device {
 			case scp_dev_all:
-				if !scp_fullstop_device(ibcid, scp_ibc) {
+				if !scp_fullstop_device(ibcid, scp_ibc, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar todos os dispositivos em", ibcid)
-					return false
+					return true
 				}
 			case scp_dev_pump:
 				valvs := []string{}
@@ -6436,7 +6440,7 @@ func scp_process_conn(conn net.Conn) {
 							conn.Write([]byte(buf))
 						}
 					case scp_par_stopall:
-						if scp_fullstop_device(bioid, scp_bioreactor) {
+						if scp_fullstop_device(bioid, scp_bioreactor, true) {
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
@@ -6582,7 +6586,7 @@ func scp_process_conn(conn net.Conn) {
 				if ind >= 0 {
 					switch params[3] {
 					case scp_par_stopall:
-						if scp_fullstop_device(ibcid, scp_ibc) {
+						if scp_fullstop_device(ibcid, scp_ibc, true) {
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
@@ -6639,7 +6643,7 @@ func scp_process_conn(conn net.Conn) {
 				if ind >= 0 {
 					switch params[3] {
 					case scp_par_stopall:
-						if scp_fullstop_device(totemid, scp_totem) {
+						if scp_fullstop_device(totemid, scp_totem, false) {
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
@@ -6670,7 +6674,7 @@ func scp_process_conn(conn net.Conn) {
 				cmd := params[2]
 				switch cmd {
 				case scp_par_stopall:
-					if scp_fullstop_device("ALL", scp_biofabrica) {
+					if scp_fullstop_device("ALL", scp_biofabrica, false) {
 						conn.Write([]byte(scp_ack))
 					} else {
 						conn.Write([]byte(scp_err))
