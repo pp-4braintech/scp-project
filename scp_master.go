@@ -4803,6 +4803,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				bio[ind].Organism = organs[orgcode].Orgname
 				bio[ind].Timetotal = [2]int{organs[orgcode].Timetotal, 0}
 				bio[ind].Timeleft = [2]int{organs[orgcode].Timetotal, 0}
+				bio[ind].MainStatus = mainstatus_grow
 				scp_update_screen_times(bioid)
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
@@ -5339,6 +5340,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				ibc[ind].OrgCode = subpars[0]
 				ibc[ind].Organism = organs[orgcode].Orgname
 				ibc[ind].Timetotal = [2]int{0, 0}
+				ibc[ind].MainStatus = mainstatus_org
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
 				return false
