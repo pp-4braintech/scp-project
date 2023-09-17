@@ -3441,6 +3441,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			ibc_ind = get_ibc_index(bio[ind].OutID)
 			if ibc_ind >= 0 {
 				vol_ibc_ini = float64(ibc[ibc_ind].VolInOut)
+				ibc[ind].MainStatus = mainstatus_org
 			}
 			// bio[ind].ShowVol = false
 			mustwaittime = true
@@ -5017,7 +5018,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 		} else if bio[ind].MainStatus == mainstatus_grow {
 			bio[ind].MainStatus = mainstatus_org
 		} else {
-			bio[ind].MainStatus = mainstatus_empty
+			bio[ind].MainStatus = mainstatus_org
 		}
 
 		// scp_update_screen_times(bioid)
