@@ -26,6 +26,7 @@ const scp_state_JOIN0 = 10
 const scp_state_JOIN1 = 11
 const scp_state_TCP0 = 20
 const scp_state_TCPFAIL = 29
+const scp_state_PINGFAIL = 31
 const scp_max_len = 512
 const scp_keepalive_time = 7 // era 6
 const scp_timeout_ms = 1500
@@ -108,6 +109,9 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 	// if err != nil || !strings.Contains(ret, scp_pong) {
 	if err != nil {
 		scp_slave.slave_errors++
+		if scp_slave.slave_errors > scp_max_err {
+			scp_slave.slave_scp_state = scp_state_PINGFAIL
+		}
 		fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " --->>>  ERR ao tratar PING", ret)
 	} else {
 		fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " PING ret =", ret)
@@ -303,7 +307,18 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 			fmt.Println("ERRO Cliente NÃO COMPLETOU JOIN", slave_data)
 			_, err = con.WriteTo([]byte(scp_err), net_addr)
 			checkErr(err)
-		} else if slave_data.slave_errors < scp_max_err {
+		} else if slave_data.slave_scp_state == scp_state_PINGFAIL {
+			slave_data.slave_scp_state = scp_state_TCPFAIL
+			scp_slaves[scp_msg_slaveaddr] = slave_data
+			go func() {
+				slave_data.go_chan <- scp_destroy
+				if debug {
+					fmt.Println("destroy enviado com sucesso")
+				}
+			}()
+			_, err = con.WriteTo([]byte(scp_err), net_addr)
+			checkErr(err)
+		} else if slave_data.slave_errors <= scp_max_err {
 			cmd := params[2]
 			tam := len(cmd)
 			for _, v := range params[3:] {
@@ -327,7 +342,6 @@ func scp_process_udp(con net.PacketConn, msg []byte, p_size int, net_addr net.Ad
 				scp_slaves[scp_msg_slaveaddr] = slave_data
 			}
 			return
-
 		}
 
 		// select {
