@@ -1872,6 +1872,7 @@ func scp_setup_devices(mustall bool) {
 				}
 
 				nerr := 0
+				err_local := ""
 				for k, c := range cmd {
 					fmt.Print()
 					ret := scp_sendmsg_orch(c)
@@ -1879,8 +1880,10 @@ func scp_setup_devices(mustall bool) {
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 						if strings.Contains(c, "VBF03") || strings.Contains(c, "VBF04") || strings.Contains(c, "VBF05") {
+							err_local += "Painel Intermediário "
 							biofabrica.PIntStatus = bio_error
 						} else if strings.Contains(c, "VBF06") || strings.Contains(c, "VBF07") || strings.Contains(c, "VBF08") || strings.Contains(c, "VBF09") {
+							err_local += "Painel Desenvase "
 							biofabrica.POutStatus = bio_error
 						}
 					}
@@ -1899,8 +1902,8 @@ func scp_setup_devices(mustall bool) {
 				}
 				if nerr > 0 && !devmode && biofabrica.Status != scp_fail {
 					biofabrica.Status = scp_fail
-					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros")
-					board_add_message("EFALHA CRITICA EM VALVULAS DA BIOFABRICA", "")
+					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros", err_local)
+					board_add_message("EFALHA CRITICA em "+err_local, "")
 				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
 				}
