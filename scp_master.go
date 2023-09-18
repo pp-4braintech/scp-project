@@ -2347,6 +2347,9 @@ func scp_refresh_status() {
 								if ind >= 0 {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", dev_id)
 									bio[ind].Status = bio_error
+									if bio[ind].Status != bio_ready || bio[ind].Status != bio_empty {
+										pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+									}
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: Biorreator não existe na tabela", dev_id)
 								}
@@ -2356,6 +2359,9 @@ func scp_refresh_status() {
 								if ind >= 0 {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", dev_id)
 									ibc[ind].Status = bio_error
+									if ibc[ind].Status != bio_ready || ibc[ind].Status != bio_empty {
+										pause_device(scp_ibc, ibc[ind].IBCID, true)
+									}
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: IBC não existe na tabela", dev_id)
 								}
