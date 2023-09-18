@@ -2619,7 +2619,9 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
-						scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0) // força tentar ler algo pra dar erro caso esteja off
+						if rand.Intn(7) == 3 {
+							scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0) // força tentar ler algo pra dar erro caso esteja off
+						}
 
 						if biofabrica.Useflowin {
 							if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
@@ -2856,7 +2858,9 @@ func scp_get_alldata() {
 
 						if biofabrica.Useflowin {
 
-							scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0) // força a ler algo só pra atualizar se houver falha
+							if rand.Intn(7) == 3 {
+								scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0) // força a ler algo só pra atualizar se houver falha
+							}
 
 							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
