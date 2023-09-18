@@ -3396,6 +3396,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			fmt.Println("ERROR RUN WITHDRAW 01: Biorreator nao existe", devid)
 			return -1
 		}
+		if bio[ind].MustPause || bio[ind].MustStop {
+			return -1
+		}
 		prev_status := bio[ind].Status
 		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
@@ -3713,6 +3716,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		ind := get_ibc_index(devid)
 		if ind < 0 {
 			fmt.Println("ERROR RUN WITHDRAW 01: IBC nao existe", devid)
+			return -1
+		}
+		if ibc[ind].MustPause || ibc[ind].MustStop {
 			return -1
 		}
 		prev_status := ibc[ind].Status
