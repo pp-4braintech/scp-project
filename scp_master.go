@@ -1255,14 +1255,14 @@ func scp_run_recovery() {
 	for _, b := range bio {
 		if b.Status != bio_nonexist && b.Status != bio_error {
 			pause_device(scp_bioreactor, b.BioreactorID, false)
-		} else {
+		} else if b.Status == bio_error {
 			board_add_message("AFavor checar Biorreator "+b.BioreactorID, "")
 		}
 	}
 	for _, b := range ibc {
 		if b.Status != bio_nonexist && b.Status != bio_error {
 			pause_device(scp_ibc, b.IBCID, false)
-		} else {
+		} else if b.Status == bio_error {
 			board_add_message("AFavor checar IBC "+b.IBCID, "")
 		}
 	}
@@ -5793,6 +5793,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						}
 					}
 					if len(lock_valv) > 0 {
+						fmt.Println("DEBUG SCP RUN JOB: Executando lock na valvula", ibcid, lock_valv)
 						if set_valvs_value([]string{lock_valv}, 3, false) < 0 {
 							fmt.Println("ERROR SCP RUN JOB: Não foi possivel dar lock na valvula", ibcid, lock_valv)
 						}
