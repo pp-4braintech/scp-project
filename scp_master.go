@@ -5159,6 +5159,9 @@ func scp_run_job_bio(bioid string, job string) bool {
 						par_time = true
 					}
 				}
+				if devmode {
+					time_max = scp_timeoutdefault / 2
+				}
 				t_start := time.Now()
 				for {
 					vol_now := uint64(bio[ind].Volume)
@@ -5180,7 +5183,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 						}
 						break
 					}
-					time.Sleep(scp_refreshwait * time.Millisecond)
+					time.Sleep(scp_refreshwait * 2 * time.Millisecond)
 				}
 			}
 		} else {
