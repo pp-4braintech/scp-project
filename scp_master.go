@@ -3144,7 +3144,7 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
-				if val == (1-value) || val == 3 { // ACRESCENTEI TIPO 3 = LOCK
+				if val == (1-value) || val == 3 || value == 3 { // ACRESCENTEI TIPO 3 = LOCK
 					if !set_valv_status(dtype, sub[0], sub[1], value) {
 						fmt.Println("ERROR SET VALVS VALUE: nao foi possivel setar valvula", p)
 						if abort_on_error {
@@ -3153,7 +3153,7 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 					}
 					tot++
 				} else if val == 1 {
-					fmt.Println("ERROR SET VALVS VALUE: nao foi possivel setar valvula", p)
+					fmt.Println("ERROR SET VALVS VALUE: valor anterior invalido, nao foi possivel setar valvula", p)
 					if abort_on_error {
 						return -1
 					}
@@ -5838,8 +5838,9 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar peristaltica em", totem_str, peris_str)
 						return false
 					}
-					fmt.Println("npath=", pathstr)
-					vpath := scp_splitparam(pathstr, ",")
+					pathstr_new := strings.Replace(pathstr, lock_valv+",", "", -1)
+					fmt.Println("DEBUG SCP RUN JOB: OFF PERIS npath=", pathstr, " newpath=", pathstr_new)
+					vpath := scp_splitparam(pathstr_new, ",")
 					perisvalv := totem_str + "/V2"
 					n := len(vpath)
 					vpath = append(vpath[:n-1], perisvalv)
