@@ -1729,7 +1729,7 @@ func scp_setup_devices(mustall bool) {
 		ind := get_ibc_index(ib.IBCID)
 		ibcexist := true
 		if ind >= 0 {
-			if ibc_cfg[b.IBCID].Deviceaddr == bio_noaddr {
+			if ibc_cfg[ib.IBCID].Deviceaddr == bio_noaddr {
 				ibcexist = false
 				ibc[ind].Status = bio_nonexist
 			}
