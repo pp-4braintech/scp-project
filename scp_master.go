@@ -4894,9 +4894,6 @@ func scp_run_job_bio(bioid string, job string) bool {
 		fmt.Println("ERROR SCP RUN JOB: Biorreator nao existe", bioid)
 		return false
 	}
-	if bio[ind].MustPause || bio[ind].MustPause {
-		return false
-	}
 	params := scp_splitparam(job, "/")
 	subpars := []string{}
 	if len(params) > 1 {
@@ -5443,9 +5440,9 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		fmt.Println("ERROR SCP RUN JOB: IBC nao existe", ibcid)
 		return false
 	}
-	if ibc[ind].MustPause || ibc[ind].MustPause {
-		return false
-	}
+	// if ibc[ind].MustPause || ibc[ind].MustPause {
+	// 	return false
+	// }
 	params := scp_splitparam(job, "/")
 	subpars := []string{}
 	if len(params) > 1 {
