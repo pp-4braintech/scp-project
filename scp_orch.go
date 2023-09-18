@@ -158,7 +158,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				//slave_data.go_chan <- scp_ack
 				return
 			}
-			if scp_slave.slave_errors > scp_max_err {
+			if scp_slave.slave_errors >= scp_max_err {
 				fmt.Println(scp_slave.slave_scp_addr, "----->>>> TCP CLIENT com excesso de erros")
 				slave_data.go_chan <- scp_die
 			} else {
