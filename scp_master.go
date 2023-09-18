@@ -2383,9 +2383,9 @@ func scp_refresh_status() {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", dev_id)
 									if bio[ind].Status != bio_error && bio[ind].Status != bio_pause {
 										if bio[ind].Status != bio_ready || bio[ind].Status != bio_empty {
-											board_add_message("E"+bio[ind].BioreactorID+" com falha, entrando em pausa automática", "")
-											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, entrando em pausa automática", "")
-											pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+											board_add_message("E"+bio[ind].BioreactorID+" com falha, favor pausar o mesmo", "")
+											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, favor pausar o mesmo", "")
+											// pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
 										}
 									}
 									bio[ind].Status = bio_error
@@ -2399,8 +2399,8 @@ func scp_refresh_status() {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", dev_id)
 									if ibc[ind].Status != bio_error && ibc[ind].Status != bio_pause {
 										if ibc[ind].Status != bio_ready || ibc[ind].Status != bio_empty {
-											board_add_message("E"+ibc[ind].IBCID+" com falha, entrando em pausa automática", "")
-											pause_device(scp_ibc, ibc[ind].IBCID, true)
+											board_add_message("E"+ibc[ind].IBCID+" com falha, favor pausar o mesmo", "")
+											// pause_device(scp_ibc, ibc[ind].IBCID, true)
 										}
 									}
 									ibc[ind].Status = bio_error
@@ -2860,7 +2860,7 @@ func scp_get_alldata() {
 
 						if biofabrica.Useflowin {
 
-							if rand.Intn(7) == 3 {
+							if rand.Intn(3) == 1 {
 								scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0) // força a ler algo só pra atualizar se houver falha
 							}
 
