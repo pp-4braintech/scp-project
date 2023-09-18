@@ -5998,7 +5998,9 @@ func scp_run_bio(bioid string) {
 					onoff := scp_invert_onoff(job)
 					if len(onoff) > 0 {
 						if !strings.Contains(onoff, "MUSTOFF") {
-							bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
+							if !strings.Contains(onoff, "IGNORE") {
+								bio[ind].UndoQueue = append(bio[ind].UndoQueue, onoff)
+							}
 						} else {
 							onoff_must := strings.Replace(onoff, ",MUSTOFF,", ",", -1)
 							bio[ind].MustOffQueue = append(bio[ind].MustOffQueue, onoff_must)
@@ -6058,7 +6060,9 @@ func scp_run_ibc(ibcid string) {
 					onoff := scp_invert_onoff(job)
 					if len(onoff) > 0 {
 						if !strings.Contains(onoff, "MUSTOFF") {
-							ibc[ind].UndoQueue = append(ibc[ind].UndoQueue, onoff)
+							if !strings.Contains(onoff, "IGNORE") {
+								ibc[ind].UndoQueue = append(ibc[ind].UndoQueue, onoff)
+							}
 						} else {
 							onoff_must := strings.Replace(onoff, ",MUSTOFF,", ",", -1)
 							ibc[ind].MustOffQueue = append(ibc[ind].MustOffQueue, onoff_must)
