@@ -1,14 +1,25 @@
 #!/bin/bash
 
+ping biofabrica-main.hubioagro.com.br -c 5
+if [ $? -ne 0 ] 
+    then
+        echo "Nao foi possivel fazer a atualizacao" 
+        exit 1
+fi
+
 cd /home/scpadm/scp-project
 
-cp scp_* /tmp/
+cp scp_*.go /tmp/
 rm scp_master scp_orch scp_back
 git config --global --add safe.directory /home/scpadm/scp-project
 git stash
 git pull
-
-[ $? -ne 0 ] && echo "Nao foi possivel fazer a atualizacao" && cp /tmp/scp_* . && exit 1
+if [ $? -ne 0 ] 
+    then
+        echo "Nao foi possivel fazer a atualizacao"
+        cp /tmp/scp_*.go . 
+        exit 1
+fi
 
 echo "Atualizando Front End"
 
