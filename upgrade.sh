@@ -2,10 +2,13 @@
 
 cd /home/scpadm/scp-project
 
+cp scp_* /tmp/
 rm scp_master scp_orch scp_back
 git config --global --add safe.directory /home/scpadm/scp-project
 git stash
 git pull
+
+[ $? -ne 0 ] && echo "Nao foi possivel fazer a atualizacao" && cp /tmp/scp_* . && exit 1
 
 echo "Atualizando Front End"
 
