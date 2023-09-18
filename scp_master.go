@@ -75,6 +75,8 @@ const (
 	mainstatus_grow  = "CULTIVO"
 	mainstatus_org   = "ORGANISMO"
 	mainstatus_empty = "VAZIO"
+
+	bio_noaddr = "FF:FFFFFF"
 )
 
 const scp_dev_pump = "PUMP"
@@ -1657,7 +1659,14 @@ func scp_setup_devices(mustall bool) {
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIORREATORES")
 	for _, b := range bio_cfg {
 		ind := get_bio_index(b.BioreactorID)
-		if len(b.Deviceaddr) > 0 && ind >= 0 {
+		bioexist := true
+		if ind >= 0 {
+			if bio_cfg[b.BioreactorID].Deviceaddr == bio_noaddr {
+				bioexist = false
+				bio[ind].Status = bio_nonexist
+			}
+		}
+		if bioexist && len(b.Deviceaddr) > 0 && ind >= 0 {
 			if mustall || bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", b.BioreactorID, "-", b.Deviceaddr)
 				var cmd []string
@@ -1702,7 +1711,7 @@ func scp_setup_devices(mustall bool) {
 					bio[ind].Vol_zero[1] = bio_v2_zero
 				}
 				if nerr > 1 && !devmode {
-					bio[ind].Status = bio_nonexist
+					bio[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
 					if bio[ind].Volume == 0 {
@@ -1718,7 +1727,14 @@ func scp_setup_devices(mustall bool) {
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando IBCs")
 	for _, ib := range ibc_cfg {
 		ind := get_ibc_index(ib.IBCID)
-		if len(ib.Deviceaddr) > 0 && ind >= 0 {
+		ibcexist := true
+		if ind >= 0 {
+			if ibc_cfg[b.IBCID].Deviceaddr == bio_noaddr {
+				ibcexist = false
+				ibc[ind].Status = bio_nonexist
+			}
+		}
+		if ibcexist && len(ib.Deviceaddr) > 0 && ind >= 0 {
 			if mustall || ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
 				fmt.Println("DEBUG SETUP DEVICES: Device:", ib.IBCID, "-", ib.Deviceaddr)
 				var cmd []string
@@ -1757,7 +1773,7 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Vol_zero[1] = ibc_v2_zero
 				}
 				if nerr > 0 && !devmode {
-					ibc[ind].Status = bio_nonexist
+					ibc[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
 					if ibc[ind].Volume == 0 {
@@ -2318,13 +2334,13 @@ func scp_refresh_status() {
 						dev_addr := data[0]
 						ipaddr := data[1]
 						devstatus, _ := strconv.Atoi(data[2])
-						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", dev_addr, ipaddr, devstatus)
+						dev_id := get_devid_byaddr(dev_addr)
+						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", dev_id, dev_addr, ipaddr, devstatus)
 						if devstatus == scp_state_TCP0 { // Dispositivo OK
 							nslavesok++
 						} else { // Dispositivo NAO OK
 							nslavesnok++
 							dev_type := get_devtype_byaddr(dev_addr)
-							dev_id := get_devid_byaddr(dev_addr)
 							switch dev_type {
 							case scp_bioreactor:
 								ind := get_bio_index(dev_id)
@@ -2761,7 +2777,7 @@ func scp_get_alldata() {
 
 					}
 
-				} else if b.Status == bio_nonexist || b.Status == bio_error {
+				} else if b.Status == bio_error {
 					needtorunsetup = true
 				}
 
@@ -2993,7 +3009,7 @@ func scp_get_alldata() {
 
 						}
 					}
-				} else if b.Status == bio_nonexist || b.Status == bio_error {
+				} else if b.Status == bio_error {
 					needtorunsetup = true
 				}
 				time.Sleep(scp_refreshwait * time.Millisecond)
