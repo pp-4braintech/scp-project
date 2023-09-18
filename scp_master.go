@@ -3164,7 +3164,7 @@ func scp_run_linewash(lines string, washtime int) bool {
 	// var time_to_clean int64 = int64(paths[pathclean].Cleantime) * 1000
 	time_to_clean := washtime * 10
 	vpath := scp_splitparam(pathstr, ",")
-	if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+	if !scp_turn_pump(scp_totem, totem, vpath, 1, true) {
 		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
 		return false
 	}
@@ -3176,7 +3176,7 @@ func scp_run_linewash(lines string, washtime int) bool {
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+	if !scp_turn_pump(scp_totem, totem, vpath, 0, false) {
 		fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
 		return false
 	}
@@ -3289,14 +3289,14 @@ func scp_run_linecip(lines string) bool {
 
 		time.Sleep((scp_timewaitvalvs * time.Microsecond))
 
-		if !scp_turn_pump(scp_totem, totem_str, vpath, 1) {
+		if !scp_turn_pump(scp_totem, totem_str, vpath, 1, true) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao abrir valvulvas e ligar bomba do totem", totem, vpath)
 			return false
 		}
 
 		time.Sleep(time.Duration(time_cipline_clean) * time.Millisecond)
 
-		if !scp_turn_pump(scp_totem, totem_str, vpath, 0) {
+		if !scp_turn_pump(scp_totem, totem_str, vpath, 0, false) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
 			return false
 		}
@@ -4129,7 +4129,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	return true
 }
 
-func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bool {
+func scp_turn_pump(devtype string, main_id string, valvs []string, value int, musttest bool) bool {
 	var devaddr, pumpdev string
 	var ind int
 	// scraddr := ""
@@ -4205,7 +4205,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int) bo
 		// }
 	}
 
-	musttest := value == 1
+	// musttest := value == 1
 	if test_path(valvs, 1-value) || !musttest {
 		if set_valvs_value(valvs, value, musttest) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR ao definir valor [", value, "] das valvulas", valvs)
@@ -4360,7 +4360,7 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, bio[ind].PH, ph)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
 		return
 	}
@@ -4389,7 +4389,7 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	}
 	time.Sleep(20 * time.Second)
 
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
 		return
 	}
@@ -4405,14 +4405,14 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
 	t_start := time.Now()
 	if bio[ind].Temperature < temp {
-		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
 			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
 			bio[ind].Temprunning = false
 			return
 		}
 		if !scp_turn_heater(bioid, temp, true) {
 			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao ligar aquecedor", bioid)
-			scp_turn_pump(scp_bioreactor, bioid, valvs, 0)
+			scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false)
 			bio[ind].Temprunning = false
 			return
 		}
@@ -4438,7 +4438,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
 	}
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
 	}
 	time.Sleep(1 * time.Minute)
@@ -4610,7 +4610,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 		fmt.Println("ERROR SCP CIRCULATE: Tipo de dispositivo invalido", devtype, main_id)
 		return
 	}
-	if !scp_turn_pump(devtype, main_id, valvs, 1) {
+	if !scp_turn_pump(devtype, main_id, valvs, 1, true) {
 		fmt.Println("ERROR SCP CIRCULATE: Nao foi possivel ligar circulacao em ", main_id)
 		return
 	}
@@ -4636,7 +4636,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 			}
 		}
 	}
-	if !scp_turn_pump(devtype, main_id, valvs, 0) {
+	if !scp_turn_pump(devtype, main_id, valvs, 0, false) {
 		fmt.Println("ERROR SCP CIRCULATE: Nao foi possivel desligar circulacao em ", main_id)
 	}
 	switch devtype {
@@ -4681,7 +4681,7 @@ func scp_fullstop_bio(bioid string, check_status bool) bool {
 	}
 	ret = ret && ret_aero
 	valvs := []string{bioid + "/V3", bioid + "/V4", bioid + "/V5", bioid + "/V6", bioid + "/V7", bioid + "/V8"}
-	ret_pump := scp_turn_pump(scp_bioreactor, bioid, valvs, 0)
+	ret_pump := scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false)
 	if !ret_pump {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar bomba e valvulas do", bioid)
 	}
@@ -4703,7 +4703,7 @@ func scp_fullstop_ibc(ibcid string, check_status bool) bool {
 		board_add_message("AParada TOTAL solicitada para "+ibcid, "")
 	}
 	valvs := []string{ibcid + "/V1", ibcid + "/V2", ibcid + "/V3", ibcid + "/V4"}
-	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0)
+	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0, false)
 	if !ret {
 		fmt.Println("SCP FULLSTOP IBC: Falha ao desligar bomba e valvulas do", ibcid)
 	}
@@ -4725,7 +4725,7 @@ func scp_fullstop_totem(totemid string) bool {
 	}
 	ret = ret && ret_peris
 	valvs := []string{totemid + "/V1", totemid + "/V2"}
-	ret_pump := scp_turn_pump(scp_totem, totemid, valvs, 0)
+	ret_pump := scp_turn_pump(scp_totem, totemid, valvs, 0, false)
 	if !ret_pump {
 		fmt.Println("SCP FULLSTOP TOTEM: Falha ao desligar bomba e valvulas do", totemid)
 	}
@@ -4742,7 +4742,7 @@ func scp_fullstop_biofabrica() bool {
 			valvs = append(valvs, dev)
 		}
 	}
-	ret_pump := scp_turn_pump(scp_biofabrica, "BF01", valvs, 0)
+	ret_pump := scp_turn_pump(scp_biofabrica, "BF01", valvs, 0, false)
 	if !ret_pump {
 		fmt.Println("SCP FULLSTOP BIOFABRICA: Falha ao desligar bomba e valvulas da Biofabrica")
 	}
@@ -5146,7 +5146,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					v := bioid + "/" + subpars[k]
 					valvs = append(valvs, v)
 				}
-				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1) {
+				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				}
@@ -5205,7 +5205,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
-				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+				if !scp_turn_pump(scp_totem, totem, vpath, 1, true) {
 					waitlist_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
 					bio_add_message(bioid, "ABiorreator aguardando liberação da Linha", "ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
@@ -5239,7 +5239,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 					v := bioid + "/" + subpars[k]
 					valvs = append(valvs, v)
 				}
-				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0) {
+				if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", bioid, valvs)
 					return false
 				}
@@ -5289,7 +5289,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				n := len(vpath)
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
-				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+				if !scp_turn_pump(scp_totem, totem, vpath, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", bioid, valvs)
 					return false
 				}
@@ -5630,7 +5630,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					v := ibcid + "/" + subpars[k]
 					valvs = append(valvs, v)
 				}
-				if !scp_turn_pump(scp_ibc, ibcid, valvs, 1) {
+				if !scp_turn_pump(scp_ibc, ibcid, valvs, 1, true) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
 					return false
 				}
@@ -5691,6 +5691,10 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 						break
 					}
 				}
+				unlock_par := false
+				if len(subpars) > 3 {
+					unlock_par = subpars[2] == scp_par_unlock
+				}
 				pathid := totem + "-" + ibcid
 				pathstr := paths[pathid].Path
 				if len(pathstr) == 0 {
@@ -5706,7 +5710,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
 				fmt.Println("DEBUG", vpath)
-				if !scp_turn_pump(scp_totem, totem, vpath, 1) {
+				if !scp_turn_pump(scp_totem, totem, vpath, 1, !unlock_par) {
 					waitlist_add_message("A"+ibcid+" aguardando liberação da Linha", ibcid+"ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
 					return false
@@ -5733,7 +5737,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					v := ibcid + "/" + subpars[k]
 					valvs = append(valvs, v)
 				}
-				if !scp_turn_pump(scp_ibc, ibcid, valvs, 0) {
+				if !scp_turn_pump(scp_ibc, ibcid, valvs, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao desligar bomba em", ibcid, valvs)
 					return false
 				}
@@ -5819,7 +5823,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				n := len(vpath)
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
-				if !scp_turn_pump(scp_totem, totem, vpath, 0) {
+				if !scp_turn_pump(scp_totem, totem, vpath, 0, false) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
 					return false
 				}
