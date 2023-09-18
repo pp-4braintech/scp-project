@@ -2852,6 +2852,9 @@ func scp_get_alldata() {
 						}
 
 						if biofabrica.Useflowin {
+
+							scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0) // força a ler algo só pra atualizar se houver falha
+
 							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
