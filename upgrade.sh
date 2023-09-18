@@ -1,6 +1,8 @@
 #!/bin/bash
 
-ping biofabrica-main.hubioagro.com.br -c 5
+echo "Executando atualizacao do Software"
+
+ping 8.8.4.4 -c 5
 if [ $? -ne 0 ] 
     then
         echo "Nao foi possivel fazer a atualizacao" 
