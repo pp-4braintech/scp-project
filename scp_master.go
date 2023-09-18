@@ -7721,15 +7721,15 @@ func master_shutdown(sigs chan os.Signal) {
 	fmt.Println("WARN SCP MASTER Shutdown started... Necessario aguardar cerca de 60 segundos...")
 	biofabrica.Critical = scp_stopall
 	scp_emergency_pause()
-	for _, b := range bio {
-		scp_fullstop_device(b.BioreactorID, scp_bioreactor, false)
-	}
-	for _, b := range ibc {
-		scp_fullstop_device(b.IBCID, scp_ibc, false)
-	}
-	for _, t := range totem {
-		scp_fullstop_device(t.TotemID, scp_totem, false)
-	}
+	// for _, b := range bio {
+	// 	scp_fullstop_device(b.BioreactorID, scp_bioreactor, false)
+	// }
+	// for _, b := range ibc {
+	// 	scp_fullstop_device(b.IBCID, scp_ibc, false)
+	// }
+	// for _, t := range totem {
+	// 	scp_fullstop_device(t.TotemID, scp_totem, false)
+	// }
 	scp_fullstop_device("ALL", scp_biofabrica, false)
 
 	time.Sleep(60 * time.Second)
