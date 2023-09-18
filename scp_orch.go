@@ -31,7 +31,7 @@ const scp_max_len = 512
 const scp_keepalive_time = 6 // era 6
 const scp_timeout_ms = 2000
 const scp_buff_size = 512
-const scp_max_err = 7
+const scp_max_err = 5
 
 type scp_slave_map struct {
 	slave_udp_addr  string
@@ -159,7 +159,7 @@ func scp_master_tcp_client(scp_slave *scp_slave_map) {
 				return
 			}
 			if scp_slave.slave_errors >= scp_max_err {
-				fmt.Println(scp_slave.slave_scp_addr, "----->>>> TCP CLIENT com excesso de erros")
+				fmt.Println(scp_slave.slave_scp_addr, "----->>>> TCP CLIENT com excesso de erros", scp_slave)
 				slave_data.go_chan <- scp_die
 			} else {
 				fmt.Println(scp_slave.slave_scp_addr, ":TCP Enviando", chan_msg, "para", slave_data.slave_scp_addr)
