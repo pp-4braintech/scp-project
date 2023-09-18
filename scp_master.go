@@ -4757,6 +4757,22 @@ func scp_fullstop_bio(bioid string, check_status bool) bool {
 		fmt.Println("SCP FULLSTOP BIO: Falha ao desligar bomba e valvulas do", bioid)
 	}
 	ret = ret && ret_pump
+	bio[ind].Queue = []string{}
+	bio[ind].RedoQueue = []string{}
+	bio[ind].MustOffQueue = []string{}
+	bio[ind].MustPause = false
+	bio[ind].MustStop = false
+	bio[ind].Timetotal[0] = 0
+	bio[ind].Timetotal[1] = 0
+	bio[ind].Timeleft[0] = 0
+	bio[ind].Timeleft[1] = 0
+	bio[ind].Step[0] = 0
+	bio[ind].Step[1] = 0
+	if bio[ind].Volume == 0 {
+		bio[ind].MainStatus = mainstatus_empty
+	} else {
+		bio[ind].MainStatus = mainstatus_org
+	}
 	return ret
 }
 
@@ -4777,6 +4793,20 @@ func scp_fullstop_ibc(ibcid string, check_status bool) bool {
 	ret := scp_turn_pump(scp_ibc, ibcid, valvs, 0, false)
 	if !ret {
 		fmt.Println("SCP FULLSTOP IBC: Falha ao desligar bomba e valvulas do", ibcid)
+	}
+	ibc[ind].Queue = []string{}
+	ibc[ind].RedoQueue = []string{}
+	ibc[ind].MustOffQueue = []string{}
+	ibc[ind].MustPause = false
+	ibc[ind].MustStop = false
+	ibc[ind].Timetotal[0] = 0
+	ibc[ind].Timetotal[1] = 0
+	ibc[ind].Step[0] = 0
+	ibc[ind].Step[1] = 0
+	if ibc[ind].Volume == 0 {
+		ibc[ind].MainStatus = mainstatus_empty
+	} else {
+		ibc[ind].MainStatus = mainstatus_org
 	}
 	return ret
 }
