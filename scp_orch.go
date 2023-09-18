@@ -110,7 +110,7 @@ func scp_send_ping(scp_slave *scp_slave_map, slave_con net.Conn) {
 	if err != nil {
 		scp_slave.slave_errors++
 		fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " --->>>  ERR ao tratar PING", ret, scp_slave.slave_errors)
-		if scp_slave.slave_errors > scp_max_err {
+		if scp_slave.slave_errors >= scp_max_err {
 			scp_slave.slave_scp_state = scp_state_PINGFAIL
 			fmt.Println(scp_slave.slave_scp_addr, " /", slave_data.slave_tcp_addr, " --->>>  MUDANDO STATE para PINGFAIL")
 		}
