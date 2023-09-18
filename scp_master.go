@@ -3441,7 +3441,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			ibc_ind = get_ibc_index(bio[ind].OutID)
 			if ibc_ind >= 0 {
 				vol_ibc_ini = float64(ibc[ibc_ind].VolInOut)
-				ibc[ind].MainStatus = mainstatus_org
+				ibc[ibc_ind].MainStatus = mainstatus_org
 			}
 			// bio[ind].ShowVol = false
 			mustwaittime = true
@@ -3502,6 +3502,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 					ibc[ibc_ind].OrgCode = bio[ind].OrgCode
 					ibc[ibc_ind].Organism = bio[ind].Organism
+					ibc[ibc_ind].MainStatus = mainstatus_org
 				}
 				scp_update_biolevel(bio[ind].BioreactorID)
 				scp_update_ibclevel(ibc[ibc_ind].IBCID)
