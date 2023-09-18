@@ -2621,7 +2621,7 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
-						if rand.Intn(7) == 3 {
+						if rand.Intn(5) == 3 {
 							scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0) // força tentar ler algo pra dar erro caso esteja off
 						}
 
