@@ -5014,6 +5014,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				bio[ind].Queue = append(qini, bio[ind].Queue[1:]...)
 				fmt.Println("\n\nTRUQUE CIP:", bio[ind].Queue)
 				board_add_message("IExecutando CIP no "+bioid, "")
+				bio_add_message(bioid, "IExecutando CIP", "")
 				bio[ind].MainStatus = mainstatus_cip
 				return true
 
