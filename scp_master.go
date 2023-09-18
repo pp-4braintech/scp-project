@@ -1050,22 +1050,23 @@ func get_devid_byaddr(dev_addr string) string {
 }
 
 func set_valv_status(devtype string, devid string, valvid string, value int) bool {
-	var devaddr, scraddr, valvaddr, valve_scrstr string
+	var devaddr, valvaddr string
+	var ind int
 	id := devid + "/" + valvid
 	valvs[id] = value
 	switch devtype {
 	case scp_donothing:
 		return true
 	case scp_bioreactor:
-		ind := get_bio_index(devid)
+		ind = get_bio_index(devid)
 		devaddr = bio_cfg[devid].Deviceaddr
-		scraddr = bio_cfg[devid].Screenaddr
+		// scraddr = bio_cfg[devid].Screenaddr
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
-				bio[ind].Valvs[v-1] = value
+				// bio[ind].Valvs[v-1] = value
 				valvaddr = bio_cfg[devid].Valv_devs[v-1]
-				valve_scrstr = fmt.Sprintf("S%d", v+200)
+				// valve_scrstr = fmt.Sprintf("S%d", v+200)
 			} else {
 				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
 				return false
@@ -1075,13 +1076,13 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 			return false
 		}
 	case scp_ibc:
-		ind := get_ibc_index(devid)
+		ind = get_ibc_index(devid)
 		devaddr = ibc_cfg[devid].Deviceaddr
-		scraddr = ""
+		// scraddr = ""
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
-				ibc[ind].Valvs[v-1] = value
+				// ibc[ind].Valvs[v-1] = value
 				valvaddr = ibc_cfg[devid].Valv_devs[v-1]
 			} else {
 				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
@@ -1092,13 +1093,13 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 			return false
 		}
 	case scp_totem:
-		ind := get_totem_index(devid)
+		ind = get_totem_index(devid)
 		devaddr = totem_cfg[devid].Deviceaddr
-		scraddr = ""
+		// scraddr = ""
 		if ind >= 0 {
 			v, err := strconv.Atoi(valvid[1:])
 			if err == nil {
-				totem[ind].Valvs[v-1] = value
+				// totem[ind].Valvs[v-1] = value
 				valvaddr = totem_cfg[devid].Valv_devs[v-1]
 			} else {
 				fmt.Println("ERROR SET VAL: id da valvula nao inteiro", valvid)
@@ -1110,31 +1111,60 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		}
 	case scp_biofabrica:
 		devaddr = biofabrica_cfg[valvid].Deviceaddr
-		scraddr = ""
+		// scraddr = ""
 		valvaddr = biofabrica_cfg[valvid].Deviceport
-		v, err := strconv.Atoi(valvid[3:])
+		_, err := strconv.Atoi(valvid[3:])
 		if err == nil {
-			biofabrica.Valvs[v-1] = value
+			// biofabrica.Valvs[v-1] = value
 		} else {
 			fmt.Println("ERROR SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
 			return false
 		}
 	}
-	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, valvaddr, value)
-	fmt.Println(cmd1)
-	ret1 := scp_sendmsg_orch(cmd1)
-	fmt.Println("RET CMD1 =", ret1)
-	if !strings.Contains(ret1, scp_ack) && !devmode {
-		fmt.Println("ERROR SET VAL: SEND MSG ORCH falhou", ret1)
-		return false
+	setok := true
+	if value == 0 || value == 1 {
+		cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, valvaddr, value)
+		// fmt.Println(cmd1)
+		ret1 := scp_sendmsg_orch(cmd1)
+		fmt.Println("DEBUG SET VALV STATUS: cmd=", cmd1, " ret=", ret1)
+		if !strings.Contains(ret1, scp_ack) && !devmode {
+			// fmt.Println("ERROR SET VALV STATUS: SEND MSG ORCH falhou", ret1)
+			setok = false
+		}
 	}
-	if len(scraddr) > 0 {
-		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", scraddr, valve_scrstr, value)
-		fmt.Println(cmd2)
-		ret2 := scp_sendmsg_orch(cmd2)
-		fmt.Println("RET CMD2 =", ret2)
+	if setok {
+		valvs[id] = value
+		switch devtype {
+		case scp_bioreactor:
+			if ind >= 0 {
+				v, _ := strconv.Atoi(valvid[1:])
+				bio[ind].Valvs[v-1] = value
+			}
+		case scp_ibc:
+			if ind >= 0 {
+				v, _ := strconv.Atoi(valvid[1:])
+				ibc[ind].Valvs[v-1] = value
+			}
+		case scp_totem:
+			if ind >= 0 {
+				v, _ := strconv.Atoi(valvid[1:])
+				totem[ind].Valvs[v-1] = value
+			}
+		case scp_biofabrica:
+			v, err := strconv.Atoi(valvid[3:])
+			if err == nil {
+				biofabrica.Valvs[v-1] = value
+			}
+		}
+
 	}
-	return true
+	// if len(scraddr) > 0 {
+	// 	cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", scraddr, valve_scrstr, value)
+	// 	fmt.Println(cmd2)
+	// 	ret2 := scp_sendmsg_orch(cmd2)
+	// 	fmt.Println("RET CMD2 =", ret2)
+	// }
+	return setok
 }
 
 func get_valv_status(devid string, valvid string) int {
@@ -3114,7 +3144,7 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
-				if val == (1 - value) {
+				if val == (1-value) || val == 3 { // ACRESCENTEI TIPO 3 = LOCK
 					if !set_valv_status(dtype, sub[0], sub[1], value) {
 						fmt.Println("ERROR SET VALVS VALUE: nao foi possivel setar valvula", p)
 						if abort_on_error {
