@@ -5074,7 +5074,11 @@ func scp_run_job_bio(bioid string, job string) bool {
 		bio[ind].Timetotal = [2]int{0, 0}
 		bio[ind].Timeleft = [2]int{0, 0}
 		if bio[ind].MainStatus == mainstatus_cip {
-			bio[ind].MainStatus = mainstatus_empty
+			if bio[ind].Volume == 0 {
+				bio[ind].MainStatus = mainstatus_empty
+			} else {
+				bio[ind].MainStatus = mainstatus_org
+			}
 		} else if bio[ind].MainStatus == mainstatus_grow {
 			bio[ind].MainStatus = mainstatus_org
 		} else {
@@ -5582,7 +5586,11 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		ibc[ind].Step = [2]int{0, 0}
 		ibc[ind].ShowVol = true
 		if ibc[ind].MainStatus == mainstatus_cip {
-			ibc[ind].MainStatus = mainstatus_empty
+			if ibc[ind].Volume == 0 {
+				ibc[ind].MainStatus = mainstatus_empty
+			} else {
+				ibc[ind].MainStatus = mainstatus_org
+			}
 		} else {
 			ibc[ind].MainStatus = mainstatus_org
 		}
@@ -6324,7 +6332,11 @@ func stop_device(devtype string, main_id string) bool {
 			bio[ind].Timeleft[1] = 0
 			bio[ind].Step[0] = 0
 			bio[ind].Step[1] = 0
-			bio[ind].MainStatus = mainstatus_empty
+			if bio[ind].Volume == 0 {
+				bio[ind].MainStatus = mainstatus_empty
+			} else {
+				bio[ind].MainStatus = mainstatus_org
+			}
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(bio[ind].BioreactorID, true)
 				if len(q.Bioid) == 0 {
@@ -6374,7 +6386,11 @@ func stop_device(devtype string, main_id string) bool {
 			ibc[ind].Timetotal[1] = 0
 			ibc[ind].Step[0] = 0
 			ibc[ind].Step[1] = 0
-			ibc[ind].MainStatus = mainstatus_empty
+			if ibc[ind].Volume == 0 {
+				ibc[ind].MainStatus = mainstatus_empty
+			} else {
+				ibc[ind].MainStatus = mainstatus_org
+			}
 
 			for { // LIMPA FILA de TAREFAS --- MUDAR QUANDO FOR PERMITIR TAREFAS FUTURAS
 				q := pop_first_sched(ibc[ind].IBCID, true)
