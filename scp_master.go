@@ -1885,6 +1885,8 @@ func scp_setup_devices(mustall bool) {
 						} else if strings.Contains(c, "VBF06") || strings.Contains(c, "VBF07") || strings.Contains(c, "VBF08") || strings.Contains(c, "VBF09") {
 							err_local += "Painel Desenvase "
 							biofabrica.POutStatus = bio_error
+						} else {
+							err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
 						}
 					}
 					if ret[0:2] == "DIE" {
