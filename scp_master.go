@@ -2616,6 +2616,8 @@ func scp_get_alldata() {
 
 					if mustupdate_this || b.Valvs[6] == 1 || b.Valvs[4] == 1 {
 
+						scp_get_volume(b.BioreactorID, scp_bioreactor, scp_dev_vol0) // força tentar ler algo pra dar erro caso esteja off
+
 						if biofabrica.Useflowin {
 							if b.Valvs[6] == 1 && (b.Valvs[3] == 1 || (b.Valvs[2] == 1 && b.Valvs[7] == 1) || (b.Valvs[1] == 1 && b.Valvs[7] == 1)) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
@@ -7228,6 +7230,8 @@ func scp_process_conn(conn net.Conn) {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
 								if ibc_ind >= 0 {
 									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume {
+										// bio[ind].Status = bio_unloading
+										bio[ind].MainStatus = mainstatus_org
 										board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
 										bio_add_message(bioid, "IEnxague de Linha antes da Transferência", "")
 										for {
