@@ -3637,7 +3637,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 		}
 		if bio[ind].Volume == 0 {
-			bio[ind].Status = bio_empty
+			if !bio[ind].MustPause && !bio[ind].MustStop {
+				bio[ind].Status = bio_empty
+			}
 			if prev_status == bio_ready {
 				prev_status = bio_empty
 				bio[ind].Step = [2]int{0, 0}
@@ -3906,12 +3908,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
-		if ibc[ind].Volume == 0 && ibc[ind].Vol0 != 0 {
-
-			for i := 0; i < 300 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
-				if ibc[ind].Vol0 == 0 {
-					break
-				}
+		if ibc[ind].Volume == 0 {
+			for i := 0; i < 250 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
@@ -4042,7 +4040,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 		}
 		if !ibc[ind].MustPause && !ibc[ind].MustStop {
-			ibc[ind].Status = prev_status
+			if ibc[ind].MainStatus != mainstatus_cip && ibc[ind].Volume == 0 {
+				ibc[ind].Status = bio_empty
+			} else {
+				ibc[ind].Status = prev_status
+			}
 		}
 
 	default:
