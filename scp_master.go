@@ -2577,7 +2577,7 @@ func scp_get_alldata() {
 				} else {
 					cmd_pd := "CMD/" + pd_addr + "/GET/" + pd_port + "/END"
 					ret_pd := scp_sendmsg_orch(cmd_pd)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_pd, " ret=", ret_pd)
+					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_pd, " ret=", ret_pd)
 				}
 				t_start_test_pipd = time.Now()
 			}
