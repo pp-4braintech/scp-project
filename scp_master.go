@@ -3586,11 +3586,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
-		if bio[ind].Volume == 0 && bio[ind].Vol0 != 0 {
+		if bio[ind].Volume == 0 {
 			for i := 0; i < 200 && bio[ind].Withdraw != 0; i++ {
-				if bio[ind].Vol0 == 0 {
-					break
-				}
+				// if bio[ind].Vol0 == 0 {
+				// 	break
+				// }
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
@@ -3724,7 +3724,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			// set_valvs_value(vpath, 0, false)
 			// board_add_message("IEnxague concluído", "")
 		}
-		bio[ind].Status = prev_status
+		if !bio[ind].MustPause && !bio[ind].MustStop {
+			bio[ind].Status = prev_status
+		}
 
 	case scp_ibc:
 		ind := get_ibc_index(devid)
@@ -4015,7 +4017,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				// board_add_message("IEnxague concluído", "")
 			}
 		}
-		ibc[ind].Status = prev_status
+		if !ibc[ind].MustPause && !ibc[ind].MustStop {
+			ibc[ind].Status = prev_status
+		}
+
 	default:
 		fmt.Println("DEBUG RUN WITHDRAW 58: Devtype invalido", devtype, devid)
 	}
