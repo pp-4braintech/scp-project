@@ -2543,8 +2543,7 @@ func scp_get_alldata() {
 	}
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
-	// t_start_save := time.Now()
-	// t_start_status := time.Now()
+	t_start_test_pipd := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
 	lastvolout := float64(-1)
@@ -2558,6 +2557,31 @@ func scp_get_alldata() {
 			return
 		}
 		if finishedsetup {
+
+			t_elapsed_test_pipd := uint32(time.Since(t_start_test_pipd).Seconds())
+			if t_elapsed_test_pipd > 25 {
+				pi_addr := biofabrica_cfg["VBF03"].Deviceaddr
+				pi_port := biofabrica_cfg["VBF03"].Deviceport
+				if len(pi_addr) == 0 || len(pi_port) == 0 {
+					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF03 para teste do Painel Intermediario")
+				} else {
+					cmd_pi := "CMD/" + pi_addr + "/GET/" + pi_port + "/END"
+					ret_pi := scp_sendmsg_orch(cmd_pi)
+					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_pi, " ret=", ret_pi)
+				}
+
+				pd_addr := biofabrica_cfg["VBF07"].Deviceaddr
+				pd_port := biofabrica_cfg["VBF07"].Deviceport
+				if len(pd_addr) == 0 || len(pd_port) == 0 {
+					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF07 para teste do Painel Desenvase")
+				} else {
+					cmd_pd := "CMD/" + pd_addr + "/GET/" + pd_port + "/END"
+					ret_pd := scp_sendmsg_orch(cmd_pd)
+					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_pd, " ret=", ret_pd)
+				}
+				t_start_test_pipd = time.Now()
+			}
+
 			needtorunsetup := false
 			t_elapsed_bio := uint32(time.Since(t_start_bio).Seconds())
 			mustupdate_bio := false
