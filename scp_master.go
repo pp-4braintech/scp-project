@@ -7365,6 +7365,9 @@ func scp_process_conn(conn net.Conn) {
 									if scp_run_withdraw(scp_bioreactor, bioid, true, false) >= 0 {
 										break
 									}
+									if bio[ind].Volume == 0 || bio[ind].Withdraw == 0 {
+										break
+									}
 									time.Sleep(2 * time.Second)
 								}
 							}
@@ -7581,6 +7584,9 @@ func scp_process_conn(conn net.Conn) {
 									break
 								}
 								if scp_run_withdraw(scp_ibc, ibcid, true, false) >= 0 {
+									break
+								}
+								if ibc[ind].Volume == 0 || ibc[ind].Withdraw == 0 {
 									break
 								}
 								time.Sleep(2 * time.Second)
