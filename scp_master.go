@@ -1912,10 +1912,11 @@ func scp_setup_devices(mustall bool) {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros", err_local)
 					if len(err_local) > 0 {
-						board_add_message("EFALHA CRITICA em "+err_local, "")
+						board_add_message("EFALHA CRITICA em "+err_local, "BFFAIL")
 					}
 				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
+					board_del_message("BFFAIL")
 				}
 			}
 		}
