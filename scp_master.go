@@ -1882,14 +1882,16 @@ func scp_setup_devices(mustall bool) {
 						params := scp_splitparam(c, "/")
 						if len(params) > 2 {
 							disp := get_devid_byaddr(params[1])
-							if strings.Contains(disp, "VBF03") || strings.Contains(disp, "VBF04") || strings.Contains(disp, "VBF05") {
-								err_local += "Painel Intermediário "
-								biofabrica.PIntStatus = bio_error
-							} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") {
-								err_local += "Painel Desenvase "
-								biofabrica.POutStatus = bio_error
-							} else if len(disp) > 0 {
-								err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
+							if !devmode {
+								if strings.Contains(disp, "VBF03") || strings.Contains(disp, "VBF04") || strings.Contains(disp, "VBF05") {
+									err_local += "Painel Intermediário "
+									biofabrica.PIntStatus = bio_error
+								} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") {
+									err_local += "Painel Desenvase "
+									biofabrica.POutStatus = bio_error
+								} else if len(disp) > 0 {
+									err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
+								}
 							}
 						}
 					}
