@@ -1879,14 +1879,18 @@ func scp_setup_devices(mustall bool) {
 					fmt.Println("DEBUG SETUP DEVICES: ", k, "  ", c, " ", ret)
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
-						if strings.Contains(c, "VBF03") || strings.Contains(c, "VBF04") || strings.Contains(c, "VBF05") {
-							err_local += "Painel Intermediário "
-							biofabrica.PIntStatus = bio_error
-						} else if strings.Contains(c, "VBF06") || strings.Contains(c, "VBF07") || strings.Contains(c, "VBF08") || strings.Contains(c, "VBF09") {
-							err_local += "Painel Desenvase "
-							biofabrica.POutStatus = bio_error
-						} else {
-							err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
+						params := scp_splitparam(c, "/")
+						if len(params) > 2 {
+							disp := get_devid_byaddr(params[1])
+							if strings.Contains(disp, "VBF03") || strings.Contains(disp, "VBF04") || strings.Contains(disp, "VBF05") {
+								err_local += "Painel Intermediário "
+								biofabrica.PIntStatus = bio_error
+							} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") {
+								err_local += "Painel Desenvase "
+								biofabrica.POutStatus = bio_error
+							} else if len(disp) > 0 {
+								err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
+							}
 						}
 					}
 					if ret[0:2] == "DIE" {
@@ -1905,7 +1909,9 @@ func scp_setup_devices(mustall bool) {
 				if nerr > 0 && !devmode && biofabrica.Status != scp_fail {
 					biofabrica.Status = scp_fail
 					fmt.Println("CRITICAL SETUP DEVICES: BIOFABRICA com erros", err_local)
-					board_add_message("EFALHA CRITICA em "+err_local, "")
+					if len(err_local) > 0 {
+						board_add_message("EFALHA CRITICA em "+err_local, "")
+					}
 				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
 				}
