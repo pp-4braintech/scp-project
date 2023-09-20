@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -125,10 +124,10 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	r.RemoteAddr = fmt.Sprintf("%s:5000", bfs[ind].BFIP)
 	client := &http.Client{}
 	delHopHeaders(r.Header)
-	clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err == nil {
-		appendHostToXForwardHeader(r.Header, clientIP)
-	}
+	// clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
+	// if err == nil {
+	// 	appendHostToXForwardHeader(r.Header, clientIP)
+	// }
 	fmt.Println("Client IP", clientIP)
 	resp, err := client.Do(r)
 	if err != nil {
