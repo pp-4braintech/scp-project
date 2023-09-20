@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -96,6 +97,16 @@ func delHopHeaders(header http.Header) {
 	}
 }
 
+func appendHostToXForwardHeader(header http.Header, host string) {
+	// If we aren't the first proxy retain prior
+	// X-Forwarded-For information as a comma+space
+	// separated list and fold multiple headers into one.
+	if prior, ok := header["X-Forwarded-For"]; ok {
+		host = strings.Join(prior, ", ") + ", " + host
+	}
+	header.Set("X-Forwarded-For", host)
+}
+
 func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	var wr http.ResponseWriter
 	ind := get_bf_index(bfid)
@@ -117,6 +128,11 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	}
 	defer resp.Body.Close()
 	delHopHeaders(resp.Header)
+	clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		appendHostToXForwardHeader(r.Header, clientIP)
+	}
+	fmt.Println("Client IP", clientIP)
 	copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
 	io.Copy(wr, resp.Body)
