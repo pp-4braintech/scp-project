@@ -32,7 +32,7 @@ type Biofabrica_data struct {
 	BFIP         string
 }
 
-var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, "", "10.10.0.3"}}
+var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, "", "192.168.0.23"}}
 
 func checkErr(err error) {
 	if err != nil {
@@ -77,7 +77,7 @@ func scp_proxy(bfid string, endpoint string) string {
 		fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bfid)
 		return ""
 	}
-	bf_url := fmt.Sprintf("http://%s/%s", bfs[ind].BFIP, endpoint)
+	bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
 	res, err := http.Get(bf_url)
 	fmt.Println("DEBUG RES=", res)
 	if err != nil {
