@@ -134,5 +134,5 @@ func main() {
 
 	handler := cors.Handler(mux)
 
-	http.ListenAndServe(":7000", handler)
+	http.ListenAndServe(":7077", handler)
 }
