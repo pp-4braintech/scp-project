@@ -9,6 +9,8 @@ import (
 	"github.com/rs/cors"
 )
 
+var net192 = false
+
 var execpath string
 
 func checkErr(err error) {
