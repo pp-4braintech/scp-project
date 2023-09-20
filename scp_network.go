@@ -197,7 +197,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 
-					req, err := http.NewRequest(r.Method, endpoint, r.Body)
+					bf_endpoint := fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, endpoint)
+
+					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 					if err != nil {
 						checkErr(err)
 						return
@@ -221,7 +223,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 					req.URL.Scheme = "http"
-					req.URL.Path = fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, r.RequestURI)
+					// req.URL.Path = fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, r.RequestURI)
 
 					log.Println("Forward Request Data", string(reqData))
 
