@@ -214,6 +214,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						checkErr(err)
 						return
 					}
+					req.URL.Scheme = "http"
 
 					log.Println("Forward Request Data", string(reqData))
 
