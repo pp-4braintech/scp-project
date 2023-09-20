@@ -13,6 +13,11 @@ import (
 
 var net192 = false
 
+const (
+	scp_ack = "ACK"
+	scp_err = "ERR"
+)
+
 var execpath string
 
 type Biofabrica_data struct {
@@ -53,6 +58,17 @@ func test_file(filename string) bool {
 	return true
 }
 
+func get_bf_index(bf_id string) int {
+	if len(bf_id) > 0 {
+		for i, v := range bfs {
+			if v.BFId == bf_id {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
 func main_network(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -71,6 +87,13 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 		} else {
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
+			if len(params) > 2 {
+				bfid := params[1]
+				ind := get_bf_index(bfid)
+				if ind < 0 {
+					w.Write([]byte(scp_err))
+				}
+			}
 		}
 		// totem_id := r.URL.Query().Get("Id")
 		//fmt.Println("bio_id =", bio_id)
