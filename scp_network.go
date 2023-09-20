@@ -22,7 +22,7 @@ const (
 )
 
 var execpath string
-var bf_default string = "bf001"
+var bf_default string = "bf000"
 
 type Biofabrica_data struct {
 	BFId         string
