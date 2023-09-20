@@ -19,6 +19,14 @@ func checkErr(err error) {
 	}
 }
 
+func scp_splitparam(param string, separator string) []string {
+	scp_data := strings.Split(param, separator)
+	if len(scp_data) < 1 {
+		return nil
+	}
+	return scp_data
+}
+
 func test_file(filename string) bool {
 	mf, err := os.Stat(filename)
 	if err != nil {
@@ -36,23 +44,25 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
 
-	// switch r.Method {
-	// case "GET":
-	// 	var jsonStr []byte
-	// 	totem_id := r.URL.Query().Get("Id")
-	// 	//fmt.Println("bio_id =", bio_id)
-	// 	//fmt.Println()
-	// 	if len(totem_id) > 0 {
-	// 		cmd := "GET/" + scp_totem + "/" + totem_id + "/END"
-	// 		jsonStr = []byte(scp_sendmsg_master(cmd))
-	// 	} else {
-	// 		cmd := "GET/" + scp_totem + "/END"
-	// 		jsonStr = []byte(scp_sendmsg_master(cmd))
-	// 	}
-	// 	//os.Stdout.Write(jsonStr)
-	// 	//jsonStr = []byte(scp_sendmsg_master(cmd))
-	// 	// os.Stdout.Write(jsonStr)
-	// 	w.Write([]byte(jsonStr))
+	switch r.Method {
+	case "GET":
+		var jsonStr []byte
+		endpoint := scp_splitparam(r.URL.Path,"/")
+		fmt.Println("end=", endpoint,len(endpoint))
+		totem_id := r.URL.Query().Get("Id")
+		//fmt.Println("bio_id =", bio_id)
+		//fmt.Println()
+		if len(totem_id) > 0 {
+			cmd := "GET/" + scp_totem + "/" + totem_id + "/END"
+			jsonStr = []byte(scp_sendmsg_master(cmd))
+		} else {
+			cmd := "GET/" + scp_totem + "/END"
+			jsonStr = []byte(scp_sendmsg_master(cmd))
+		}
+		//os.Stdout.Write(jsonStr)
+		//jsonStr = []byte(scp_sendmsg_master(cmd))
+		// os.Stdout.Write(jsonStr)
+		w.Write([]byte(jsonStr))
 
 	// case "PUT":
 	// 	err := r.ParseForm()
