@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,17 @@ import (
 var net192 = false
 
 var execpath string
+
+type Biofabrica_data struct {
+	BFId         string
+	CustomerId   string
+	CustomerName string
+	SWVersion    string
+	LatLong      [2]float64
+	LastUpdate   string
+}
+
+var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, ""}}
 
 func checkErr(err error) {
 	if err != nil {
@@ -47,10 +59,14 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		// var jsonStr []byte
+		var jsonStr []byte
+		// var err error
 		endpoint := r.URL.Path
 		if endpoint == "/" {
 			fmt.Println("acessando raiz")
+			jsonStr, _ = json.Marshal(bfs)
+			os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
 		} else {
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
