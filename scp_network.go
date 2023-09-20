@@ -113,7 +113,7 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 		fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bfid)
 		return nil
 	}
-	// bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
+	bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
 
 	log.Println(r.RemoteAddr, " ", r.Method, " ", r.URL)
 	fmt.Println("request URI", r.RequestURI)
@@ -134,7 +134,8 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	// 	appendHostToXForwardHeader(r.Header, clientIP)
 	// }
 	// fmt.Println("Client IP", clientIP)
-	resp, err := client.Do(r)
+	// resp, err := client.Do(r)
+	resp, err := client.Get(bf_url)
 	if err != nil {
 		checkErr(err)
 		return nil
