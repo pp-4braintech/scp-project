@@ -1279,7 +1279,7 @@ func scp_run_recovery() {
 	board_add_message("ERETORNANDO de PARADA TOTAL", "")
 	if biofabrica.Critical != scp_sysstop {
 		board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
-		// time.Sleep(600 * time.Second)    VOLTARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+		time.Sleep(600 * time.Second)
 	}
 	scp_setup_devices(true)
 	for _, b := range bio {
@@ -4689,9 +4689,10 @@ func scp_grow_bio(bioid string) bool {
 		ttotal = float64(bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1])
 	}
 	fmt.Println("DEBUG SCP GROW BIO: ", bioid, org.Orgname, " tempo total ajustado para", ttotal)
-	// if devmode || testmode {
-	// 	ttotal = scp_timeoutdefault / 60
-	// }
+	if devmode || testmode {
+		board_add_message("A"+bioid+" Iniciando Cultivo em modo teste, duração de 5 min", "")
+		ttotal = 5
+	}
 	time.Sleep(5 * time.Second)
 	vol_start := bio[ind].Volume
 	pday := -1
@@ -7912,7 +7913,7 @@ func master_shutdown(sigs chan os.Signal) {
 	// }
 	scp_fullstop_device("ALL", scp_biofabrica, false, false)
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(120 * time.Second)
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
 	time.Sleep(5 * time.Second)
