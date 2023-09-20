@@ -4162,20 +4162,24 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
-			if changevalvs {
-				set_valvs_value(dev_valvs, 1-value, false)
-			}
-			cmdoff := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, 0)
-			ret1 = scp_sendmsg_orch(cmdoff)
+			// if changevalvs {
+			// 	set_valvs_value(dev_valvs, 1-value, false)
+			// }
+			// cmdoff := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, 0)
+			// ret1 = scp_sendmsg_orch(cmdoff)
 			return false
 		}
-		bio[ind].Aerator = true
-		cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-		rets := scp_sendmsg_orch(cmds)
-		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-		if !strings.Contains(rets, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
+		if value == 1 {
+			bio[ind].Aerator = true
+		} else {
+			bio[ind].Aerator = false
 		}
+		// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		// rets := scp_sendmsg_orch(cmds)
+		// fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		// if !strings.Contains(rets, scp_ack) && !devmode {
+		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
+		// }
 	}
 
 	if changevalvs {
@@ -4391,22 +4395,36 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
 		if !strings.Contains(ret, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
-			if len(valvs) > 0 {
-				set_valvs_value(valvs, 1-value, false)
-				time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			}
+			// if len(valvs) > 0 {
+			// 	set_valvs_value(valvs, 1-value, false)
+			// 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			// }
 			return false
 		}
-		switch devtype {
-		case scp_bioreactor:
-			bio[ind].Pumpstatus = true
-		case scp_ibc:
-			ibc[ind].Pumpstatus = true
-		case scp_totem:
-			totem[ind].Pumpstatus = true
-		case scp_biofabrica:
-			biofabrica.Pumpwithdraw = true
+		if value == 0 {
+			switch devtype {
+			case scp_bioreactor:
+				bio[ind].Pumpstatus = false
+			case scp_ibc:
+				ibc[ind].Pumpstatus = false
+			case scp_totem:
+				totem[ind].Pumpstatus = false
+			case scp_biofabrica:
+				biofabrica.Pumpwithdraw = false
+			}
+		} else {
+			switch devtype {
+			case scp_bioreactor:
+				bio[ind].Pumpstatus = true
+			case scp_ibc:
+				ibc[ind].Pumpstatus = true
+			case scp_totem:
+				totem[ind].Pumpstatus = true
+			case scp_biofabrica:
+				biofabrica.Pumpwithdraw = true
+			}
 		}
+
 		// if len(scraddr) > 0 {
 		// 	cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
 		// 	rets := scp_sendmsg_orch(cmds)
