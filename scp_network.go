@@ -115,8 +115,9 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	}
 	// bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
 
+	log.Println(r.RemoteAddr, " ", r.Method, " ", r.URL)
 	fmt.Println("request URI", r.RequestURI)
-	fmt.Println("request URL", r.URL.RawPath)
+	fmt.Println("request URL", r.URL)
 	fmt.Println("remote IP", r.RemoteAddr)
 	fmt.Println("Schene", r.URL.Scheme)
 
