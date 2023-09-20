@@ -4162,6 +4162,9 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
+			if value == 1 && changevalvs {
+				set_valvs_value(dev_valvs, 0, false)
+			}
 			// if changevalvs {
 			// 	set_valvs_value(dev_valvs, 1-value, false)
 			// }
@@ -4395,10 +4398,10 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
 		if !strings.Contains(ret, scp_ack) && !devmode {
 			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
-			// if len(valvs) > 0 {
-			// 	set_valvs_value(valvs, 1-value, false)
-			// 	time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			// }
+			if len(valvs) > 0 && value == 1 {
+				set_valvs_value(valvs, 0, false)
+				time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			}
 			return false
 		}
 		if value == 0 {
