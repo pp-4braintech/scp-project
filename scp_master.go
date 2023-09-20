@@ -2593,27 +2593,28 @@ func scp_get_alldata() {
 			}
 
 			t_elapsed_test_totems := uint32(time.Since(t_start_test_totems).Seconds())
-			if t_elapsed_test_pipd > 25 {
+			if t_elapsed_test_totems > 21 && rand.Intn(3) == 1 {
 				t1_addr := biofabrica_cfg["VBF01"].Deviceaddr
 				t1_port := biofabrica_cfg["VBF01"].Deviceport
-				if len(pi_addr) == 0 || len(pi_port) == 0 {
-					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF03 para teste do Painel Intermediario")
+				if len(t1_addr) == 0 || len(t1_port) == 0 {
+					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF01 para teste do TOTEM01")
 				} else {
-					cmd_pi := "CMD/" + pi_addr + "/GET/" + pi_port + "/END"
-					ret_pi := scp_sendmsg_orch(cmd_pi)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_pi, " ret=", ret_pi)
+					cmd_t1 := "CMD/" + t1_addr + "/GET/" + t1_port + "/END"
+					ret_t1 := scp_sendmsg_orch(cmd_t1)
+					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_t1, " ret=", ret_t1)
 				}
 
-				pd_addr := biofabrica_cfg["VBF07"].Deviceaddr
-				pd_port := biofabrica_cfg["VBF07"].Deviceport
-				if len(pd_addr) == 0 || len(pd_port) == 0 {
-					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF07 para teste do Painel Desenvase")
+				t2_addr := totem_cfg["TOTEM02"].Deviceaddr
+				t2_port := totem_cfg["TOTEM02"].Valv_devs[0]
+				if len(t2_addr) == 0 || len(t2_port) == 0 {
+					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de TOTEM02 para teste")
 				} else {
-					cmd_pd := "CMD/" + pd_addr + "/GET/" + pd_port + "/END"
-					ret_pd := scp_sendmsg_orch(cmd_pd)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_pd, " ret=", ret_pd)
+					cmd_t2 := "CMD/" + t2_addr + "/GET/" + t2_port + "/END"
+					ret_t2 := scp_sendmsg_orch(cmd_t2)
+					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_t2, " ret=", ret_t2)
 				}
-				t_start_test_pipd = time.Now()
+
+				t_start_test_totems = time.Now()
 			}
 
 			needtorunsetup := false
