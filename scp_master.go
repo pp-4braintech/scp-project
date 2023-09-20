@@ -4122,16 +4122,6 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	// }
 
 	if changevalvs {
-		tmax := (2 * scp_timewaitvalvs / 3) / 1000
-		for i := 0; i < tmax; i++ {
-			if bio[ind].MustPause || bio[ind].MustPause {
-				break
-			}
-			time.Sleep(1000 * time.Millisecond)
-		}
-	}
-
-	if changevalvs {
 		// musttest := value == 1
 		if test_path(dev_valvs, 1-value) || !musttest {
 			if set_valvs_value(dev_valvs, value, musttest) < 0 {
@@ -4141,6 +4131,16 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		} else {
 			fmt.Println("ERROR SCP TURN AERO: ERROR nas valvulas", dev_valvs)
 			return false
+		}
+	}
+
+	if changevalvs {
+		tmax := 10 // (2 * scp_timewaitvalvs / 3) / 1000
+		for i := 0; i < tmax; i++ {
+			if bio[ind].MustPause || bio[ind].MustPause {
+				break
+			}
+			time.Sleep(1000 * time.Millisecond)
 		}
 	}
 
@@ -4179,7 +4179,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	}
 
 	if changevalvs {
-		tmax := (scp_timewaitvalvs / 3) / 1000
+		tmax := 5 //(scp_timewaitvalvs / 3) / 1000
 		for i := 0; i < tmax; i++ {
 			if bio[ind].MustPause || bio[ind].MustPause {
 				break
