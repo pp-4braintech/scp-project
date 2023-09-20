@@ -7934,8 +7934,8 @@ func main() {
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
-		// mainrouter = "10.0.0.1"
-		mainrouter = "192.168.0.1"
+		mainrouter = "10.0.0.1"
+		// mainrouter = "192.168.0.1"
 	}
 	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	if devmode {
