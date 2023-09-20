@@ -121,6 +121,7 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	fmt.Println("Schene", r.URL.Scheme)
 
 	r.RequestURI = ""
+	r.URL.Scheme = "http"
 	r.RemoteAddr = fmt.Sprintf("%s:5000", bfs[ind].BFIP)
 	client := &http.Client{}
 	delHopHeaders(r.Header)
