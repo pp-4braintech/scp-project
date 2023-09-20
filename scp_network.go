@@ -220,6 +220,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					//Actually forward the request to our endpoint
 					resp, err := client.Do(req)
 					if err != nil {
+						fmt.Println("ERRO no client.Do")
 						checkErr(err)
 						return
 					}
