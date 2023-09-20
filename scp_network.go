@@ -128,7 +128,7 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	// if err == nil {
 	// 	appendHostToXForwardHeader(r.Header, clientIP)
 	// }
-	fmt.Println("Client IP", clientIP)
+	// fmt.Println("Client IP", clientIP)
 	resp, err := client.Do(r)
 	if err != nil {
 		checkErr(err)
