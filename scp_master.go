@@ -4331,37 +4331,37 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		fmt.Println("ERROR SCP TURN PUMP: Dispositivo nao suportado", devtype, main_id)
 	}
 
-	if value == scp_off {
-		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
-		ret := scp_sendmsg_orch(cmd)
-		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
-		if !strings.Contains(ret, scp_ack) && !devmode {
-			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
-			if len(valvs) > 0 {
-				set_valvs_value(valvs, 1-value, false)
-				time.Sleep(scp_timewaitvalvs * time.Millisecond)
-			}
-			return false
-		}
-		switch devtype {
-		case scp_bioreactor:
-			bio[ind].Pumpstatus = false
-		case scp_ibc:
-			ibc[ind].Pumpstatus = false
-		case scp_totem:
-			totem[ind].Pumpstatus = false
-		case scp_biofabrica:
-			biofabrica.Pumpwithdraw = false
-		}
-		// if len(scraddr) > 0 {
-		// 	cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
-		// 	rets := scp_sendmsg_orch(cmds)
-		// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-		// 	if !strings.Contains(rets, scp_ack) && !devmode {
-		// 		fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
-		// 	}
-		// }
-	}
+	// if value == scp_off {
+	// 	cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
+	// 	ret := scp_sendmsg_orch(cmd)
+	// 	fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
+	// 	if !strings.Contains(ret, scp_ack) && !devmode {
+	// 		fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
+	// 		if len(valvs) > 0 {
+	// 			set_valvs_value(valvs, 1-value, false)
+	// 			time.Sleep(scp_timewaitvalvs * time.Millisecond)
+	// 		}
+	// 		return false
+	// 	}
+	// 	switch devtype {
+	// 	case scp_bioreactor:
+	// 		bio[ind].Pumpstatus = false
+	// 	case scp_ibc:
+	// 		ibc[ind].Pumpstatus = false
+	// 	case scp_totem:
+	// 		totem[ind].Pumpstatus = false
+	// 	case scp_biofabrica:
+	// 		biofabrica.Pumpwithdraw = false
+	// 	}
+	// 	// if len(scraddr) > 0 {
+	// 	// 	cmds := fmt.Sprintf("CMD/%s/PUT/S270,%d/END", scraddr, value)
+	// 	// 	rets := scp_sendmsg_orch(cmds)
+	// 	// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+	// 	// 	if !strings.Contains(rets, scp_ack) && !devmode {
+	// 	// 		fmt.Println("ERROR SCP TURN AERO: ERROR ao mudar bomba na screen ", scraddr, rets)
+	// 	// 	}
+	// 	// }
+	// }
 
 	// musttest := value == 1
 	if test_path(valvs, 1-value) || !musttest {
@@ -4374,7 +4374,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		return false
 	}
 
-	tmax := scp_timewaitvalvs / 1000
+	tmax := 10 // scp_timewaitvalvs / 1000
 	for i := 0; i < tmax; i++ {
 		switch devtype {
 		case scp_bioreactor:
@@ -4385,7 +4385,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		time.Sleep(1000 * time.Millisecond)
 	}
 
-	if value == scp_on {
+	if true { // value == scp_on
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
@@ -4416,6 +4416,18 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		// 	}
 		// }
 	}
+
+	tmax = 5 // scp_timewaitvalvs / 1000
+	for i := 0; i < tmax; i++ {
+		switch devtype {
+		case scp_bioreactor:
+			if bio[ind].MustPause || bio[ind].MustPause {
+				i = tmax
+			}
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
+
 	return true
 }
 
