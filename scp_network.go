@@ -191,6 +191,12 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						rw.Write([]byte(jsonStr))
 					}
 				} else {
+					ind := get_bf_index(bf_default)
+					if ind < 0 {
+						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+						return
+					}
+
 					req, err := http.NewRequest(r.Method, endpoint, r.Body)
 					if err != nil {
 						checkErr(err)
@@ -215,6 +221,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 					req.URL.Scheme = "http"
+					req.URL.Path = fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, r.RequestURI)
 
 					log.Println("Forward Request Data", string(reqData))
 
