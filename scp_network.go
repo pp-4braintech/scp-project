@@ -6,8 +6,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/rs/cors"
 )
@@ -159,7 +161,7 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 	// biofabrica.LastVersion = last_biofabrica.Version
 }
 
-func main_network(w http.ResponseWriter, r *http.Request) {
+func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
 
@@ -169,11 +171,11 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 		// var err error
 		endpoint := r.URL.Path
 		if endpoint == "/" {
-			w.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-Type", "application/json")
 			fmt.Println("acessando raiz")
 			jsonStr, _ = json.Marshal(bfs)
 			os.Stdout.Write(jsonStr)
-			w.Write([]byte(jsonStr))
+			rw.Write([]byte(jsonStr))
 		} else {
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
@@ -189,9 +191,65 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte(jsonStr))
 					}
 				} else {
-					ret := scp_proxy(bf_default, r, endpoint)
-					w.Response = ret
-					w.Write([]byte(ret))
+					req, err := http.NewRequest(r.Method, endpoint, r.Body)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+
+					req.Header = r.Header.Clone()
+
+					//Set the query parameters
+					req.URL.RawQuery = r.URL.RawQuery
+
+					//create a http client, timeout should be mentioned or it will never timeout.
+					client := http.Client{
+						Timeout: 5 * time.Second,
+					}
+
+					//Get dump of our request
+
+					reqData, err := httputil.DumpRequest(req, true)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+
+					log.Println("Forward Request Data", string(reqData))
+
+					//Actually forward the request to our endpoint
+					resp, err := client.Do(req)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+					defer resp.Body.Close()
+
+					//Get dump of our response
+					respData, err := httputil.DumpResponse(resp, true)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+
+					log.Println("Forward Request Response", string(respData))
+
+					//Copy the response headers to the actual response. DO THIS BEFORE CALLING WRITEHEADER.
+					for k, v := range resp.Header {
+						rw.Header()[k] = v
+					}
+
+					//set the statuscode whatever we got from the response
+					rw.WriteHeader(resp.StatusCode)
+
+					//Copy the response body to the actual response
+					_, err = io.Copy(rw, resp.Body)
+					if err != nil {
+						log.Println(err)
+						rw.Write([]byte("error"))
+						return
+					}
+
 				}
 
 			}
