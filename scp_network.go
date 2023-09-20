@@ -46,23 +46,23 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		var jsonStr []byte
+		// var jsonStr []byte
 		endpoint := scp_splitparam(r.URL.Path,"/")
 		fmt.Println("end=", endpoint,len(endpoint))
-		totem_id := r.URL.Query().Get("Id")
+		// totem_id := r.URL.Query().Get("Id")
 		//fmt.Println("bio_id =", bio_id)
 		//fmt.Println()
-		if len(totem_id) > 0 {
-			cmd := "GET/" + scp_totem + "/" + totem_id + "/END"
-			jsonStr = []byte(scp_sendmsg_master(cmd))
-		} else {
-			cmd := "GET/" + scp_totem + "/END"
-			jsonStr = []byte(scp_sendmsg_master(cmd))
-		}
+		// if len(totem_id) > 0 {
+		// 	cmd := "GET/" + scp_totem + "/" + totem_id + "/END"
+		// 	jsonStr = []byte(scp_sendmsg_master(cmd))
+		// } else {
+		// 	cmd := "GET/" + scp_totem + "/END"
+		// 	jsonStr = []byte(scp_sendmsg_master(cmd))
+		// }
 		//os.Stdout.Write(jsonStr)
 		//jsonStr = []byte(scp_sendmsg_master(cmd))
 		// os.Stdout.Write(jsonStr)
-		w.Write([]byte(jsonStr))
+		// w.Write([]byte(jsonStr))
 
 	// case "PUT":
 	// 	err := r.ParseForm()
