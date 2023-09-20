@@ -121,6 +121,11 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	r.RemoteAddr = fmt.Sprintf("%s:5000", bfs[ind].BFIP)
 	client := &http.Client{}
 	delHopHeaders(r.Header)
+	clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		appendHostToXForwardHeader(r.Header, clientIP)
+	}
+	fmt.Println("Client IP", clientIP)
 	resp, err := client.Do(r)
 	if err != nil {
 		checkErr(err)
@@ -128,11 +133,7 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	}
 	defer resp.Body.Close()
 	delHopHeaders(resp.Header)
-	clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err == nil {
-		appendHostToXForwardHeader(r.Header, clientIP)
-	}
-	fmt.Println("Client IP", clientIP)
+
 	copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
 	io.Copy(wr, resp.Body)
