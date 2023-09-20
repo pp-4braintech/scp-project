@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -30,6 +30,17 @@ type Biofabrica_data struct {
 	LatLong      [2]float64
 	LastUpdate   string
 	BFIP         string
+}
+
+var hopHeaders = []string{
+	"Connection",
+	"Keep-Alive",
+	"Proxy-Authenticate",
+	"Proxy-Authorization",
+	"Te", // canonicalized version of "TE"
+	"Trailers",
+	"Transfer-Encoding",
+	"Upgrade",
 }
 
 var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, "", "192.168.0.23"}}
@@ -71,27 +82,47 @@ func get_bf_index(bf_id string) int {
 	return -1
 }
 
-func scp_proxy(bfid string, endpoint string) string {
+func copyHeader(dst, src http.Header) {
+	for k, vv := range src {
+		for _, v := range vv {
+			dst.Add(k, v)
+		}
+	}
+}
+
+func delHopHeaders(header http.Header) {
+	for _, h := range hopHeaders {
+		header.Del(h)
+	}
+}
+
+func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
+	var wr http.ResponseWriter
 	ind := get_bf_index(bfid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bfid)
-		return ""
+		return nil
 	}
-	bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
-	res, err := http.Get(bf_url)
-	fmt.Println("DEBUG RES=", res)
+	// bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
+
+	fmt.Println("request URI", r.RequestURI)
+	client := &http.Client{}
+	delHopHeaders(r.Header)
+	resp, err := client.Do(r)
 	if err != nil {
 		checkErr(err)
-		return ""
+		return nil
 	}
+	defer resp.Body.Close()
+	delHopHeaders(resp.Header)
+	copyHeader(wr.Header(), resp.Header)
+	wr.WriteHeader(resp.StatusCode)
+	io.Copy(wr, resp.Body)
+
+	fmt.Println("DEBUG RES=", resp)
 	// fmt.Println(res)
-	rdata, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		checkErr(err)
-		return ""
-	}
-	fmt.Println("rdata=", rdata)
-	return string(rdata)
+	// fmt.Println("rdata=", rdata)
+	return wr
 	// // fmt.Println(string(rdata))
 	// json.Unmarshal(rdata, &last_biofabrica)
 	// // fmt.Println(last_biofabrica)
@@ -100,7 +131,6 @@ func scp_proxy(bfid string, endpoint string) string {
 }
 
 func main_network(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
 
@@ -110,6 +140,7 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 		// var err error
 		endpoint := r.URL.Path
 		if endpoint == "/" {
+			w.Header().Set("Content-Type", "application/json")
 			fmt.Println("acessando raiz")
 			jsonStr, _ = json.Marshal(bfs)
 			os.Stdout.Write(jsonStr)
@@ -129,7 +160,10 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte(jsonStr))
 					}
 				} else {
-					ret := scp_proxy(bf_default, endpoint)
+
+					delHopHeaders(r.Header)
+					ret := scp_proxy(bf_default, r)
+					copyHeader(w.Header(), ret.Header)
 					w.Write([]byte(ret))
 				}
 
