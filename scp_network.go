@@ -184,11 +184,11 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 				if cmd == "bf_default" {
 					ind := get_bf_index(bf_default)
 					if ind < 0 {
-						w.Write([]byte(scp_err))
+						rw.Write([]byte(scp_err))
 					} else {
 						jsonStr, _ = json.Marshal(bfs)
 						// os.Stdout.Write(jsonStr)
-						w.Write([]byte(jsonStr))
+						rw.Write([]byte(jsonStr))
 					}
 				} else {
 					req, err := http.NewRequest(r.Method, endpoint, r.Body)
