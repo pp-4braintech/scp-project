@@ -2,10 +2,32 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/rs/cors"
 )
+
+var execpath string
+
+func checkErr(err error) {
+	if err != nil {
+		log.Println("[SCP ERROR]", err)
+	}
+}
+
+func test_file(filename string) bool {
+	mf, err := os.Stat(filename)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			checkErr(err)
+		}
+		return false
+	}
+	fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
+	return true
+}
 
 func main_network(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
