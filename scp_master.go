@@ -1279,7 +1279,7 @@ func scp_run_recovery() {
 	board_add_message("ERETORNANDO de PARADA TOTAL", "")
 	if biofabrica.Critical != scp_sysstop {
 		board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
-		time.Sleep(600 * time.Second)
+		// time.Sleep(600 * time.Second)    VOLTARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
 	}
 	scp_setup_devices(true)
 	for _, b := range bio {
