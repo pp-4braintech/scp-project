@@ -48,8 +48,13 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// var jsonStr []byte
-		endpoint := scp_splitparam(r.URL.Path, "/")
-		fmt.Println("end=", endpoint, len(endpoint))
+		endpoint := r.URL.Path
+		if endpoint == "/" {
+			fmt.Println("acessando raiz")
+		} else {
+			params := scp_splitparam(endpoint, "/")
+			fmt.Println("end=", params, len(params))
+		}
 		// totem_id := r.URL.Query().Get("Id")
 		//fmt.Println("bio_id =", bio_id)
 		//fmt.Println()
