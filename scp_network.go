@@ -106,7 +106,7 @@ func appendHostToXForwardHeader(header http.Header, host string) {
 	header.Set("X-Forwarded-For", host)
 }
 
-func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
+func scp_proxy(bfid string, r *http.Request, endpoint string) http.ResponseWriter {
 	var wr http.ResponseWriter
 	ind := get_bf_index(bfid)
 	if ind < 0 {
@@ -188,7 +188,7 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte(jsonStr))
 					}
 				} else {
-					w = scp_proxy(bf_default, r)
+					w = scp_proxy(bf_default, r, endpoint)
 					// w.Write(ret)
 				}
 
