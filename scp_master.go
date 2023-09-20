@@ -1359,9 +1359,10 @@ func scp_check_network() {
 		if !tcp_host_isalive(mainrouter, "80", pingmax) {
 			if biofabrica.Critical != scp_netfail {
 				fmt.Println("FATAL CHECK NETWORK: Sem comunicacao com MAINROUTER", mainrouter)
-				biofabrica.Critical = scp_netfail
+				biofabrica.Critical = scp_stopall
 				save_all_data(data_filename)
 				scp_emergency_pause()
+				biofabrica.Critical = scp_netfail
 				save_all_data(data_filename)
 			}
 		} else {
