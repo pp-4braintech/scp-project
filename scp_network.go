@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/rs/cors"
 )
@@ -47,8 +48,8 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// var jsonStr []byte
-		endpoint := scp_splitparam(r.URL.Path,"/")
-		fmt.Println("end=", endpoint,len(endpoint))
+		endpoint := scp_splitparam(r.URL.Path, "/")
+		fmt.Println("end=", endpoint, len(endpoint))
 		// totem_id := r.URL.Query().Get("Id")
 		//fmt.Println("bio_id =", bio_id)
 		//fmt.Println()
@@ -64,6 +65,7 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 		// os.Stdout.Write(jsonStr)
 		// w.Write([]byte(jsonStr))
 
+	}
 	// case "PUT":
 	// 	err := r.ParseForm()
 	// 	if err != nil {
