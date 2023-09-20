@@ -106,7 +106,7 @@ func appendHostToXForwardHeader(header http.Header, host string) {
 	header.Set("X-Forwarded-For", host)
 }
 
-func scp_proxy(bfid string, r *http.Request, endpoint string) http.ResponseWriter {
+func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 	var wr http.ResponseWriter
 	ind := get_bf_index(bfid)
 	if ind < 0 {
@@ -141,16 +141,16 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) http.ResponseWrite
 		return nil
 	}
 	defer resp.Body.Close()
-	delHopHeaders(resp.Header)
+	// delHopHeaders(resp.Header)
 
-	copyHeader(wr.Header(), resp.Header)
+	// copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
 	io.Copy(wr, resp.Body)
 
 	fmt.Println("DEBUG RES=", resp)
 	// fmt.Println(res)
 	// fmt.Println("rdata=", rdata)
-	return wr
+	return resp
 	// // fmt.Println(string(rdata))
 	// json.Unmarshal(rdata, &last_biofabrica)
 	// // fmt.Println(last_biofabrica)
@@ -188,8 +188,9 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte(jsonStr))
 					}
 				} else {
-					w = scp_proxy(bf_default, r, endpoint)
-					// w.Write(ret)
+					ret := scp_proxy(bf_default, r, endpoint)
+					w.Response = ret
+					w.Write([]byte(ret))
 				}
 
 			}
