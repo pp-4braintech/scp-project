@@ -4545,7 +4545,13 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 			}
 		}
 	}
-	time.Sleep(20 * time.Second)
+
+	for n := 0; n < 20; n++ {
+		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
 
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
@@ -4591,7 +4597,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 			fmt.Println("WARN SCP ADJUST TEMP: Temperatura >= limite em", bioid, bio[ind].Temperature, "/", temp)
 			break
 		}
-		time.Sleep(1 * time.Minute)
+		time.Sleep(2 * time.Second)
 	}
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
