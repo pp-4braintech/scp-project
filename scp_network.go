@@ -117,7 +117,7 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 		} else {
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
-			if len(params) > 2 {
+			if len(params) >= 2 {
 				cmd := params[1]
 				if cmd == "bf_default" {
 					ind := get_bf_index(bf_default)
