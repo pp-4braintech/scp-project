@@ -161,10 +161,8 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 
-					delHopHeaders(r.Header)
-					ret := scp_proxy(bf_default, r)
-					copyHeader(w.Header(), ret.Header)
-					w.Write([]byte(ret))
+					w = scp_proxy(bf_default, r)
+					// w.Write(ret)
 				}
 
 			}
