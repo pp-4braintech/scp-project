@@ -4689,9 +4689,9 @@ func scp_grow_bio(bioid string) bool {
 		ttotal = float64(bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1])
 	}
 	fmt.Println("DEBUG SCP GROW BIO: ", bioid, org.Orgname, " tempo total ajustado para", ttotal)
-	if devmode || testmode {
-		ttotal = scp_timeoutdefault / 60
-	}
+	// if devmode || testmode {
+	// 	ttotal = scp_timeoutdefault / 60
+	// }
 	time.Sleep(5 * time.Second)
 	vol_start := bio[ind].Volume
 	pday := -1
@@ -4709,7 +4709,9 @@ func scp_grow_bio(bioid string) bool {
 	ncontrol_foam := 0
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
+		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal)
 		if t_elapsed >= ttotal {
+			fmt.Println("DEBUG SCP GROW BIO: Biorreator terminando grow por tempo atingido", bioid)
 			break
 		}
 		t_day := int(t_elapsed / (60 * 24))
