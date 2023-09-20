@@ -106,6 +106,8 @@ func scp_proxy(bfid string, r *http.Request) http.ResponseWriter {
 	// bf_url := fmt.Sprintf("http://%s:5000/%s", bfs[ind].BFIP, endpoint)
 
 	fmt.Println("request URI", r.RequestURI)
+	fmt.Println("remote IP", r.RemoteAddr)
+	// r.RemoteAddr =  bfs[ind].BFIP
 	client := &http.Client{}
 	delHopHeaders(r.Header)
 	resp, err := client.Do(r)
@@ -160,7 +162,6 @@ func main_network(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte(jsonStr))
 					}
 				} else {
-
 					w = scp_proxy(bf_default, r)
 					// w.Write(ret)
 				}
