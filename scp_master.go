@@ -4095,7 +4095,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		return false
 	}
 	devaddr := bio_cfg[bioid].Deviceaddr
-	scraddr := bio_cfg[bioid].Screenaddr
+	// scraddr := bio_cfg[bioid].Screenaddr
 	aerorele := bio_cfg[bioid].Aero_rele
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
