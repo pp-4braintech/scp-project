@@ -4376,12 +4376,12 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 
 	tmax := 10 // scp_timewaitvalvs / 1000
 	for i := 0; i < tmax; i++ {
-		switch devtype {
-		case scp_bioreactor:
-			if bio[ind].MustPause || bio[ind].MustPause {
-				i = tmax
-			}
-		}
+		// switch devtype {
+		// case scp_bioreactor:
+		// 	// if bio[ind].MustPause || bio[ind].MustPause {
+		// 	// 	i = tmax
+		// 	// }
+		// }
 		time.Sleep(1000 * time.Millisecond)
 	}
 
@@ -4419,12 +4419,12 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 
 	tmax = 5 // scp_timewaitvalvs / 1000
 	for i := 0; i < tmax; i++ {
-		switch devtype {
-		case scp_bioreactor:
-			if bio[ind].MustPause || bio[ind].MustPause {
-				i = tmax
-			}
-		}
+		// switch devtype {
+		// case scp_bioreactor:
+		// 	if bio[ind].MustPause || bio[ind].MustPause {
+		// 		i = tmax
+		// 	}
+		// }
 		time.Sleep(1000 * time.Millisecond)
 	}
 
@@ -7909,7 +7909,8 @@ func main() {
 		mainrouter = "192.168.0.1"
 	} else {
 		execpath = "/home/scpadm/scp-project/"
-		mainrouter = "10.0.0.1"
+		// mainrouter = "10.0.0.1"
+		mainrouter = "192.168.0.1"
 	}
 	devmode = test_file("/etc/scpd/scp_devmode.flag")
 	if devmode {
