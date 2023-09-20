@@ -22,9 +22,10 @@ type Biofabrica_data struct {
 	SWVersion    string
 	LatLong      [2]float64
 	LastUpdate   string
+	BFIP         string
 }
 
-var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, ""}}
+var bfs = []Biofabrica_data{{"bf001", "Unigeo", "Unigeo", "1.2.15", [2]float64{0, 0}, "", "10.10.0.3"}}
 
 func checkErr(err error) {
 	if err != nil {
