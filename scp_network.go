@@ -197,7 +197,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 
-					bf_endpoint := fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, endpoint)
+					bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
 
 					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 					if err != nil {
