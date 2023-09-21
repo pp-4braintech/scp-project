@@ -107,7 +107,7 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 	r.RequestURI = ""
 	r.RemoteAddr = fmt.Sprintf("%s:5000", bfs[ind].BFIP)
 	client := &http.Client{}
-	delHopHeaders(r.Header)
+	// delHopHeaders(r.Header)
 	fmt.Println("remote IP", r.RemoteAddr)
 
 	// clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
