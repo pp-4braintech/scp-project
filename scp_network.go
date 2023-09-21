@@ -49,7 +49,7 @@ var hopHeaders = []string{
 }
 
 var bfs = []Biofabrica_data{{"bf000", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
-	{"bf001", "Cerradao", "PRONTO", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "192.168.0.23"}}
+	{"bf001", "Cerradao", "PRONTO", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "10.10.0.4"}}
 
 func checkErr(err error) {
 	if err != nil {
