@@ -1325,7 +1325,7 @@ func scp_emergency_pause() {
 	for _, b := range ibc {
 		ind := get_ibc_index(b.IBCID)
 		if ind >= 0 {
-			if bio[ind].Status != bio_nonexist {
+			if ibc[ind].Status != bio_nonexist {
 				pause_device(scp_ibc, ibc[ind].IBCID, true)
 				ibc[ind].Withdraw = 0
 			}
@@ -6402,7 +6402,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				bio_add_message(main_id, "ABiorreator sendo pausado para depois ser interrompido", "")
 			}
 
-		} else if !pause && bio[ind].Status == bio_pause {
+		} else if !pause && (bio[ind].Status == bio_pause || bio[ind].MustPause) {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
@@ -6456,7 +6456,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 				waitlist_add_message("AIBC "+main_id+" pausado", main_id+"PAUSE")
 			}
 
-		} else if !pause && ibc[ind].Status == bio_pause {
+		} else if !pause && (ibc[ind].Status == bio_pause || ibc[ind].MustPause) {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando IBC", main_id)
 			ibc[ind].Queue = append(ibc[ind].RedoQueue, ibc[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
@@ -6510,7 +6510,7 @@ func stop_device(devtype string, main_id string) bool {
 			pause_device(devtype, main_id, true)
 			// t_start =
 			for {
-				time.Sleep(5000 * time.Millisecond)
+				time.Sleep(3000 * time.Millisecond)
 				if len(bio[ind].UndoQueue) == 0 {
 					break
 				}
