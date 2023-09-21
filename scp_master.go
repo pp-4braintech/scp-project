@@ -2427,8 +2427,8 @@ func scp_refresh_status() {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no Biorreator", dev_id)
 									if bio[ind].Status != bio_error && bio[ind].Status != bio_pause {
 										if bio[ind].Status != bio_ready || bio[ind].Status != bio_empty {
-											board_add_message("E"+bio[ind].BioreactorID+" com falha, favor pausar o mesmo", "")
-											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, favor pausar o mesmo", "")
+											board_add_message("E"+bio[ind].BioreactorID+" com falha, favor verificar", "")
+											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, favor verificar", "")
 											// pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
 										}
 									}
