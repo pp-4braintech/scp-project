@@ -1127,7 +1127,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		// fmt.Println(cmd1)
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG SET VALV STATUS: cmd=", cmd1, " ret=", ret1)
-		if !strings.Contains(ret1, scp_ack) && !devmode {
+		if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 			// fmt.Println("ERROR SET VALV STATUS: SEND MSG ORCH falhou", ret1)
 			setok = false
 		}
@@ -1379,6 +1379,7 @@ func scp_check_network() {
 				if finishedsetup {
 					scp_run_recovery()
 					biofabrica.Critical = scp_ready
+					scp_setup_devices(true)
 				}
 			}
 		}
@@ -1754,6 +1755,7 @@ func scp_setup_devices(mustall bool) {
 				}
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 1 && !devmode {
+						bio[ind].LastStatus = bio[ind].Status
 						bio[ind].Status = bio_error
 						fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 					} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
@@ -1763,7 +1765,7 @@ func scp_setup_devices(mustall bool) {
 							if bio[ind].Volume == 0 {
 								bio[ind].Status = bio_empty
 							} else {
-								bio[ind].Status = bio_ready
+								bio[ind].Status = bio[ind].LastStatus
 							}
 						}
 					}
@@ -1826,6 +1828,7 @@ func scp_setup_devices(mustall bool) {
 				}
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 0 && !devmode {
+						ibc[ind].LastStatus = ibc[ind].Status
 						ibc[ind].Status = bio_error
 						fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 					} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
@@ -1835,7 +1838,7 @@ func scp_setup_devices(mustall bool) {
 							if ibc[ind].Volume == 0 {
 								ibc[ind].Status = bio_empty
 							} else {
-								ibc[ind].Status = bio_ready
+								ibc[ind].Status = ibc[ind].LastStatus
 							}
 						}
 					}
@@ -4184,7 +4187,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
-	if !strings.Contains(ret1, scp_ack) && !devmode {
+	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
 			set_valvs_value(dev_valvs, 1-value, false)
@@ -4281,7 +4284,7 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, peris_dev, value)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
-	if !strings.Contains(ret0, scp_ack) && !devmode {
+	if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 		fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", ret0)
 		return false
 	}
@@ -4322,7 +4325,7 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%s/END", devaddr, heater_dev, value_str)
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
-	if !strings.Contains(ret0, scp_ack) && !devmode {
+	if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 		fmt.Println("ERROR SCP TURN HEATER:", bioid, " ERROR ao definir valor[", value, "] aquecedor ", ret0)
 		return false
 	}
@@ -4432,7 +4435,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		cmd := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, pumpdev, value)
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
-		if !strings.Contains(ret, scp_ack) && !devmode {
+		if !strings.Contains(ret, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
 			if len(valvs) > 0 && value == 1 {
 				set_valvs_value(valvs, 0, false)
