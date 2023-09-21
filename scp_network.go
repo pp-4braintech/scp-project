@@ -27,7 +27,7 @@ var bf_default string = "bf000"
 type Biofabrica_data struct {
 	BFId         string
 	BFName       string
-	status       string
+	Status       string
 	CustomerId   string
 	CustomerName string
 	Address      string
