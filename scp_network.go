@@ -143,12 +143,12 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
+	endpoint := r.URL.Path
 
 	switch r.Method {
 	case "GET":
 		var jsonStr []byte
 		// var err error
-		endpoint := r.URL.Path
 		if endpoint == "/" {
 			rw.Header().Set("Content-Type", "application/json")
 			fmt.Println("acessando raiz")
@@ -247,6 +247,91 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 		// os.Stdout.Write(jsonStr)
 		// w.Write([]byte(jsonStr))
 
+	case "PUT":
+		var jsonStr []byte
+		if endpoint == "/" {
+			rw.Header().Set("Content-Type", "application/json")
+			fmt.Println("acessando raiz")
+			jsonStr, _ = json.Marshal(bfs)
+			os.Stdout.Write(jsonStr)
+			rw.Write([]byte(jsonStr))
+		} else {
+			params := scp_splitparam(endpoint, "/")
+			fmt.Println("end=", params, len(params))
+			if len(params) >= 2 {
+				cmd := params[1]
+				if cmd == "bf_default" {
+					ind := get_bf_index(bf_default)
+					if ind < 0 {
+						rw.Write([]byte(scp_err))
+					} else {
+						jsonStr, _ = json.Marshal(bfs)
+						// os.Stdout.Write(jsonStr)
+						rw.Write([]byte(jsonStr))
+					}
+				} else {
+					ind := get_bf_index(bf_default)
+					if ind < 0 {
+						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+						return
+					}
+
+					bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
+					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+
+					req.Header = r.Header.Clone()
+					req.URL.RawQuery = r.URL.RawQuery
+					client := http.Client{
+						Timeout: 5 * time.Second,
+					}
+
+					reqData, err := httputil.DumpRequest(req, true)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+					req.URL.Scheme = "http"
+					log.Println("Forward Request Data", string(reqData))
+
+					resp, err := client.Do(req)
+					if err != nil {
+						fmt.Println("ERRO no client.Do")
+						checkErr(err)
+						return
+					}
+					defer resp.Body.Close()
+
+					//Get dump of our response
+					respData, err := httputil.DumpResponse(resp, true)
+					if err != nil {
+						checkErr(err)
+						return
+					}
+
+					log.Println("Forward Request Response", string(respData))
+
+					//Copy the response headers to the actual response. DO THIS BEFORE CALLING WRITEHEADER.
+					for k, v := range resp.Header {
+						rw.Header()[k] = v
+					}
+
+					//set the statuscode whatever we got from the response
+					rw.WriteHeader(resp.StatusCode)
+
+					//Copy the response body to the actual response
+					_, err = io.Copy(rw, resp.Body)
+					if err != nil {
+						log.Println(err)
+						rw.Write([]byte("error"))
+						return
+					}
+				}
+			}
+		}
 	}
 	// case "PUT":
 	// 	err := r.ParseForm()
