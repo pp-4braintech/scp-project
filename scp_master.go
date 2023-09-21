@@ -1728,7 +1728,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",3/END")
-				cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
+				// cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 				nerr := 0
 				for k, c := range cmd {
 					ret := scp_sendmsg_orch(c)
@@ -1754,7 +1754,7 @@ func scp_setup_devices(mustall bool) {
 					bio[ind].Vol_zero[1] = bio_v2_zero
 				}
 				if biofabrica.Critical != scp_netfail {
-					if nerr > 1 && !devmode {
+					if nerr > 0 && !devmode {
 						bio[ind].LastStatus = bio[ind].Status
 						bio[ind].Status = bio_error
 						fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
