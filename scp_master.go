@@ -1283,17 +1283,19 @@ func scp_run_recovery() {
 	}
 	scp_setup_devices(true)
 	for _, b := range bio {
-		if b.Status != bio_nonexist && b.Status != bio_error {
-			pause_device(scp_bioreactor, b.BioreactorID, false)
-		} else if b.Status == bio_error {
+		ind := get_bio_index(b.BioreactorID)
+		if bio[ind].Status != bio_nonexist && bio[ind].Status != bio_error {
+			pause_device(scp_bioreactor, bio[ind].BioreactorID, false)
+		} else if bio[ind].Status == bio_error {
 			board_add_message("AFavor checar Biorreator "+b.BioreactorID, "")
 		}
 	}
 	for _, b := range ibc {
-		if b.Status != bio_nonexist && b.Status != bio_error {
-			pause_device(scp_ibc, b.IBCID, false)
-		} else if b.Status == bio_error {
-			board_add_message("AFavor checar IBC "+b.IBCID, "")
+		ind := get_ibc_index(b.IBCID)
+		if ibc[ind].Status != bio_nonexist && ibc[ind].Status != bio_error {
+			pause_device(scp_ibc, ibc[ind].IBCID, false)
+		} else if ibc[ind].Status == bio_error {
+			board_add_message("AFavor checar IBC "+ibc[ind].IBCID, "")
 		}
 	}
 	// if !schedrunning {
@@ -1310,19 +1312,25 @@ func scp_emergency_pause() {
 		board_add_message("EPARADA de TOTAL em PROGRESSO", "")
 	}
 	for _, b := range bio {
-		if b.Status != bio_nonexist {
-			pause_device(scp_bioreactor, b.BioreactorID, true)
-			ind := get_bio_index(b.BioreactorID)
-			bio[ind].Withdraw = 0
+		ind := get_bio_index(b.BioreactorID)
+		if ind >= 0 {
+			if bio[ind].Status != bio_nonexist {
+				pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+				bio[ind].Withdraw = 0
+			}
+
 		}
 
 	}
 	for _, b := range ibc {
-		if b.Status != bio_nonexist {
-			pause_device(scp_ibc, b.IBCID, true)
-			ind := get_ibc_index(b.IBCID)
-			ibc[ind].Withdraw = 0
+		ind := get_ibc_index(b.IBCID)
+		if ind >= 0 {
+			if bio[ind].Status != bio_nonexist {
+				pause_device(scp_ibc, ibc[ind].IBCID, true)
+				ibc[ind].Withdraw = 0
+			}
 		}
+
 	}
 }
 

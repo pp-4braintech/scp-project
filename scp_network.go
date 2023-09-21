@@ -27,6 +27,7 @@ var bf_default string = "bf000"
 type Biofabrica_data struct {
 	BFId         string
 	BFName       string
+	status       string
 	CustomerId   string
 	CustomerName string
 	Address      string
@@ -47,8 +48,8 @@ var hopHeaders = []string{
 	"Upgrade",
 }
 
-var bfs = []Biofabrica_data{{"bf000", "Modelo", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
-	{"bf001", "Cerradao", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "192.168.0.23"}}
+var bfs = []Biofabrica_data{{"bf000", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
+	{"bf001", "Cerradao", "PRONTO", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "192.168.0.23"}}
 
 func checkErr(err error) {
 	if err != nil {
