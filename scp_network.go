@@ -187,7 +187,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					req.Header = r.Header.Clone()
 					req.URL.RawQuery = r.URL.RawQuery
 					client := http.Client{
-						Timeout: 5 * time.Second,
+						Timeout: 7 * time.Second,
 					}
 
 					reqData, err := httputil.DumpRequest(req, true)
@@ -259,6 +259,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			os.Stdout.Write(jsonStr)
 			rw.Write([]byte(jsonStr))
 		} else {
+			putparams := r.
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
 			if len(params) >= 2 {

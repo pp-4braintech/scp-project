@@ -2503,6 +2503,9 @@ func scp_sync_functions() {
 				}
 				t_start_screens = time.Now()
 			}
+			if !schedrunning {
+				go scp_scheduler()
+			}
 
 		}
 		t_elapsed_version := uint32(time.Since(t_start_version).Minutes())
@@ -2511,9 +2514,6 @@ func scp_sync_functions() {
 			t_start_version = time.Now()
 		}
 		time.Sleep(scp_refreshsync * time.Second)
-		if !schedrunning {
-			go scp_scheduler()
-		}
 	}
 }
 
@@ -4850,9 +4850,13 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 	switch devtype {
 	case scp_bioreactor:
-		bio[ind].Status = bio[ind].LastStatus
+		if bio[ind].Status != bio_pause {
+			bio[ind].Status = bio[ind].LastStatus
+		}
 	case scp_ibc:
-		ibc[ind].Status = ibc[ind].LastStatus
+		if ibc[ind].Status != bio_pause {
+			ibc[ind].Status = ibc[ind].LastStatus
+		}
 	}
 }
 
@@ -6406,7 +6410,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			fmt.Println("DEBUG PAUSE DEVICE: Retomando Biorreator", main_id)
 			bio[ind].Queue = append(bio[ind].RedoQueue, bio[ind].Queue...)
 			// fmt.Println("****** LAST STATUS no PAUSE", bio[ind].LastStatus)
-			if bio[ind].LastStatus == bio_pause {
+			if bio[ind].LastStatus == bio_pause && bio[ind].Status == bio_pause { // CHECAR coloquei bio[ind].Status == bio_pause
 				if bio[ind].Volume == 0 {
 					bio[ind].Status = bio_empty
 				} else {
@@ -7077,10 +7081,10 @@ func scp_process_conn(conn net.Conn) {
 				}
 				biotask := []string{bioid + ",0," + orgcode}
 				n := create_sched(biotask)
-				if n > 0 && !schedrunning {
-					go scp_scheduler()
-				}
-				fmt.Println("DEBUG SCP START: biotaks=", biotask, "n=", n, "sched=", schedrunning)
+				// if n > 0 && !schedrunning {
+				// 	go scp_scheduler()
+				// }
+				fmt.Println("DEBUG SCP START: biotask=", biotask, "n=", n, "sched=", schedrunning)
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
@@ -7098,9 +7102,10 @@ func scp_process_conn(conn net.Conn) {
 				fmt.Println("START", orgcode)
 				biotask := []string{ibcid + ",0," + orgcode}
 				n := create_sched(biotask)
-				if n > 0 && !schedrunning {
-					go scp_scheduler()
-				}
+				// if n > 0 && !schedrunning {
+				// 	go scp_scheduler()
+				// }
+				fmt.Println("DEBUG SCP START: ibctask=", biotask, "n=", n, "sched=", schedrunning)
 			} else {
 				fmt.Println("ORG INVALIDO")
 			}
@@ -7355,7 +7360,7 @@ func scp_process_conn(conn net.Conn) {
 										}
 									}
 								} else {
-									if bio[ind].Status == bio_circulate {
+									if bio[ind].Status == bio_circulate { // CHECAR se PRECISA TESTAR MUSTSTOP/PAUSE
 										bio[ind].Status = bio[ind].LastStatus
 									}
 								}
