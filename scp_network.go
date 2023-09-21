@@ -26,6 +26,7 @@ var bf_default string = "bf000"
 
 type Biofabrica_data struct {
 	BFId         string
+	BFName       string
 	CustomerId   string
 	CustomerName string
 	Address      string
@@ -46,8 +47,8 @@ var hopHeaders = []string{
 	"Upgrade",
 }
 
-var bfs = []Biofabrica_data{{"bf000", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
-	{"bf001", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "192.168.0.23"}}
+var bfs = []Biofabrica_data{{"bf000", "Modelo", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
+	{"bf001", "Cerradao", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "192.168.0.23"}}
 
 func checkErr(err error) {
 	if err != nil {
@@ -84,30 +85,6 @@ func get_bf_index(bf_id string) int {
 		}
 	}
 	return -1
-}
-
-func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
-		}
-	}
-}
-
-func delHopHeaders(header http.Header) {
-	for _, h := range hopHeaders {
-		header.Del(h)
-	}
-}
-
-func appendHostToXForwardHeader(header http.Header, host string) {
-	// If we aren't the first proxy retain prior
-	// X-Forwarded-For information as a comma+space
-	// separated list and fold multiple headers into one.
-	if prior, ok := header["X-Forwarded-For"]; ok {
-		host = strings.Join(prior, ", ") + ", " + host
-	}
-	header.Set("X-Forwarded-For", host)
 }
 
 func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
@@ -199,7 +176,6 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					}
 
 					bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
-
 					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 					if err != nil {
 						checkErr(err)
@@ -207,16 +183,10 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					}
 
 					req.Header = r.Header.Clone()
-
-					//Set the query parameters
 					req.URL.RawQuery = r.URL.RawQuery
-
-					//create a http client, timeout should be mentioned or it will never timeout.
 					client := http.Client{
 						Timeout: 5 * time.Second,
 					}
-
-					//Get dump of our request
 
 					reqData, err := httputil.DumpRequest(req, true)
 					if err != nil {
@@ -224,11 +194,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 					req.URL.Scheme = "http"
-					// req.URL.Path = fmt.Sprintf("%s:5000%s", bfs[ind].BFIP, r.RequestURI)
-
 					log.Println("Forward Request Data", string(reqData))
 
-					//Actually forward the request to our endpoint
 					resp, err := client.Do(req)
 					if err != nil {
 						fmt.Println("ERRO no client.Do")
@@ -261,9 +228,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						rw.Write([]byte("error"))
 						return
 					}
-
 				}
-
 			}
 		}
 		// totem_id := r.URL.Query().Get("Id")
