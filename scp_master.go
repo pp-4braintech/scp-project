@@ -4201,7 +4201,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
-		if !strings.Contains(ret2, scp_ack) && !devmode {
+		if !strings.Contains(ret2, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
 			if value == 1 && changevalvs {
 				set_valvs_value(dev_valvs, 0, false)
