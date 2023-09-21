@@ -1752,20 +1752,23 @@ func scp_setup_devices(mustall bool) {
 				if bio[ind].Vol_zero[1] == 0 {
 					bio[ind].Vol_zero[1] = bio_v2_zero
 				}
-				if nerr > 1 && !devmode && biofabrica.Critical != scp_netfail {
-					bio[ind].Status = bio_error
-					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
-				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
-					if bio[ind].MustPause || bio[ind].LastStatus == bio_pause {
-						bio[ind].Status = bio_pause
-					} else {
-						if bio[ind].Volume == 0 {
-							bio[ind].Status = bio_empty
+				if biofabrica.Critical != scp_netfail {
+					if nerr > 1 && !devmode {
+						bio[ind].Status = bio_error
+						fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
+					} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
+						if bio[ind].MustPause || bio[ind].LastStatus == bio_pause {
+							bio[ind].Status = bio_pause
 						} else {
-							bio[ind].Status = bio_ready
+							if bio[ind].Volume == 0 {
+								bio[ind].Status = bio_empty
+							} else {
+								bio[ind].Status = bio_ready
+							}
 						}
 					}
 				}
+
 			}
 		}
 	}
@@ -1821,20 +1824,23 @@ func scp_setup_devices(mustall bool) {
 				if ibc[ind].Vol_zero[1] == 0 {
 					ibc[ind].Vol_zero[1] = ibc_v2_zero
 				}
-				if nerr > 0 && !devmode && biofabrica.Critical != scp_netfail {
-					ibc[ind].Status = bio_error
-					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
-				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					if ibc[ind].MustPause || ibc[ind].LastStatus == bio_pause {
-						ibc[ind].Status = bio_pause
-					} else {
-						if ibc[ind].Volume == 0 {
-							ibc[ind].Status = bio_empty
+				if biofabrica.Critical != scp_netfail {
+					if nerr > 0 && !devmode {
+						ibc[ind].Status = bio_error
+						fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
+					} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
+						if ibc[ind].MustPause || ibc[ind].LastStatus == bio_pause {
+							ibc[ind].Status = bio_pause
 						} else {
-							ibc[ind].Status = bio_ready
+							if ibc[ind].Volume == 0 {
+								ibc[ind].Status = bio_empty
+							} else {
+								ibc[ind].Status = bio_ready
+							}
 						}
 					}
 				}
+
 			}
 		}
 	}
@@ -1872,11 +1878,13 @@ func scp_setup_devices(mustall bool) {
 					}
 					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				if nerr > 0 && !devmode && biofabrica.Critical != scp_netfail {
-					totem[ind].Status = bio_nonexist
-					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
-				} else if nerr == 0 {
-					totem[ind].Status = bio_ready
+				if biofabrica.Critical != scp_netfail {
+					if nerr > 0 && !devmode {
+						totem[ind].Status = bio_nonexist
+						fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
+					} else if nerr == 0 {
+						totem[ind].Status = bio_ready
+					}
 				}
 			}
 		}
