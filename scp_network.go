@@ -298,7 +298,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 					req.URL.Scheme = "http"
-					log.Println("Forward Request Data", string(reqData))
+					log.Println("Forward Request Data", len(string(reqData)))
 
 					resp, err := client.Do(req)
 					if err != nil {
@@ -315,7 +315,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						return
 					}
 
-					log.Println("Forward Request Response", string(respData))
+					log.Println("Forward Request Response", len(string(respData)))
 
 					//Copy the response headers to the actual response. DO THIS BEFORE CALLING WRITEHEADER.
 					for k, v := range resp.Header {
