@@ -259,20 +259,22 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			os.Stdout.Write(jsonStr)
 			rw.Write([]byte(jsonStr))
 		} else {
-			putparams := r.
 			params := scp_splitparam(endpoint, "/")
 			fmt.Println("end=", params, len(params))
 			if len(params) >= 2 {
 				cmd := params[1]
 				if cmd == "bf_default" {
-					ind := get_bf_index(bf_default)
-					if ind < 0 {
-						rw.Write([]byte(scp_err))
-					} else {
-						jsonStr, _ = json.Marshal(bfs)
-						// os.Stdout.Write(jsonStr)
-						rw.Write([]byte(jsonStr))
+					bfid := r.FormValue("BFId")
+					if len(bfid) > 0 {
+						ind := get_bf_index(bfid)
+						if ind >= 0 {
+							bf_default = bfid
+							rw.Write([]byte(scp_ack))
+							return
+						}
 					}
+					rw.Write([]byte(scp_err))
+
 				} else {
 					ind := get_bf_index(bf_default)
 					if ind < 0 {
