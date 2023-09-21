@@ -4674,7 +4674,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
 	}
-	time.Sleep(1 * time.Minute)
+	time.Sleep(10 * time.Second)
 	bio[ind].Temprunning = false
 	return
 }
