@@ -7925,7 +7925,7 @@ func master_shutdown(sigs chan os.Signal) {
 	// 	scp_fullstop_device(t.TotemID, scp_totem, false)
 	// }
 	scp_fullstop_device("ALL", scp_biofabrica, false, false)
-	time.Sleep(120 * time.Second)
+	time.Sleep(90 * time.Second)
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
 	fmt.Println("DEBUG MASTER SHUTDOWN: concluido Dados da Biofabrica =", biofabrica)
