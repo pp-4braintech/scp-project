@@ -1756,7 +1756,7 @@ func scp_setup_devices(mustall bool) {
 					bio[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
-					if bio[ind].MustPause {
+					if bio[ind].MustPause || bio[ind].LastStatus == bio_pause {
 						bio[ind].Status = bio_pause
 					} else {
 						if bio[ind].Volume == 0 {
@@ -1825,7 +1825,7 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					if ibc[ind].MustPause {
+					if ibc[ind].MustPause || ibc[ind].LastStatus == bio_pause {
 						ibc[ind].Status = bio_pause
 					} else {
 						if ibc[ind].Volume == 0 {
@@ -2423,6 +2423,7 @@ func scp_refresh_status() {
 											// pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
 										}
 									}
+									bio[ind].LastStatus = bio[ind].Status
 									bio[ind].Status = bio_error
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: Biorreator não existe na tabela", dev_id)
@@ -2438,6 +2439,7 @@ func scp_refresh_status() {
 											// pause_device(scp_ibc, ibc[ind].IBCID, true)
 										}
 									}
+									ibc[ind].LastStatus = ibc[ind].Status
 									ibc[ind].Status = bio_error
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: IBC não existe na tabela", dev_id)
