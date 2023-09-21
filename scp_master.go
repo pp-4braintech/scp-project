@@ -48,23 +48,24 @@ const (
 
 	last_ibc = "IBC07"
 
-	scp_ack     = "ACK"
-	scp_err     = "ERR"
-	scp_get     = "GET"
-	scp_put     = "PUT"
-	scp_run     = "RUN"
-	scp_die     = "DIE"
-	scp_null    = "NULL"
-	scp_sched   = "SCHED"
-	scp_start   = "START"
-	scp_status  = "STATUS"
-	scp_stop    = "STOP"
-	scp_pause   = "PAUSE"
-	scp_fail    = "FAIL"
-	scp_netfail = "NETFAIL"
-	scp_ready   = "READY"
-	scp_sysstop = "SYSSTOP"
-	scp_stopall = "STOPALL"
+	scp_ack      = "ACK"
+	scp_err      = "ERR"
+	scp_get      = "GET"
+	scp_put      = "PUT"
+	scp_run      = "RUN"
+	scp_die      = "DIE"
+	scp_null     = "NULL"
+	scp_sched    = "SCHED"
+	scp_start    = "START"
+	scp_status   = "STATUS"
+	scp_stop     = "STOP"
+	scp_pause    = "PAUSE"
+	scp_fail     = "FAIL"
+	scp_netfail  = "NETFAIL"
+	scp_ready    = "READY"
+	scp_sysstop  = "SYSSTOP"
+	scp_stopall  = "STOPALL"
+	scp_recovery = "RECOVERY"
 
 	scp_state_JOIN0   = 10
 	scp_state_JOIN1   = 11
@@ -1279,7 +1280,12 @@ func scp_run_recovery() {
 	board_add_message("ERETORNANDO de PARADA TOTAL", "")
 	if biofabrica.Critical != scp_sysstop {
 		board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
-		time.Sleep(600 * time.Second)
+		if !devmode {
+			time.Sleep(600 * time.Second)
+		}
+	}
+	if biofabrica.Critical == scp_netfail {
+		biofabrica.Critical = scp_recovery
 	}
 	scp_setup_devices(true)
 	for _, b := range bio {
@@ -1377,8 +1383,8 @@ func scp_check_network() {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Critical == scp_netfail || biofabrica.Critical == scp_sysstop {
 				if finishedsetup {
-					biofabrica.Critical = scp_ready // estava depois do recovery
 					scp_run_recovery()
+					biofabrica.Critical = scp_ready // estava depois do recovery
 					// scp_setup_devices(true)
 				}
 			}
