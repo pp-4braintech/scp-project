@@ -1377,9 +1377,9 @@ func scp_check_network() {
 			fmt.Println("DEBUG CHECK NETWORK: OK comunicacao com MAINROUTER", mainrouter)
 			if biofabrica.Critical == scp_netfail || biofabrica.Critical == scp_sysstop {
 				if finishedsetup {
+					biofabrica.Critical = scp_ready // estava depois do recovery
 					scp_run_recovery()
-					biofabrica.Critical = scp_ready
-					scp_setup_devices(true)
+					// scp_setup_devices(true)
 				}
 			}
 		}
@@ -1698,9 +1698,9 @@ func scp_setup_devices(mustall bool) {
 	}
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIORREATORES")
 	for _, b := range bio_cfg {
-		if biofabrica.Critical == scp_netfail {
-			break
-		}
+		// if biofabrica.Critical == scp_netfail {
+		// 	break
+		// }
 		ind := get_bio_index(b.BioreactorID)
 		bioexist := true
 		if ind >= 0 {
@@ -1777,9 +1777,9 @@ func scp_setup_devices(mustall bool) {
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando IBCs")
 	for _, ib := range ibc_cfg {
-		if biofabrica.Critical == scp_netfail {
-			break
-		}
+		// if biofabrica.Critical == scp_netfail {
+		// 	break
+		// }
 		ind := get_ibc_index(ib.IBCID)
 		ibcexist := true
 		if ind >= 0 {
@@ -1850,9 +1850,9 @@ func scp_setup_devices(mustall bool) {
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando TOTEMs")
 	for _, tot := range totem_cfg {
-		if biofabrica.Critical == scp_netfail {
-			break
-		}
+		// if biofabrica.Critical == scp_netfail {
+		// 	break
+		// }
 		ind := get_totem_index(tot.TotemID)
 		if len(tot.Deviceaddr) > 0 && ind >= 0 {
 			if mustall || totem[ind].Status == bio_nonexist || totem[ind].Status == bio_error {
