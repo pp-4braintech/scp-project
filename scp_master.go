@@ -1697,6 +1697,9 @@ func scp_setup_devices(mustall bool) {
 	}
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIORREATORES")
 	for _, b := range bio_cfg {
+		if biofabrica.Critical == scp_netfail {
+			break
+		}
 		ind := get_bio_index(b.BioreactorID)
 		bioexist := true
 		if ind >= 0 {
@@ -1749,7 +1752,7 @@ func scp_setup_devices(mustall bool) {
 				if bio[ind].Vol_zero[1] == 0 {
 					bio[ind].Vol_zero[1] = bio_v2_zero
 				}
-				if nerr > 1 && !devmode {
+				if nerr > 1 && !devmode && biofabrica.Critical != scp_netfail {
 					bio[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
@@ -1769,6 +1772,9 @@ func scp_setup_devices(mustall bool) {
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando IBCs")
 	for _, ib := range ibc_cfg {
+		if biofabrica.Critical == scp_netfail {
+			break
+		}
 		ind := get_ibc_index(ib.IBCID)
 		ibcexist := true
 		if ind >= 0 {
@@ -1815,7 +1821,7 @@ func scp_setup_devices(mustall bool) {
 				if ibc[ind].Vol_zero[1] == 0 {
 					ibc[ind].Vol_zero[1] = ibc_v2_zero
 				}
-				if nerr > 0 && !devmode {
+				if nerr > 0 && !devmode && biofabrica.Critical != scp_netfail {
 					ibc[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
@@ -1835,6 +1841,9 @@ func scp_setup_devices(mustall bool) {
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando TOTEMs")
 	for _, tot := range totem_cfg {
+		if biofabrica.Critical == scp_netfail {
+			break
+		}
 		ind := get_totem_index(tot.TotemID)
 		if len(tot.Deviceaddr) > 0 && ind >= 0 {
 			if mustall || totem[ind].Status == bio_nonexist || totem[ind].Status == bio_error {
@@ -1863,7 +1872,7 @@ func scp_setup_devices(mustall bool) {
 					}
 					time.Sleep(scp_refreshwait / 2 * time.Millisecond)
 				}
-				if nerr > 0 && !devmode {
+				if nerr > 0 && !devmode && biofabrica.Critical != scp_netfail {
 					totem[ind].Status = bio_nonexist
 					fmt.Println("ERROR SETUP DEVICES: TOTEM com erros", tot.TotemID)
 				} else if nerr == 0 {
@@ -2490,7 +2499,7 @@ func scp_sync_functions() {
 
 			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
 			if t_elapsed_status >= scp_refresstatus {
-				if finishedsetup {
+				if finishedsetup && biofabrica.Critical != scp_netfail {
 					scp_refresh_status()
 				}
 				t_start_status = time.Now()
