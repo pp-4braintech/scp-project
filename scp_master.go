@@ -1753,10 +1753,14 @@ func scp_setup_devices(mustall bool) {
 					bio[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
 				} else if bio[ind].Status == bio_nonexist || bio[ind].Status == bio_error {
-					if bio[ind].Volume == 0 {
-						bio[ind].Status = bio_empty
+					if bio[ind].MustPause {
+						bio[ind].Status = bio_pause
 					} else {
-						bio[ind].Status = bio_ready
+						if bio[ind].Volume == 0 {
+							bio[ind].Status = bio_empty
+						} else {
+							bio[ind].Status = bio_ready
+						}
 					}
 				}
 			}
@@ -1815,10 +1819,14 @@ func scp_setup_devices(mustall bool) {
 					ibc[ind].Status = bio_error
 					fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
 				} else if ibc[ind].Status == bio_nonexist || ibc[ind].Status == bio_error {
-					if ibc[ind].Volume == 0 {
-						ibc[ind].Status = bio_empty
+					if ibc[ind].MustPause {
+						ibc[ind].Status = bio_pause
 					} else {
-						ibc[ind].Status = bio_ready
+						if ibc[ind].Volume == 0 {
+							ibc[ind].Status = bio_empty
+						} else {
+							ibc[ind].Status = bio_ready
+						}
 					}
 				}
 			}
