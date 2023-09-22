@@ -276,7 +276,19 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					rw.Write([]byte(scp_err))
 
 				} else if cmd == "bf_update" {
-					// bfid := r.FormValue("BFId")
+					bfid := r.FormValue("BFId")
+					if len(bfid) > 0 {
+						ind := get_bf_index(bfid)
+						if ind >= 0 {
+							bfs[ind].BFIP = r.Host
+							bfs[ind].LastUpdate = time.Now().Format("2017-09-07 17:06:06")
+							fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
+						} else {
+							fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
+						}
+					} else {
+						fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_update")
+					}
 				} else {
 					ind := get_bf_index(bf_default)
 					if ind < 0 {
