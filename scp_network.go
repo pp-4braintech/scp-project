@@ -280,8 +280,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					if len(bfid) > 0 {
 						ind := get_bf_index(bfid)
 						if ind >= 0 {
-							bfs[ind].BFIP = r.Host
-							bfs[ind].LastUpdate = time.Now().Format("2017-09-07 17:06:06")
+							bfs[ind].BFIP = r.RemoteAddr
+							currentTime := time.Now()
+							bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
 							fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
 						} else {
 							fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
