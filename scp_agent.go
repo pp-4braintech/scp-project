@@ -125,6 +125,7 @@ func load_bf_data(filename string) int {
 			break
 		}
 	}
+	mybf = mybf_new
 	return n
 }
 
