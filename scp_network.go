@@ -376,13 +376,14 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			if len(bfid) > 0 {
 				ind := get_bf_index(bfid)
 				if ind >= 0 {
-					raddr := r.RemoteAddr
-					r_split := scp_splitparam(raddr, ":")
-					if len(r_split) > 1 {
-						bfs[ind].BFIP = r_split[0]
-					} else {
-						fmt.Println("ERROR SCP MAIN NETWORK: BFId enviou request com endereço IP invalido", bfid, raddr)
-					}
+					// raddr := r.RemoteAddr
+					// r_split := scp_splitparam(raddr, ":")
+					// if len(r_split) > 1 {
+					// 	bfs[ind].BFIP = r_split[0]
+					// } else {
+					// 	fmt.Println("ERROR SCP MAIN NETWORK: BFId enviou request com endereço IP invalido", bfid, raddr)
+					// }
+					bfs[ind].BFIP = bf_agent.BFIP
 					currentTime := time.Now()
 					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
