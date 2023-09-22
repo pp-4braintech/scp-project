@@ -383,7 +383,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
 				}
 			} else {
-				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_update")
+				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_update", r)
 			}
 		}
 		rw.Write([]byte(scp_ack))
