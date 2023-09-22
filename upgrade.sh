@@ -32,7 +32,7 @@ if [ -e "$DIR$FILE" ]
 
     else
         echo "Criando SCP AGENT"
-        cp /home/scpadm/scp-project/inid/scp_agent.service /etc/systemd/system/
+        cp /home/scpadm/scp-project/initd/scp_agent.service /etc/systemd/system/scp_agent.service
         systemctl enable scp_agent
         systemctl start scp_agent
 fi
