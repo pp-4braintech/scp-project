@@ -35,6 +35,14 @@ func checkErr(err error) {
 	}
 }
 
+func scp_splitparam(param string, separator string) []string {
+	scp_data := strings.Split(param, separator)
+	if len(scp_data) < 1 {
+		return nil
+	}
+	return scp_data
+}
+
 func get_tun_ip() string {
 	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
 	cmd := exec.Command(cmdpath, "tun0") // "| grep 'inet ' | awk '{ print $2}'")
