@@ -28,7 +28,7 @@ type Biofabrica_data struct {
 	BFIP         string
 }
 
-var mybf = Biofabrica_data{"bf008", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"}
+var mybf = Biofabrica_data{"bf008", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var myid = "bf001"
 
