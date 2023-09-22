@@ -390,7 +390,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
 				} else {
 					fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
-					rw.Write([]byte(scp_nonexit))
+					rw.Write([]byte(scp_nonexist))
 					return
 				}
 			} else {
