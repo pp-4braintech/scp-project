@@ -282,8 +282,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						if ind >= 0 {
 							raddr := r.RemoteAddr
 							r_split := scp_splitparam(raddr, ":")
-							if len(r_split)>1 {
-								bfs[ind].BFIP = r_split[[0]]
+							if len(r_split) > 1 {
+								bfs[ind].BFIP = r_split[0]
 							} else {
 								fmt.Println("ERROR SCP MAIN NETWORK: BFId enviou request com endereço IP invalido", bfid, raddr)
 							}
