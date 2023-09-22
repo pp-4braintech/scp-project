@@ -44,6 +44,7 @@ func scp_splitparam(param string, separator string) []string {
 }
 
 func get_tun_ip() string {
+	tun_ip := ""
 	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
 	cmd := exec.Command(cmdpath, "tun0") // "| grep 'inet ' | awk '{ print $2}'")
 	// cmd := exec.Command(cmdpath)
@@ -57,12 +58,12 @@ func get_tun_ip() string {
 		if p >= 0 {
 			ret := scp_splitparam(out_str[p:], " ")
 			if len(ret) > 1 {
-				fmt.Println(ret[1], ret)
+				tun_ip = ret[1]
 			}
 		}
 
 	}
-	return ""
+	return tun_ip
 }
 
 func scp_update_network() {
@@ -86,7 +87,7 @@ func scp_update_network() {
 
 func main() {
 	for {
-		get_tun_ip()
+		mybf.BFIP = get_tun_ip()
 		scp_update_network()
 		time.Sleep(1 * time.Minute)
 	}
