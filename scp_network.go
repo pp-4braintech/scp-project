@@ -143,7 +143,7 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 
 func main_network(rw http.ResponseWriter, r *http.Request) {
 
-	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
+	fmt.Printf("\n\nReq: %s %s\n", r.Host, r.URL.Path)
 	endpoint := r.URL.Path
 
 	switch r.Method {
