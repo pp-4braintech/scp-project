@@ -517,6 +517,7 @@ var withdrawmutex sync.Mutex
 var boardmutex sync.Mutex
 var biomutex sync.Mutex
 var waitlistmutex sync.Mutex
+var upgrademutex sync.Mutex
 
 var withdrawrunning = false
 
@@ -7917,6 +7918,8 @@ func scp_master_ipc() {
 }
 
 func system_upgrade() {
+	upgrademutex.Lock()
+	defer upgrademutex.Unlock()
 	fmt.Println("WARN SCP MASTER UPGRADEstarted... Necessario aguardar cerca de 10 minutos...")
 	board_add_message("EParando Biofábrica e Atualizando Software", "")
 	biofabrica.Critical = scp_stopall
