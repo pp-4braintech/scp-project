@@ -17,8 +17,9 @@ import (
 var net192 = false
 
 const (
-	scp_ack = "ACK"
-	scp_err = "ERR"
+	scp_ack     = "ACK"
+	scp_err     = "ERR"
+	scp_nonexit = "NONEXIST"
 )
 
 var execpath string
@@ -389,9 +390,35 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
 				} else {
 					fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
+					rw.Write([]byte(scp_nonexit))
+					return
 				}
 			} else {
 				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_update", r)
+			}
+
+		} else if endpoint == "/bf_new" {
+			var bf_agent Biofabrica_data
+			err := json.NewDecoder(r.Body).Decode(&bf_agent)
+			if err != nil {
+				fmt.Println("ERROR SCP MAIN NETWORK: Erro ao decodificar dados enviados pelo Agent")
+				checkErr(err)
+				rw.Write([]byte(scp_err))
+				return
+			}
+			bfid := bf_agent.BFId
+			if len(bfid) > 0 {
+				if get_bf_index(bfid) < 0 {
+					bfs = append(bfs, bf_agent)
+					ind := get_bf_index(bfid)
+					currentTime := time.Now()
+					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
+					fmt.Println("DEBUG SCP MAIN NETWORK: Criando entrada para bfid=", bfid, " >>", bfs[ind])
+				} else {
+					fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_new", bfid)
+				}
+			} else {
+				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_new", r)
 			}
 		}
 		rw.Write([]byte(scp_ack))
