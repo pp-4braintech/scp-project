@@ -91,7 +91,8 @@ func scp_update_network() {
 	if strings.Contains(string(ret_str), scp_nonexist) {
 		fmt.Println("DEBUG SCP UPDATE NETWORK: Biofabrica nao existe, criando entrada")
 		net_url = "http://network.hubioagro.com.br/bf_new"
-		ret, err = http.Post(net_url, "application/json", payload)
+		payload_new := bytes.NewBuffer(body)
+		ret, err = http.Post(net_url, "application/json", payload_new)
 		if err != nil {
 			checkErr(err)
 			return
