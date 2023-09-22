@@ -87,7 +87,7 @@ func scp_update_network() {
 	}
 	fmt.Println("DEBUG SCP UPDATE NETWORK: Retorno da net=", ret)
 	ret_str, _ := ioutil.ReadAll(ret.Body)
-	fmt.Println(ret_str)
+	fmt.Println(string(ret_str))
 	if strings.Contains(string(ret_str), scp_nonexist) {
 		fmt.Println("DEBUG SCP UPDATE NETWORK: Biofabrica nao existe, criando entrada")
 		net_url = "http://network.hubioagro.com.br/bf_new"
