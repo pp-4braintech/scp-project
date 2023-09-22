@@ -78,7 +78,7 @@ func load_bf_data(filename string) int {
 	file, err := os.Open(filename)
 	if err != nil {
 		checkErr(err)
-		return nil
+		return 0
 	}
 	defer file.Close()
 	csvr := csv.NewReader(file)
