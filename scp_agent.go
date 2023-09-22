@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -24,6 +25,12 @@ type Biofabrica_data struct {
 var mybf = Biofabrica_data{"bf000", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"}
 
 var myid = "bf001"
+
+func checkErr(err error) {
+	if err != nil {
+		log.Println("[SCP ERROR]", err)
+	}
+}
 
 func scp_update_network() {
 	body, _ := json.Marshal(mybf)
