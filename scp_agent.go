@@ -33,7 +33,10 @@ func checkErr(err error) {
 }
 
 func scp_update_network() {
-	body, _ := json.Marshal(mybf)
+	body, err := json.Marshal(mybf)
+	if err != nil {
+		checkErr(err)
+	}
 	payload := bytes.NewBuffer(body)
 
 	fmt.Println("DEBUG UPDATE NETWORK: Atualizando Netowrk com dados locais")

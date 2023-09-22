@@ -365,7 +365,14 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(" METODO POST chamado")
 		// var jsonStr []byte
 		if endpoint == "/bf_update" {
-			bfid := r.Form.Get("BFId")
+			var bf_agent Biofabrica_data
+			err := json.NewDecoder(r.Body).Decode(&bf_agent)
+			if err != nil {
+				fmt.Println("ERROR SCP MAIN NETWORK: Erro ao decodificar dados enviados pelo Agent")
+				checkErr(err)
+				return
+			}
+			bfid := bf_agent.BFId
 			if len(bfid) > 0 {
 				ind := get_bf_index(bfid)
 				if ind >= 0 {
