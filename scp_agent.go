@@ -38,7 +38,7 @@ func get_tun_ip() string {
 	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
 	cmd := exec.Command(cmdpath, "tun0") //  | grep 'inet ' | awk '{ print $2}'
 	// cmd := exec.Command(cmdpath)
-	cmd.Dir = "/sbin/"
+	// cmd.Dir = "/sbin/"
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		checkErr(err)
