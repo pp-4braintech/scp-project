@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -36,7 +37,7 @@ func checkErr(err error) {
 
 func get_tun_ip() string {
 	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
-	cmd := exec.Command(cmdpath, "tun0", "| grep 'inet ' | awk '{ print $2}'") //  | grep 'inet ' | awk '{ print $2}'
+	cmd := exec.Command(cmdpath, "tun0") // "| grep 'inet ' | awk '{ print $2}'")
 	// cmd := exec.Command(cmdpath)
 	// cmd.Dir = "/sbin/"
 	output, err := cmd.CombinedOutput()
@@ -44,6 +45,7 @@ func get_tun_ip() string {
 		checkErr(err)
 	} else {
 		fmt.Println("DEBUG GET TUN IP: ", output)
+		os.Stdout.Write(output)
 	}
 	return ""
 }
