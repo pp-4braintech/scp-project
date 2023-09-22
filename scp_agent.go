@@ -1,7 +1,5 @@
 package main
 
-const 	scp_nonexist = "NONEXIST"
-
 import (
 	"bytes"
 	"encoding/json"
@@ -13,6 +11,8 @@ import (
 	"strings"
 	"time"
 )
+
+const scp_nonexist = "NONEXIST"
 
 type Biofabrica_data struct {
 	BFId         string
