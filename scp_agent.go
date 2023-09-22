@@ -32,7 +32,7 @@ type Biofabrica_data struct {
 	BFIP         string
 }
 
-var mybf = Biofabrica_data{"bf008", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
+var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var myid = "bf001"
 
@@ -125,7 +125,9 @@ func load_bf_data(filename string) int {
 			break
 		}
 	}
-	mybf = mybf_new
+	if n > 0 {
+		mybf = mybf_new
+	}
 	return n
 }
 
@@ -164,7 +166,8 @@ func scp_update_network() {
 func main() {
 	n_bf := load_bf_data("/etc/scpd/bf_data.csv")
 	if n_bf < 1 {
-		log.Fatal("ABORT SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado")
+		mybf.BFId = "BFIP-" + get_tun_ip()
+		fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
 	}
 	for {
 		mybf.BFIP = get_tun_ip()
