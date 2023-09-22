@@ -49,8 +49,7 @@ var hopHeaders = []string{
 	"Upgrade",
 }
 
-var bfs = []Biofabrica_data{{"bf000", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"},
-	{"bf001", "Cerradao", "PRONTO", "UG", "Unigeo", "", "1.2.15", [2]float64{-10.9236672, -38.1827026}, "", "10.10.0.4"}}
+var bfs = []Biofabrica_data{{"bf000", "Modelo", "PRONTO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"}}
 
 func checkErr(err error) {
 	if err != nil {
@@ -385,6 +384,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					// 	fmt.Println("ERROR SCP MAIN NETWORK: BFId enviou request com endereço IP invalido", bfid, raddr)
 					// }
 					bfs[ind].BFIP = bf_agent.BFIP
+					bfs[ind].Status = bf_agent.Status
+					bfs[ind].SWVersion = bf_agent.SWVersion
 					currentTime := time.Now()
 					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
