@@ -35,10 +35,10 @@ func checkErr(err error) {
 }
 
 func get_tun_ip() string {
-	cmdpath, _ := filepath.Abs("/usr/bin/bash")
-	cmd := exec.Command(cmdpath, "ifconfig tun0") //  | grep 'inet ' | awk '{ print $2}'
+	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
+	cmd := exec.Command(cmdpath, "tun0") //  | grep 'inet ' | awk '{ print $2}'
 	// cmd := exec.Command(cmdpath)
-	cmd.Dir = "/usr/bin/"
+	cmd.Dir = "/sbin/"
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		checkErr(err)
