@@ -152,9 +152,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 		// var err error
 		if endpoint == "/" {
 			rw.Header().Set("Content-Type", "application/json")
-			fmt.Println("acessando raiz")
+			// fmt.Println("acessando raiz")
 			jsonStr, _ = json.Marshal(bfs)
-			os.Stdout.Write(jsonStr)
+			// os.Stdout.Write(jsonStr)
 			rw.Write([]byte(jsonStr))
 		} else {
 			params := scp_splitparam(endpoint, "/")
