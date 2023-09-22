@@ -92,11 +92,12 @@ func scp_update_network() {
 		fmt.Println("DEBUG SCP UPDATE NETWORK: Biofabrica nao existe, criando entrada")
 		net_url = "http://network.hubioagro.com.br/bf_new"
 		payload_new := bytes.NewBuffer(body)
-		ret, err = http.Post(net_url, "application/json", payload_new)
+		ret_new, err := http.Post(net_url, "application/json", payload_new)
 		if err != nil {
 			checkErr(err)
 			return
 		}
+		defer ret_new.Body.Close()
 	}
 }
 
