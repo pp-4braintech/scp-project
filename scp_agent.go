@@ -2,13 +2,17 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -69,6 +73,61 @@ func get_tun_ip() string {
 	return tun_ip
 }
 
+func load_bf_data(filename string) int {
+	mybf_new := Biofabrica_data{}
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return nil
+	}
+	defer file.Close()
+	csvr := csv.NewReader(file)
+	n := 0
+	for {
+		r, err := csvr.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			if perr, ok := err.(*csv.ParseError); ok && perr.Err != csv.ErrFieldCount {
+				checkErr(err)
+				break
+			}
+		}
+		// fmt.Println(r)
+		if r[0][0] != '#' {
+			mybf_new.BFId = r[0]
+			mybf_new.BFName = r[1]
+			mybf_new.Status = r[2]
+			mybf_new.CustomerId = r[3]
+			mybf_new.CustomerName = r[4]
+			mybf_new.Address = r[5]
+			mybf_new.SWVersion = r[6]
+			lat_str := r[7]
+			long_str := r[8]
+			lat_f, err_lat := strconv.ParseFloat(lat_str, 64)
+			if err_lat != nil {
+				checkErr(err_lat)
+			}
+			long_f, err_long := strconv.ParseFloat(long_str, 64)
+			if err_long != nil {
+				checkErr(err_long)
+			}
+			if err_lat != nil && err_long != nil {
+				mybf_new.LatLong = [2]float64{lat_f, long_f}
+			} else {
+				mybf_new.LatLong = [2]float64{0, 0}
+			}
+			mybf_new.LastUpdate = r[9]
+			mybf_new.BFIP = r[10]
+			n++
+		}
+		if n > 0 {
+			break
+		}
+	}
+	return n
+}
+
 func scp_update_network() {
 	body, err := json.Marshal(mybf)
 	if err != nil {
@@ -102,10 +161,13 @@ func scp_update_network() {
 }
 
 func main() {
+	n_bf := load_bf_data("/etc/scpd/bf_data.csv")
+	if n_bf < 1 {
+		log.Fatal("ABORT SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado")
+	}
 	for {
 		mybf.BFIP = get_tun_ip()
 		scp_update_network()
 		time.Sleep(1 * time.Minute)
 	}
-
 }
