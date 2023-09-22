@@ -276,7 +276,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					rw.Write([]byte(scp_err))
 
 				} else if cmd == "bf_update" {
-					bfid := r.FormValue("BFId")
+					// bfid := r.FormValue("BFId")
 				} else {
 					ind := get_bf_index(bf_default)
 					if ind < 0 {
