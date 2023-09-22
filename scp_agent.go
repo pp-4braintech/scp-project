@@ -112,7 +112,7 @@ func load_bf_data(filename string) int {
 			if err_long != nil {
 				checkErr(err_long)
 			}
-			if err_lat != nil && err_long != nil {
+			if err_lat == nil && err_long == nil {
 				mybf_new.LatLong = [2]float64{lat_f, long_f}
 			} else {
 				mybf_new.LatLong = [2]float64{0, 0}
