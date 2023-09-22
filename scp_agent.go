@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -32,6 +34,20 @@ func checkErr(err error) {
 	}
 }
 
+func get_tun_ip() string {
+	cmdpath, _ := filepath.Abs("/usr/bin/bash")
+	cmd := exec.Command(cmdpath, "/sbin/ifconfig tun0 | grep 'inet ' | awk '{ print $2}'")
+	// cmd := exec.Command(cmdpath)
+	cmd.Dir = execpath
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		checkErr(err)
+	} else {
+		fmt.Println("DEBUG GET TUN IP: ", output)
+	}
+
+}
+
 func scp_update_network() {
 	body, err := json.Marshal(mybf)
 	if err != nil {
@@ -53,6 +69,7 @@ func scp_update_network() {
 
 func main() {
 	for {
+		get_tun_ip()
 		scp_update_network()
 		time.Sleep(1 * time.Minute)
 	}
