@@ -44,7 +44,7 @@ func get_tun_ip() string {
 	if err != nil {
 		checkErr(err)
 	} else {
-		fmt.Println("DEBUG GET TUN IP: ", output)
+		fmt.Println("DEBUG GET TUN IP: ", string(output))
 		os.Stdout.Write(output)
 	}
 	return ""
