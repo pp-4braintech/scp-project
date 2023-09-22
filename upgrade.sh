@@ -12,7 +12,7 @@ fi
 cd /home/scpadm/scp-project
 
 cp scp_*.go /tmp/
-rm scp_master scp_orch scp_back scp_agent
+rm -f scp_master scp_orch scp_back scp_agent
 git config --global --add safe.directory /home/scpadm/scp-project
 git stash
 git pull
