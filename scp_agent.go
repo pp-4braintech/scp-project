@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -44,8 +44,15 @@ func get_tun_ip() string {
 	if err != nil {
 		checkErr(err)
 	} else {
-		fmt.Println("DEBUG GET TUN IP: ", string(output))
-		os.Stdout.Write(output)
+		out_str := string(output)
+		p := strings.Index(out_str, "inet")
+		if p >= 0 {
+			ret := scp_splitparam(out_str[p:], " ")
+			if len(ret) > 1 {
+				fmt.Println(ret[1], ret)
+			}
+		}
+
 	}
 	return ""
 }
