@@ -17,9 +17,9 @@ import (
 var net192 = false
 
 const (
-	scp_ack     = "ACK"
-	scp_err     = "ERR"
-	scp_nonexit = "NONEXIST"
+	scp_ack      = "ACK"
+	scp_err      = "ERR"
+	scp_nonexist = "NONEXIST"
 )
 
 var execpath string

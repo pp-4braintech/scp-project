@@ -1,5 +1,7 @@
 package main
 
+const 	scp_nonexist = "NONEXIST"
+
 import (
 	"bytes"
 	"encoding/json"
@@ -25,7 +27,7 @@ type Biofabrica_data struct {
 	BFIP         string
 }
 
-var mybf = Biofabrica_data{"bf000", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"}
+var mybf = Biofabrica_data{"bf008", "Modelo", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-18.9236672, -48.1827026}, "", "192.168.0.23"}
 
 var myid = "bf001"
 
@@ -83,6 +85,15 @@ func scp_update_network() {
 		return
 	}
 	fmt.Println("DEBUG SCP UPDATE NETWORK: Retorno da net=", ret)
+	if strings.Contains(ret.Body, scp_nonexist) {
+		fmt.Println("DEBUG SCP UPDATE NETWORK: Biofabrica nao existe, criando entrada")
+		net_url = "http://network.hubioagro.com.br/bf_new"
+		ret, err = http.Post(net_url, "application/json", payload)
+		if err != nil {
+			checkErr(err)
+			return
+		}
+	}
 }
 
 func main() {
