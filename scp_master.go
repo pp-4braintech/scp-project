@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.19" // 2023-09-21
+	scp_version = "1.2.20" // 2023-09-24
 
 	scp_on  = 1
 	scp_off = 0
@@ -8043,6 +8043,7 @@ func main() {
 	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 	biofabrica.Version = scp_version
 	biofabrica.LastVersion = scp_null
+	biofabrica.Useflowin = true
 
 	go scp_setup_devices(true)
 	go scp_get_alldata()
