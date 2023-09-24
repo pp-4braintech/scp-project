@@ -2481,7 +2481,7 @@ func scp_refresh_status() {
 								}
 
 							default:
-								fmt.Println("ERROR SCP REFRESH STATUS: TIPO INVALIDO na tabela", dev_addr)
+								fmt.Println("ERROR SCP REFRESH STATUS: TIPO INVALIDO na tabela", dev_addr, dev_type)
 							}
 						}
 					}
@@ -6703,6 +6703,7 @@ func scp_run_manydraw_out(data string, dest string) {
 	for _, b := range ibc_par {
 		d := scp_splitparam(b, "=")
 		i := get_ibc_index(d[0])
+		fmt.Println("DEBUG RUN MANYDRAW OUT: par=", b, "i=", i, "d=", d)
 		if i >= 0 && len(d) >= 2 {
 			vol, err := strconv.Atoi(d[1])
 			if err == nil {
