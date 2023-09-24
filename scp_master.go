@@ -6734,28 +6734,32 @@ func scp_run_manydraw_out(data string, dest string) {
 		d := scp_splitparam(b, "=")
 		i := get_ibc_index(d[0])
 		if i >= 0 && len(d) >= 2 {
-			vol_now := ibc[i].VolInOut
-			fmt.Println("DEBUG RUN MANYDRAW OUT: par=", b, "i=", i, "d=", d, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
-			vol, err := strconv.Atoi(d[1])
-			if err == nil {
-				if vol_now <= vol_ini[d[0]] && vol_now <= vol_ini[d[0]]-float64(vol) {
-					fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase atingido para", d[0], "desenvase=", vol, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
-				} else {
-					ibc[i].OutID = dest
-					ibc[i].Withdraw = uint32(vol)
-					fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
-					scp_run_withdraw(scp_ibc, d[0], false, false)
-					if ibc[i].VolInOut >= vol_ini[d[0]] || ibc[i].VolInOut >= vol_ini[d[0]]-float64(vol) {
-						fmt.Println("ERROR SCP RUN MANYDRAW OUT: Volume de Desenvase NAO ATINGIDO em", d[0])
-						if n_tries < 3 {
-							board_add_message("AVolume de desenvase/transferência não atingido em "+d[0]+". Nova tentativa será feita em instantes", "")
-						} else {
-							board_add_message("AApós 3 tentativas não foi possível desenvasar/transferir volume esperando em "+d[0]+". Favor checar dispositivos", "")
+			if !ibc[i].MustPause && !ibc[i].MustStop {
+				vol_now := ibc[i].VolInOut
+				fmt.Println("DEBUG RUN MANYDRAW OUT: par=", b, "i=", i, "d=", d, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
+				vol, err := strconv.Atoi(d[1])
+				if err == nil {
+					if vol_now <= vol_ini[d[0]] && vol_now <= vol_ini[d[0]]-float64(vol) {
+						fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase atingido para", d[0], "desenvase=", vol, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
+					} else {
+						ibc[i].OutID = dest
+						ibc[i].Withdraw = uint32(vol)
+						fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
+						scp_run_withdraw(scp_ibc, d[0], false, false)
+						if !ibc[i].MustPause && !ibc[i].MustStop && (ibc[i].VolInOut >= vol_ini[d[0]] || ibc[i].VolInOut >= vol_ini[d[0]]-float64(vol)) {
+							fmt.Println("ERROR SCP RUN MANYDRAW OUT: Volume de Desenvase NAO ATINGIDO em", d[0])
+							if n_tries < 3 {
+								board_add_message("AVolume de desenvase/transferência não atingido em "+d[0]+". Nova tentativa será feita em instantes", "")
+							} else {
+								board_add_message("AApós 3 tentativas não foi possível desenvasar/transferir volume esperado em "+d[0]+". Favor checar dispositivos", "")
+							}
 						}
 					}
+				} else {
+					checkErr(err)
 				}
 			} else {
-				checkErr(err)
+				fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase nao executado pois mustpause/muststop acionado para", ibc[i].IBCID)
 			}
 		}
 		n_tries++
