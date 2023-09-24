@@ -6730,8 +6730,8 @@ func scp_run_manydraw_out(data string, dest string) {
 	}
 
 	n_tries := 0
-	no_ok := 0
 	for {
+		no_ok := 0
 		for _, b := range ibc_par {
 			d := scp_splitparam(b, "=")
 			i := get_ibc_index(d[0])
