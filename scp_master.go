@@ -2325,9 +2325,24 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	cmd := "CMD/" + dev_addr + "/GET/" + vol_dev + "/END"
 	ret := scp_sendmsg_orch(cmd)
 	params := scp_splitparam(ret, "/")
-	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 	var volume float64
 	var dint int64
+	var err error
+	for i := 0; i < 3; i++ {
+		fmt.Println("DEBUG SCP GET VOLUME: step", i, "main_id=", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
+		if params[0] == scp_ack {
+			dint, err = strconv.ParseInt(params[1], 10, 32)
+			if err == nil {
+				if dint > 1 || vol_type == scp_dev_vol0 {
+					break
+				}
+			}
+		}
+		ret = scp_sendmsg_orch(cmd)
+		params = scp_splitparam(ret, "/")
+	}
+	// params := scp_splitparam(ret, "/")
+	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 	volume = -1
 	if params[0] == scp_ack {
 		dint, _ = strconv.ParseInt(params[1], 10, 32)
