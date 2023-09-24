@@ -6730,6 +6730,7 @@ func scp_run_manydraw_out(data string, dest string) {
 	}
 
 	n_tries := 0
+	no_ok := 0
 	for {
 		for _, b := range ibc_par {
 			d := scp_splitparam(b, "=")
@@ -6748,6 +6749,7 @@ func scp_run_manydraw_out(data string, dest string) {
 							fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
 							scp_run_withdraw(scp_ibc, d[0], false, false)
 							if !ibc[i].MustPause && !ibc[i].MustStop && (ibc[i].VolInOut >= vol_ini[d[0]] || ibc[i].VolInOut >= vol_ini[d[0]]-float64(vol)) {
+								no_ok++
 								fmt.Println("ERROR SCP RUN MANYDRAW OUT: Volume de Desenvase NAO ATINGIDO em", d[0])
 								if n_tries < 3 {
 									board_add_message("AVolume de desenvase/transferência não atingido em "+d[0]+". Nova tentativa será feita em instantes", "")
@@ -6765,7 +6767,7 @@ func scp_run_manydraw_out(data string, dest string) {
 			}
 		}
 		n_tries++
-		if n_tries >= 3 {
+		if n_tries >= 3 || no_ok == 0 {
 			break
 		}
 	}
