@@ -6741,14 +6741,14 @@ func scp_run_manydraw_out(data string, dest string) {
 					fmt.Println("DEBUG RUN MANYDRAW OUT: par=", b, "i=", i, "d=", d, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
 					vol, err := strconv.Atoi(d[1])
 					if err == nil {
-						if vol_now <= vol_ini[d[0]] && vol_now <= vol_ini[d[0]]-float64(vol) {
+						if vol_now == 0 || (vol_now <= vol_ini[d[0]] && vol_now <= vol_ini[d[0]]-float64(vol)) {
 							fmt.Println("DEBUG SCP RUN MANYDRAW OUT: NADA a FAZER, esenvase atingido para", d[0], "desenvase=", vol, "vol_ini=", vol_ini[d[0]], "vol_now=", vol_now)
 						} else {
 							ibc[i].OutID = dest
 							ibc[i].Withdraw = uint32(vol)
 							fmt.Println("DEBUG SCP RUN MANYDRAW OUT: Desenvase de", d[0], " para", dest, " Volume", vol)
 							scp_run_withdraw(scp_ibc, d[0], false, false)
-							if !ibc[i].MustPause && !ibc[i].MustStop && (ibc[i].VolInOut >= vol_ini[d[0]] || ibc[i].VolInOut >= vol_ini[d[0]]-float64(vol)) {
+							if !ibc[i].MustPause && !ibc[i].MustStop && ibc[i].VolInOut > 0 && (ibc[i].VolInOut >= vol_ini[d[0]] || ibc[i].VolInOut >= vol_ini[d[0]]-float64(vol)) {
 								no_ok++
 								fmt.Println("ERROR SCP RUN MANYDRAW OUT: Volume de Desenvase NAO ATINGIDO em", d[0])
 								if n_tries < 3 {
