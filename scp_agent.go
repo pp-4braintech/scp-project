@@ -164,12 +164,17 @@ func scp_update_network() {
 }
 
 func main() {
-	n_bf := load_bf_data("/etc/scpd/bf_data.csv")
-	if n_bf < 1 {
-		mybf.BFId = "BFIP-" + get_tun_ip()
-		fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
-	}
+	// n_bf := load_bf_data("/etc/scpd/bf_data.csv")
+	// if n_bf < 1 {
+	// 	mybf.BFId = "BFIP-" + get_tun_ip()
+	// 	fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
+	// }
 	for {
+		n_bf := load_bf_data("/etc/scpd/bf_data.csv")
+		if n_bf < 1 {
+			mybf.BFId = "BFIP-" + get_tun_ip()
+			fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
+		}
 		mybf.BFIP = get_tun_ip()
 		scp_update_network()
 		time.Sleep(1 * time.Minute)
