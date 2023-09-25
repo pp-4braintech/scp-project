@@ -74,6 +74,7 @@ const bio_max_valves = 8
 const max_buf = 8192
 
 // const execpath = "./"
+const localconfig_path = "/etc/scpd/"
 
 const vol_bioreactor = 2000
 const vol_ibc = 4000
@@ -147,6 +148,7 @@ type Prodlist struct {
 var orgs []Organism
 var lastsched []Prodlist
 var execpath string
+var thisbf = Biofabrica_data{}
 
 func checkErr(err error) {
 	if err != nil {
@@ -228,6 +230,30 @@ func load_organisms(filename string) int {
 		totalrecords = k
 	}
 	return totalrecords
+}
+
+func save_bf_data(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	s := fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s, %f,%f,%s,%s", thisbf.BFId, thisbf.BFName, thisbf.Status, thisbf.CustomerId,
+		thisbf.CustomerName, thisbf.Address, thisbf.SWVersion, thisbf.LatLong[0], thisbf.LatLong[1],
+		thisbf.LastUpdate, thisbf.BFIP)
+	csvstr := scp_splitparam(s, ",")
+	// fmt.Println("DEBUG SAVE", csvstr)
+	err = csvwriter.Write(csvstr)
+	if err != nil {
+		checkErr(err)
+	} else {
+		n++
+	}
+	csvwriter.Flush()
+	return n
 }
 
 func min_bio_sim(farmarea int, dailyarea int, orglist []BioList) (int, int, int, int, []Prodlist) {
@@ -835,6 +861,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Println("DEBUG SET CONFIG POST: Dados recebidos ", bf_agent)
+		thisbf = bf_agent
+		if save_bf_data(localconfig_path+"bf_data.csv") > 0 {
+			fmt.Println("DEBUG SET CONFIG POST: Dados da Biofabrica gravados com sucesso")
+		} else {
+			fmt.Println("ERROR SET CONFIG POST: Falha ao gravar Dados da Biofabrica")
+		}
 		w.Write([]byte(scp_ack))
 
 	case "PUT":
