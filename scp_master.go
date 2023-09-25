@@ -665,22 +665,22 @@ func get_tun_ip() string {
 
 func get_bf_status() string {
 	ok := true
-	for _,b := range bio {
+	for _, b := range bio {
 		if b.Status == bio_error {
 			ok = false
 		}
 	}
-	for _,b := range ibc {
+	for _, b := range ibc {
 		if b.Status == bio_error {
 			ok = false
 		}
 	}
-	for _,t := range totem {
+	for _, t := range totem {
 		if t.Status == bio_error {
 			ok = false
 		}
 	}
-	if biofabrica.Status =! scp_ready {
+	if biofabrica.Status != scp_ready {
 		ok = false
 	}
 	if ok {
