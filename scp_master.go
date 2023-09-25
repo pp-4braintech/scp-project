@@ -7179,7 +7179,9 @@ func scp_process_conn(conn net.Conn) {
 						conn.Write([]byte(scp_err))
 						return
 					}
-					conn.Write([]byte(scp_ack))
+					buf, err := json.Marshal(mybf)
+					checkErr(err)
+					conn.Write([]byte(buf))
 
 				case scp_par_bfdata:
 					fmt.Println("DEBUG CONFIG: GET dados biofabrica", mybf)
