@@ -810,6 +810,20 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(jsonStr))
 		}
 
+	case "POST":
+
+		fmt.Println(" METODO POST chamado")
+		var bf_agent Biofabrica_data
+		err := json.NewDecoder(r.Body).Decode(&bf_agent)
+		if err != nil {
+			fmt.Println("ERROR SET CONFIG POST: Erro ao decodificar dados enviados pelo Agent")
+			checkErr(err)
+			w.Write([]byte(scp_err))
+			return
+		}
+		fmt.Println("DEBUG SET CONFIG POST: Dados recebidos ", bf_agent)
+		w.Write([]byte(scp_ack))
+
 	case "PUT":
 		err := r.ParseForm()
 		if err != nil {
