@@ -168,6 +168,14 @@ func test_file(filename string) bool {
 	return true
 }
 
+func scp_splitparam(param string, separator string) []string {
+	scp_data := strings.Split(param, separator)
+	if len(scp_data) < 1 {
+		return nil
+	}
+	return scp_data
+}
+
 func bio_to_code(bioname string) string {
 	n := len(bioname)
 	if n < 1 {
