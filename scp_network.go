@@ -421,6 +421,67 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			} else {
 				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_new", r)
 			}
+		} else {
+			ind := get_bf_index(bf_default)
+			if ind < 0 {
+				fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+				return
+			}
+
+			bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
+			req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
+			if err != nil {
+				checkErr(err)
+				return
+			}
+
+			req.Header = r.Header.Clone()
+			req.URL.RawQuery = r.URL.RawQuery
+			client := http.Client{
+				Timeout: 7 * time.Second,
+			}
+
+			reqData, err := httputil.DumpRequest(req, true)
+			if err != nil {
+				checkErr(err)
+				return
+			}
+			req.URL.Scheme = "http"
+			log.Println("Forward Request Data", len(string(reqData)))
+
+			resp, err := client.Do(req)
+			if err != nil {
+				fmt.Println("ERRO no client.Do")
+				checkErr(err)
+				return
+			}
+			defer resp.Body.Close()
+
+			//Get dump of our response
+			respData, err := httputil.DumpResponse(resp, true)
+			if err != nil {
+				checkErr(err)
+				return
+			}
+
+			log.Println("Forward Request Response", len(string(respData)))
+
+			//Copy the response headers to the actual response. DO THIS BEFORE CALLING WRITEHEADER.
+			for k, v := range resp.Header {
+				rw.Header()[k] = v
+			}
+
+			//set the statuscode whatever we got from the response
+			rw.WriteHeader(resp.StatusCode)
+
+			//Copy the response body to the actual response
+			_, err = io.Copy(rw, resp.Body)
+			if err != nil {
+				log.Println(err)
+				rw.Write([]byte("error"))
+				return
+			}
+
 		}
 		rw.Write([]byte(scp_ack))
 	}
