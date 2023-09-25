@@ -32,7 +32,7 @@ type Biofabrica_data struct {
 	BFIP         string
 }
 
-var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
+var mybf = Biofabrica_data{"bf000", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var myid = "bf001"
 
@@ -52,6 +52,10 @@ func scp_splitparam(param string, separator string) []string {
 
 func get_tun_ip() string {
 	tun_ip := ""
+	if mybf.BFId == "bf000" {
+		tun_ip = "192.168.0.23"
+		return tun_ip
+	}
 	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
 	cmd := exec.Command(cmdpath, "tun0") // "| grep 'inet ' | awk '{ print $2}'")
 	// cmd := exec.Command(cmdpath)
