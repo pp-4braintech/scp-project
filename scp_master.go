@@ -663,6 +663,32 @@ func get_tun_ip() string {
 	return tun_ip
 }
 
+func get_bf_status() string {
+	ok := true
+	for _,b := range bio {
+		if b.Status == bio_error {
+			ok = false
+		}
+	}
+	for _,b := range ibc {
+		if b.Status == bio_error {
+			ok = false
+		}
+	}
+	for _,t := range totem {
+		if t.Status == bio_error {
+			ok = false
+		}
+	}
+	if biofabrica.Status =! scp_ready {
+		ok = false
+	}
+	if ok {
+		return bio_ready
+	}
+	return bio_error
+}
+
 func load_bf_data(filename string) int {
 	mybf_new := Biofabrica_data{}
 	file, err := os.Open(filename)
@@ -717,6 +743,8 @@ func load_bf_data(filename string) int {
 	}
 	if n > 0 {
 		mybf = mybf_new
+		mybf.SWVersion = biofabrica.Version
+		mybf.Status = get_bf_status()
 	}
 	return n
 }
@@ -1303,6 +1331,7 @@ func set_allvalvs_status() {
 }
 
 func save_bf_data(filename string) int {
+	mybf.Status = get_bf_status()
 	filecsv, err := os.Create(filename)
 	if err != nil {
 		checkErr(err)
