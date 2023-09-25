@@ -58,6 +58,7 @@ const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_bfdata = "BFDATA"
+const scp_par_loadbfdata = "LOADBFDATA"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -874,8 +875,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("DEBUG SET CONFIG POST: Dados da Biofabrica gravados com sucesso")
 		} else {
 			fmt.Println("ERROR SET CONFIG POST: Falha ao gravar Dados da Biofabrica")
+			w.Write([]byte(scp_err))
+			return
 		}
-		w.Write([]byte(scp_ack))
+		cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_loadbfdata + "/END"
+		jsonStr := []byte(scp_sendmsg_master(cmd))
+		w.Write([]byte(jsonStr))
 
 	case "PUT":
 		err := r.ParseForm()

@@ -134,6 +134,7 @@ const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_lock = "LOCK"
 const scp_par_unlock = "UNLOCK"
 const scp_par_bfdata = "BFDATA"
+const scp_par_loadbfdata = "LOADBFDATA"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -1301,6 +1302,30 @@ func set_allvalvs_status() {
 	fmt.Println(valvs)
 }
 
+func save_bf_data(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	s := fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%f,%f,%s,%s", thisbf.BFId, thisbf.BFName, thisbf.Status, thisbf.CustomerId,
+		thisbf.CustomerName, thisbf.Address, thisbf.SWVersion, thisbf.LatLong[0], thisbf.LatLong[1],
+		thisbf.LastUpdate, thisbf.BFIP)
+	csvstr := scp_splitparam(s, ",")
+	// fmt.Println("DEBUG SAVE", csvstr)
+	err = csvwriter.Write(csvstr)
+	if err != nil {
+		checkErr(err)
+	} else {
+		n++
+	}
+	csvwriter.Flush()
+	return n
+}
+
 func save_all_data(filename string) int {
 	buf1, _ := json.Marshal(bio)
 	err1 := os.WriteFile(localconfig_path+filename+"_bio.json", []byte(buf1), 0644)
@@ -1317,6 +1342,7 @@ func save_all_data(filename string) int {
 	buf5, _ := json.Marshal(schedule)
 	err5 := os.WriteFile(localconfig_path+filename+"_schedule.json", []byte(buf5), 0644)
 	checkErr(err5)
+	save_bf_data(localconfig_path + "bf_data.csv")
 
 	return 0
 }
@@ -7144,6 +7170,16 @@ func scp_process_conn(conn net.Conn) {
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
+				case scp_par_loadbfdata:
+					fmt.Println("DEBUG CONFIG: RELOAD bf data")
+					n_bf := load_bf_data(localconfig_path + "bf_data.csv")
+					if n_bf < 1 {
+						fmt.Println("ERROR CONFIG: Falha ao ler Arquivo contendo dados da Biofabrica nao encontrado")
+						conn.Write([]byte(scp_err))
+						return
+					}
+					conn.Write([]byte(scp_ack))
+
 				case scp_par_bfdata:
 					fmt.Println("DEBUG CONFIG: GET dados biofabrica", mybf)
 					buf, err := json.Marshal(mybf)
