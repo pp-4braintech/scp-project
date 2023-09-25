@@ -57,6 +57,7 @@ const scp_par_reconfigdev = "RECONFIGDEV"
 const scp_par_resetdata = "RESETDATA"
 const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
+const scp_par_bfdata = "BFDATA"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -799,7 +800,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(bfid) > 0 {
 			fmt.Println("DEBUG SET CONFIG: GET", bfid)
-			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_getconfig + "/END"
+			cmd := ""
+			if bfid == "CAD" {
+				cmd = scp_config + "/" + scp_biofabrica + "/" + scp_par_bfdata + "/END"
+			} else {
+				cmd = scp_config + "/" + scp_biofabrica + "/" + scp_par_getconfig + "/END"
+			}
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			w.Write([]byte(jsonStr))
 		}

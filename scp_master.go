@@ -133,6 +133,7 @@ const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_lock = "LOCK"
 const scp_par_unlock = "UNLOCK"
+const scp_par_bfdata = "BFDATA"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -250,6 +251,18 @@ const line_24 = "2_4"
 
 const TEMPMAX = 120
 
+type Biofabrica_data struct {
+	BFId         string
+	BFName       string
+	Status       string
+	CustomerId   string
+	CustomerName string
+	Address      string
+	SWVersion    string
+	LatLong      [2]float64
+	LastUpdate   string
+	BFIP         string
+}
 type Organism struct {
 	Index      string
 	Code       string
@@ -521,6 +534,8 @@ var upgrademutex sync.Mutex
 
 var withdrawrunning = false
 
+var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
+
 var bio = []Bioreact{
 	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
 	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{1, 1}, [2]int{0, 5}, [2]int{0, 30}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, ""},
@@ -622,6 +637,87 @@ func isin(list []string, element string) bool {
 		}
 	}
 	return false
+}
+
+func get_tun_ip() string {
+	tun_ip := ""
+	cmdpath, _ := filepath.Abs("/sbin/ifconfig")
+	cmd := exec.Command(cmdpath, "tun0") // "| grep 'inet ' | awk '{ print $2}'")
+	// cmd := exec.Command(cmdpath)
+	// cmd.Dir = "/sbin/"
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		checkErr(err)
+	} else {
+		out_str := string(output)
+		p := strings.Index(out_str, "inet")
+		if p >= 0 {
+			ret := scp_splitparam(out_str[p:], " ")
+			if len(ret) > 1 {
+				tun_ip = ret[1]
+			}
+		}
+
+	}
+	return tun_ip
+}
+
+func load_bf_data(filename string) int {
+	mybf_new := Biofabrica_data{}
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return 0
+	}
+	defer file.Close()
+	csvr := csv.NewReader(file)
+	n := 0
+	for {
+		r, err := csvr.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			if perr, ok := err.(*csv.ParseError); ok && perr.Err != csv.ErrFieldCount {
+				checkErr(err)
+				break
+			}
+		}
+		// fmt.Println(r)
+		if r[0][0] != '#' {
+			mybf_new.BFId = r[0]
+			mybf_new.BFName = r[1]
+			mybf_new.Status = r[2]
+			mybf_new.CustomerId = r[3]
+			mybf_new.CustomerName = r[4]
+			mybf_new.Address = r[5]
+			mybf_new.SWVersion = r[6]
+			lat_str := r[7]
+			long_str := r[8]
+			lat_f, err_lat := strconv.ParseFloat(lat_str, 64)
+			if err_lat != nil {
+				checkErr(err_lat)
+			}
+			long_f, err_long := strconv.ParseFloat(long_str, 64)
+			if err_long != nil {
+				checkErr(err_long)
+			}
+			if err_lat == nil && err_long == nil {
+				mybf_new.LatLong = [2]float64{lat_f, long_f}
+			} else {
+				mybf_new.LatLong = [2]float64{0, 0}
+			}
+			mybf_new.LastUpdate = r[9]
+			mybf_new.BFIP = r[10]
+			n++
+		}
+		if n > 0 {
+			break
+		}
+	}
+	if n > 0 {
+		mybf = mybf_new
+	}
+	return n
 }
 
 func load_tasks_conf(filename string) []string {
@@ -7048,6 +7144,12 @@ func scp_process_conn(conn net.Conn) {
 			if len(params) > 3 {
 				cmd := params[2]
 				switch cmd {
+				case scp_par_bfdata:
+					fmt.Println("DEBUG CONFIG: GET dados biofabrica", mybf)
+					buf, err := json.Marshal(mybf)
+					checkErr(err)
+					conn.Write([]byte(buf))
+
 				case scp_par_stopall:
 					if scp_fullstop_device("ALL", scp_biofabrica, false, false) {
 						conn.Write([]byte(scp_ack))
@@ -8053,6 +8155,11 @@ func main() {
 		fmt.Println("WARN:  EXECUTANDO EM TESTMODE\n\n\n")
 	}
 
+	n_bf := load_bf_data(localconfig_path + "bf_data.csv")
+	if n_bf < 1 {
+		mybf.BFId = "BFIP-" + get_tun_ip()
+		fmt.Println("MASTER: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
+	}
 	norgs := load_organisms(execpath + "organismos_conf.csv")
 	if norgs < 0 {
 		log.Fatal("Não foi possivel ler o arquivo de organismos")
