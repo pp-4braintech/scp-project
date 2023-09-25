@@ -107,6 +107,19 @@ const max_days = 60
 // 	Valvs      [4]int
 // }
 
+type Biofabrica_data struct {
+	BFId         string
+	BFName       string
+	Status       string
+	CustomerId   string
+	CustomerName string
+	Address      string
+	SWVersion    string
+	LatLong      [2]float64
+	LastUpdate   string
+	BFIP         string
+}
+
 type Organism struct {
 	Index      string
 	Code       string
