@@ -383,9 +383,10 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					// } else {
 					// 	fmt.Println("ERROR SCP MAIN NETWORK: BFId enviou request com endereço IP invalido", bfid, raddr)
 					// }
-					bfs[ind].BFIP = bf_agent.BFIP
-					bfs[ind].Status = bf_agent.Status
-					bfs[ind].SWVersion = bf_agent.SWVersion
+					bfs[ind] = bf_agent
+					// bfs[ind].BFIP = bf_agent.BFIP
+					// bfs[ind].Status = bf_agent.Status
+					// bfs[ind].SWVersion = bf_agent.SWVersion
 					currentTime := time.Now()
 					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
