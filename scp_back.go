@@ -875,6 +875,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Println("DEBUG SET CONFIG POST: Dados recebidos ", bf_agent)
+		if len(bf_agent.BFId) < 3 {
+			bf_agent.BFId = thisbf.BFId
+		}
+		if len(bf_agent.BFName) == 0 {
+			bf_agent.BFName = thisbf.BFName
+		}
 		thisbf = bf_agent
 		if save_bf_data(localconfig_path+"bf_data.csv") > 0 {
 			fmt.Println("DEBUG SET CONFIG POST: Dados da Biofabrica gravados com sucesso")
