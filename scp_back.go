@@ -882,7 +882,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			bf_agent.BFName = thisbf.BFName
 		}
 		thisbf = bf_agent
-		if save_bf_data(localconfig_path+"bf_data.csv") > 0 {
+		if save_bf_data(localconfig_path+"bf_data_new.csv") > 0 {
 			fmt.Println("DEBUG SET CONFIG POST: Dados da Biofabrica gravados com sucesso")
 		} else {
 			fmt.Println("ERROR SET CONFIG POST: Falha ao gravar Dados da Biofabrica")

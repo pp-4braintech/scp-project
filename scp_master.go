@@ -7212,7 +7212,7 @@ func scp_process_conn(conn net.Conn) {
 				switch cmd {
 				case scp_par_loadbfdata:
 					fmt.Println("DEBUG CONFIG: RELOAD bf data")
-					n_bf := load_bf_data(localconfig_path + "bf_data.csv")
+					n_bf := load_bf_data(localconfig_path + "bf_data_new.csv")
 					if n_bf < 1 {
 						fmt.Println("ERROR CONFIG: Falha ao ler Arquivo contendo dados da Biofabrica nao encontrado")
 						conn.Write([]byte(scp_err))
