@@ -5551,7 +5551,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 						par_time = true
 					}
 				}
-				if devmode {
+				if devmode || testmode {
 					time_max = scp_timeoutdefault / 2
 				}
 				t_start := time.Now()
