@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.22" // 2023-09-25
+	scp_version = "1.2.23" // 2023-09-25
 
 	scp_on  = 1
 	scp_off = 0
@@ -497,6 +497,7 @@ type Scheditem struct {
 	Bioid   string
 	Seq     int
 	OrgCode string
+	Volume  int
 }
 
 type DevAddrData struct {
@@ -522,7 +523,8 @@ var valvs map[string]int
 var organs map[string]Organism
 var addrs_type map[string]DevAddrData
 var schedule []Scheditem
-var recipe []string
+var recipe_2000 []string
+var recipe_1000 []string
 var cipbio []string
 var cipibc []string
 
@@ -4665,7 +4667,7 @@ func pop_first_sched(bioid string, remove bool) Scheditem {
 	var ret Scheditem
 	for k, s := range schedule {
 		if s.Bioid == bioid {
-			ret = Scheditem{s.Bioid, s.Seq, s.OrgCode}
+			ret = Scheditem{s.Bioid, s.Seq, s.OrgCode, s.Volume}
 			if remove {
 				if k > 0 {
 					if k < len(schedule)-1 {
@@ -6508,7 +6510,11 @@ func scp_scheduler() {
 							bio[k].Queue = []string{"RUN/CIP/END"}
 						} else {
 							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
-							bio[k].Queue = append(orginfo, recipe...)
+							if s.Volume == 1000 {
+								bio[k].Queue = append(orginfo, recipe_1000...)
+							} else {
+								bio[k].Queue = append(orginfo, recipe_2000...)
+							}
 							if autowithdraw {
 								outjob := "RUN/WITHDRAW," + strings.Replace(b.BioreactorID, "BIOR", "IBC", -1) + ",END"
 								wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
@@ -6533,7 +6539,7 @@ func scp_scheduler() {
 							ibc[k].Queue = []string{"RUN/CIP/END"}
 						} else {
 							orginfo := []string{"ORG/" + s.OrgCode + ",END"}
-							ibc[k].Queue = append(orginfo, recipe...)
+							ibc[k].Queue = append(orginfo, recipe_2000...)
 							// if autowithdraw {
 							// 	outjob := "RUN/WITHDRAW," + strings.Replace(b.IBCID, "BIOR", "IBC", -1) + ",END"
 							// 	wdraw := []string{"SET/STATUS,DESENVASE,END", outjob, "RUN/CIP/END"}
@@ -6560,10 +6566,14 @@ func create_sched(lista []string) int {
 		main_id := item[0]
 		bioseq, _ := strconv.Atoi(item[1])
 		orgcode := item[2]
+		volume := 0
+		if len(item) >= 4 {
+			volume, _ = strconv.Atoi(item[3])
+		}
 		ind_bio := get_bio_index(main_id)
 		ind_ibc := get_ibc_index(main_id)
 		if ind_bio >= 0 || ind_ibc >= 0 {
-			schedule = append(schedule, Scheditem{main_id, bioseq, orgcode})
+			schedule = append(schedule, Scheditem{main_id, bioseq, orgcode, volume})
 			tot++
 		} else {
 			fmt.Println("ERROR CREATE SCHED: DISPOSITIVO nao existe", main_id)
@@ -7266,6 +7276,12 @@ func scp_process_conn(conn net.Conn) {
 					save_all_data(data_filename)
 					scp_restart_services()
 
+				case scp_par_resetdata:
+					fmt.Println("DEBUG CONFIG: Redefinindo Tarefas")
+					schedule = []Scheditem{}
+					waitlist_del_message("I")
+					waitlist_del_message("B")
+
 				case scp_par_upgrade:
 					fmt.Println("DEBUG CONFIG: Upgrade em andamento")
 					system_upgrade()
@@ -7304,6 +7320,10 @@ func scp_process_conn(conn net.Conn) {
 		case scp_bioreactor:
 			bioid := params[2]
 			orgcode := params[3]
+			volume := "2000"
+			if len(params) > 4 {
+				volume = params[4]
+			}
 			fmt.Println("DEBUG SCP START: Iniciando ", bioid, orgcode, params)
 			ind := get_bio_index(bioid)
 			if ind < 0 {
@@ -7339,7 +7359,8 @@ func scp_process_conn(conn net.Conn) {
 					}
 					// bio[ind].Status = bio_starting
 				}
-				biotask := []string{bioid + ",0," + orgcode}
+				biotask := []string{bioid + ",0," + orgcode + "," + volume}
+				fmt.Println("DEBUG PROCESS CONN: START criando task:", biotask)
 				n := create_sched(biotask)
 				// if n > 0 && !schedrunning {
 				// 	go scp_scheduler()
@@ -8232,16 +8253,21 @@ func main() {
 	if norgs < 0 {
 		log.Fatal("Não foi possivel ler o arquivo de organismos")
 	}
-	recipe = load_tasks_conf(execpath + "receita_conf.csv")
-	if recipe == nil {
-		log.Fatal("Não foi possivel ler o arquivo contendo a receita de producao")
+	recipe_2000 = load_tasks_conf(execpath + "receita_2000_conf.csv")
+	if recipe_2000 == nil {
+		log.Fatal("Não foi possivel ler o arquivo contendo a receita 2000L de producao")
 	}
+	recipe_1000 = load_tasks_conf(execpath + "receita_1000_conf.csv")
+	if recipe_1000 == nil {
+		log.Fatal("Não foi possivel ler o arquivo contendo a receita 1000L de producao")
+	}
+
 	cipbio = load_tasks_conf(execpath + "cip_bio_conf.csv")
-	if recipe == nil {
+	if cipbio == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP de Biorreator")
 	}
 	cipibc = load_tasks_conf(execpath + "cip_ibc_conf.csv")
-	if recipe == nil {
+	if cipibc == nil {
 		log.Fatal("Não foi possivel ler o arquivo contendo ciclo de CIP de IBC")
 	}
 	nibccfg := load_ibcs_conf(localconfig_path + "ibc_conf.csv")

@@ -602,10 +602,15 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			recirc := r.FormValue("Recirculate")
 			cont := r.FormValue("Continue")
 			heater := r.FormValue("Heater")
+			volume := r.FormValue("Volume")
 
 			if b_start != "" {
 				if orgcode != "" {
-					cmd := "START/BIOREACTOR/" + bio_id + "/" + orgcode + "/END"
+					vol_str := "2000"
+					if volume != "" {
+						vol_str = volume
+					}
+					cmd := "START/BIOREACTOR/" + bio_id + "/" + orgcode + "/" + vol_str + "/END"
 					jsonStr := []byte(scp_sendmsg_master(cmd))
 					w.Write([]byte(jsonStr))
 				} else {
@@ -1021,6 +1026,12 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 			}
 			if upgrade != "" {
 				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_upgrade + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+			if resetdata != "" {
+				cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_resetdata + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))
