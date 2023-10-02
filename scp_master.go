@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.23" // 2023-09-25
+	scp_version = "1.2.24" // 2023-09-25
 
 	scp_on  = 1
 	scp_off = 0
@@ -3808,6 +3808,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
 					// abort_due_novolchange = true
+					board_add_message("E"+devid+" Desenvase/Transferência abortado por volume não variar em 25s. Favor verificar equipamentos", "")
 					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
 					break
 				}
@@ -5555,6 +5556,8 @@ func scp_run_job_bio(bioid string, job string) bool {
 					time_max = scp_timeoutdefault / 2
 				}
 				t_start := time.Now()
+				t_last_volchange := time.Now()
+				vol_bio_last := uint64(bio[ind].Volume)
 				for {
 					vol_now := uint64(bio[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
@@ -5568,6 +5571,30 @@ func scp_run_job_bio(bioid string, job string) bool {
 					if bio[ind].MustPause || bio[ind].MustStop {
 						return false
 					}
+					ind_totem := get_totem_index("TOTEM01")
+					if ind_totem >= 0 {
+						if totem[ind_totem].Status == bio_error || totem[ind_totem].Status == bio_nonexist {
+							board_add_message("E"+bio[ind].BioreactorID+" volume não atingido por falha no TOTEM01", "")
+							bio_add_message(bio[ind].BioreactorID, "EVolume não atingido por falha no TOTEM01", "")
+							go pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+							return false
+						}
+					}
+					if vol_now == vol_bio_last {
+						t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
+						if t_elapsed_volchage > 25 {
+							// abort_due_novolchange = true
+							fmt.Println("DEBUG SCP RUN JOB: WAIT VOLUME abortado por volume nao variar em 25 seg", bio[ind].BioreactorID)
+							board_add_message("E"+bio[ind].BioreactorID+" volume não variou em 25s. Favor verificar equipamentos", "")
+							bio_add_message(bio[ind].BioreactorID, "EVolume não variou em 25s. Favor verificar equipamentos", "")
+							go pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+							return false
+						}
+					} else {
+						vol_bio_last = vol_now
+						t_last_volchange = time.Now()
+					}
+
 					if t_elapsed > float64(time_max) {
 						fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de WAIT VOLUME esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
 						if !devmode && !par_time {
@@ -6067,6 +6094,14 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					t_elapsed := time.Since(t_start).Seconds()
 					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
 						break
+					}
+					ind_totem := get_totem_index("TOTEM02")
+					if ind_totem >= 0 {
+						if totem[ind_totem].Status == bio_error || totem[ind_totem].Status == bio_nonexist {
+							board_add_message("E"+ibc[ind].IBCID+" volume não atingido por falha no TOTEM02", "")
+							go pause_device(scp_ibc, ibc[ind].IBCID, true)
+							return false
+						}
 					}
 					if ibc[ind].MustPause || ibc[ind].MustStop {
 						return false
@@ -6937,6 +6972,7 @@ func scp_run_manydraw_out(data string, dest string) {
 }
 
 func scp_process_conn(conn net.Conn) {
+	defer conn.Close()
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
 	if err != nil {
@@ -7330,6 +7366,15 @@ func scp_process_conn(conn net.Conn) {
 				fmt.Println("ERROR START: Biorreator nao existe", bioid)
 				break
 			}
+			ind_totem := get_totem_index("TOTEM01")
+			if ind_totem >= 0 {
+				if totem[ind_totem].Status == bio_error || totem[ind_totem].Status == bio_nonexist {
+					fmt.Println("ERROR START: TOTEM01 com falaha - Nao foi possivel inicial JOB no Biorreator ", bioid)
+					board_add_message("E"+bioid+" não pode iniciar tarefa pois TOTEM01 com falha", "")
+					bio_add_message(bioid, "Não pode iniciar tarefa pois TOTEM01 com falha", "")
+					return
+				}
+			}
 			if orgcode != scp_par_cip && bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 && !devmode { //
 				fmt.Println("ERROR START: Biorreator nao teve o PH Calibrado, impossivel iniciar cultivo", bioid)
 				bio_add_message(bioid, "EImpossível iniciar cultivo, sensor de PH não calibrado", "")
@@ -7378,6 +7423,14 @@ func scp_process_conn(conn net.Conn) {
 			if ind < 0 {
 				fmt.Println("ERROR START: IBC nao existe", ibcid)
 				break
+			}
+			ind_totem := get_totem_index("TOTEM02")
+			if ind_totem >= 0 {
+				if totem[ind_totem].Status == bio_error || totem[ind_totem].Status == bio_nonexist {
+					fmt.Println("ERROR START: TOTEM02 com falaha - Nao foi possivel inicial JOB no Biorreator ", ibcid)
+					board_add_message("E"+ibcid+" não pode iniciar tarefa pois TOTEM02 com falha", "")
+					break
+				}
 			}
 			if orgcode == scp_par_cip || len(organs[orgcode].Orgname) > 0 {
 				fmt.Println("START", orgcode)
@@ -8135,7 +8188,7 @@ func scp_process_conn(conn net.Conn) {
 	}
 	// scp_sendmsg_orch(string(buf[:n]))
 	// conn.Write([]byte(scp_ack))
-	conn.Close()
+
 }
 
 func scp_master_ipc() {
