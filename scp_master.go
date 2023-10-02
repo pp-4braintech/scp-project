@@ -1257,8 +1257,12 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		ret1 := scp_sendmsg_orch(cmd1)
 		fmt.Println("DEBUG SET VALV STATUS: cmd=", cmd1, " ret=", ret1)
 		if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
+			// Mudança para testar falha no equipamento
+			if (devtype == scp_bioreactor && bio[ind].Status != bio_error) || (devtype == scp_ibc && ibc[ind].Status != bio_error) || (devtype == scp_totem && totem[ind].Status != bio_error) ||
+				(devtype == scp_biofabrica && biofabrica.Status != scp_fail) {
+				setok = false
+			}
 			// fmt.Println("ERROR SET VALV STATUS: SEND MSG ORCH falhou", ret1)
-			setok = false
 		}
 	}
 	if setok {
@@ -4609,12 +4613,16 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 		ret := scp_sendmsg_orch(cmd)
 		fmt.Println("DEBUG SCP TURN PUMP: CMD =", cmd, "\tRET =", ret)
 		if !strings.Contains(ret, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
-			fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
-			if len(valvs) > 0 && value == 1 {
-				set_valvs_value(valvs, 0, false)
-				time.Sleep(scp_timewaitvalvs * time.Millisecond)
+			// Mudança para testar falha no equipamento
+			if (devtype == scp_bioreactor && bio[ind].Status != bio_error) || (devtype == scp_ibc && ibc[ind].Status != bio_error) || (devtype == scp_totem && totem[ind].Status != bio_error) ||
+				(devtype == scp_biofabrica && biofabrica.Status != scp_fail) {
+				fmt.Println("ERROR SCP TURN PUMP:", main_id, " ERROR ao definir ", value, " bomba", ret)
+				if len(valvs) > 0 && value == 1 {
+					set_valvs_value(valvs, 0, false)
+					time.Sleep(scp_timewaitvalvs * time.Millisecond)
+				}
+				return false
 			}
-			return false
 		}
 		if value == 0 {
 			switch devtype {

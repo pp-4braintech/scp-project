@@ -48,6 +48,9 @@ chmod -R a+r *
 
 cd /home/scpadm/scp-project
 
+echo "Parando Master"
+systemctl stop scp_master
+
 echo "Restartando Orquestrador"
 go build scp_orch.go
 systemctl restart scp_orch
@@ -62,7 +65,4 @@ systemctl restart scp_agent
 
 echo "Restardando Master"
 go build scp_master.go
-echo "Verifique se a biofabrica esta pausada"
-
-sleep 30
-systemctl restart scp_master
+systemctl start scp_master
