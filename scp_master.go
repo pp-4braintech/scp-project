@@ -2637,6 +2637,10 @@ func scp_refresh_status() {
 								if ind >= 0 {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM", dev_id)
 									totem[ind].Status = bio_error
+									if dev_id == "TOTEM01" {
+										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM01 e mudando Biofabrica para falha tambem")
+										biofabrica.Status = scp_fail
+									}
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: TOMEM não existe na tabela", dev_id)
 								}
@@ -4593,7 +4597,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 			return false
 		}
 	} else {
-		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs)
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs, "1-value=", 1-value)
 		return false
 	}
 
