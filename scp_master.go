@@ -2616,7 +2616,7 @@ func scp_refresh_status() {
 									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no IBC", dev_id)
 									if ibc[ind].Status != bio_error && ibc[ind].Status != bio_pause {
 										if ibc[ind].Status != bio_ready || ibc[ind].Status != bio_empty {
-											board_add_message("E"+ibc[ind].IBCID+" com falha, favor pausar o mesmo", "")
+											board_add_message("E"+ibc[ind].IBCID+" com falha, favor verificar", "")
 											// pause_device(scp_ibc, ibc[ind].IBCID, true)
 										}
 									}
