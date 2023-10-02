@@ -388,7 +388,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					// bfs[ind].Status = bf_agent.Status
 					// bfs[ind].SWVersion = bf_agent.SWVersion
 					currentTime := time.Now()
-					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
+					// bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06")
+					bfs[ind].LastUpdate = fmt.Sprintf("%d-%02d-%02d %02d:%02d:%2d", currentTime.Year(), currentTime.Month(), currentTime.Day(),
+						currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 					fmt.Println("DEBUG SCP MAIN NETWORK: Atualizado bfid=", bfid, " >>", bfs[ind])
 				} else {
 					fmt.Println("ERROR SCP MAIN NETWORK: BFId invalido no bf_update", bfid)
