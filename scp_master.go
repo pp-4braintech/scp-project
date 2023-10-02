@@ -1242,9 +1242,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		devaddr = biofabrica_cfg[valvid].Deviceaddr
 		// scraddr = ""
 		valvaddr = biofabrica_cfg[valvid].Deviceport
-		_, err := strconv.Atoi(valvid[3:])
+		v, err := strconv.Atoi(valvid[3:])
 		if err == nil {
-			// biofabrica.Valvs[v-1] = value
+			biofabrica.Valvs[v-1] = value
 		} else {
 			fmt.Println("ERROR SET VAL: BIOFABRICA - id da valvula nao inteiro", valvid)
 			return false
@@ -1260,6 +1260,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 			// Mudança para testar falha no equipamento
 			if (devtype == scp_bioreactor && bio[ind].Status != bio_error) || (devtype == scp_ibc && ibc[ind].Status != bio_error) || (devtype == scp_totem && totem[ind].Status != bio_error) ||
 				(devtype == scp_biofabrica && biofabrica.Status != scp_fail) {
+				fmt.Println("DEBUG SET VALV STATUS: Mudando setok para false")
 				setok = false
 			}
 			// fmt.Println("ERROR SET VALV STATUS: SEND MSG ORCH falhou", ret1)
@@ -1289,7 +1290,8 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 				biofabrica.Valvs[v-1] = value
 			}
 		}
-
+	} else {
+		fmt.Println("DEBUG SET VALV STATUS: SETOK false para", valvid)
 	}
 	// if len(scraddr) > 0 {
 	// 	cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", scraddr, valve_scrstr, value)
