@@ -2639,7 +2639,7 @@ func scp_refresh_status() {
 									totem[ind].Status = bio_error
 									if dev_id == "TOTEM01" {
 										fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM01 e mudando Biofabrica para falha tambem")
-										biofabrica.Status = scp_fail
+										biofabrica.Status = scp_fail // novo
 									}
 								} else {
 									fmt.Println("ERROR SCP REFRESH STATUS: TOMEM não existe na tabela", dev_id)
