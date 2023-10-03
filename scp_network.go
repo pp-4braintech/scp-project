@@ -162,7 +162,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 				SameSite: http.SameSiteLaxMode,
 			}
 			http.SetCookie(rw, &new_cookie)
-			rw.Write([]byte(scp_ack))
+			// rw.Write([]byte(scp_ack))
 		default:
 			checkErr(err)
 		}
