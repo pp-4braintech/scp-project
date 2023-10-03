@@ -21,3 +21,4 @@ Histórico de Versões (recentes)
 1.2.25  -   Master.: Avisa de solicitação de shutdown externo.
                      Reiniciar não restart Orch  (estava causando falsas falhas de equipamento se antes dele fosse chamado o reconfigurar)
                      run_withdraw testa painéis (intermediário e de desenvase) antes de iniciar processo. Alerta sobre falhas.
+            Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
