@@ -167,6 +167,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			checkErr(err)
 		}
 	} else {
+		fmt.Println("MAIN NETWORK: Cookie encontrado =", cookie)
 		this_bf = cookie.Value
 	}
 
