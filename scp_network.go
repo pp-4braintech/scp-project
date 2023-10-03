@@ -161,6 +161,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 				SameSite: http.SameSiteLaxMode,
 			}
 			http.SetCookie(rw, &new_cookie)
+			rw.Write([]byte(scp_ack))
 		default:
 			checkErr(err)
 		}
@@ -170,7 +171,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		fmt.Println(" METODO GET")
+		fmt.Println(" METODO GET", thisbf)
 		var jsonStr []byte
 		// var err error
 		if endpoint == "/" {
@@ -273,7 +274,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	case "PUT":
 
-		fmt.Println(" METODO PUT")
+		fmt.Println(" METODO PUT", thisbf)
 		var jsonStr []byte
 		if endpoint == "/" {
 			rw.Header().Set("Content-Type", "application/json")
@@ -396,7 +397,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	case "POST":
 
-		fmt.Println(" METODO POST chamado")
+		fmt.Println(" METODO POST chamado", thisbf)
 		// var jsonStr []byte
 		if endpoint == "/bf_update" {
 			var bf_agent Biofabrica_data
