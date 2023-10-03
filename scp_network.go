@@ -164,7 +164,6 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 		default:
 			checkErr(err)
 		}
-		return
 	} else {
 		this_bf = cookie.Value
 	}
