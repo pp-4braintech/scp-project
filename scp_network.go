@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -25,6 +24,8 @@ const (
 
 var execpath string
 var bf_default string = "bf000"
+
+var clients_bf map[string]string
 
 type Biofabrica_data struct {
 	BFId         string
@@ -146,30 +147,35 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\n\nReq: %s %s\n", r.Host, r.URL.Path)
 	endpoint := r.URL.Path
 
-	this_bf := bf_default
-	cookie, err := r.Cookie("SCPNetCookie")
-	if err != nil {
-		switch {
-		case errors.Is(err, http.ErrNoCookie):
-			fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo")
-			new_cookie := http.Cookie{
-				Name:  "SCPNetCookie",
-				Value: bf_default,
-				// Path:     "/",
-				MaxAge: 3600,
-				// HttpOnly: true,
-				// Secure:   true,
-				// SameSite: http.SameSiteLaxMode,
-			}
-			http.SetCookie(rw, &new_cookie)
-			// rw.Write([]byte(scp_ack))
-		default:
-			checkErr(err)
-		}
-	} else {
-		fmt.Println("MAIN NETWORK: Cookie encontrado =", cookie)
-		this_bf = cookie.Value
+	client_id := r.RemoteAddr
+	this_bf := clients_bf[client_id]
+	if len(this_bf) == 0 {
+		this_bf = bf_default
 	}
+	// cookie, err := r.Cookie("SCPNetCookie")
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, http.ErrNoCookie):
+	// 		fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo")
+	// 		new_cookie := &http.Cookie{
+	// 			Name:  "SCPNetCookie",
+	// 			Value: bf_default,
+	// 			// Path:     "/",
+	// 			MaxAge: 3600,
+	// 			// HttpOnly: true,
+	// 			// Secure:   true,
+	// 			// SameSite: http.SameSiteLaxMode,
+	// 		}
+	// 		http.SetCookie(rw, new_cookie)
+	// 		rw.WriteHeader(200)
+	// 		// rw.Write([]byte(scp_ack))
+	// 	default:
+	// 		checkErr(err)
+	// 	}
+	// } else {
+	// 	fmt.Println("MAIN NETWORK: Cookie encontrado =", cookie)
+	// 	this_bf = cookie.Value
+	// }
 
 	switch r.Method {
 	case "GET":
@@ -294,19 +300,22 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					if len(bfid) > 0 {
 						ind := get_bf_index(bfid)
 						if ind >= 0 {
-							fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo com bfid=", bfid)
-							new_cookie := http.Cookie{
-								Name:  "SCPNetCookie",
-								Value: bfid,
-								// Path:     "/",
-								MaxAge: 3600,
-								// HttpOnly: true,
-								// Secure:   true,
-								// SameSite: http.SameSiteLaxMode,
-							}
-							http.SetCookie(rw, &new_cookie)
-							this_bf = bfid
-							bf_default = bfid
+							clients_bf[client_id] = bfid
+							fmt.Println("MAIN NETWORK: Mudando bf_id de ", client_id, " para ", bfid)
+							// fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo com bfid=", bfid)
+							// new_cookie := &http.Cookie{
+							// 	Name:  "SCPNetCookie",
+							// 	Value: bfid,
+							// 	// Path:     "/",
+							// 	MaxAge: 3600,
+							// 	// HttpOnly: true,
+							// 	// Secure:   true,
+							// 	// SameSite: http.SameSiteLaxMode,
+							// }
+							// http.SetCookie(rw, new_cookie)
+							// this_bf = bfid
+							// bf_default = bfid
+							// rw.WriteHeader(200)
 							rw.Write([]byte(scp_ack))
 							return
 						}
@@ -578,6 +587,7 @@ func main() {
 		execpath = "/home/scpadm/scp-project/"
 	}
 
+	clients_bf = make(map[string]string, 0)
 	mux := http.NewServeMux()
 	cors := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
