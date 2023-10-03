@@ -6880,24 +6880,24 @@ func scp_restart_services() {
 
 	biofabrica.Critical = scp_stopall
 	cmdpath, _ := filepath.Abs("/usr/bin/systemctl")
-	cmd := exec.Command(cmdpath, "restart", "scp_orch")
+	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
+	// cmd.Dir = "/usr/bin"
+	// output, err := cmd.CombinedOutput()
+	// if len(output) > 0 {
+	// 	fmt.Println("OUPUT", string(output))
+	// }
+	// if err != nil {
+	// 	checkErr(err)
+	// 	fmt.Println("Falha ao Restartar ORCH")
+	// 	board_add_message("EFalha ao reiniciar Orquestrador", "")
+	// 	return
+	// }
+	// board_add_message("EOrquestrador reiniciado", "")
+	// time.Sleep(20 * time.Second)
+	fmt.Println("Reestartando Servico BACKEND")
+	cmd := exec.Command(cmdpath, "restart", "scp_back")
 	cmd.Dir = "/usr/bin"
 	output, err := cmd.CombinedOutput()
-	if len(output) > 0 {
-		fmt.Println("OUPUT", string(output))
-	}
-	if err != nil {
-		checkErr(err)
-		fmt.Println("Falha ao Restartar ORCH")
-		board_add_message("EFalha ao reiniciar Orquestrador", "")
-		return
-	}
-	board_add_message("EOrquestrador reiniciado", "")
-	time.Sleep(20 * time.Second)
-	fmt.Println("Reestartando Servico BACKEND")
-	cmd = exec.Command(cmdpath, "restart", "scp_back")
-	cmd.Dir = "/usr/bin"
-	output, err = cmd.CombinedOutput()
 	if len(output) > 0 {
 		fmt.Println("OUPUT", string(output))
 	}
