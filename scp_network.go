@@ -152,6 +152,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	if len(this_bf) == 0 {
 		this_bf = bf_default
 	}
+	fmt.Println("MAIN NETWORK: Client_id=", client_id, "this_bf=", this_bf)
 	// cookie, err := r.Cookie("SCPNetCookie")
 	// if err != nil {
 	// 	switch {
