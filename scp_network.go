@@ -151,6 +151,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
+			fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo")
 			new_cookie := http.Cookie{
 				Name:     "SCPNetCookie",
 				Value:    bf_default,
