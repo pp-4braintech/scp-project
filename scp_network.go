@@ -293,6 +293,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					if len(bfid) > 0 {
 						ind := get_bf_index(bfid)
 						if ind >= 0 {
+							fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo com bfid=", bfid)
 							new_cookie := http.Cookie{
 								Name:     "SCPNetCookie",
 								Value:    bfid,
@@ -304,7 +305,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 							}
 							http.SetCookie(rw, &new_cookie)
 							this_bf = bfid
-							// bf_default = bfid
+							bf_default = bfid
 							rw.Write([]byte(scp_ack))
 							return
 						}
