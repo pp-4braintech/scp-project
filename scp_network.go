@@ -172,7 +172,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		fmt.Println(" METODO GET", thisbf)
+		fmt.Println(" METODO GET", this_bf)
 		var jsonStr []byte
 		// var err error
 		if endpoint == "/" {
@@ -275,7 +275,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	case "PUT":
 
-		fmt.Println(" METODO PUT", thisbf)
+		fmt.Println(" METODO PUT", this_bf)
 		var jsonStr []byte
 		if endpoint == "/" {
 			rw.Header().Set("Content-Type", "application/json")
@@ -398,7 +398,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	case "POST":
 
-		fmt.Println(" METODO POST chamado", thisbf)
+		fmt.Println(" METODO POST chamado", this_bf)
 		// var jsonStr []byte
 		if endpoint == "/bf_update" {
 			var bf_agent Biofabrica_data
