@@ -1,17 +1,23 @@
 
 Histórico de Versões (recentes)
 
-1.2.22 - Master.: Para evitar erros de leitura nos fluxometros, testa se o valor retornado pelo Fluxometro (IN ou OUT) é <= 1. Se for, repete a leitura  (até 3 vezes). No caso de desenvase/transferência multipla, se o volume não for atingido, repete a tentativa (até 3 vezes).
+1.2.22   -  Master.: Para evitar erros de leitura nos fluxometros, testa se o valor retornado pelo Fluxometro (IN ou OUT) é <= 1. Se for, repete a leitura  (até 3 vezes). No caso de desenvase/transferência multipla, se o volume não for atingido, repete a tentativa (até 3 vezes).
 
-1.2.23 - Master.: Cria opção de cultivo para 1000 Litros - Para tanto a criação de novas tasks passa a ter o parametro de volume, sendo o padrão 2000 Litros.
-         Front..: Inclui a opção de Volume para Novo Cultivo (1000 ou 2000 litrosa).
 
-1.2.24 - Master.: Não permite iniciar Cuiltivo ou CIP caso o TOTEM01(BIO) ou TOTEM02(IBC) esteja com falha. 
-                  Durante o WAIT/VOLUME se o volume de entrada não varia por 25s ou há erro no TOTEM01, alerta e pausa o BIO. No caso de IBC, se houver falha no TOTEM02, pausa o IBC. 
-                  Corrige para quando houver falha no setup do TOTEM, o status ir para bio_error.
-                  No caso de falha de equipamento (.Status==bio_error) permite mudar o status de valvula ou bomba mesmo que o retorno do Orch seja ERR
-         Orch...: Muda timeout para 1500ms.
-         Upgrade: Script agora interrompe o master antes de reiniciar o Orch. Como estava, poderia gerar falsos erros de dispositivo antes da atualização do Master.
-         Front..: No caso de TOTEM com Status NULL, mostra o mesmo como não existente. 
-         Portal.: Ao clicar em entrar pelo mapa na biofábrica, já dispara a chamada ao end-point da biofábrica
-         Network: Corrige formato da data/hora da última atualização
+1.2.23   -  Master.: Cria opção de cultivo para 1000 Litros - Para tanto a criação de novas tasks passa a ter o parametro de volume, sendo o padrão 2000 Litros.
+            Front..: Inclui a opção de Volume para Novo Cultivo (1000 ou 2000 litrosa).
+
+
+1.2.24   -  Master.: Não permite iniciar Cuiltivo ou CIP caso o TOTEM01(BIO) ou TOTEM02(IBC) esteja com falha. 
+20231002             Durante o WAIT/VOLUME se o volume de entrada não varia por 25s ou há erro no TOTEM01, alerta e pausa o BIO. No caso de IBC, se houver falha no TOTEM02, pausa o IBC. 
+                     Corrige para quando houver falha no setup do TOTEM, o status ir para bio_error.
+                     No caso de falha de equipamento (.Status==bio_error) permite mudar o status de valvula ou bomba mesmo que o retorno do Orch seja ERR
+            Orch...: Muda timeout para 1500ms.
+            Upgrade: Script agora interrompe o master antes de reiniciar o Orch. Como estava, poderia gerar falsos erros de dispositivo antes da atualização do Master.
+            Front..: No caso de TOTEM com Status NULL, mostra o mesmo como não existente. 
+            Portal.: Ao clicar em entrar pelo mapa na biofábrica, já dispara a chamada ao end-point da biofábrica
+            Network: Corrige formato da data/hora da última atualização
+
+1.2.25  -   Master.: Avisa de solicitação de shutdown externo.
+                     Reiniciar não restart Orch  (estava causando falsas falhas de equipamento se antes dele fosse chamado o reconfigurar)
+                     run_withdraw testa painéis (intermediário e de desenvase) antes de iniciar processo. Alerta sobre falhas.

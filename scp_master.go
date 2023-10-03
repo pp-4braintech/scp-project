@@ -3683,6 +3683,16 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 	if devtype == scp_bioreactor {
 		bio_del_message(devid, "WDBUSY")
 	}
+	if biofabrica.PIntStatus != bio_ready {
+		fmt.Println("ERROR RUN WITHDRAW: Falha no Painel Intermediário, impossivel executar withdraw", devid)
+		board_add_message("E"+devid+" não pode executar operação por falha no Painel Intermediário. Favor verificar", devid+"PIERROR")
+		return -1
+	}
+	board_del_message(devid + "PIERROR")
+	tout := get_scp_type(bio[ind].OutID)
+	if tout == scp_out || tout == scp_drop || (devtype == scp_ibc && bio[ind].OutID == "IBC07") {
+
+	}
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
@@ -3693,6 +3703,13 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return -1
 		}
+		tout := get_scp_type(bio[ind].OutID)
+		if (tout == scp_out || tout == scp_drop) && biofabrica.POutStatus != scp_ready {
+			fmt.Println("ERROR RUN WITHDRAW: Falha no Painel de Desenvase, impossivel executar withdraw", devid)
+			board_add_message("E"+devid+" não pode executar operação por falha no Painel de Desenvase. Favor verificar", devid+"BIOPOUTERROR")
+			return -1
+		}
+		board_del_message(devid + "BIOPOUTERROR")
 		prev_status := bio[ind].Status
 		pathid := devid + "-" + bio[ind].OutID
 		pathstr := paths[pathid].Path
@@ -4020,6 +4037,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		if ibc[ind].MustPause || ibc[ind].MustStop {
 			return -1
 		}
+		if biofabrica.POutStatus != scp_ready {
+			fmt.Println("ERROR RUN WITHDRAW: Falha no Painel de Desenvase, impossivel executar withdraw", devid)
+			board_add_message("E"+devid+" não pode executar operação por falha no Painel de Desenvase. Favor verificar", devid+"IBCPOUTERROR")
+			return -1
+		}
+		board_del_message(devid + "IBCPOUTERROR")
 		prev_status := ibc[ind].Status
 		pathid := devid + "-" + ibc[ind].OutID
 		pathstr := paths[pathid].Path
@@ -7385,7 +7408,7 @@ func scp_process_conn(conn net.Conn) {
 				if totem[ind_totem].Status == bio_error || totem[ind_totem].Status == bio_nonexist {
 					fmt.Println("ERROR START: TOTEM01 com falaha - Nao foi possivel inicial JOB no Biorreator ", bioid)
 					board_add_message("E"+bioid+" não pode iniciar tarefa pois TOTEM01 com falha", "")
-					bio_add_message(bioid, "Não pode iniciar tarefa pois TOTEM01 com falha", "")
+					bio_add_message(bioid, "ENão pode iniciar tarefa pois TOTEM01 com falha", "")
 					return
 				}
 			}
@@ -8263,6 +8286,7 @@ func system_upgrade() {
 func master_shutdown(sigs chan os.Signal) {
 	<-sigs
 	fmt.Println("WARN SCP MASTER Shutdown started... Necessario aguardar cerca de 60 segundos...")
+	board_add_message("EDESLIGAMENTO DO SISTEMA Solicitado", "")
 	biofabrica.Critical = scp_stopall
 	scp_emergency_pause()
 	save_all_data(data_filename)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -145,6 +146,29 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\n\nReq: %s %s\n", r.Host, r.URL.Path)
 	endpoint := r.URL.Path
 
+	this_bf := bf_default
+	cookie, err := r.Cookie("SCPNetCookie")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			new_cookie := http.Cookie{
+				Name:     "SCPNetCookie",
+				Value:    bf_default,
+				Path:     "/",
+				MaxAge:   3600,
+				HttpOnly: true,
+				Secure:   true,
+				SameSite: http.SameSiteLaxMode,
+			}
+			http.SetCookie(rw, &new_cookie)
+		default:
+			checkErr(err)
+		}
+		return
+	} else {
+		this_bf = cookie.Value
+	}
+
 	switch r.Method {
 	case "GET":
 		fmt.Println(" METODO GET")
@@ -162,7 +186,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			if len(params) >= 2 {
 				cmd := params[1]
 				if cmd == "bf_default" {
-					ind := get_bf_index(bf_default)
+					ind := get_bf_index(this_bf)
 					if ind < 0 {
 						rw.Write([]byte(scp_err))
 					} else {
@@ -171,9 +195,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						rw.Write([]byte(jsonStr))
 					}
 				} else {
-					ind := get_bf_index(bf_default)
+					ind := get_bf_index(this_bf)
 					if ind < 0 {
-						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", this_bf)
 						return
 					}
 
@@ -268,7 +292,18 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					if len(bfid) > 0 {
 						ind := get_bf_index(bfid)
 						if ind >= 0 {
-							bf_default = bfid
+							new_cookie := http.Cookie{
+								Name:     "SCPNetCookie",
+								Value:    bfid,
+								Path:     "/",
+								MaxAge:   3600,
+								HttpOnly: true,
+								Secure:   true,
+								SameSite: http.SameSiteLaxMode,
+							}
+							http.SetCookie(rw, &new_cookie)
+							this_bf = bfid
+							// bf_default = bfid
 							rw.Write([]byte(scp_ack))
 							return
 						}
@@ -297,9 +332,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_update")
 					}
 				} else {
-					ind := get_bf_index(bf_default)
+					ind := get_bf_index(this_bf)
 					if ind < 0 {
-						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+						fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", this_bf)
 						return
 					}
 
@@ -425,9 +460,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 				fmt.Println("ERROR SCP MAIN NETWORK: BFId não informado no bf_new", r)
 			}
 		} else {
-			ind := get_bf_index(bf_default)
+			ind := get_bf_index(this_bf)
 			if ind < 0 {
-				fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", bf_default)
+				fmt.Println("ERROR SCP PROXY: Biofabrica nao encontrada", this_bf)
 				return
 			}
 
