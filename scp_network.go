@@ -147,7 +147,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\n\nReq: %s %s\n", r.Host, r.URL.Path)
 	endpoint := r.URL.Path
 
-	client_id := r.RemoteAddr
+	fullend := scp_splitparam(r.RemoteAddr, ":")
+	client_id := fullend[0]
 	this_bf := clients_bf[client_id]
 	if len(this_bf) == 0 {
 		this_bf = bf_default
