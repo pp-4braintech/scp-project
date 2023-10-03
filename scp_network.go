@@ -153,13 +153,13 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, http.ErrNoCookie):
 			fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo")
 			new_cookie := http.Cookie{
-				Name:     "SCPNetCookie",
-				Value:    bf_default,
-				Path:     "/",
-				MaxAge:   3600,
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteLaxMode,
+				Name:  "SCPNetCookie",
+				Value: bf_default,
+				// Path:     "/",
+				MaxAge: 3600,
+				// HttpOnly: true,
+				// Secure:   true,
+				// SameSite: http.SameSiteLaxMode,
 			}
 			http.SetCookie(rw, &new_cookie)
 			// rw.Write([]byte(scp_ack))
@@ -296,13 +296,13 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 						if ind >= 0 {
 							fmt.Println("MAIN NETWORK: Cookie nao encontrado, criando um novo com bfid=", bfid)
 							new_cookie := http.Cookie{
-								Name:     "SCPNetCookie",
-								Value:    bfid,
-								Path:     "/",
-								MaxAge:   3600,
-								HttpOnly: true,
-								Secure:   true,
-								SameSite: http.SameSiteLaxMode,
+								Name:  "SCPNetCookie",
+								Value: bfid,
+								// Path:     "/",
+								MaxAge: 3600,
+								// HttpOnly: true,
+								// Secure:   true,
+								// SameSite: http.SameSiteLaxMode,
 							}
 							http.SetCookie(rw, &new_cookie)
 							this_bf = bfid
