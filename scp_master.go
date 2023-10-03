@@ -3689,10 +3689,6 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		return -1
 	}
 	board_del_message(devid + "PIERROR")
-	tout := get_scp_type(bio[ind].OutID)
-	if tout == scp_out || tout == scp_drop || (devtype == scp_ibc && bio[ind].OutID == "IBC07") {
-
-	}
 	switch devtype {
 	case scp_bioreactor:
 		ind := get_bio_index(devid)
