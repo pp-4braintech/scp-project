@@ -2622,6 +2622,9 @@ func scp_refresh_status() {
 										}
 									}
 									if bio[ind].Status != bio_error {
+										if bio[ind].Status == bio_pause {
+											bio[ind].UndoStatus = bio[ind].LastStatus
+										}
 										bio[ind].LastStatus = bio[ind].Status
 										bio[ind].Status = bio_error
 									}
