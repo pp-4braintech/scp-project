@@ -20,8 +20,14 @@ if [ $? -ne 0 ]
     then
         echo "Nao foi possivel fazer a atualizacao"
         cp /tmp/scp_*.go . 
+        go build scp_master.go
+        go build scp_orch.go
+        go build scp_back.go
+        go build scp_agent.go
         exit 1
 fi
+
+cp confs/_bashrc ~/.bashrc
 
 DIR=/etc/systemd/system/
 FILE=scp_agent.service
