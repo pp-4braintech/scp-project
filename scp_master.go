@@ -1906,7 +1906,7 @@ func scp_setup_devices(mustall bool) {
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 					}
-					fmt.Println(k, "  ", c, " ret =", ret, "erros = ", nerr)
+					fmt.Println("erros = ", nerr, "  ", k, "  ", c, " ret =", ret)
 					if strings.Contains(ret, scp_die) {
 						fmt.Println("ERROR SETUP DEVICES: BIORREATOR DIE", b.BioreactorID)
 						break
@@ -1975,7 +1975,7 @@ func scp_setup_devices(mustall bool) {
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 					}
-					fmt.Println(k, "  ", c, " ret =", ret, "erros = ", nerr)
+					fmt.Println("erros = ", nerr, "  ", k, "  ", c, " ret =", ret)
 					if strings.Contains(ret, scp_die) {
 						fmt.Println("ERROR SETUP DEVICES: IBC DIE", ib.IBCID)
 						break
@@ -2037,7 +2037,7 @@ func scp_setup_devices(mustall bool) {
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 					}
-					fmt.Println(k, "  ", c, " ret =", ret, "erros = ", nerr)
+					fmt.Println("erros = ", nerr, "  ", k, "  ", c, " ret =", ret)
 					if strings.Contains(ret, scp_die) {
 						fmt.Println("ERROR SETUP DEVICES: TOTEM DIE", tot.TotemID)
 						break
