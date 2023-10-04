@@ -384,6 +384,7 @@ type IBC struct {
 	ShowVol      bool
 	VolumeOut    uint32
 	MainStatus   string
+	UndoStatus   string
 }
 
 type IBC_ETL struct {
@@ -550,13 +551,13 @@ var bio = []Bioreact{
 }
 
 var ibc = []IBC{
-	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
-	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, ""},
+	{"IBC01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC03", bio_update, "", "Bacillus Amyloliquefaciens", 0, 0, 0, 1000, 1000, 2, false, [4]int{0, 0, 0, 0}, [2]int{1, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC04", bio_update, "", "Azospirilum brasiliense", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{4, 50}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC05", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{13, 17}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC06", bio_update, "", "Tricoderma harzianum", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 5}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
+	{"IBC07", bio_update, "", "", 0, 0, 0, 100, 100, 1, false, [4]int{0, 0, 0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", [2]float32{0, 0}, false, false, false, []string{}, []string{}, []string{}, []string{}, "", true, 0, "", ""},
 }
 
 var totem = []Totem{
@@ -2002,6 +2003,9 @@ func scp_setup_devices(mustall bool) {
 				}
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 1 && !devmode && ibc[ind].Status != bio_error {
+						if ibc[ind].Status == bio_pause {
+							ibc[ind].UndoStatus = ibc[ind].LastStatus
+						}
 						ibc[ind].LastStatus = ibc[ind].Status
 						ibc[ind].Status = bio_error
 						fmt.Println("ERROR SETUP DEVICES: IBC com erros", ib.IBCID)
@@ -2010,6 +2014,9 @@ func scp_setup_devices(mustall bool) {
 							ibc[ind].Status = bio_empty
 						} else {
 							ibc[ind].Status = ibc[ind].LastStatus
+							if ibc[ind].Status == bio_pause {
+								ibc[ind].LastStatus = ibc[ind].UndoStatus
+							}
 						}
 					}
 				}
