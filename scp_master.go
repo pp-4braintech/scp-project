@@ -317,6 +317,7 @@ type Bioreact struct {
 	Emergpress   bool
 	Continue     bool
 	MainStatus   string
+	UndoStatus   string
 }
 
 type Bioreact_ETL struct {
@@ -1926,6 +1927,9 @@ func scp_setup_devices(mustall bool) {
 				}
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 1 && !devmode && bio[ind].Status != bio_error {
+						if bio[ind].Status == bio_pause {
+							bio[ind].UndoStatus = bio[ind].LastStatus
+						}
 						bio[ind].LastStatus = bio[ind].Status
 						bio[ind].Status = bio_error
 						fmt.Println("ERROR SETUP DEVICES: BIORREATOR com erros", b.BioreactorID)
@@ -1934,6 +1938,9 @@ func scp_setup_devices(mustall bool) {
 							bio[ind].Status = bio_empty
 						} else {
 							bio[ind].Status = bio[ind].LastStatus
+							if bio[ind].Status == bio_pause {
+								bio[ind].LastStatus = bio[ind].UndoStatus
+							}
 						}
 					}
 				}
