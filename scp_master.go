@@ -2054,7 +2054,7 @@ func scp_setup_devices(mustall bool) {
 
 	fmt.Println("\n\nDEBUG SETUP DEVICES: Configurando BIOFABRICA")
 
-	if mustall || biofabrica.Status == scp_fail {
+	if mustall || biofabrica.Status == scp_fail || biofabrica.PIntStatus == bio_error || biofabrica.POutStatus == bio_error {
 		biofabrica.POutStatus = bio_update
 		biofabrica.PIntStatus = bio_update
 		for _, bf := range biofabrica_cfg {
@@ -2112,6 +2112,8 @@ func scp_setup_devices(mustall bool) {
 					}
 				} else if nerr == 0 {
 					biofabrica.Status = scp_ready
+					biofabrica.POutStatus = bio_ready
+					biofabrica.PIntStatus = bio_ready
 					board_del_message("BFFAIL")
 				}
 			}
@@ -2590,12 +2592,12 @@ func scp_refresh_status() {
 						ipaddr := data[1]
 						devstatus, _ := strconv.Atoi(data[2])
 						dev_id := get_devid_byaddr(dev_addr)
-						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", dev_id, dev_addr, ipaddr, devstatus)
+						dev_type := get_devtype_byaddr(dev_addr)
+						fmt.Println("DEBUG SCP REFRESH STATUS: SLAVE DATA:", dev_id, dev_addr, ipaddr, devstatus, dev_type)
 						if devstatus == scp_state_TCP0 { // Dispositivo OK
 							nslavesok++
 						} else { // Dispositivo NAO OK
 							nslavesnok++
-							dev_type := get_devtype_byaddr(dev_addr)
 							switch dev_type {
 							case scp_bioreactor:
 								ind := get_bio_index(dev_id)
