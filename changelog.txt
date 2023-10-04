@@ -26,5 +26,6 @@ Histórico de Versões (recentes)
                      Cria UndoStatus para salvar LastStatus no caso de falha durante pausa e recuperar quando do retorno do equipamento.
                      Permite ajuste de PH mesmo com a resistência/circulação já ligados.
                      Aborta wait volume se o mesmo atingir o valor maximo configurado
+                     Fecha válvulas V1 e V2 antes de desligar o aerador para fazer leitura do PH
             Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
             Front..: No biorreator, abrindo as valvulas V2 e V3, o PH e Temperatura passam a ser exibidos em qualquer status que esteja

@@ -2160,7 +2160,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 			if bio[ind].Status != bio_producting {
 				return -1
 			}
-			if !scp_turn_aero(bioid, false, 0, 0, false) {
+			if !scp_turn_aero(bioid, true, 0, 0, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao desligar Aerador do Biorreator", bioid)
 				scp_turn_aero(bioid, false, 1, aeroratio, false)
 				return -1
@@ -2190,7 +2190,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
 		if aerostatus {
-			if !scp_turn_aero(bioid, false, 1, aeroratio, false) {
+			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
 		}
@@ -7473,7 +7473,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					// bio[ind].Status = bio_cip
 				} else {
-					if bio[ind].Volume > 2500 {
+					if bio[ind].Volume > 0 {
 						bio_add_message(bioid, "ENão é possivel iniciar cultivo num biorretor que não esteja VAZIO", "")
 						return
 					} else if bio[ind].Status != bio_empty {
