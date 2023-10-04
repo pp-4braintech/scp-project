@@ -69,6 +69,8 @@ echo "Restartando Back Agent"
 go build scp_agent.go
 systemctl restart scp_agent
 
+sleep 60
+
 echo "Restardando Master"
 go build scp_master.go
 systemctl start scp_master
