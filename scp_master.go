@@ -5627,6 +5627,9 @@ func scp_run_job_bio(bioid string, job string) bool {
 				for {
 					vol_now := uint64(bio[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
+					if vol_now >= uint64(bio_cfg[bio[ind].BioreactorID].Maxvolume) {
+						break
+					}
 					if vol_now >= vol_max {
 						if !par_time {
 							break
@@ -6158,6 +6161,9 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				for {
 					vol_now := uint64(ibc[ind].Volume)
 					t_elapsed := time.Since(t_start).Seconds()
+					if vol_now >= uint64(ibc_cfg[ibc[ind].IBCID].Maxvolume) {
+						break
+					}
 					if vol_now >= vol_max && t_elapsed >= float64(time_min) {
 						break
 					}
