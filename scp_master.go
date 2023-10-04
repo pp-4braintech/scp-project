@@ -7462,7 +7462,7 @@ func scp_process_conn(conn net.Conn) {
 				if orgcode == scp_par_cip {
 					if (bio[ind].Status != bio_empty && bio[ind].Status != bio_ready) || bio[ind].Volume > 0 {
 						fmt.Println("ERROR START: CIP invalido, biorreator nao esta vazio ou status invalido", bioid, bio[ind].Status, bio[ind].Volume)
-						if bio[ind].Volume > 0 {
+						if bio[ind].Volume > 2500 {
 							bio_add_message(bioid, "ENão é possivel realizar CIP num biorretor que não esteja VAZIO", "")
 						} else if bio[ind].Status == bio_cip {
 							bio_add_message(bioid, "ECIP já iniciado no Biorreator. Aguarde", "")
