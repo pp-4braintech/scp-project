@@ -24,5 +24,6 @@ Histórico de Versões (recentes)
                      Mudança no setup_devices para sempre testar Paineis (Intermediário e Desenvase) caso não sejam bio_ready, independente do status da Biofábrica.
                      Pequenas melhorias no log do setup_devices.
                      Cria UndoStatus para salvar LastStatus no caso de falha durante pausa e recuperar quando do retorno do equipamento.
+                     Permite ajuste de PH mesmo com a resistência/circulação já ligados
             Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
             Front..: No biorreator, abrindo as valvulas V2 e V3, o PH e Temperatura passam a ser exibidos em qualquer status que esteja

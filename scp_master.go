@@ -4819,10 +4819,14 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	ind := get_bio_index(bioid)
 	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, bio[ind].PH, ph)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
-		fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
-		return
+
+	if !bio[ind].Heater {
+		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
+			fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
+			return
+		}
 	}
+
 	if bio[ind].MustPause || bio[ind].MustStop {
 		return
 	}
@@ -4854,10 +4858,13 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 		time.Sleep(1 * time.Second)
 	}
 
-	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
-		fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
-		return
+	if !bio[ind].Heater {
+		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
+			fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
+			return
+		}
 	}
+
 }
 
 func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
