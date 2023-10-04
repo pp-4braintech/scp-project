@@ -122,7 +122,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-scp_bfdata=$(awk '{ print $1}' /etc/scpd/bf_data.csv)
+scp_bfdata=$(awk -F, '{ print $1 "-" $2}' /etc/scpd/bf_data.csv)
 echo
 echo "ATENCAO -- Voce esta na biofabrica    >>>   $scp_bfdata"
 echo
