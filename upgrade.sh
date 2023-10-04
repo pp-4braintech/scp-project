@@ -27,7 +27,7 @@ if [ $? -ne 0 ]
         exit 1
 fi
 
-cp confs/_bashrc ~/.bashrc
+cp initd/_bashrc ~/.bashrc
 
 DIR=/etc/systemd/system/
 FILE=scp_agent.service
