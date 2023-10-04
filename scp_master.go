@@ -1439,7 +1439,7 @@ func tcp_host_isalive(host string, tcpport string, timemax time.Duration) bool {
 func scp_run_recovery() {
 	fmt.Println("\n\nWARN RUN RECOVERY: Executando RECOVERY da Biofabrica")
 	board_add_message("ERETORNANDO de PARADA TOTAL", "")
-	if biofabrica.Critical != scp_sysstop {
+	if biofabrica.Critical != scp_sysstop || true {
 		board_add_message("ANecessário aguardar 10 minutos até reestabelecimento dos equipamentos", "")
 		if !devmode {
 			time.Sleep(300 * time.Second)
