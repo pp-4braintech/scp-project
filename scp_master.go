@@ -2625,7 +2625,7 @@ func scp_refresh_status() {
 										if bio[ind].Status != bio_ready || bio[ind].Status != bio_empty {
 											board_add_message("E"+bio[ind].BioreactorID+" com falha, favor verificar", "")
 											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, favor verificar", "")
-											// go pause_device(scp_bioreactor, bio[ind].BioreactorID, true)
+											go pause_device(scp_bioreactor, bio[ind].BioreactorID, true) // TESTANDO AUTOPAUSE
 										}
 									}
 									if bio[ind].Status != bio_error {
@@ -4412,7 +4412,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
-	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
+	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
 			set_valvs_value(dev_valvs, 1-value, false)
@@ -4424,7 +4424,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
 		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
-		if !strings.Contains(ret2, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
+		if !strings.Contains(ret2, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
 			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
 			if value == 1 && changevalvs {
 				set_valvs_value(dev_valvs, 0, false)
@@ -4510,8 +4510,13 @@ func scp_turn_peris(devtype string, bioid string, perisid string, value int) boo
 	ret0 := scp_sendmsg_orch(cmd0)
 	fmt.Println("DEBUG SCP TURN PERIS: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
-		fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", ret0)
-		return false
+		if devtype == scp_bioreactor && bio[ind].Status == bio_error {
+			fmt.Println("DEBUG SCP TURN PERIS:", bioid, " com error, ignorando erro vindo do ORCH ", ret0)
+		} else {
+			fmt.Println("ERROR SCP TURN PERIS:", bioid, " ERROR ao definir valor[", value, "] peristaltica ", ret0)
+			return false
+		}
+
 	}
 	// fmt.Println("DEBUG SCP TURN PERIS: Screen", scrdev)
 	switch devtype {
@@ -4823,7 +4828,6 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	if !bio[ind].Heater {
 		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
-			return
 		}
 	}
 
@@ -4861,7 +4865,6 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	if !bio[ind].Heater {
 		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
-			return
 		}
 	}
 
@@ -6694,7 +6697,13 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 		if pause && bio[ind].Status != bio_pause {
 			fmt.Println("DEBUG PAUSE DEVICE: Pausando Biorreator", main_id)
 			biobak[indbak] = bio[ind]
-			bio[ind].LastStatus = bio[ind].Status
+			if bio[ind].Status == bio_error {
+				bio[ind].UndoStatus = bio[ind].LastStatus
+				bio[ind].LastStatus = bio_pause
+			} else {
+				bio[ind].LastStatus = bio[ind].Status
+				bio[ind].Status = bio_pause
+			}
 			for _, j := range bio[ind].MustOffQueue {
 				if !isin(bio[ind].UndoQueue, j) {
 					bio[ind].UndoQueue = append([]string{j}, bio[ind].UndoQueue...)
@@ -6702,7 +6711,7 @@ func pause_device(devtype string, main_id string, pause bool) bool {
 			}
 			// bio[ind].UndoQueue = append(bio[ind].MustOffQueue, bio[ind].UndoQueue...)
 			bio[ind].MustPause = true
-			bio[ind].Status = bio_pause
+			// bio[ind].Status = bio_pause    Modificado para o caso de biorreator com ERRO
 			bio[ind].Withdraw = 0 // VALIDAR
 			if bio[ind].Heater {
 				scp_turn_heater(bio[ind].BioreactorID, 0, false)
