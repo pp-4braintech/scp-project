@@ -22,5 +22,6 @@ Histórico de Versões (recentes)
 20231003             Reiniciar não restart Orch  (estava causando falsas falhas de equipamento se antes dele fosse chamado o reconfigurar)
                      run_withdraw testa painéis (intermediário e de desenvase) antes de iniciar processo. Alerta sobre falhas.
                      Mudança no setup_devices para sempre testar Paineis (Intermediário e Desenvase) caso não sejam bio_ready, independente do status da Biofábrica.
+                     Pequenas melhorias no log do setup_devices
             Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
             Front..: No biorreator, abrindo as valvulas V2 e V3, o PH e Temperatura passam a ser exibidos em qualquer status que esteja
