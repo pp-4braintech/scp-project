@@ -75,7 +75,6 @@ func scp_splitparam(param string, separator string) []string {
 func test_file(filename string) bool {
 	mf, err := os.Stat(filename)
 	if err != nil {
-		time.Since(t_start_status).Seconds()
 		if !os.IsNotExist(err) {
 			checkErr(err)
 		}
