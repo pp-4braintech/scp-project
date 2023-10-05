@@ -3725,7 +3725,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		}
 		tout := get_scp_type(bio[ind].OutID)
 		if (tout == scp_out || tout == scp_drop) && biofabrica.POutStatus != scp_ready {
-			fmt.Println("ERROR RUN WITHDRAW: Falha no Painel de Desenvase, impossivel executar withdraw", devid)
+			fmt.Println("ERROR RUN WITHDRAW: Falha no Painel de Desenvase, impossivel executar withdraw", devid, tout, biofabrica.POutStatus)
 			board_add_message("E"+devid+" não pode executar operação por falha no Painel de Desenvase. Favor verificar", devid+"BIOPOUTERROR")
 			return -1
 		}
