@@ -7853,7 +7853,7 @@ func scp_process_conn(conn net.Conn) {
 										bio_add_message(bioid, "ITransferência iniciada", "")
 										conn.Write([]byte(scp_ack))
 										ibc[ibc_ind].Status = bio_loading
-										for {
+										for i := 0; i < 3; i++ {
 											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
 												break
 											}
@@ -8097,7 +8097,7 @@ func scp_process_conn(conn net.Conn) {
 						ibc[ind].Withdraw = uint32(vol)
 						if ibc[ind].Withdraw > 0 {
 							conn.Write([]byte(scp_ack))
-							for {
+							for i := 0; i < 3; i++ {
 								if ibc[ind].MustPause || ibc[ind].MustStop || biofabrica.Critical == scp_stopall {
 									break
 								}
