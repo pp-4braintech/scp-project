@@ -156,6 +156,7 @@ func check_status() {
 			elapsedtime := time.Since(lasttime).Minutes()
 			if elapsedtime > 5 {
 				bfs[k].Status = scp_outofdate
+				bfs[k].BFIP = "0.0.0.0"
 			}
 		}
 		time.Sleep(1 * time.Minute)

@@ -29,4 +29,5 @@ Histórico de Versões (recentes)
                      Fecha válvulas V1 e V2 antes de desligar o aerador para fazer leitura do PH
                      Na configuração de endereços, converte para maiúsculo os caracteres
             Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
+                     Testa as biofábricas que estão há mais de 5 minutos sem enviar atualização e muda o status para scp_outofdate. e remove IP
             Front..: No biorreator, abrindo as valvulas V2 e V3, o PH e Temperatura passam a ser exibidos em qualquer status que esteja
