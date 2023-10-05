@@ -2625,7 +2625,7 @@ func scp_refresh_status() {
 										if bio[ind].Status != bio_ready || bio[ind].Status != bio_empty {
 											board_add_message("E"+bio[ind].BioreactorID+" com falha, favor verificar", "")
 											bio_add_message(bio[ind].BioreactorID, "EEquipamento com falha, favor verificar", "")
-											go pause_device(scp_bioreactor, bio[ind].BioreactorID, true) // TESTANDO AUTOPAUSE
+											// go pause_device(scp_bioreactor, bio[ind].BioreactorID, true) // TESTANDO AUTOPAUSE
 										}
 									}
 									if bio[ind].Status != bio_error {
