@@ -2100,7 +2100,8 @@ func scp_setup_devices(mustall bool) {
 								if strings.Contains(disp, "VBF03") || strings.Contains(disp, "VBF04") || strings.Contains(disp, "VBF05") {
 									err_local += "Painel Intermediário "
 									biofabrica.PIntStatus = bio_error
-								} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") {
+								} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") ||
+									strings.Contains(disp, "PBF01") {
 									err_local += "Painel Desenvase "
 									biofabrica.POutStatus = bio_error
 								} else if len(disp) > 0 {
