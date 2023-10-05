@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.24" // 2023-10-03
+	scp_version = "1.2.25" // 2023-10-04
 
 	scp_on  = 1
 	scp_off = 0
