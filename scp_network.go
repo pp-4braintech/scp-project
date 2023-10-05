@@ -17,15 +17,19 @@ import (
 var net192 = false
 
 const (
-	scp_ack      = "ACK"
-	scp_err      = "ERR"
-	scp_nonexist = "NONEXIST"
+	scp_ack       = "ACK"
+	scp_err       = "ERR"
+	scp_outofdate = "OLD"
+	scp_nonexist  = "NONEXIST"
 )
 
 var execpath string
 var bf_default string = "bf000"
 
+var bfstimesMutext sync.Mutex 
+
 var clients_bf map[string]string
+var bfs_times map[string]time.Time
 
 type Biofabrica_data struct {
 	BFId         string
@@ -69,7 +73,7 @@ func scp_splitparam(param string, separator string) []string {
 
 func test_file(filename string) bool {
 	mf, err := os.Stat(filename)
-	if err != nil {
+	if err != nil {time.Since(t_start_status).Seconds()
 		if !os.IsNotExist(err) {
 			checkErr(err)
 		}
@@ -142,6 +146,21 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 	// biofabrica.LastVersion = last_biofabrica.Version
 }
 
+func check_status() {
+	for {
+		for k,b := range bfs {
+			bfstimesMutext.Lock()
+			lasttime := bfs_times[bfid]
+			bfstimesMutext.Unlock()
+			elapsedtime := time.Since(lastime).Minutes()
+			if elapsedtime > 5 {
+				bfs[k].Status = scp_outofdate
+			}
+		}
+		time.Sleep(1 * time.Minute)
+	}
+}
+
 func main_network(rw http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("\n\nReq: %s %s\n", r.Host, r.URL.Path)
@@ -170,7 +189,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 	// 		}
 	// 		http.SetCookie(rw, new_cookie)
 	// 		rw.WriteHeader(200)
-	// 		// rw.Write([]byte(scp_ack))
+	// 		// rw.Write([]byte(scp_ack))f
 	// 	default:
 	// 		checkErr(err)
 	// 	}
@@ -437,6 +456,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					// bfs[ind].Status = bf_agent.Status
 					// bfs[ind].SWVersion = bf_agent.SWVersion
 					currentTime := time.Now()
+					bfstimesMutext.Lock()
+					bfs_times[bfid] = currentTime
+					bfstimesMutext.Unlock()
 					// bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06")
 					bfs[ind].LastUpdate = fmt.Sprintf("%d-%02d-%02d %02d:%02d:%2d", currentTime.Year(), currentTime.Month(), currentTime.Day(),
 						currentTime.Hour(), currentTime.Minute(), currentTime.Second())
@@ -465,6 +487,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					bfs = append(bfs, bf_agent)
 					ind := get_bf_index(bfid)
 					currentTime := time.Now()
+					bfstimesMutext.Lock()
+					bfs_times[bfid] = currentTime
+					bfstimesMutext.Unlock()
 					bfs[ind].LastUpdate = currentTime.Format("2017-09-07 17:06:06")
 					fmt.Println("DEBUG SCP MAIN NETWORK: Criando entrada para bfid=", bfid, " >>", bfs[ind])
 				} else {
@@ -590,6 +615,8 @@ func main() {
 	}
 
 	clients_bf = make(map[string]string, 0)
+	bfs_times = make(maps[string]time.Time,0)
+
 	mux := http.NewServeMux()
 	cors := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -602,6 +629,8 @@ func main() {
 		AllowCredentials: false,
 	})
 
+	go check_status()
+	
 	mux.HandleFunc("/", main_network)
 
 	// mux.HandleFunc("/ibc_view", ibc_view)
