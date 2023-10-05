@@ -2090,7 +2090,7 @@ func scp_setup_devices(mustall bool) {
 				for k, c := range cmd {
 					fmt.Print()
 					ret := scp_sendmsg_orch(c)
-					fmt.Println("DEBUG SETUP DEVICES: ", k, "  ", c, " ", ret)
+					fmt.Println("DEBUG SETUP DEVICES: ", bf.DeviceID, k, "  ", c, " ", ret)
 					if !strings.Contains(ret, scp_ack) {
 						nerr++
 						params := scp_splitparam(c, "/")
@@ -7129,7 +7129,7 @@ func scp_process_conn(conn net.Conn) {
 						if len(params) > 4 {
 							devaddr := params[4]
 							biocfg := bio_cfg[bioid]
-							biocfg.Deviceaddr = devaddr
+							biocfg.Deviceaddr = strings.ToUpper(devaddr)
 							bio_cfg[bioid] = biocfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biorreator", bioid, " para", devaddr, " = ", bio_cfg[bioid])
 							conn.Write([]byte(scp_ack))
@@ -7140,7 +7140,7 @@ func scp_process_conn(conn net.Conn) {
 						if len(params) > 4 {
 							devaddr := params[4]
 							biocfg := bio_cfg[bioid]
-							biocfg.Screenaddr = devaddr
+							biocfg.Screenaddr = strings.ToUpper(devaddr)
 							bio_cfg[bioid] = biocfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco da tela do Biorreator", bioid, " para", devaddr, " = ", bio_cfg[bioid])
 							conn.Write([]byte(scp_ack))
@@ -7255,7 +7255,7 @@ func scp_process_conn(conn net.Conn) {
 						if len(params) > 4 {
 							devaddr := params[4]
 							ibccfg := ibc_cfg[ibcid]
-							ibccfg.Deviceaddr = devaddr
+							ibccfg.Deviceaddr = strings.ToUpper(devaddr)
 							ibc_cfg[ibcid] = ibccfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do IBC", ibcid, " para", devaddr, " = ", ibc_cfg[ibcid])
 							conn.Write([]byte(scp_ack))
@@ -7311,7 +7311,7 @@ func scp_process_conn(conn net.Conn) {
 						if len(params) > 4 {
 							devaddr := params[4]
 							totemcfg := totem_cfg[totemid]
-							totemcfg.Deviceaddr = devaddr
+							totemcfg.Deviceaddr = strings.ToUpper(devaddr)
 							totem_cfg[totemid] = totemcfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Totem", totemid, " para", devaddr, " = ", totem_cfg[totemid])
 							conn.Write([]byte(scp_ack))
@@ -7369,7 +7369,7 @@ func scp_process_conn(conn net.Conn) {
 						devaddr := params[4]
 						devcfg, ok := biofabrica_cfg[devid]
 						if ok {
-							devcfg.Deviceaddr = devaddr
+							devcfg.Deviceaddr = strings.ToUpper(devaddr)
 							biofabrica_cfg[devid] = devcfg
 							fmt.Println("DEBUG SCP PROCESS CON: Mudanca endereco do Biofabrica", devid, " para", devaddr, " = ", biofabrica_cfg[devid])
 							conn.Write([]byte(scp_ack))
