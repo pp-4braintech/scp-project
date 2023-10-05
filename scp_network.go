@@ -9,6 +9,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rs/cors"
@@ -26,7 +27,7 @@ const (
 var execpath string
 var bf_default string = "bf000"
 
-var bfstimesMutext sync.Mutex 
+var bfstimesMutext sync.Mutex
 
 var clients_bf map[string]string
 var bfs_times map[string]time.Time
@@ -73,7 +74,8 @@ func scp_splitparam(param string, separator string) []string {
 
 func test_file(filename string) bool {
 	mf, err := os.Stat(filename)
-	if err != nil {time.Since(t_start_status).Seconds()
+	if err != nil {
+		time.Since(t_start_status).Seconds()
 		if !os.IsNotExist(err) {
 			checkErr(err)
 		}
@@ -148,7 +150,7 @@ func scp_proxy(bfid string, r *http.Request, endpoint string) *http.Response {
 
 func check_status() {
 	for {
-		for k,b := range bfs {
+		for k, b := range bfs {
 			bfstimesMutext.Lock()
 			lasttime := bfs_times[bfid]
 			bfstimesMutext.Unlock()
@@ -615,7 +617,7 @@ func main() {
 	}
 
 	clients_bf = make(map[string]string, 0)
-	bfs_times = make(maps[string]time.Time,0)
+	bfs_times = make(map[string]time.Time, 0)
 
 	mux := http.NewServeMux()
 	cors := cors.New(cors.Options{
@@ -630,7 +632,7 @@ func main() {
 	})
 
 	go check_status()
-	
+
 	mux.HandleFunc("/", main_network)
 
 	// mux.HandleFunc("/ibc_view", ibc_view)
