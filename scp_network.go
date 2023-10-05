@@ -151,9 +151,9 @@ func check_status() {
 	for {
 		for k, b := range bfs {
 			bfstimesMutext.Lock()
-			lasttime := bfs_times[bfid]
+			lasttime := bfs_times[b.BFId]
 			bfstimesMutext.Unlock()
-			elapsedtime := time.Since(lastime).Minutes()
+			elapsedtime := time.Since(lasttime).Minutes()
 			if elapsedtime > 5 {
 				bfs[k].Status = scp_outofdate
 			}
