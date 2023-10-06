@@ -31,3 +31,10 @@ Histórico de Versões (recentes)
             Network: Associa bf_default com base no endereço IP do client web. Desta forma permite multiplos usuários vendo diferentes biofábricas.
                      Testa as biofábricas que estão há mais de 5 minutos sem enviar atualização e muda o status para scp_outofdate. e remove IP
             Front..: No biorreator, abrindo as valvulas V2 e V3, o PH e Temperatura passam a ser exibidos em qualquer status que esteja
+
+1.2.26  -   Master.: Process_Conn não permite ações durante Critical da Biofabrica
+20231004             Implementação função de restaurar cultivo
+                     set_valv mudar o valor independente do retorno do Orch. Aparentemente erros esporádicos estavam gerando falsos status das válvulas
+            Back...: Implementação endpoint de restaurar cultivo
+            Front..: Implementação botão de restaurar cultivo
+            Orch...: Timeout voltou a ser 2000ms. Instabilidade de alguns equipamentos deve ter sido em função da redução que houve para 1500

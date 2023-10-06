@@ -59,6 +59,7 @@ const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
+const scp_par_restore = "RESTORE"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -917,6 +918,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		resetdata := r.FormValue("ResetData")
 		stopall := r.FormValue("StopAll")
 		upgrade := r.FormValue("Upgrade")
+		restore := r.FormValue("Restore")
 		// sysversion := r.FormValue("Version")
 
 		if len(bioid) > 0 {
@@ -968,6 +970,13 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 			if resetdata != "" {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_resetdata + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+
+			if restore != "" {
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_restore + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
 				w.Write([]byte(jsonStr))

@@ -135,6 +135,7 @@ const scp_par_lock = "LOCK"
 const scp_par_unlock = "UNLOCK"
 const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
+const scp_par_restore = "RESTORE"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -7096,6 +7097,36 @@ func scp_process_conn(conn net.Conn) {
 							conn.Write([]byte(scp_ack))
 						} else {
 							conn.Write([]byte(scp_err))
+						}
+
+					case scp_par_restore:
+						if bio[ind].Status != bio_ready && bio[ind].Status != bio_empty {
+							board_add_message("E"+bioid+" deve estar PRONTO ou VAZIO para que o cultivo seja Restaurado", "")
+							bio_add_message(bioid, "EBiorreator deve estar PRONTO ou VAZIO para que o cultivo seja Restaurado", "")
+							conn.Write([]byte(scp_err))
+						} else {
+							if len(bio[ind].Queue) > 0 {
+								fmt.Println("DEBUG PROCESS CONN: CONFIG: Restaurando cultivo que estava na Queue", bioid)
+								bio[ind].Status = bio_producting
+								board_add_message("A"+bioid+" Com cultivo Restaurado e retornando ao ponto anterior", "")
+								bio_add_message(bioid, "ABiorreator com cultivo Restaurado e retornando ao ponto anterior", "")
+							} else {
+								orgcode := bio[ind].OrgCode
+								if len(organs[orgcode].Orgname) > 0 {
+									bio[ind].Status = bio_empty
+									d1000 := math.Abs(float64(bio[ind].Volume) - 1000)
+									d2000 := math.Abs(float64(bio[ind].Volume) - 2000)
+									volume := "2000"
+									if d1000 < d2000 {
+										volume = "1000"
+									}
+									biotask := []string{bioid + ",0," + orgcode + "," + volume}
+									n := create_sched(biotask)
+									fmt.Println("DEBUG PROCESS CONN: CONFIG: Restore recriando task", bioid, biotask, n)
+									board_add_message("A"+bioid+" Cultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
+									bio_add_message(bioid, "ACultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
+								}
+							}
 						}
 
 					case scp_par_resetdata:
