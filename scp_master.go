@@ -7125,6 +7125,8 @@ func scp_process_conn(conn net.Conn) {
 									fmt.Println("DEBUG PROCESS CONN: CONFIG: Restore recriando task", bioid, biotask, n)
 									board_add_message("A"+bioid+" Cultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
 									bio_add_message(bioid, "ACultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
+								} else {
+									fmt.Println("ERROR PROCESS CONN: CONFIG: Microorganismo nao encontrado", bioid, orgcode)
 								}
 							}
 						}
