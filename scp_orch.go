@@ -29,7 +29,7 @@ const scp_state_TCPFAIL = 29
 const scp_state_PINGFAIL = 31
 const scp_max_len = 512
 const scp_keepalive_time = 6 // era 6
-const scp_timeout_ms = 1500
+const scp_timeout_ms = 2000
 const scp_buff_size = 512
 const scp_max_err = 5
 

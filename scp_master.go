@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.25" // 2023-10-04
+	scp_version = "1.2.26" // 2023-10-06
 
 	scp_on  = 1
 	scp_off = 0
@@ -7430,6 +7430,12 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_start:
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR PROCESS CONN: Nao permitido executar comando quando Critical ativo", params, biofabrica.Critical)
+			board_add_message("ENão é possivel executar ação enquanto a Biofábrica estiver PARADA", "")
+			conn.Write([]byte(scp_err))
+			return
+		}
 		scp_object := params[1]
 		switch scp_object {
 		case scp_bioreactor:
@@ -7544,6 +7550,12 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_stop:
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR PROCESS CONN: Nao permitido executar comando quando Critical ativo", params, biofabrica.Critical)
+			board_add_message("ENão é possivel executar ação enquanto a Biofábrica estiver PARADA", "")
+			conn.Write([]byte(scp_err))
+			return
+		}
 		devtype := params[1]
 		id := params[2]
 		if !stop_device(devtype, id) {
@@ -7552,6 +7564,12 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_pause:
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR PROCESS CONN: Nao permitido executar comando quando Critical ativo", params, biofabrica.Critical)
+			board_add_message("ENão é possivel executar ação enquanto a Biofábrica estiver PARADA", "")
+			conn.Write([]byte(scp_err))
+			return
+		}
 		fmt.Println("PAUSE")
 		devtype := params[1]
 		id := params[2]
@@ -7571,6 +7589,12 @@ func scp_process_conn(conn net.Conn) {
 		}
 
 	case scp_wdpanel:
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR PROCESS CONN: Nao permitido executar comando quando Critical ativo", params, biofabrica.Critical)
+			board_add_message("ENão é possivel executar ação enquanto a Biofábrica estiver PARADA", "")
+			conn.Write([]byte(scp_err))
+			return
+		}
 		fmt.Println("DEBUG SCP PROCESS CONN:", params)
 		if len(params) > 2 {
 			subpars := scp_splitparam(params[1], ",")
@@ -7718,6 +7742,12 @@ func scp_process_conn(conn net.Conn) {
 			conn.Write([]byte(scp_err))
 		}
 	case scp_put:
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR PROCESS CONN: Nao permitido executar comando quando Critical ativo", params, biofabrica.Critical)
+			board_add_message("ENão é possivel executar ação enquanto a Biofábrica estiver PARADA", "")
+			conn.Write([]byte(scp_err))
+			return
+		}
 		scp_object := params[1]
 		switch scp_object {
 		case scp_bioreactor:
