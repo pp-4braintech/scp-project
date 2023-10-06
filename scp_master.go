@@ -1268,7 +1268,7 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 			// fmt.Println("ERROR SET VALV STATUS: SEND MSG ORCH falhou", ret1)
 		}
 	}
-	if setok {
+	if setok || true {
 		valvs[id] = value
 		switch devtype {
 		case scp_bioreactor:
