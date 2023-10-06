@@ -7474,7 +7474,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					// bio[ind].Status = bio_cip
 				} else {
-					if bio[ind].Volume > 0 {
+					if bio[ind].Volume > 2500 {
 						bio_add_message(bioid, "ENão é possivel iniciar cultivo num biorretor que não esteja VAZIO", "")
 						return
 					} else if bio[ind].Status != bio_empty {
