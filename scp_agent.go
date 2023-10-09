@@ -167,7 +167,8 @@ func get_uuid() string {
 		return ""
 	}
 	fmt.Printf("DEBUG GET UUID: Gerando ID unico = %s", out)
-	return string(out)
+	uuid := out[:36]
+	return string(uuid)
 }
 
 func scp_update_network() {
