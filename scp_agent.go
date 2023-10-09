@@ -252,7 +252,7 @@ func main() {
 			mybf.BFId = get_uuid()
 			myID = mybf.BFId
 			fmt.Println("ERROR SCP AGENT: Nome da Biofabrica obsoleto. Criando ID aleatorio e regravando configuracoes", mybf)
-			// save_bf_data("/etc/scpd/bf_data.csv")
+			save_bf_data("/etc/scpd/bf_data.csv")
 			save_bf_data("/etc/scpd/bf_data_new.csv")
 			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_loadbfdata + "/END"
 			scp_sendmsg_master(cmd)

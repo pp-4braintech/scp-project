@@ -38,3 +38,4 @@ Histórico de Versões (recentes)
             Back...: Implementação endpoint de restaurar cultivo
             Front..: Implementação botão de restaurar cultivo
             Orch...: Timeout voltou a ser 2000ms. Instabilidade de alguns equipamentos deve ter sido em função da redução que houve para 1500
+            Agent..: BFID passa a ser automático e randômico. Cria e chama Master para atualização.
