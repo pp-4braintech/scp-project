@@ -144,6 +144,7 @@ func save_bf_data(filename string) int {
 	defer filecsv.Close()
 	n := 0
 	csvwriter := csv.NewWriter(filecsv)
+	thisbf := mybf
 	s := fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%f,%f,%s,%s", thisbf.BFId, thisbf.BFName, thisbf.Status, thisbf.CustomerId,
 		thisbf.CustomerName, thisbf.Address, thisbf.SWVersion, thisbf.LatLong[0], thisbf.LatLong[1],
 		thisbf.LastUpdate, thisbf.BFIP)
