@@ -42,3 +42,4 @@ Histórico de Versões (recentes)
 
 1.2.27  -   Master.: Corrige processo de atualização do software.
 20231009             Caso não haja UndoStatus, atribui bio_ready.
+                     Testa se Volume>0 para restaurar cultivo.

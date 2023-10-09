@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.26" // 2023-10-06
+	scp_version = "1.2.27" // 2023-10-09
 
 	scp_on  = 1
 	scp_off = 0
@@ -7111,14 +7111,14 @@ func scp_process_conn(conn net.Conn) {
 							bio_add_message(bioid, "EBiorreator deve estar PRONTO ou VAZIO para que o cultivo seja Restaurado", "")
 							conn.Write([]byte(scp_err))
 						} else {
-							if len(bio[ind].Queue) > 0 {
+							if len(bio[ind].Queue) > 0 && bio[ind].Volume > 0 {
 								fmt.Println("DEBUG PROCESS CONN: CONFIG: Restaurando cultivo que estava na Queue", bioid)
 								bio[ind].Status = bio_producting
 								board_add_message("A"+bioid+" Com cultivo Restaurado e retornando ao ponto anterior", "")
 								bio_add_message(bioid, "ABiorreator com cultivo Restaurado e retornando ao ponto anterior", "")
-							} else {
+							} else if bio[ind].Volume > 0 {
 								orgcode := bio[ind].OrgCode
-								if len(organs[orgcode].Orgname) > 0 {
+								if len(orgcode) > 0 && len(organs[orgcode].Orgname) > 0 {
 									bio[ind].Status = bio_empty
 									d1000 := math.Abs(float64(bio[ind].Volume) - 1000)
 									d2000 := math.Abs(float64(bio[ind].Volume) - 2000)
@@ -7129,11 +7129,14 @@ func scp_process_conn(conn net.Conn) {
 									biotask := []string{bioid + ",0," + orgcode + "," + volume}
 									n := create_sched(biotask)
 									fmt.Println("DEBUG PROCESS CONN: CONFIG: Restore recriando task", bioid, biotask, n)
-									board_add_message("A"+bioid+" Cultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
+									board_add_message("A"+bioid+" Cultivo "+organs[orgcode].Orgname+" Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
 									bio_add_message(bioid, "ACultivo Restaurado a partir do Início. Quando for solicitado Cloro, Meio e Inóculo, basta pressionar PROSSEGUIR se os mesmos já tiverem sido inseridos", "")
 								} else {
 									fmt.Println("ERROR PROCESS CONN: CONFIG: Microorganismo nao encontrado", bioid, orgcode)
+									board_add_message("E"+bioid+" Não tem cultivo definido. Não é possível restaurar", "")
 								}
+							} else {
+								board_add_message("E"+bioid+" Está com volume ZERO. Não é possível restaurar cultivo", "")
 							}
 						}
 
