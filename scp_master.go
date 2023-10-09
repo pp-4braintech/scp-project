@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.26" // 2023-10-09
+	scp_version = "1.2.27" // 2023-10-09
 
 	scp_on  = 1
 	scp_off = 0
@@ -8380,7 +8380,7 @@ func system_upgrade() {
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
 	time.Sleep(5 * time.Second)
-	cmdpath, _ := filepath.Abs(execpath + "upgrade.sh &")
+	cmdpath, _ := filepath.Abs(execpath + "upgrade_sys.sh")
 	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
 	cmd := exec.Command(cmdpath)
 	cmd.Dir = execpath
