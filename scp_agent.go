@@ -18,10 +18,13 @@ import (
 	"time"
 )
 
+const scp_err = "ERR"
 const scp_nonexist = "NONEXIST"
 const scp_config = "CONFIG"
 const scp_biofabrica = "BIOFABRICA"
 const scp_par_loadbfdata = "LOADBFDATA"
+
+const max_buf = 8192
 
 type Biofabrica_data struct {
 	BFId         string
