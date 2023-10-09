@@ -135,6 +135,40 @@ func load_bf_data(filename string) int {
 	return n
 }
 
+func save_bf_data(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	s := fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%f,%f,%s,%s", thisbf.BFId, thisbf.BFName, thisbf.Status, thisbf.CustomerId,
+		thisbf.CustomerName, thisbf.Address, thisbf.SWVersion, thisbf.LatLong[0], thisbf.LatLong[1],
+		thisbf.LastUpdate, thisbf.BFIP)
+	csvstr := scp_splitparam(s, ",")
+	// fmt.Println("DEBUG SAVE", csvstr)
+	err = csvwriter.Write(csvstr)
+	if err != nil {
+		checkErr(err)
+	} else {
+		n++
+	}
+	csvwriter.Flush()
+	return n
+}
+
+func get_uuid() string {
+	out, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		checkErr(err)
+		return ""
+	}
+	fmt.Printf("DEBUG GET UUID: Gerando ID unico = %s", out)
+	return string(out)
+}
+
 func scp_update_network() {
 	body, err := json.Marshal(mybf)
 	if err != nil {
@@ -176,8 +210,13 @@ func main() {
 	for {
 		n_bf := load_bf_data("/etc/scpd/bf_data.csv")
 		if n_bf < 1 {
-			mybf.BFId = "BFIP-" + get_tun_ip()
-			fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
+			mybf.BFId = get_uuid()
+			fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao e criando arquivo", mybf)
+			save_bf_data("/etc/scpd/bf_data.csv")
+		} else if strings.Contains(mybf.BFId, "BFIP") {
+			mybf.BFId = get_uuid()
+			fmt.Println("ERROR SCP AGENT: Nome da Biofabrica obsoleto. Criando ID aleatorio e regravando configuracoes", mybf)
+			save_bf_data("/etc/scpd/bf_data.csv")
 		}
 		mybf.BFIP = get_tun_ip()
 		scp_update_network()
