@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,6 +19,9 @@ import (
 )
 
 const scp_nonexist = "NONEXIST"
+const scp_config = "CONFIG"
+const scp_biofabrica = "BIOFABRICA"
+const scp_par_loadbfdata = "LOADBFDATA"
 
 type Biofabrica_data struct {
 	BFId         string
@@ -75,6 +79,30 @@ func get_tun_ip() string {
 
 	}
 	return tun_ip
+}
+
+func scp_sendmsg_master(cmd string) string {
+
+	ipc, err := net.Dial("unix", "/tmp/scp_master.sock")
+	if err != nil {
+		checkErr(err)
+		return scp_err
+	}
+	defer ipc.Close()
+
+	_, err = ipc.Write([]byte(cmd))
+	if err != nil {
+		checkErr(err)
+		return scp_err
+	}
+
+	buf := make([]byte, max_buf)
+	n, errf := ipc.Read(buf)
+	if errf != nil {
+		checkErr(err)
+	}
+	//fmt.Printf("recebido: %s\n", buf[:n])
+	return string(buf[:n])
 }
 
 func load_bf_data(filename string) int {
@@ -209,16 +237,22 @@ func main() {
 	// 	mybf.BFId = "BFIP-" + get_tun_ip()
 	// 	fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao", mybf)
 	// }
+	myID := ""
 	for {
 		n_bf := load_bf_data("/etc/scpd/bf_data.csv")
 		if n_bf < 1 {
 			mybf.BFId = get_uuid()
+			myID = mybf.BFId
 			fmt.Println("ERROR SCP AGENT: Arquivo contendo dados da Biofabrica nao encontrado. Usando config padrao e criando arquivo", mybf)
 			save_bf_data("/etc/scpd/bf_data.csv")
-		} else if strings.Contains(mybf.BFId, "BFIP") {
+		} else if strings.Contains(mybf.BFId, "BFIP") && len(myID) == 0 {
 			mybf.BFId = get_uuid()
+			myID = mybf.BFId
 			fmt.Println("ERROR SCP AGENT: Nome da Biofabrica obsoleto. Criando ID aleatorio e regravando configuracoes", mybf)
-			save_bf_data("/etc/scpd/bf_data.csv")
+			// save_bf_data("/etc/scpd/bf_data.csv")
+			save_bf_data("/etc/scpd/bf_data_new.csv")
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_loadbfdata + "/END"
+			scp_sendmsg_master(cmd)
 		}
 		mybf.BFIP = get_tun_ip()
 		scp_update_network()
