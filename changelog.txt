@@ -39,3 +39,6 @@ Histórico de Versões (recentes)
             Front..: Implementação botão de restaurar cultivo
             Orch...: Timeout voltou a ser 2000ms. Instabilidade de alguns equipamentos deve ter sido em função da redução que houve para 1500
             Agent..: BFID passa a ser automático e randômico. Cria e chama Master para atualização.
+
+1.2.27  -   Master.: Corrige processo de atualização do software.
+20231009             Caso não haja UndoStatus, atribui bio_ready.

@@ -1941,7 +1941,11 @@ func scp_setup_devices(mustall bool) {
 						} else {
 							bio[ind].Status = bio[ind].LastStatus
 							if bio[ind].Status == bio_pause {
-								bio[ind].LastStatus = bio[ind].UndoStatus
+								if len(bio[ind].UndoStatus) > 0 {
+									bio[ind].LastStatus = bio[ind].UndoStatus
+								} else {
+									bio[ind].LastStatus = bio_ready
+								}
 							}
 						}
 					}
@@ -2015,8 +2019,10 @@ func scp_setup_devices(mustall bool) {
 							ibc[ind].Status = bio_empty
 						} else {
 							ibc[ind].Status = ibc[ind].LastStatus
-							if ibc[ind].Status == bio_pause {
+							if len(ibc[ind].UndoStatus) > 0 {
 								ibc[ind].LastStatus = ibc[ind].UndoStatus
+							} else {
+								ibc[ind].LastStatus = bio_ready
 							}
 						}
 					}
@@ -8371,7 +8377,7 @@ func system_upgrade() {
 	biofabrica.Critical = scp_sysstop
 	save_all_data(data_filename)
 	time.Sleep(5 * time.Second)
-	cmdpath, _ := filepath.Abs(execpath + "upgrade.sh")
+	cmdpath, _ := filepath.Abs(execpath + "upgrade.sh &")
 	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
 	cmd := exec.Command(cmdpath)
 	cmd.Dir = execpath
