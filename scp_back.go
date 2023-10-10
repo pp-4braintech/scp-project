@@ -45,6 +45,7 @@ const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
+const scp_par_techmode = "TECHMODE"
 const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
@@ -914,6 +915,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		saveconfig := r.FormValue("SaveConfig")
 		restart := r.FormValue("Restart")
 		testm := r.FormValue("TestMode")
+		techm := r.FormValue("TechMode")
 		reconfigdev := r.FormValue("ReconfigDev")
 		resetdata := r.FormValue("ResetData")
 		stopall := r.FormValue("StopAll")
@@ -1069,6 +1071,13 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 
 		if testm != "" {
 			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_testmode + "/" + testm + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			// os.Stdout.Write(jsonStr)
+			w.Write([]byte(jsonStr))
+		}
+
+		if techm != "" {
+			cmd := scp_config + "/" + scp_biofabrica + "/" + scp_par_techmode + "/" + techm + "/END"
 			jsonStr := []byte(scp_sendmsg_master(cmd))
 			// os.Stdout.Write(jsonStr)
 			w.Write([]byte(jsonStr))

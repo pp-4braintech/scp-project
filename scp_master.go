@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.27" // 2023-10-09
+	scp_version = "1.2.28" // 2023-10-10
 
 	scp_on  = 1
 	scp_off = 0
@@ -117,6 +117,7 @@ const scp_par_calibrate = "CALIBRATE"
 const scp_par_save = "SAVE"
 const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
+const scp_par_techmode = "TECHMODE"
 const scp_par_getconfig = "GETCONFIG"
 const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
@@ -540,7 +541,7 @@ var upgrademutex sync.Mutex
 
 var withdrawrunning = false
 
-var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.15", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
+var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.27", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var bio = []Bioreact{
 	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 1000, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{2, 5}, [2]int{25, 17}, [2]int{48, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", ""},
@@ -7438,6 +7439,7 @@ func scp_process_conn(conn net.Conn) {
 					schedule = []Scheditem{}
 					waitlist_del_message("I")
 					waitlist_del_message("B")
+					set_allvalvs_status()
 
 				case scp_par_upgrade:
 					fmt.Println("DEBUG CONFIG: Upgrade em andamento")
@@ -7464,6 +7466,23 @@ func scp_process_conn(conn net.Conn) {
 					} else {
 						fmt.Println("ERROR CONFIG: BIOFABRICA TESTMODE - Numero de parametros invalido", params)
 					}
+
+				case scp_par_techmode:
+					if len(params) > 4 {
+						flag_str := params[3]
+						fmt.Println("DEBUG CONFIG: Mudando TECHMODE para", flag_str)
+						flag, err := strconv.ParseBool(flag_str)
+						if err != nil {
+							checkErr(err)
+							conn.Write([]byte(scp_err))
+						} else {
+							biofabrica.TechMode = flag
+							conn.Write([]byte(scp_ack))
+						}
+					} else {
+						fmt.Println("ERROR CONFIG: BIOFABRICA TECHMODE - Numero de parametros invalido", params)
+					}
+
 				}
 
 			} else {
@@ -8503,7 +8522,7 @@ func main() {
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
 
-	biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
+	// biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 	biofabrica.Version = scp_version
 	biofabrica.LastVersion = scp_null
 	biofabrica.Useflowin = true

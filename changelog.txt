@@ -44,3 +44,9 @@ Histórico de Versões (recentes)
 20231009             Caso não haja UndoStatus, atribui bio_ready.
                      Testa se Volume>0 para restaurar cultivo.
             Front..: Corrige atualização do cadastro da Biofábrica. Corrige verificação da versão para Upgrade.
+
+1.2.28  -   Master.: Redefinir tarefas passa a sincronizar status de todas as válvulas.
+20231009             Permite remotamente mudar o techmode.
+            Back...: Implementa endpoint para mudança do techmode
+            Front..: Opção de redefinir dados (bio e ibc) só está habilitada no Portal das Biofábricas.
+                     Cria botão que permite ativar/desativar techmode
