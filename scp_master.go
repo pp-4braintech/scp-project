@@ -173,7 +173,7 @@ const scp_ipc_name = "/tmp/scp_master.sock"
 
 const scp_refreshwait = 50
 const scp_refresstatus = 15
-const scp_refresscreens = 10 // em segundos
+const scp_refresscreens = 10 // em segundossss
 const scp_refreshsleep = 100 // em ms
 const scp_refreshsync = 5    // em segundos
 const scp_timeout_ms = 2500
