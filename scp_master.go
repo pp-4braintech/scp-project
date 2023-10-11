@@ -5060,7 +5060,7 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
-		fmt.Println("ERROR SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, bio[ind].Temperature, float32(worktemp-bio_deltatemp))
+		fmt.Println("DEBUG SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, bio[ind].Temperature, float32(worktemp-bio_deltatemp))
 		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp-bio_deltatemp) {
 			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
 			bio[ind].Temprunning = true
