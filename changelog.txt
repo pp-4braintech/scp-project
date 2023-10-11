@@ -50,3 +50,4 @@ Histórico de Versões (recentes)
             Back...: Implementa endpoint para mudança do techmode
             Front..: Opção de redefinir dados (bio e ibc) só está habilitada no Portal das Biofábricas.
                      Cria botão que permite ativar/desativar techmode
+                     Passa a mostrar volume de entrada também (fluxometro de entrada)
