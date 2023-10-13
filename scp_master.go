@@ -3588,7 +3588,7 @@ func test_file(filename string) bool {
 		}
 		return false
 	}
-	fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
+	// fmt.Println("DEBUG: Arquivo encontrado", mf.Name())
 	return true
 }
 
