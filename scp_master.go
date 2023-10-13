@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.28" // 2023-10-10
+	scp_version = "1.2.29" // 2023-10-13
 
 	scp_on  = 1
 	scp_off = 0
@@ -1368,62 +1368,192 @@ func save_bf_data(filename string) int {
 	return n
 }
 
+func save_one_data(filename string, datastr []byte) bool {
+	var err error
+	if test_file(filename) {
+		finfo, _ := os.Stat(filename)
+		if finfo.Size() > 0 {
+			if test_file(filename + ".bak") {
+				err = os.Remove(filename + ".bak")
+				checkErr(err)
+			}
+			err = os.Rename(filename, filename+".bak")
+			checkErr(err)
+		} else {
+			fmt.Println("ERROR SAVE ON DATA: Arquivo original IGNORADO, tamanho ZERO", filename)
+		}
+	}
+	err = os.WriteFile(filename, []byte(datastr), 0644)
+	if err != nil {
+		checkErr(err)
+		return false
+	}
+	return true
+}
+
 func save_all_data(filename string) int {
-	buf1, _ := json.Marshal(bio)
-	err1 := os.WriteFile(localconfig_path+filename+"_bio.json", []byte(buf1), 0644)
-	checkErr(err1)
-	buf2, _ := json.Marshal(ibc)
-	err2 := os.WriteFile(localconfig_path+filename+"_ibc.json", []byte(buf2), 0644)
-	checkErr(err2)
-	buf3, _ := json.Marshal(totem)
-	err3 := os.WriteFile(localconfig_path+filename+"_totem.json", []byte(buf3), 0644)
-	checkErr(err3)
-	buf4, _ := json.Marshal(biofabrica)
-	err4 := os.WriteFile(localconfig_path+filename+"_biofabrica.json", []byte(buf4), 0644)
-	checkErr(err4)
-	buf5, _ := json.Marshal(schedule)
-	err5 := os.WriteFile(localconfig_path+filename+"_schedule.json", []byte(buf5), 0644)
-	checkErr(err5)
+	var buf []byte
+
+	ok := true
+	buf, _ = json.Marshal(bio)
+	if !save_one_data(localconfig_path+filename+"_bio.json", buf) {
+		ok = false
+	}
+
+	buf, _ = json.Marshal(ibc)
+	if !save_one_data(localconfig_path+filename+"_ibc.json", buf) {
+		ok = false
+	}
+
+	buf, _ = json.Marshal(totem)
+	if !save_one_data(localconfig_path+filename+"_totem.json", buf) {
+		ok = false
+	}
+
+	buf, _ = json.Marshal(biofabrica)
+	if !save_one_data(localconfig_path+filename+"_biofabrica.json", buf) {
+		ok = false
+	}
+
+	buf, _ = json.Marshal(schedule)
+	if !save_one_data(localconfig_path+filename+"_schedule.json", buf) {
+		ok = false
+	}
+
 	save_bf_data(localconfig_path + "bf_data.csv")
+
+	if !ok {
+		board_add_message("EATENÇÃO: Falha ao gravar arquivos de segurança. Favor contactar SAC", "FAILSAVEALL")
+	} else {
+		board_del_message("FAILSAVEALL")
+	}
 
 	return 0
 }
 
 func load_all_data(filename string) int {
-	dat1, err1 := os.ReadFile(localconfig_path + filename + "_bio.json")
-	checkErr(err1)
-	if err1 == nil {
-		json.Unmarshal([]byte(dat1), &bio)
-		fmt.Println("-- bio data = ", bio)
+	var dat []byte
+	var err error
+
+	ok := true
+	usebak := false
+	if test_file(localconfig_path + filename + "_bio.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_bio.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_bio.json.bak")
+		usebak = true
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &bio)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de Biorreatores.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata de Biorreatores. Dados corrompidos.")
+			ok = false
+		}
+		// fmt.Println("-- bio data = ", bio)
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de Biorreatores! Usando valores dummy.")
+		checkErr(err)
+		ok = false
 	}
 
-	dat2, err2 := os.ReadFile(localconfig_path + filename + "_ibc.json")
-	checkErr(err2)
-	if err2 == nil {
-		json.Unmarshal([]byte(dat2), &ibc)
-		fmt.Println("-- ibc data = ", ibc)
+	if test_file(localconfig_path + filename + "_ibc.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_ibc.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_ibc.json.bak")
+		usebak = true
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &ibc)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de IBCs.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata de IBCs. Dados corrompidos.")
+			ok = false
+		}
+		// fmt.Println("-- ibc data = ", ibc)
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de IBCs! Usando valores dummy.")
+		checkErr(err)
+		ok = false
 	}
 
-	dat3, err3 := os.ReadFile(localconfig_path + filename + "_totem.json")
-	checkErr(err3)
-	if err3 == nil {
-		json.Unmarshal([]byte(dat3), &totem)
-		fmt.Println("-- totem data = ", totem)
+	if test_file(localconfig_path + filename + "_totem.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_totem.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_totem.json.bak")
+		usebak = true
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &totem)
+		// fmt.Println("-- totem data = ", totem)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de Totems.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata de Totems. Dados corrompidos.")
+			ok = false
+		}
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de Totems! Usando valores dummy.")
+		checkErr(err)
+		ok = false
 	}
 
-	dat4, err4 := os.ReadFile(localconfig_path + filename + "_biofabrica.json")
-	checkErr(err4)
-	if err4 == nil {
-		json.Unmarshal([]byte(dat4), &biofabrica)
-		fmt.Println("-- biofabrica data = ", biofabrica)
+	if test_file(localconfig_path + filename + "_biofabrica.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_biofabrica.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_biofabrica.json.bak")
+		usebak = true
 	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &biofabrica)
+		// fmt.Println("-- biofabrica data = ", biofabrica)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata da Biofabrica.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata da Biofabrica. Dados corrompidos.")
+			ok = false
+		}
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata da Biofabrica! Usando valores dummy.")
+		checkErr(err)
+		ok = false
+	}
+
 	set_allvalvs_status()
 
-	dat5, err5 := os.ReadFile(localconfig_path + filename + "_schedule.json")
-	checkErr(err5)
-	if err5 == nil {
-		json.Unmarshal([]byte(dat5), &schedule)
-		fmt.Println("-- schedule data = ", schedule)
+	if test_file(localconfig_path + filename + "_schedule.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_schedule.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_schedule.json.bak")
+		usebak = true
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &schedule)
+		// fmt.Println("-- schedule data = ", schedule)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de Schedule.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata de Schedule. Dados corrompidos.")
+			ok = false
+		}
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de Schedule! Usando VAZIO.")
+		checkErr(err)
+		ok = false
+	}
+
+	if !ok {
+		board_add_message("EATENÇÃO: Falha ao ler arquivos de recuperação. Favor contactar SAC", "FAILLOADALL")
+	} else {
+		board_del_message("FAILLOADALL")
+	}
+
+	if usebak {
+		board_add_message("AATENÇÃO: Arquivos de recuperação não encontrados. Utilizando cópias de segurança. Favor contactar SAC", "BAKLOADALL")
+	} else {
+		board_del_message("BACKLOADALL")
 	}
 
 	return 0
@@ -8521,6 +8651,12 @@ func main() {
 
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
+	if biofabrica.Critical == scp_ready {
+		fmt.Println("ERROR MAIN: Arquivo de recuperacao estava com status READY. Biofabrica nao teve shutddown correto.")
+		board_add_message("EATENÇÃO: Biofábrica não teve Desligamento correto. Possível falha de energia e nobreak. Favor contactar SAC", "ERRSHUTDOWN")
+	} else {
+		board_del_message("ERRSHUTDOWN")
+	}
 
 	// biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
 	biofabrica.Version = scp_version

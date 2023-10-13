@@ -51,3 +51,6 @@ Histórico de Versões (recentes)
             Front..: Opção de redefinir dados (bio e ibc) só está habilitada no Portal das Biofábricas.
                      Cria botão que permite ativar/desativar techmode
                      Passa a mostrar volume de entrada também (fluxometro de entrada)
+
+1.2.29  -   Master.: Cria backups de todos os dumpdata e na hora do load tenta original e backup
+20231013             
