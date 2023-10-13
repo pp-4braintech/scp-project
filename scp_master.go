@@ -517,6 +517,8 @@ var mainrouter string
 var finishedsetup = false
 var schedrunning = false
 var devsrunning = false
+var runningsync = false
+var runninggetall = false
 
 var ibc_cfg map[string]IBC_cfg
 var bio_cfg map[string]Bioreact_cfg
@@ -1603,6 +1605,12 @@ func scp_run_recovery() {
 			board_add_message("AFavor checar IBC "+ibc[ind].IBCID, "")
 		}
 	}
+	if !runningsync {
+		go scp_sync_functions()
+	}
+	if !runninggetall {
+		go scp_get_alldata()
+	}
 	// if !schedrunning {
 	// 	time.Sleep(60 * time.Second)
 	// 	go scp_scheduler()
@@ -1675,6 +1683,7 @@ func scp_check_network() {
 				biofabrica.Critical = scp_stopall
 				save_all_data(data_filename)
 				scp_emergency_pause()
+				time.Sleep(30 * time.Second)
 				biofabrica.Critical = scp_netfail
 				save_all_data(data_filename)
 			}
@@ -2835,6 +2844,7 @@ func scp_refresh_status() {
 }
 
 func scp_sync_functions() {
+	runningsync = true
 	t_start_save := time.Now()
 	t_start_status := time.Now()
 	t_start_screens := time.Now()
@@ -2846,6 +2856,7 @@ func scp_sync_functions() {
 		if finishedsetup {
 
 			if biofabrica.Critical == scp_stopall {
+				runningsync = false
 				return
 			}
 
@@ -2934,6 +2945,7 @@ func scp_get_alldata() {
 	if demo {
 		return
 	}
+	runninggetall = true
 	t_start_bio := time.Now()
 	t_start_ibc := time.Now()
 	t_start_test_pipd := time.Now()
@@ -2948,6 +2960,7 @@ func scp_get_alldata() {
 	ibc_seq := 0
 	for {
 		if biofabrica.Critical == scp_stopall {
+			runninggetall = false
 			return
 		}
 		if finishedsetup {
@@ -7097,7 +7110,7 @@ func scp_restart_services() {
 	// 	return
 	// }
 	// board_add_message("EOrquestrador reiniciado", "")
-	// time.Sleep(20 * time.Second)
+	time.Sleep(30 * time.Second)
 	fmt.Println("Reestartando Servico BACKEND")
 	cmd := exec.Command(cmdpath, "restart", "scp_back")
 	cmd.Dir = "/usr/bin"
@@ -8654,11 +8667,16 @@ func main() {
 
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
+
 	if biofabrica.Critical == scp_ready {
 		fmt.Println("ERROR MAIN: Arquivo de recuperacao estava com status READY. Biofabrica nao teve shutddown correto.")
 		board_add_message("EATENÇÃO: Biofábrica não teve Desligamento correto. Possível falha de energia e nobreak. Favor contactar SAC", "ERRSHUTDOWN")
 	} else {
 		board_del_message("ERRSHUTDOWN")
+		if biofabrica.Critical == scp_stopall {
+			fmt.Println("ERROR MAIN: Biofabrica retornando com Critical=scp_stopall")
+			biofabrica.Critical = scp_sysstop
+		}
 	}
 
 	// biofabrica.TechMode = test_file("/etc/scpd/scp_techmode.flag")
