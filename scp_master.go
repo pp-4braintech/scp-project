@@ -8576,6 +8576,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	go scp_check_network()
 
+	fmt.Println("DEBUG MAIN: MASTER-START iniciado")
+
 	localconfig_path = "/etc/scpd/"
 	addrs_type = make(map[string]DevAddrData, 0)
 	net192 = test_file("/etc/scpd/scp_net192.flag")
