@@ -2482,30 +2482,31 @@ func scp_update_screen_times(bioid string) {
 }
 
 func scp_update_screen(bioid string) {
-	ind := get_bio_index(bioid)
-	if ind < 0 {
-		return
-	}
-	bioscr := bio_cfg[bioid].Screenaddr
+	return
+	// ind := get_bio_index(bioid)
+	// if ind < 0 {
+	// 	return
+	// }
+	// bioscr := bio_cfg[bioid].Screenaddr
 
-	var cmd, ret string
+	// var cmd, ret string
 
-	status_code, ok := status_codes[bio[ind].Status]
-	if ok {
-		cmd = fmt.Sprintf("CMD/%s/PUT/S247,%d/END", bioscr, status_code)
-		ret = scp_sendmsg_orch(cmd)
-		if !strings.Contains(ret, "ACK") {
-			return
-		}
-	}
-	org_index := "0"
-	if bio[ind].Status != bio_cip && bio[ind].Status != bio_error && bio[ind].Status != bio_water && bio[ind].Status != bio_empty {
-		org_index = organs[bio[ind].OrgCode].Index
-	}
-	if len(org_index) > 0 {
-		cmd = "CMD/" + bioscr + "/PUT/S245," + org_index + "/END"
-		ret = scp_sendmsg_orch(cmd)
-	}
+	// status_code, ok := status_codes[bio[ind].Status]
+	// if ok {
+	// 	cmd = fmt.Sprintf("CMD/%s/PUT/S247,%d/END", bioscr, status_code)
+	// 	ret = scp_sendmsg_orch(cmd)
+	// 	if !strings.Contains(ret, "ACK") {
+	// 		return
+	// 	}
+	// }
+	// org_index := "0"
+	// if bio[ind].Status != bio_cip && bio[ind].Status != bio_error && bio[ind].Status != bio_water && bio[ind].Status != bio_empty {
+	// 	org_index = organs[bio[ind].OrgCode].Index
+	// }
+	// if len(org_index) > 0 {
+	// 	cmd = "CMD/" + bioscr + "/PUT/S245," + org_index + "/END"
+	// 	ret = scp_sendmsg_orch(cmd)
+	// }
 }
 
 func scp_get_temperature(bioid string) float64 {
@@ -3581,7 +3582,7 @@ func scp_get_alldata() {
 }
 
 func test_file(filename string) bool {
-	mf, err := os.Stat(filename)
+	_, err := os.Stat(filename)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			checkErr(err)
