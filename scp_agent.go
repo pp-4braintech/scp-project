@@ -213,11 +213,11 @@ func scp_update_network() {
 	net_url := "http://network.hubioagro.com.br/bf_update"
 	ret, err := http.Post(net_url, "application/json", payload)
 	// fmt.Println("RES=", res)
-	defer ret.Body.Close()
 	if err != nil {
 		checkErr(err)
 		return
 	}
+	defer ret.Body.Close()
 	fmt.Println("DEBUG SCP UPDATE NETWORK: Retorno da net=", ret)
 	ret_str, _ := ioutil.ReadAll(ret.Body)
 	fmt.Println(string(ret_str))
