@@ -8676,6 +8676,8 @@ func main() {
 		if biofabrica.Critical == scp_stopall {
 			fmt.Println("ERROR MAIN: Biofabrica retornando com Critical=scp_stopall")
 			biofabrica.Critical = scp_sysstop
+		} else {
+			fmt.Println("DEBUG MAIN: Biofabrica retornando OK com Critical =", biofabrica.Critical)
 		}
 	}
 
