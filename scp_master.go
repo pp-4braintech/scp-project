@@ -4998,12 +4998,13 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	if bio[ind].MustPause || bio[ind].MustStop {
 		return
 	}
-
+	phstr := ""
 	if bio[ind].PH > ph {
 		if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
 		} else {
 			time.Sleep(scp_timephwait * time.Millisecond)
+			phstr = "PH-"
 			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 0) {
 				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P1", bioid)
 			}
@@ -5013,12 +5014,16 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P2", bioid)
 		} else {
 			time.Sleep(scp_timephwait * time.Millisecond)
+			phstr = "PH+"
 			if !scp_turn_peris(scp_bioreactor, bioid, "P2", 0) {
 				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P2", bioid)
 			}
 		}
 	}
 
+	if len(phstr) > 0 {
+		bio_add_message(bioid, "IAplicando "+phstr+" para corrigir PH", "")
+	}
 	for n := 0; n < 20; n++ {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			break
@@ -5148,6 +5153,8 @@ func scp_grow_bio(bioid string) bool {
 	// 	scp_adjust_foam(bioid)
 	// }
 
+	lastph := float32(0)
+	ntries_ph := 0
 	ncontrol_foam := 0
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
@@ -5209,6 +5216,16 @@ func scp_grow_bio(bioid string) bool {
 				} else if bio[ind].PH > float32(maxph+bio_deltaph) {
 					scp_adjust_ph(bioid, float32(maxph))
 				}
+				if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
+					ntries_ph++
+					if ntries_ph > 5 {
+						bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "")
+						ntries_ph = 0
+					}
+				} else {
+					ntries_ph = 0
+				}
+				lastph = bio[ind].PH
 			}
 			t_start_ph = time.Now()
 		}
@@ -7733,6 +7750,7 @@ func scp_process_conn(conn net.Conn) {
 					}
 					// bio[ind].Status = bio_starting
 				}
+				bio_add_message(bioid, "ALembre-se de checar o nível dos produtos necessários ao Cultivo (PH+ , PH- e Antiespumante). Cheque também as mangueiras", "")
 				biotask := []string{bioid + ",0," + orgcode + "," + volume}
 				fmt.Println("DEBUG PROCESS CONN: START criando task:", biotask)
 				n := create_sched(biotask)
@@ -8169,24 +8187,24 @@ func scp_process_conn(conn net.Conn) {
 					}
 
 				case scp_dev_pump:
-					var cmd2, cmd3 string
+					var cmd2 string
 					value, err := strconv.ParseBool(subparams[1])
 					checkErr(err)
 					biodev := bio_cfg[bioid].Deviceaddr
-					bioscr := bio_cfg[bioid].Screenaddr
+					// bioscr := bio_cfg[bioid].Screenaddr
 					pumpdev := bio_cfg[bioid].Pump_dev
 					bio[ind].Pumpstatus = value
 					if value {
 						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",1/END"
-						cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
+						// cmd3 = "CMD/" + bioscr + "/PUT/S270,1/END"
 					} else {
 						cmd2 = "CMD/" + biodev + "/PUT/" + pumpdev + ",0/END"
-						cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
+						// cmd3 = "CMD/" + bioscr + "/PUT/S270,0/END"
 					}
 					ret2 := scp_sendmsg_orch(cmd2)
 					fmt.Println("RET CMD2 =", ret2)
-					ret3 := scp_sendmsg_orch(cmd3)
-					fmt.Println("RET CMD3 =", ret3)
+					// ret3 := scp_sendmsg_orch(cmd3)
+					// fmt.Println("RET CMD3 =", ret3)
 					if !value && bio[ind].Heater {
 						bio_add_message(bioid, "AATENÇÃO: Bomba foi DESLIGADA com resistência LIGADA! Efetuando desligamento automático", "")
 						scp_turn_heater(bioid, 0, false)

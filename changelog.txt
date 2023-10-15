@@ -56,5 +56,7 @@ Histórico de Versões (recentes)
 20231013             Função recovery, se necessário, reinicia threads de get_all e sync 
             Agent..: Corrige bug do defer para o caso de não estabelecer a conexão com o network
 
-1.2.30  -   Master.: Faz testes de consistência e exibe eventuais mensagens de erro durante calibração de PH
-20231015             Função recovery, se necessário, reinicia threads de get_all e sync 
+1.2.30  -   Master.: Faz testes de consistência e exibe eventuais mensagens de erro durante calibração de PH.
+20231015             Avisa pra checar nível dos produtos no cultivo. 
+                     Informa que aplicou PH+ ou PH- para corrigir PH.
+                     Alerta se não houve variação do PH depois de 5 tentativas seguidas de correção.
