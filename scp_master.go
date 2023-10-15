@@ -4355,7 +4355,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if vol_now == 0 {
 					break
 				}
-			} else if vol_now == 0 || (vol_now < vol_ini && vol_out >= int64(ibc[ind].Withdraw)) {
+			} else if vol_now == 0 || (vol_now < vol_ini && vol_out >= float64(ibc[ind].Withdraw)) {
 				if vol_now == 0 || vol_bio_out_start < 0 || vol_bio_out_now >= float64(ibc[ind].Withdraw) {
 					fmt.Println("DEBUG RUN WITHDRAW 11: STOP Volume de desenvase atingido", vol_ini, vol_now, ibc[ind].Withdraw)
 					break
