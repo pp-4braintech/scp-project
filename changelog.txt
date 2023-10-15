@@ -53,5 +53,8 @@ Histórico de Versões (recentes)
                      Passa a mostrar volume de entrada também (fluxometro de entrada)
 
 1.2.29  -   Master.: Cria backups de todos os dumpdata e na hora do load tenta original e backup
-20231013             Função recovery reinicia threads de get_all e sync 
+20231013             Função recovery, se necessário, reinicia threads de get_all e sync 
             Agent..: Corrige bug do defer para o caso de não estabelecer a conexão com o network
+
+1.2.30  -   Master.: Faz testes de consistência e exibe eventuais mensagens de erro durante calibração de PH
+20231015             Função recovery, se necessário, reinicia threads de get_all e sync 

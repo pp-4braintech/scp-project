@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.29" // 2023-10-13
+	scp_version = "1.2.30" // 2023-10-15
 
 	scp_on  = 1
 	scp_off = 0
@@ -3346,7 +3346,11 @@ func scp_get_alldata() {
 									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolout && lastvolout > 0 {
 										ibcvolout := vol_tmp - lastvolout
-										ibc[ind].VolInOut -= ibcvolout
+										if ibc[ind].VolInOut > ibcvolout {
+											ibc[ind].VolInOut -= ibcvolout
+										} else {
+											ibc[ind].VolInOut = 0
+										}
 										if ibc[ind].VolInOut < 0 {
 											ibc[ind].VolInOut = 0
 										}
@@ -4078,8 +4082,8 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				if vol_tmp < 0 {
 					vol_tmp = 0
 				}
-				bio[ind].Volume = uint32(vol_tmp)
 				bio[ind].VolInOut = vol_tmp
+				bio[ind].Volume = uint32(vol_tmp)
 			}
 		}
 		if bio[ind].Volume == 0 {
@@ -4278,7 +4282,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			ibc[ind].Status = prev_status
 			return -1
 		}
-		var vol_out int64
+		var vol_out float64
 		var vol_bio_out_start float64
 		use_volfluxo := true
 		// if ibc[ind].OutID == scp_out || ibc[ind].OutID == scp_drop {
@@ -4308,7 +4312,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
-			vol_out = int64(vol_ini - vol_now)
+			vol_out = float64(vol_ini) - float64(vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
 			var vout float64
 			if use_volfluxo && vol_bio_out_start >= 0 {
@@ -4324,6 +4328,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if ibc[ind].OutID == last_ibc {
 				if ibc7_ind >= 0 {
 					ibc[ibc7_ind].VolInOut = ibc7_vol_ini + vol_bio_out_now
+					if ibc[ibc7_ind].VolInOut < 0 {
+						ibc[ibc7_ind].VolInOut = 0
+					}
 					ibc[ibc7_ind].Volume = uint32(ibc[ibc7_ind].VolInOut)
 					scp_update_ibclevel(ibc[ibc7_ind].IBCID)
 				} else {
@@ -4490,6 +4497,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				set_valvs_value(vpath, 0, false)
 				// board_add_message("IEnxague concluído", "")
 			}
+		}
+		if ibc[ind].VolInOut < 0 {
+			ibc[ind].VolInOut = 0
+			ibc[ind].Volume = 0
 		}
 		if !ibc[ind].MustPause && !ibc[ind].MustStop {
 			if ibc[ind].MainStatus != mainstatus_cip && ibc[ind].Volume == 0 {
@@ -7334,60 +7345,88 @@ func scp_process_conn(conn net.Conn) {
 						}
 
 					case scp_par_ph4:
-						fmt.Println("DEBUG CONFIG: Ajustando PH 4")
-						n := 0
-						var data []float64
-						for i := 0; i <= 7; i++ {
-							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 2 && tmp <= 5 {
-								data = append(data, tmp)
-								n++
+						if !bio[ind].Aerator {
+							fmt.Println("DEBUG CONFIG: Ajustando PH 4")
+							n := 0
+							var data []float64
+							for i := 0; i <= 7; i++ {
+								tmp := scp_get_ph_voltage(bioid)
+								if tmp >= 2 && tmp <= 5 {
+									data = append(data, tmp)
+									n++
+								}
 							}
-						}
-						mediana := calc_mediana(data)
-						if mediana > 0 {
-							bio[ind].PHref[0] = mediana
-							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
+							mediana := calc_mediana(data)
+							if mediana > 0 {
+								bio[ind].PHref[0] = mediana
+								fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
+							} else {
+								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
+								board_add_message("EERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH", "")
+							}
 						} else {
-							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
+							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 4 com aerador ligado")
+							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_ph7:
-						fmt.Println("DEBUG CONFIG: Ajustando PH 7")
-						n := 0
-						var data []float64
-						for i := 0; i <= 7; i++ {
-							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 2 && tmp <= 5 {
-								data = append(data, tmp)
-								n++
+						if !bio[ind].Aerator {
+							fmt.Println("DEBUG CONFIG: Ajustando PH 7")
+							n := 0
+							var data []float64
+							for i := 0; i <= 7; i++ {
+								tmp := scp_get_ph_voltage(bioid)
+								if tmp >= 2 && tmp <= 5 {
+									data = append(data, tmp)
+									n++
+								}
 							}
-						}
-						mediana := calc_mediana(data)
-						if mediana > 0 {
-							bio[ind].PHref[1] = mediana
-							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
+							mediana := calc_mediana(data)
+							if mediana > 0 {
+								if math.Abs(mediana-bio[ind].PHref[0]) >= 0.2 {
+									bio[ind].PHref[1] = mediana
+									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
+								} else {
+									board_add_message("EERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+								}
+							} else {
+								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
+								board_add_message("EERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH", "")
+							}
 						} else {
-							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
+							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 7 com aerador ligado")
+							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_ph10:
-						fmt.Println("DEBUG CONFIG: Ajustando PH 10")
-						n := 0
-						var data []float64
-						for i := 0; i <= 7; i++ {
-							tmp := scp_get_ph_voltage(bioid)
-							if tmp >= 2 && tmp <= 5 {
-								data = append(data, tmp)
-								n++
+						if !bio[ind].Aerator {
+							fmt.Println("DEBUG CONFIG: Ajustando PH 10")
+							n := 0
+							var data []float64
+							for i := 0; i <= 7; i++ {
+								tmp := scp_get_ph_voltage(bioid)
+								if tmp >= 2 && tmp <= 5 {
+									data = append(data, tmp)
+									n++
+								}
 							}
-						}
-						mediana := calc_mediana(data)
-						if mediana > 0 {
-							bio[ind].PHref[2] = mediana
-							fmt.Println("DEBUG CONFIG: Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
+							mediana := calc_mediana(data)
+							if mediana > 0 {
+								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.2 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.4 {
+									bio[ind].PHref[2] = mediana
+									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
+								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
+									board_add_message("EERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+								} else {
+									board_add_message("EERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+								}
+							} else {
+								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
+								board_add_message("EERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH", "")
+							}
 						} else {
-							fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
+							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 10 com aerador ligado")
+							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_calibrate:
