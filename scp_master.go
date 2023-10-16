@@ -7379,11 +7379,11 @@ func scp_process_conn(conn net.Conn) {
 								fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
-								board_add_message("EERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH", "")
+								bio_add_message(bioid, "EERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH", "")
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 4 com aerador ligado")
-							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
+							bio_add_message(bioid, "EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_ph7:
@@ -7404,15 +7404,15 @@ func scp_process_conn(conn net.Conn) {
 									bio[ind].PHref[1] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
 								} else {
-									board_add_message("EERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+									bio_add_message(bioid, "EERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
 								}
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
-								board_add_message("EERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH", "")
+								bio_add_message(bioid, "EERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH", "")
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 7 com aerador ligado")
-							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
+							bio_add_message(bioid, "EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_ph10:
@@ -7433,17 +7433,17 @@ func scp_process_conn(conn net.Conn) {
 									bio[ind].PHref[2] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
 								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
-									board_add_message("EERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+									bio_add_message(bioid, "EERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH", "")
 								} else {
-									board_add_message("EERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH", "")
+									bio_add_message(bioid, "EERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH", "")
 								}
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
-								board_add_message("EERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH", "")
+								bio_add_message(bioid, "EERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH", "")
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 10 com aerador ligado")
-							board_add_message("EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
+							bio_add_message(bioid, "EERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento", "")
 						}
 
 					case scp_par_calibrate:

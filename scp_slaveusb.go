@@ -32,7 +32,7 @@ const scp_ping = "PING"
 var scp_slave_addr string
 var scp_connected = false
 
-var scp_last_IP net.Addr
+var scp_master_IP net.Addr
 
 func checkErr(err error) {
 	if err != nil {
@@ -95,14 +95,15 @@ func mac2scpaddr(mac string) string {
 	return string(scpaddr)
 }
 
-func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte, scp_len int, wait_ack bool) bool {
+func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte, scp_len int, wait_ack bool) (bool, net.Addr) {
 	var buf [2048]byte
+	var server_IP net.Addr
 
 	has_ack := !wait_ack
 	err := con.SetReadDeadline(time.Now().Add(time.Duration(1500) * time.Millisecond))
 	if err != nil {
 		fmt.Println("ERROR SCP SENDUDP: Nao foi possivel definir timeout de conexao UDP")
-		return false
+		return false, nil
 	}
 	// fmt.Println("Enviando pacote", scp_message, " para", scp_dest_addr)
 	for ntries := 0; ntries < scp_retries; ntries++ {
@@ -113,7 +114,7 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 			if err != nil {
 				checkErr(err)
 			} else {
-				scp_last_IP = addr
+				server_IP = addr
 				bufstr := string(buf[:])
 				fmt.Println("DEBUG SCP SENDUDP: Remote addr =", scp_last_IP, " dados =", bufstr, " size =", packetSize)
 				if strings.Contains(bufstr, scp_ack) {
@@ -126,7 +127,7 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 		}
 		time.Sleep(1 * time.Second)
 	}
-	return has_ack
+	return has_ack, server_IP
 }
 
 func scp_join_server() bool {
@@ -143,11 +144,23 @@ func scp_join_server() bool {
 		checkErr(err)
 		return false
 	}
-	// hasjoin := false
-	// ntries := 0
-	join_msg := fmt.Sprintf("%s/%s/%s/%s/%s", scp_join, scp_slave_addr, scp_slave_tcpport, firm_version, scp_end)
-	scp_sendudp(con, broadcast_addr, []byte(join_msg), len(join_msg), true)
-	return true
+	hasjoin := false
+	for ntries := 0; !hasjoin && ntries < scp_retries; ntries++ {
+		join_msg := fmt.Sprintf("%s/%s/%s/%s/%s", scp_join, scp_slave_addr, scp_slave_tcpport, firm_version, scp_end)
+		ok, server_IP := scp_sendudp(con, broadcast_addr, []byte(join_msg), len(join_msg), true)
+		if !ok {
+			fmt.Println("ERROR SCP JOIN SERVER: SCP Master nao respondeu ao JOIN")
+			return false
+		}
+		scp_master_IP = server_IP
+		scp_msg := fmt.Sprintf("%s/%s/%s", scp_ack, scp_slave_addr)
+		ok, _ = scp_sendudp(con, server_IP, []byte(scp_msg), len(scp_msg), true)
+		if ok {
+			hasjoin = true
+			break
+		}
+	}
+	return hasjoin
 }
 
 func scp_setup_slave() {
@@ -162,5 +175,9 @@ func scp_setup_slave() {
 
 func main() {
 	scp_setup_slave()
-	scp_join_server()
+	// for {
+	if !scp_connected {
+		scp_join_server()
+	}
+	// }
 }
