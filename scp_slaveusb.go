@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var scp_slave_addr string
+
 func checkErr(err error) {
 	if err != nil {
 		log.Println("[SCP ERROR]", err)
@@ -63,17 +65,21 @@ func mac2scpaddr(mac string) string {
 	}
 	machash := machex[0] ^ machex[1] ^ machex[2]
 	scpaddr := fmt.Sprintf("%02x:%02x%02x%02x", machash, machex[3], machex[4], machex[5])
-	for _, b := range machex {
-		fmt.Printf("%x ", b)
-	}
-	fmt.Println(scpaddr)
+	// for _, b := range machex {
+	// 	fmt.Printf("%x ", b)
+	// }
+	// fmt.Println(scpaddr)
 	return string(scpaddr)
 }
 
 func scp_setup_slave() {
 	mymac := get_eth_mac()
 	fmt.Println("My mac =", mymac)
-	mac2scpaddr(mymac)
+	tmpaddr := mac2scpaddr(mymac)
+	if len(tmpaddr) > 0 {
+		scp_slave_addr = tmpaddr
+		fmt.Println("DEBUG SCP SETUP SLAVE: Endereco SCP =", scp_slave_addr)
+	}
 }
 
 func main() {
