@@ -177,7 +177,7 @@ func main() {
 	scp_setup_slave()
 	// for {
 	if !scp_connected {
-		scp_join_server()
+		scp_connected = scp_join_server()
 	}
 	// }
 }
