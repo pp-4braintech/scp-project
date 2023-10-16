@@ -99,6 +99,7 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 	var buf [2048]byte
 
 	has_ack := !wait_ack
+	fmt.Println("Enviando pacote", scp_message, " para", scp_dest_addr)
 	for ntries := 0; ntries < scp_retries; ntries++ {
 		_, err := con.WriteTo(scp_message, scp_dest_addr)
 		checkErr(err)
