@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os/exec"
@@ -45,8 +46,31 @@ func get_eth_mac() string {
 	return eth_mac
 }
 
+func mac2scpaddr(mac string) string {
+	macs := scp_splitparam(mac, ":")
+	if len(macs) != 6 {
+		fmt.Println("ERROR MAC2SCPADDR: Endereco mac invalido", mac)
+		return ""
+	}
+	macstr := ""
+	for _, m := range macs {
+		macstr += m
+	}
+	machex, err := hex.DecodeString(macstr)
+	if err != nil {
+		fmt.Println("ERROR MAC2SCPADDR: Nao foi possivel converter mac para hex", mac, macstr)
+		return ""
+	}
+	for _, b := range machex {
+		fmt.Print("b ")
+	}
+	return string(machex)
+}
+
 func scp_setup_slave() {
-	fmt.Println("My mac =", get_eth_mac())
+	mymac := get_eth_mac()
+	fmt.Println("My mac =", mymac)
+	mac2scpaddr(mymac)
 }
 
 func main() {
