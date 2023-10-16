@@ -254,6 +254,11 @@ const line_24 = "2_4"
 
 const TEMPMAX = 120
 
+type MsgReturn struct {
+	Status  string
+	Message string
+}
+
 type Biofabrica_data struct {
 	BFId         string
 	BFName       string
@@ -7377,19 +7382,24 @@ func scp_process_conn(conn net.Conn) {
 							if mediana > 0 {
 								bio[ind].PHref[0] = mediana
 								fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
-								msg := "Leitura do PH 4.0 feita com sucesso"
-								conn.Write([]byte(msg))
+								msg := MsgReturn{scp_ack, "Leitura do PH 4.0 feita com sucesso"}
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
+
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4")
-								msg := "ERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH"
-								bio_add_message(bioid, "E"+msg, "")
-								conn.Write([]byte(msg))
+								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 4 com aerador ligado")
-							msg := "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"
-							bio_add_message(bioid, "E"+msg, "")
-							conn.Write([]byte(msg))
+							msg := MsgReturn{scp_err, "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"}
+							bio_add_message(bioid, "E"+msg.Message, "")
+							msgjson, _ := json.Marshal(msg)
+							conn.Write([]byte(msgjson))
+
 						}
 
 					case scp_par_ph7:

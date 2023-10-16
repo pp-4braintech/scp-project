@@ -130,6 +130,12 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 	return has_ack, server_IP
 }
 
+func scp_tcp_run() {
+	if !scp_tcp_connected {
+
+	}
+}
+
 func scp_join_server() bool {
 	con, err := net.ListenPacket("udp4", ":"+scp_slave_udpport)
 	if err != nil {
@@ -153,7 +159,7 @@ func scp_join_server() bool {
 			return false
 		}
 		scp_master_IP = server_IP
-		scp_msg := fmt.Sprintf("%s/%s/%s", scp_ack, scp_slave_addr)
+		scp_msg := fmt.Sprintf("%s/%s/%s", scp_ack, scp_slave_addr, scp_end)
 		ok, _ = scp_sendudp(con, server_IP, []byte(scp_msg), len(scp_msg), true)
 		if ok {
 			hasjoin = true
