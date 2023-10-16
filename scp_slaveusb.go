@@ -61,10 +61,13 @@ func mac2scpaddr(mac string) string {
 		fmt.Println("ERROR MAC2SCPADDR: Nao foi possivel converter mac para hex", mac, macstr)
 		return ""
 	}
+	machash := machex[0] ^ machex[1] ^ machex[2]
+	scpaddr := fmt.Sprintf("%02x:%02x%02x%02x", machash, machex[3], machex[4], machex[5])
 	for _, b := range machex {
 		fmt.Printf("%x ", b)
 	}
-	return string(machex)
+	fmt.Println(scpaddr)
+	return string(scpaddr)
 }
 
 func scp_setup_slave() {
