@@ -7419,24 +7419,31 @@ func scp_process_conn(conn net.Conn) {
 								if math.Abs(mediana-bio[ind].PHref[0]) >= 0.2 {
 									bio[ind].PHref[1] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
-									msg := "Leitura do PH 7.0 feita com sucesso"
-									conn.Write([]byte(msg))
+									msg := MsgReturn{scp_ack, "Leitura do PH 7.0 feita com sucesso"}
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
 								} else {
-									msg := "ERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"
-									bio_add_message(bioid, "E"+msg, "")
-									conn.Write([]byte(msg))
+									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
+									bio_add_message(bioid, "E"+msg.Message, "")
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
 								}
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7")
-								msg := "ERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH"
-								bio_add_message(bioid, "E"+msg, "")
-								conn.Write([]byte(msg))
+								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 7 com aerador ligado")
-							msg := "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"
-							bio_add_message(bioid, "E"+msg, "")
-							conn.Write([]byte(msg))
+							msg := MsgReturn{scp_err, "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"}
+							bio_add_message(bioid, "E"+msg.Message, "")
+							msgjson, _ := json.Marshal(msg)
+							conn.Write([]byte(msgjson))
+
 						}
 
 					case scp_par_ph10:
@@ -7456,28 +7463,38 @@ func scp_process_conn(conn net.Conn) {
 								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.2 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.4 {
 									bio[ind].PHref[2] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
-									msg := "Leitura do PH 10.0 feita com sucesso"
-									conn.Write([]byte(msg))
+									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
 								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
-									msg := "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"
-									bio_add_message(bioid, "E"+msg, "")
-									conn.Write([]byte(msg))
+									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
+									bio_add_message(bioid, "E"+msg.Message, "")
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
 								} else {
-									msg := "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"
-									bio_add_message(bioid, "E"+msg, "")
-									conn.Write([]byte(msg))
+									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"}
+									bio_add_message(bioid, "E"+msg.Message, "")
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
 								}
 							} else {
 								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10")
-								msg := "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"
-								bio_add_message(bioid, "E"+msg, "")
-								conn.Write([]byte(msg))
+								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
+
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 10 com aerador ligado")
-							msg := "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"
-							bio_add_message(bioid, "E"+msg, "")
-							conn.Write([]byte(msg))
+							msg := MsgReturn{scp_err, "ERRO na calibração: Não é possível fazer a calibração com o Aerador ligado. Deslige-o e repita o procedimento"}
+							bio_add_message(bioid, "E"+msg.Message, "")
+							msgjson, _ := json.Marshal(msg)
+							conn.Write([]byte(msgjson))
+
 						}
 
 					case scp_par_calibrate:
@@ -7491,14 +7508,24 @@ func scp_process_conn(conn net.Conn) {
 							bio[ind].RegresPH[1] = b1
 							if b0 == 0 && b1 == 0 {
 								fmt.Println("ERROR CONFIG: Nao foi possivel efetuar Regressao Linear: b0=", b0, " b1=", b1)
-								bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10", "")
+								msg := MsgReturn{scp_err, "Não foi possível efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
+
 							} else {
 								fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
-								bio_add_message(bioid, "ICalibração do Sensor de PH efetuada", "")
+								msg := MsgReturn{scp_ack, "Calibração do Sensor de PH efetuada"}
+								bio_add_message(bioid, "I"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
 							}
 						} else {
 							fmt.Println("ERROR CONFIG: Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
-							bio_add_message(bioid, "ENao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10", "")
+							msg := MsgReturn{scp_err, "Nao foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
+							bio_add_message(bioid, "E"+msg.Message, "")
+							msgjson, _ := json.Marshal(msg)
+							conn.Write([]byte(msgjson))
 						}
 					}
 				} else {
