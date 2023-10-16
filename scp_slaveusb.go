@@ -109,7 +109,7 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 				checkErr(err)
 			} else {
 				scp_last_IP = addr
-				bufstr := fmt.Sprintf("s", buf)
+				bufstr := string(buf[:])
 				fmt.Println("Remote addr =", scp_last_IP, " dados =", bufstr, " size =", packetSize)
 				if strings.Contains(bufstr, scp_ack) {
 					has_ack = true
