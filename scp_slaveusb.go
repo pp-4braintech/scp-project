@@ -141,7 +141,7 @@ func scp_join_server() bool {
 	// ntries := 0
 	join_msg := fmt.Sprintf("%s/%s/%u/%s/%s", scp_join, scp_slave_addr, scp_slave_tcpport, firm_version, scp_end)
 	scp_sendudp(con, broadcast_addr, []byte(join_msg), len(join_msg), true)
-
+	return true
 }
 
 func scp_setup_slave() {
