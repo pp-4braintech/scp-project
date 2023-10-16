@@ -157,4 +157,5 @@ func scp_setup_slave() {
 
 func main() {
 	scp_setup_slave()
+	scp_join_server()
 }
