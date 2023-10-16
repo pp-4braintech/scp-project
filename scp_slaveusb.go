@@ -62,7 +62,7 @@ func mac2scpaddr(mac string) string {
 		return ""
 	}
 	for _, b := range machex {
-		fmt.Printf("%h ", b)
+		fmt.Printf("%x ", b)
 	}
 	return string(machex)
 }
