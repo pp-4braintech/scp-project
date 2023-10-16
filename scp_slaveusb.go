@@ -105,7 +105,7 @@ func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte,
 		fmt.Println("ERROR SCP SENDUDP: Nao foi possivel definir timeout de conexao UDP")
 		return false, nil
 	}
-	// fmt.Println("Enviando pacote", scp_message, " para", scp_dest_addr)
+	fmt.Println("DEBUG SCP SENDUDP: Enviando pacote", string(scp_message[:]), " para", scp_dest_addr)
 	for ntries := 0; ntries < scp_retries; ntries++ {
 		_, err := con.WriteTo(scp_message, scp_dest_addr)
 		checkErr(err)
