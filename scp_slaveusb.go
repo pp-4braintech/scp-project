@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const firm_version = "SLAVEUSB_V1.0.0";
+const firm_version = "SLAVEUSB_V1.0.0"
 
 const scp_slave_udpport = "9009"
 const scp_slave_tcpport = "9119"
@@ -95,44 +95,44 @@ func mac2scpaddr(mac string) string {
 	return string(scpaddr)
 }
 
-func scp_sendudp(*con net.PacketConn,scp_dest_addr net.Addr, scp_message []byte, scp_len int, wait_ack bool) bool {
+func scp_sendudp(con net.PacketConn, scp_dest_addr net.Addr, scp_message []byte, scp_len int, wait_ack bool) bool {
 	var buf [2048]byte
-	
+
 	has_ack := !wait_ack
-	for ntries:=0; ntries<scp_retries; ntries++ {
-		_,err := con.Writeto(scp_message, scp_dest_addr)
+	for ntries := 0; ntries < scp_retries; ntries++ {
+		_, err := con.WriteTo(scp_message, scp_dest_addr)
 		checkErr(err)
-		for reps:=0; !has_ack && reps<scp_retries; reps++ {
-			packetSize, err := con.Read(buf[0:])
+		for reps := 0; !has_ack && reps < scp_retries; reps++ {
+			packetSize, addr, err := con.ReadFrom(buf[0:])
 			if err != nil {
 				checkErr(err)
 			} else {
-				scp_last_IP = con.RemoteAddr()
-				fmt.Println("Remote addr =",scp_last_ip," dados =",buf)
-				if strings.Contains(string(buf),scp_ack) {
+				scp_last_IP = addr
+				bufstr := fmt.Sprintf("s", buf)
+				fmt.Println("Remote addr =", scp_last_IP, " dados =", bufstr, " size =", packetSize)
+				if strings.Contains(bufstr, scp_ack) {
 					has_ack = true
 				}
 			}
 		}
-		if has_ack{
+		if has_ack {
 			break
 		}
 		time.Sleep(1 * time.Second)
-	} 
+	}
 	return has_ack
-  }
-
+}
 
 func scp_join_server() bool {
 	con, err := net.ListenPacket("udp4", ":"+scp_slave_udpport)
-	if err!= nil {
+	if err != nil {
 		fmt.Println("ERROR SCP JOIN SERVER: Nao foi possivel criar o socket UDP")
 		checkErr(err)
 		return false
 	}
 	defer con.Close()
 	broadcast_addr, err := net.ResolveUDPAddr("udp4", "10.0.0.255:"+scp_master_port)
-	if err!= nil {
+	if err != nil {
 		fmt.Println("ERROR SCP JOIN SERVER: Nao foi possivel determinar endereco do Master")
 		checkErr(err)
 		return false
@@ -140,7 +140,7 @@ func scp_join_server() bool {
 	// hasjoin := false
 	// ntries := 0
 	join_msg := fmt.Sprintf("%s/%s/%u/%s/%s", scp_join, scp_slave_addr, scp_slave_tcpport, firm_version, scp_end)
-	scp_sendudp(&con, broadcast_addr, []byte(join_msg), len(join_msg), true)
+	scp_sendudp(con, broadcast_addr, []byte(join_msg), len(join_msg), true)
 
 }
 
