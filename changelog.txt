@@ -68,3 +68,6 @@ Histórico de Versões (recentes)
                      UndoStatus não pode ser bio_error.
                      Acrescenta dia/mês nas mensagens do board
             Front..: Exibe as mensagens retornadas pelo master durante a calibração de PH.
+
+1.2.32  -   Front..: Corrige bug do front que apresentava problemas em alguns botões (tablet e PC)
+20231017             
