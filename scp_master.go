@@ -1401,6 +1401,8 @@ func save_one_data(filename string, datastr []byte) bool {
 func save_all_data(filename string) int {
 	var buf []byte
 
+	fmt.Println("DEBUG SAVE ALL: Salvando todos os dados")
+
 	ok := true
 	buf, _ = json.Marshal(bio)
 	if !save_one_data(localconfig_path+filename+"_bio.json", buf) {
@@ -1434,6 +1436,8 @@ func save_all_data(filename string) int {
 	} else {
 		board_del_message("FAILSAVEALL")
 	}
+
+	fmt.Println("DEBUG SAVE ALL: Executando SYNC do Sistema Operacional")
 
 	cmdpath, _ := filepath.Abs("/usr/bin/sync")
 	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
