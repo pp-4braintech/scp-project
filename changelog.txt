@@ -66,4 +66,5 @@ Histórico de Versões (recentes)
                      No starup, função check_network passa a ser executada depois das rotinas básicas e aguarda 60 segundos antes de iniciar testes.
                      Biofábrica não inicia enquanto Roteador Principal não existe online.
                      UndoStatus não pode ser bio_error.
+                     Acrescenta dia/mês nas mensagens do board
             Front..: Exibe as mensagens retornadas pelo master durante a calibração de PH.
