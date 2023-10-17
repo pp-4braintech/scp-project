@@ -1881,7 +1881,7 @@ func board_add_message(m string, id string) bool {
 		msg_id = "0"
 	}
 	n := len(biofabrica.Messages)
-	stime := time.Now().Format("15:04")
+	stime := time.Now().Format("15:04 02/01")
 	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
 	m_new2 := strings.Replace(m_new, "DROP", "Descarte", -1)
 	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new2[0], m_new2[1:], stime, msg_id)
