@@ -2095,7 +2095,9 @@ func scp_setup_devices(mustall bool) {
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 1 && !devmode && bio[ind].Status != bio_error {
 						if bio[ind].Status == bio_pause {
-							bio[ind].UndoStatus = bio[ind].LastStatus
+							if bio[ind].LastStatus != bio_error {
+								bio[ind].UndoStatus = bio[ind].LastStatus
+							}
 						}
 						bio[ind].LastStatus = bio[ind].Status
 						bio[ind].Status = bio_error
@@ -2107,7 +2109,9 @@ func scp_setup_devices(mustall bool) {
 							bio[ind].Status = bio[ind].LastStatus
 							if bio[ind].Status == bio_pause {
 								if len(bio[ind].UndoStatus) > 0 {
-									bio[ind].LastStatus = bio[ind].UndoStatus
+									if bio[ind].UndoStatus != bio_error {
+										bio[ind].LastStatus = bio[ind].UndoStatus
+									}
 								} else {
 									bio[ind].LastStatus = bio_ready
 								}
@@ -2174,7 +2178,9 @@ func scp_setup_devices(mustall bool) {
 				if biofabrica.Critical != scp_netfail {
 					if nerr > 1 && !devmode && ibc[ind].Status != bio_error {
 						if ibc[ind].Status == bio_pause {
-							ibc[ind].UndoStatus = ibc[ind].LastStatus
+							if ibc[ind].LastStatus != bio_error {
+								ibc[ind].UndoStatus = ibc[ind].LastStatus
+							}
 						}
 						ibc[ind].LastStatus = ibc[ind].Status
 						ibc[ind].Status = bio_error
@@ -2185,7 +2191,9 @@ func scp_setup_devices(mustall bool) {
 						} else {
 							ibc[ind].Status = ibc[ind].LastStatus
 							if len(ibc[ind].UndoStatus) > 0 {
-								ibc[ind].LastStatus = ibc[ind].UndoStatus
+								if ibc[ind].UndoStatus != bio_error {
+									ibc[ind].LastStatus = ibc[ind].UndoStatus
+								}
 							} else {
 								ibc[ind].LastStatus = bio_ready
 							}
