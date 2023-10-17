@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.30" // 2023-10-15
+	scp_version = "1.2.31" // 2023-10-17
 
 	scp_on  = 1
 	scp_off = 0
@@ -179,7 +179,7 @@ const scp_refreshsync = 5    // em segundos
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
 const scp_clockwait = 60 // em segundos
-const scp_timetosave = 45
+const scp_timetosave = 90
 const scp_checksetup = 60
 const scp_mustupdate_bio = 30
 const scp_mustupdate_ibc = 45
@@ -1435,6 +1435,19 @@ func save_all_data(filename string) int {
 		board_del_message("FAILSAVEALL")
 	}
 
+	cmdpath, _ := filepath.Abs("/usr/bin/sync")
+	// cmd := exec.Command(cmdpath, "restart", "scp_orch")
+	cmd := exec.Command(cmdpath)
+	cmd.Dir = execpath
+	output, err := cmd.CombinedOutput()
+	if len(output) > 0 {
+		fmt.Println("DEBUG SAVE ALL: SYNC OUPUT", string(output))
+	}
+	if err != nil {
+		checkErr(err)
+		fmt.Println("ERROR SAVE ALL: Falha ao Executar SYNC")
+	}
+
 	return 0
 }
 
@@ -1677,6 +1690,9 @@ func scp_check_lastversion() {
 }
 
 func scp_check_network() {
+	fmt.Println("DEBUG SCP CHECK NETWORK: Iniciando CHECK, aguardando 60 segundos")
+	time.Sleep(60 * time.Second)
+
 	for {
 		if biofabrica.Critical == scp_stopall {
 			return
@@ -8706,9 +8722,12 @@ func master_shutdown(sigs chan os.Signal) {
 func main() {
 
 	rand.Seed(time.Now().UnixNano())
-	go scp_check_network()
 
 	fmt.Println("DEBUG MAIN: MASTER-START iniciado")
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go master_shutdown(sigs)
 
 	localconfig_path = "/etc/scpd/"
 	addrs_type = make(map[string]DevAddrData, 0)
@@ -8804,14 +8823,23 @@ func main() {
 	biofabrica.LastVersion = scp_null
 	biofabrica.Useflowin = true
 
+	routerok := tcp_host_isalive(mainrouter, "80", pingmax)
+	for {
+		if !routerok {
+			board_add_message("ERoteador PRINCIPAL OFFLINE. Aguardando para iniciar Biofábrica", "ERRROUTER")
+		} else {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+	board_del_message("ERRROUTER")
+
+	go scp_check_network() // Estava no inicio
+
 	go scp_setup_devices(true)
 	go scp_get_alldata()
 	go scp_sync_functions()
 	go scp_check_lastversion()
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go master_shutdown(sigs)
 
 	scp_master_ipc()
 	time.Sleep(10 * time.Second)

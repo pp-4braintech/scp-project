@@ -60,3 +60,9 @@ Histórico de Versões (recentes)
 20231015             Avisa pra checar nível dos produtos no cultivo. 
                      Informa que aplicou PH+ ou PH- para corrigir PH.
                      Alerta se não houve variação do PH depois de 5 tentativas seguidas de correção.
+
+1.2.31  -   Master.: Função save_all força o "sync" do sistema operacional.
+20231017             Retorna mensagens de ok/erro para o front durante a calibração de PH.
+                     No starup, função check_network passa a ser executada depois das rotinas básicas e aguarda 60 segundos antes de iniciar testes.
+                     Biofábrica não inicia enquanto Roteador Principal não existe online.
+            Front..: Exibe as mensagens retornadas pelo master durante a calibração de PH.
