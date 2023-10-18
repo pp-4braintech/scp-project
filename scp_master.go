@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.32" // 2023-10-17
+	scp_version = "1.2.33" // 2023-10-18
 
 	scp_on  = 1
 	scp_off = 0
@@ -201,6 +201,9 @@ const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
 const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 
 const bio_withdrawstep = 50
+
+const bio_ibctransftol = 50 // Na transferenciapara IBC, este é o volume acima do máximo permitido no IBC
+const bio_deltavolzero = 33 // No withdraw, se nao variar em 25 segundos e for abaixo deste valor, zera o volume
 
 const bio_diametro = 1530  // em mm   era 1430
 const bio_v1_zero = 1483.0 // em mm
@@ -4030,7 +4033,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
 		t_last_volchange := time.Now()
-		// abort_due_novolchange := false
+		abort_due_novolchange_mustzero := false
 		for {
 			vol_now := bio[ind].Volume
 			// t_now := time.Now()
@@ -4043,9 +4046,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if vol_now == vol_bio_last {
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
-					// abort_due_novolchange = true
-					board_add_message("E"+devid+" Desenvase/Transferência abortado por volume não variar em 25s. Favor verificar equipamentos", "")
-					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
+					if vol_now < vol_bio_init && vol_now <= bio_deltavolzero {
+						abort_due_novolchange_mustzero = true
+						fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg e sendo ZERADO", devid)
+					} else {
+						board_add_message("A"+devid+" Desenvase/Transferência abortado por volume não variar em 25s. Favor verificar equipamentos", "")
+						fmt.Println("ERROR RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
+					}
+
 					break
 				}
 			} else {
@@ -4093,8 +4101,12 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
+		if abort_due_novolchange_mustzero {
+			bio[ind].VolInOut = 0
+			bio[ind].Volume = 0
+		}
 		if bio[ind].Volume == 0 {
-			for i := 0; i < 200 && bio[ind].Withdraw != 0; i++ {
+			for i := 0; i < 250 && bio[ind].Withdraw != 0; i++ {
 				// if bio[ind].Vol0 == 0 {
 				// 	break
 				// }
@@ -4342,6 +4354,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 		if ibc7_ind >= 0 {
 			ibc7_vol_ini = ibc[ibc7_ind].VolInOut
 		}
+		abort_due_novolchange_mustzero := false
 		for {
 			vol_now := ibc[ind].Volume
 			t_elapsed := time.Since(t_start).Seconds()
@@ -4377,6 +4390,13 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if vol_now == vol_bio_last {
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
+					if vol_now < vol_ini && vol_now < bio_deltavolzero {
+						abort_due_novolchange_mustzero = true
+						fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg e sendo ZERADO", devid)
+					} else {
+						board_add_message("A"+devid+" Desenvase/Transferência abortado por volume não variar em 25s. Favor verificar equipamentos", "")
+						fmt.Println("ERROR RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
+					}
 					fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
 					break
 				}
@@ -4399,6 +4419,10 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				break
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
+		}
+		if abort_due_novolchange_mustzero {
+			ibc[ind].VolInOut = 0
+			ibc[ind].Volume = 0
 		}
 		if ibc[ind].Volume == 0 {
 			for i := 0; i < 250 && ibc[ind].Withdraw != 0; i++ { // 25 seg além do ZERO
@@ -8215,7 +8239,7 @@ func scp_process_conn(conn net.Conn) {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
 								if ibc_ind >= 0 {
-									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume {
+									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume+bio_ibctransftol {
 										// bio[ind].Status = bio_unloading
 										bio[ind].MainStatus = mainstatus_org
 										board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
