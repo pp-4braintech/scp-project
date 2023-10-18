@@ -44,6 +44,20 @@ SET/STEP,3
 SET/STATUS,AGUARDANDO
 ASK/MEIO,WAIT
 #
+COMMIT/93
+#
+# ------------  INSERE ANTIESPUMANTE LOGO APOS O MEIO (PEDIDO PELO ZÉ EM 18/10/23)
+#
+# Antiespumante 100ML (14s)
+MSG/Aplicando Antiespumante
+ON/PERIS,P5
+WAIT/TIME,14
+OFF/PERIS,P5
+#
+COMMIT/94
+#
+# ------------- FIM DA MUDANCA
+#
 # Circula Meio
 MSG/Circulando MEIO por 20 segundos
 SET/STATUS,CIRCULANDO
