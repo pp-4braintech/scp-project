@@ -70,4 +70,9 @@ Histórico de Versões (recentes)
             Front..: Exibe as mensagens retornadas pelo master durante a calibração de PH.
 
 1.2.32  -   Front..: Corrige bug do front que apresentava problemas em alguns botões (tablet e PC)
-20231017             
+20231017          
+
+1.2.32  -   Master.: No desenvase, se o volume não variar em 25seg mas tiver variado em relação ao início e for inferior a um mínimo (bio_deltavolzero e ibc_deltavolzero), o mesmo é definido como 0.
+20231017             Muda processo de CIP para ter dois enxágues adicionais no final (pedido do Zé)
+                     Muda a receita de cultivo (1000L e 2000L) para aplicar antiespumante logo após a inserção de meio
+                     Atuliza campo SWVersion no bf_data

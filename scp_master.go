@@ -204,6 +204,7 @@ const bio_withdrawstep = 50
 
 const bio_ibctransftol = 50 // Na transferenciapara IBC, este é o volume acima do máximo permitido no IBC
 const bio_deltavolzero = 33 // No withdraw, se nao variar em 25 segundos e for abaixo deste valor, zera o volume
+const ibc_deltavolzero = 50 // idem para o IBC
 
 const bio_diametro = 1530  // em mm   era 1430
 const bio_v1_zero = 1483.0 // em mm
@@ -1354,6 +1355,7 @@ func set_allvalvs_status() {
 
 func save_bf_data(filename string) int {
 	mybf.Status = get_bf_status()
+	mybf.SWVersion = biofabrica.Version
 	filecsv, err := os.Create(filename)
 	if err != nil {
 		checkErr(err)
@@ -4390,7 +4392,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if vol_now == vol_bio_last {
 				t_elapsed_volchage := time.Since(t_last_volchange).Seconds()
 				if t_elapsed_volchage > 25 {
-					if vol_now < vol_ini && vol_now < bio_deltavolzero {
+					if vol_now < vol_ini && vol_now < ibc_deltavolzero {
 						abort_due_novolchange_mustzero = true
 						fmt.Println("DEBUG RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg e sendo ZERADO", devid)
 					} else {
