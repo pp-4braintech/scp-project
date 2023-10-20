@@ -836,6 +836,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		totemid := r.FormValue("TotemId")
 		bfid := r.FormValue("BFId")
 
+		fmt.Println("DEBUG SET CONFIG: CALL com parametros: ", bioid, ibcid, totemid, bfid)
 		if len(bioid) > 0 {
 			getph := r.FormValue("GetPH")
 			if len(getph) > 0 {
