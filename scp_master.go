@@ -8201,6 +8201,7 @@ func scp_process_conn(conn net.Conn) {
 						bio_add_message(bioid, "ENão é permitido Ligar Peristálticas se o Biorreator não estiver VAZIO", "")
 						conn.Write([]byte(scp_err))
 					} else {
+						bio_add_message(bioid, "ILigando Peristálticas para Limpeza", "")
 						clean_time := 10
 						if len(subparams) >= 3 {
 							clean_time, err = strconv.Atoi(subparams[2])
@@ -8219,7 +8220,7 @@ func scp_process_conn(conn net.Conn) {
 							time.Sleep(time.Second)
 						}
 						for _, p := range []string{"P1", "P2", "P3", "P4", "P5"} {
-							scp_turn_peris(scp_bioreactor, bioid, p, 1)
+							scp_turn_peris(scp_bioreactor, bioid, p, 0)
 						}
 						conn.Write([]byte(scp_ack))
 					}
