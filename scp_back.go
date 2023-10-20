@@ -836,20 +836,13 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		totemid := r.FormValue("TotemId")
 		bfid := r.FormValue("BFId")
 
-		fmt.Println("DEBUG SET CONFIG: CALL com parametros: ", bioid, ibcid, totemid, bfid)
+		fmt.Println("DEBUG SET CONFIG: GET com parametros: ", bioid, ibcid, totemid, bfid)
+
 		if len(bioid) > 0 {
-			getph := r.FormValue("GetPH")
-			if len(getph) > 0 {
-				fmt.Println("DEBUG SET CONFIG: GET PH", bioid)
-				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getph + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				w.Write([]byte(jsonStr))
-			} else {
-				fmt.Println("DEBUG SET CONFIG: GET", bioid)
-				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
-				jsonStr := []byte(scp_sendmsg_master(cmd))
-				w.Write([]byte(jsonStr))
-			}
+			fmt.Println("DEBUG SET CONFIG: GET", bioid)
+			cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
+			jsonStr := []byte(scp_sendmsg_master(cmd))
+			w.Write([]byte(jsonStr))
 		}
 		if len(ibcid) > 0 {
 			fmt.Println("DEBUG SET CONFIG: GET", ibcid)
@@ -931,6 +924,7 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		stopall := r.FormValue("StopAll")
 		upgrade := r.FormValue("Upgrade")
 		restore := r.FormValue("Restore")
+		getph := r.FormValue("GetPH")
 		// sysversion := r.FormValue("Version")
 
 		if len(bioid) > 0 {
@@ -977,6 +971,13 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_calibrate + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				// os.Stdout.Write(jsonStr)
+				w.Write([]byte(jsonStr))
+			}
+
+			if len(getph) > 0 {
+				fmt.Println("DEBUG SET CONFIG: GET PH", bioid)
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getph + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
 
