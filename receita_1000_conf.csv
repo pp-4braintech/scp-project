@@ -59,10 +59,11 @@ COMMIT/94
 # ------------- FIM DA MUDANCA
 #
 # Circula Meio
-MSG/Circulando MEIO por 20 segundos
+# TEMPO ALTERADO de 20seg para 60seg (PEDIDO DO Zé 19/10/23)
+MSG/Circulando MEIO por 60 segundos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
-WAIT/TIME,20
+WAIT/TIME,60
 OFF/PUMP,V4,V6
 #
 # Step concluido

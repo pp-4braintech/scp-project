@@ -1,8 +1,8 @@
 #
 SET/STATUS,CIP
 OFF/ALL,IGNORE
-SET/MAXSTEP,9
-SET/TOTALTIME,140
+SET/MAXSTEP,10
+SET/TOTALTIME,150
 #
 # PASSO 1
 #
@@ -262,7 +262,7 @@ MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
-# --------------     NOVO ENXAGUE AO FIM (Pedido pelo Zé em 18/10/23)
+# --------------     NOVOs ENXAGUEs AO FIM (Pedido pelo Zé em 18/10/23)
 #
 # PASSO 7  (NOVO)
 #
@@ -335,12 +335,48 @@ COMMIT/23
 MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
+#
+# PASSO 9  (NOVO)
+#
+SET/STATUS,CIP
+SET/STEP,9
+MSG/Enchendo água e fazendo enxague por 2 minutos 
+# Agua pelo sprayball
+ON/WATER,TOTEM01
+#
+# Volume de 35L
+WAIT/VOLUME,35
+OFF/WATER,TOTEM01
+#
+# Step concluido
+COMMIT/24
+#
+# Circula Agua 60s pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,60
+OFF/PUMP,V3,V8,V6
+#
+# Step concluido
+COMMIT/25
+#
+# Circula Agua pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,60
+OFF/PUMP,V2,V8,V6
+#
+# Step concluido
+COMMIT/26
+#
+# Descarta Agua
+MSG/Descartando água
+RUN/WITHDRAW,DROP
+#
 # -------------------- FIM DAS MUDANCAS
 #
 # FINAL
 #
 SET/STATUS,CIP
-SET/STEP,9
+SET/STEP,10
 #
 # Liga aerador por 30min = 1800seg  //  FOI ACORDADO QUE ELE FICARIA LIGADO DIRETO
 MSG/CIP terminado. Aerador permanecerá ligado. Para para-lo pressione o botão DESLIGAR
@@ -349,6 +385,7 @@ ON/AERO,80
 # OFF/AERO
 #
 # Fim do CIP
+COMMIT/27
 SET/STATUS,VAZIO
 ORG/EMPTY
 DONE/NOP

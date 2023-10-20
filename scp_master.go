@@ -119,6 +119,7 @@ const scp_par_restart = "RESTART"
 const scp_par_testmode = "TESTMODE"
 const scp_par_techmode = "TECHMODE"
 const scp_par_getconfig = "GETCONFIG"
+const scp_par_getph = "GETPH"
 const scp_par_deviceaddr = "DEVICEADDR"
 const scp_par_screenaddr = "SCREENADDR"
 const scp_par_linewash = "LINEWASH"
@@ -186,7 +187,8 @@ const scp_mustupdate_ibc = 45
 
 const scp_timetocheckversion = 5 // em minutos
 const scp_timewaitvalvs = 15000
-const scp_timephwait = 10000 // Tempo que o ajuste de PH e aplicado durante o cultivo
+const scp_timephwait_down = 10000 // Tempo que o ajuste de PH- e aplicado durante o cultivo
+const scp_timephwait_up = 5000    // Tempo que o ajuste de PH+ e aplicado durante o cultivo
 const scp_timetempwait = 10000
 const scp_timewaitbeforeph = 10000
 const scp_timegrowwait = 10000
@@ -1959,7 +1961,7 @@ func bio_add_message(bioid string, m string, id string) bool {
 		msg_id = "0"
 	}
 	n := len(bio[ind].Messages)
-	stime := time.Now().Format("15:04")
+	stime := time.Now().Format("15:04 02/01")
 	m_new := strings.Replace(m, "OUT", "Desenvase", -1)
 	m_new = strings.Replace(m, "DROP", "Descarte", -1)
 	msg := fmt.Sprintf("%c%s [%s]{%s}", m_new[0], m_new[1:], stime, msg_id)
@@ -5062,7 +5064,7 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 		if !scp_turn_peris(scp_bioreactor, bioid, "P1", 1) {
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P1", bioid)
 		} else {
-			time.Sleep(scp_timephwait * time.Millisecond)
+			time.Sleep(scp_timephwait_down * time.Millisecond)
 			phstr = "PH-"
 			if !scp_turn_peris(scp_bioreactor, bioid, "P1", 0) {
 				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P1", bioid)
@@ -5072,7 +5074,7 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 		if !scp_turn_peris(scp_bioreactor, bioid, "P2", 1) {
 			fmt.Println("ERROR SCP ADJUST PH: Falha ao ligar Peristaltica P2", bioid)
 		} else {
-			time.Sleep(scp_timephwait * time.Millisecond)
+			time.Sleep(scp_timephwait_up * time.Millisecond)
 			phstr = "PH+"
 			if !scp_turn_peris(scp_bioreactor, bioid, "P2", 0) {
 				fmt.Println("ERROR SCP ADJUST PH: Falha ao desligar Peristaltica P2", bioid)
@@ -5204,7 +5206,7 @@ func scp_grow_bio(bioid string) bool {
 	var minph, maxph, worktemp float64
 	var aero int
 	aero_prev := -1
-	worktemp = 28
+	worktemp = 30 // Alterado para 30 em 19/20/23
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
@@ -7330,6 +7332,25 @@ func scp_process_conn(conn net.Conn) {
 							checkErr(err)
 							conn.Write([]byte(buf))
 						}
+
+					case scp_par_getph:
+						var msg MsgReturn
+						if bio[ind].RegresPH[0] > 0 && bio[ind].RegresPH[1] > 0 {
+							phtmp := scp_get_ph(bioid)
+							if phtmp > 0 {
+								msgstr := fmt.Sprintf("PH Aferido: %2.1f")
+								msg = MsgReturn{scp_ack, msgstr}
+							} else {
+								msg = MsgReturn{scp_err, "Erro ao aferir PH. Sensor retornou valor inválido. Repita o processo e, se persistir o erro, entre em contato com o SAC"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+							}
+						} else {
+							msg = MsgReturn{scp_err, "Não é possível fazer a aferição pois o Sensor de PH não foi devidamente calibrado"}
+							bio_add_message(bioid, "E"+msg.Message, "")
+						}
+						msgjson, _ := json.Marshal(msg)
+						conn.Write([]byte(msgjson))
+
 					case scp_par_stopall:
 						if scp_fullstop_device(bioid, scp_bioreactor, true, true) {
 							conn.Write([]byte(scp_ack))
@@ -8241,52 +8262,58 @@ func scp_process_conn(conn net.Conn) {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
 								if ibc_ind >= 0 {
-									if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume+bio_ibctransftol {
-										// bio[ind].Status = bio_unloading
-										bio[ind].MainStatus = mainstatus_org
-										board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
-										bio_add_message(bioid, "IEnxague de Linha antes da Transferência", "")
-										for {
-											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
-												break
+									if ibc[ibc_ind].Status == bio_empty || ibc[ibc_ind].OrgCode == bio[ind].OrgCode {
+										if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume+bio_ibctransftol {
+											// bio[ind].Status = bio_unloading
+											bio[ind].MainStatus = mainstatus_org
+											board_add_message("IEnxague de Linha para Transferência do "+bioid, "")
+											bio_add_message(bioid, "IEnxague de Linha antes da Transferência", "")
+											for {
+												if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+													break
+												}
+												wtime := 180
+												if devmode || testmode {
+													wtime = 30
+												}
+												if scp_run_linewash(line_23, wtime) {
+													break
+												} else {
+													waitlist_add_message("A"+bioid+" aguardando linha para enxague", bioid+"WAITLINEWASH")
+													bio_add_message(bioid, "AAguardando linha para enxague", "WAITLINEWASH")
+												}
+												time.Sleep(2 * time.Second)
 											}
-											wtime := 180
-											if devmode || testmode {
-												wtime = 30
-											}
-											if scp_run_linewash(line_23, wtime) {
-												break
-											} else {
-												waitlist_add_message("A"+bioid+" aguardando linha para enxague", bioid+"WAITLINEWASH")
-												bio_add_message(bioid, "AAguardando linha para enxague", "WAITLINEWASH")
-											}
-											time.Sleep(2 * time.Second)
-										}
-										waitlist_del_message(bioid + "WAITLINEWASH")
-										bio_del_message(bioid, "WAITLINEWASH")
+											waitlist_del_message(bioid + "WAITLINEWASH")
+											bio_del_message(bioid, "WAITLINEWASH")
 
-										bio_add_message(bioid, "ITransferência iniciada", "")
-										conn.Write([]byte(scp_ack))
-										ibc[ibc_ind].Status = bio_loading
-										for i := 0; i < 3; i++ {
-											if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
-												break
+											bio_add_message(bioid, "ITransferência iniciada", "")
+											conn.Write([]byte(scp_ack))
+											ibc[ibc_ind].Status = bio_loading
+											for i := 0; i < 3; i++ {
+												if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+													break
+												}
+												if scp_run_withdraw(scp_bioreactor, bioid, true, true) >= 0 {
+													break
+												}
+												time.Sleep(2 * time.Second)
 											}
-											if scp_run_withdraw(scp_bioreactor, bioid, true, true) >= 0 {
-												break
+											if ibc[ibc_ind].Volume > 0 {
+												// board_add_message("APASSEI AQUI", "")
+												ibc[ibc_ind].OrgCode = bio[ind].OrgCode
+												ibc[ibc_ind].Organism = bio[ind].Organism
+												ibc[ibc_ind].Status = bio_ready
 											}
-											time.Sleep(2 * time.Second)
-										}
-										if ibc[ibc_ind].Volume > 0 {
-											// board_add_message("APASSEI AQUI", "")
-											ibc[ibc_ind].OrgCode = bio[ind].OrgCode
-											ibc[ibc_ind].Organism = bio[ind].Organism
-											ibc[ibc_ind].Status = bio_ready
-										}
 
+										} else {
+											bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
+										}
 									} else {
-										bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
+										bio_add_message(bioid, "ENão é permitido fazer transferência do Biorreator para um IBC que não esteja vazio ou com o mesmo microrganismo", "")
 									}
+								} else {
+									fmt.Println("ERROR WITHDRAW: IBC destino não encontrado", bioid, bio[ind].OutID)
 								}
 							} else {
 								bio_add_message(bioid, "IDesenvase iniciado", "")

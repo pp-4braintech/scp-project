@@ -61,6 +61,7 @@ const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
 const scp_par_restore = "RESTORE"
+const scp_par_getph = "GETPH"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -836,10 +837,18 @@ func set_config(w http.ResponseWriter, r *http.Request) {
 		bfid := r.FormValue("BFId")
 
 		if len(bioid) > 0 {
-			fmt.Println("DEBUG SET CONFIG: GET", bioid)
-			cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
-			jsonStr := []byte(scp_sendmsg_master(cmd))
-			w.Write([]byte(jsonStr))
+			getph := r.FormValue("GetPH")
+			if len(getph) > 0 {
+				fmt.Println("DEBUG SET CONFIG: GET PH", bioid)
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getph + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			} else {
+				fmt.Println("DEBUG SET CONFIG: GET", bioid)
+				cmd := scp_config + "/" + scp_bioreactor + "/" + bioid + "/" + scp_par_getconfig + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
 		}
 		if len(ibcid) > 0 {
 			fmt.Println("DEBUG SET CONFIG: GET", ibcid)
