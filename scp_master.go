@@ -139,6 +139,7 @@ const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
 const scp_par_restore = "RESTORE"
 const scp_par_clenaperis = "CLEANPERIS"
+const scp_par_setvolume = "SETVOLUME"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -7649,6 +7650,24 @@ func scp_process_conn(conn net.Conn) {
 							conn.Write([]byte(scp_ack))
 							save_ibcs_conf(localconfig_path + "ibc_conf.csv")
 						}
+
+					case scp_par_setvolume:
+						if len(params) > 4 {
+							newvolume_str := params[4]
+							newvolume, err := strconv.Atoi(newvolume_str)
+							if err != nil {
+								fmt.Println("ERROR CONFIG SETVOLUME: Volume inválido", ibcid, newvolume_str)
+								conn.Write([]byte(scp_err))
+							} else {
+								ibc[ind].VolInOut = float64(newvolume)
+								ibc[ind].Volume = uint32(newvolume)
+								msg := fmt.Sprintf("AVolume do IBC %s redefinido para %d Litros", ibcid, newvolume)
+								board_add_message(msg, "")
+								fmt.Println("DEBUG CONFIG SETVOLUME: ", ibcid, " Volume redefinido para", newvolume)
+								conn.Write([]byte(scp_ack))
+							}
+						}
+
 					case scp_par_resetdata:
 						if ibc[ind].Status == bio_empty || ibc[ind].Status == bio_ready {
 							board_add_message("ATodos os dados do "+ibcid+" serão refinidos", "")
@@ -8201,7 +8220,6 @@ func scp_process_conn(conn net.Conn) {
 						bio_add_message(bioid, "ENão é permitido Ligar Peristálticas se o Biorreator não estiver VAZIO", "")
 						conn.Write([]byte(scp_err))
 					} else {
-						bio_add_message(bioid, "ILigando Peristálticas para Limpeza", "")
 						clean_time := 10
 						if len(subparams) >= 3 {
 							clean_time, err = strconv.Atoi(subparams[2])
@@ -8210,6 +8228,8 @@ func scp_process_conn(conn net.Conn) {
 								clean_time = 10
 							}
 						}
+						msg := fmt.Sprintf("ILigando Peristálticas para Limpeza por %d segundos", clean_time)
+						bio_add_message(bioid, msg, "")
 						for _, p := range []string{"P1", "P2", "P3", "P4", "P5"} {
 							scp_turn_peris(scp_bioreactor, bioid, p, 1)
 						}
