@@ -179,6 +179,7 @@ const scp_refresstatus = 15
 const scp_refresscreens = 10 // em segundossss
 const scp_refreshsleep = 100 // em ms
 const scp_refreshsync = 5    // em segundos
+const scp_timetosetup = 6    // intervalo no qual o setup_devices é executado em horas
 const scp_timeout_ms = 2500
 const scp_schedwait = 500
 const scp_clockwait = 60 // em segundos
@@ -2892,6 +2893,7 @@ func scp_sync_functions() {
 	t_start_screens := time.Now()
 	t_start_screens_full := time.Now()
 	t_start_version := time.Now()
+	t_start_setup := time.Now()
 
 	n_bio := 0
 	for {
@@ -2906,6 +2908,12 @@ func scp_sync_functions() {
 			if t_elapsed_save >= scp_timetosave {
 				save_all_data(data_filename)
 				t_start_save = time.Now()
+			}
+
+			t_elapsed_setup := uint32(time.Since(t_start_setup).Hours())
+			if t_elapsed_setup >= scp_timetosetup {
+				scp_setup_devices(true)
+				t_start_setup = time.Now()
 			}
 
 			t_elapsed_status := uint32(time.Since(t_start_status).Seconds())
@@ -5208,7 +5216,7 @@ func scp_grow_bio(bioid string) bool {
 	var minph, maxph, worktemp float64
 	var aero int
 	aero_prev := -1
-	worktemp = 30 // Alterado para 30 em 19/20/23
+	worktemp = 28 // Preciso ser separado entre bactérias e fungos
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
@@ -7661,6 +7669,11 @@ func scp_process_conn(conn net.Conn) {
 							} else {
 								ibc[ind].VolInOut = float64(newvolume)
 								ibc[ind].Volume = uint32(newvolume)
+								if newvolume == 0 {
+									ibc[ind].Status = bio_empty
+								} else if ibc[ind].Status == bio_empty {
+									ibc[ind].Status = bio_ready
+								}
 								msg := fmt.Sprintf("AVolume do IBC %s redefinido para %d Litros", ibcid, newvolume)
 								board_add_message(msg, "")
 								fmt.Println("DEBUG CONFIG SETVOLUME: ", ibcid, " Volume redefinido para", newvolume)

@@ -77,12 +77,19 @@ Histórico de Versões (recentes)
                      Transferência de BIO para IBC permite até Maxvolume + bio_ibctransftol.
                      Não permite transferência de BIO para IBC que não esteja vazio ou que o organismo seja diferente.
                      Acrescenta data em bio_add_message.
-                     Temperatura de cultivo alterada para 30 graus (pedido do Zé).
                      Tempo de aplicação de PH+ diferente de PH-, sendo 5 seg para PH+ e 10 seg para PH- (acordado com Zé).
                      Cria função para Aferição de PH.
+                     Cria função de Ligar Peristálticas para Limpeza da Flauta por N segundos.
+                     Cria função para Redefinir Volume de IBC (e muda status automaticamente se necessário).
             Back...: Implementa endpoint para Aferição de PH.
+                     Implementa endpoint para Ligar Peristálticas.
+                     Implementa endpoint para Redefinir Volume de IBC.
             Front..: Implementa botão e modal para Aferição de PH (Configurações / Biorreatores)
+                     Implementa botão e modal para Ligar Peristálticas por N segundos.
+                     Antes de iniciar novo cultivo, confirma se o sensor de PH está no 
+            Portal.: Implementa botão e modal para Redefinir Volume de IBC.
             _conf..: Muda processo de CIP para ter três enxágues adicionais no final (pedido do Zé).
                      Muda a receita de cultivo (1000L e 2000L) para aplicar antiespumante logo após a inserção de meio.
                      PHs de Bacterias alterado para 5 a 7.2 e Fungos de 3.5 a 5.5 (pedido do Zé).
                      Tempo de circulação do Meio modificado para 60 seg (pedido do Zé).
+                     
