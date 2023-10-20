@@ -138,6 +138,7 @@ const scp_par_unlock = "UNLOCK"
 const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
 const scp_par_restore = "RESTORE"
+const scp_par_clenaperis = "CLEANPERIS"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -7345,7 +7346,7 @@ func scp_process_conn(conn net.Conn) {
 								bio_add_message(bioid, "E"+msg.Message, "")
 							}
 						} else {
-							msg = MsgReturn{scp_err, "Não é possível fazer a aferição pois o Sensor de PH não foi devidamente calibrado"}
+							msg = MsgReturn{scp_err, "Não é possível fazer a Aferição pois o Sensor de PH não foi devidamente calibrado"}
 							bio_add_message(bioid, "E"+msg.Message, "")
 						}
 						msgjson, _ := json.Marshal(msg)
@@ -8192,6 +8193,35 @@ func scp_process_conn(conn net.Conn) {
 						bio[ind].Continue = true
 					} else {
 						fmt.Println("ERROR SCP PROCESS CONN: Biorreator nao existe", bioid, params)
+					}
+
+				case scp_par_clenaperis:
+					fmt.Println("DEBUG SCP PROCESS CONN: PAR CLEANPERIS", params, subparams)
+					if bio[ind].Status != bio_empty {
+						bio_add_message(bioid, "ENão é permitido Ligar Peristálticas se o Biorreator não estiver VAZIO", "")
+						conn.Write([]byte(scp_err))
+					} else {
+						clean_time := 10
+						if len(subparams) >= 3 {
+							clean_time, err = strconv.Atoi(subparams[2])
+							if err != nil {
+								checkErr(err)
+								clean_time = 10
+							}
+						}
+						for _, p := range []string{"P1", "P2", "P3", "P4", "P5"} {
+							scp_turn_peris(scp_bioreactor, bioid, p, 1)
+						}
+						for i := 0; i < clean_time; i++ {
+							if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
+								break
+							}
+							time.Sleep(time.Second)
+						}
+						for _, p := range []string{"P1", "P2", "P3", "P4", "P5"} {
+							scp_turn_peris(scp_bioreactor, bioid, p, 1)
+						}
+						conn.Write([]byte(scp_ack))
 					}
 
 				case scp_par_circulate:

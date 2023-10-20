@@ -72,14 +72,17 @@ Histórico de Versões (recentes)
 1.2.32  -   Front..: Corrige bug do front que apresentava problemas em alguns botões (tablet e PC)
 20231017          
 
-1.2.32  -   Master.: No desenvase, se o volume não variar em 25seg mas tiver variado em relação ao início e for inferior a um mínimo (bio_deltavolzero e ibc_deltavolzero), o mesmo é definido como 0.
-20231017             Muda processo de CIP para ter três enxágues adicionais no final (pedido do Zé).
-                     Muda a receita de cultivo (1000L e 2000L) para aplicar antiespumante logo após a inserção de meio.
-                     Atuliza campo SWVersion no bf_data.
+1.2.33  -   Master.: No desenvase, se o volume não variar em 25seg mas tiver variado em relação ao início e for inferior a um mínimo (bio_deltavolzero e ibc_deltavolzero), o mesmo é definido como 0.
+20231020             Atualiza campo SWVersion no bf_data.
                      Transferência de BIO para IBC permite até Maxvolume + bio_ibctransftol.
                      Não permite transferência de BIO para IBC que não esteja vazio ou que o organismo seja diferente.
                      Acrescenta data em bio_add_message.
                      Temperatura de cultivo alterada para 30 graus (pedido do Zé).
-                     PHs de Bacterias alterado para 5 a 7.2 e Fungos de 3.5 a 5.5 (pedido do Zé).
                      Tempo de aplicação de PH+ diferente de PH-, sendo 5 seg para PH+ e 10 seg para PH- (acordado com Zé).
+                     Cria função para Aferição de PH.
+            Back...: Implementa endpoint para Aferição de PH.
+            Front..: Implementa botão e modal para Aferição de PH (Configurações / Biorreatores)
+            _conf..: Muda processo de CIP para ter três enxágues adicionais no final (pedido do Zé).
+                     Muda a receita de cultivo (1000L e 2000L) para aplicar antiespumante logo após a inserção de meio.
+                     PHs de Bacterias alterado para 5 a 7.2 e Fungos de 3.5 a 5.5 (pedido do Zé).
                      Tempo de circulação do Meio modificado para 60 seg (pedido do Zé).

@@ -62,6 +62,7 @@ const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
 const scp_par_restore = "RESTORE"
 const scp_par_getph = "GETPH"
+const scp_par_clenaperis = "CLEANPERIS"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -603,6 +604,7 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 			withdraw := r.FormValue("Withdraw")
 			outdev := r.FormValue("Out")
 			recirc := r.FormValue("Recirculate")
+			cleanperis := r.FormValue("CleanPeris")
 			cont := r.FormValue("Continue")
 			heater := r.FormValue("Heater")
 			volume := r.FormValue("Volume")
@@ -636,6 +638,17 @@ func bioreactor_view(w http.ResponseWriter, r *http.Request) {
 				jsonStr := []byte(scp_sendmsg_master(cmd))
 				w.Write([]byte(jsonStr))
 			}
+
+			if cleanperis != "" {
+				clean_time_str := r.FormValue("Time")
+				if len(clean_time_str) == 0 {
+					clean_time_str = "10"
+				}
+				cmd := "PUT/BIOREACTOR/" + bio_id + "/" + scp_par_clenaperis + "," + cleanperis + "," + clean_time_str + "/END"
+				jsonStr := []byte(scp_sendmsg_master(cmd))
+				w.Write([]byte(jsonStr))
+			}
+
 			if b_pause != "" {
 				cmd := "PAUSE/BIOREACTOR/" + bio_id + "/" + b_pause + "/END"
 				jsonStr := []byte(scp_sendmsg_master(cmd))
