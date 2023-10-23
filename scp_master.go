@@ -8329,9 +8329,11 @@ func scp_process_conn(conn net.Conn) {
 						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume == 0) {
 							if bio[ind].Status == bio_unloading {
 								bio_add_message(bioid, "EDesenvase em andamento no Biorreator. Aguarde", "")
+								conn.Write([]byte(scp_err))
 								return
 							}
 							bio_add_message(bioid, "ENão é possível fazer desenvase em um biorreator que não esteja PRONTO", "")
+							conn.Write([]byte(scp_err))
 							return
 						}
 						conn.Write([]byte(scp_ack))
@@ -8365,7 +8367,6 @@ func scp_process_conn(conn net.Conn) {
 											bio_del_message(bioid, "WAITLINEWASH")
 
 											bio_add_message(bioid, "ITransferência iniciada", "")
-											conn.Write([]byte(scp_ack))
 											ibc[ibc_ind].Status = bio_loading
 											for i := 0; i < 3; i++ {
 												if bio[ind].MustPause || bio[ind].MustStop || biofabrica.Critical == scp_stopall {
