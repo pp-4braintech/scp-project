@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.33" // 2023-10-18
+	scp_version = "1.2.34" // 2023-10-23
 
 	scp_on  = 1
 	scp_off = 0
@@ -3951,6 +3951,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			return -1
 		}
 		board_add_message("CDesenvase "+devid+" para "+bio[ind].OutID, "")
+		fmt.Println("DEBUG RUN WITHDRAW: Desenvase do Biorreator", devid, " para", bio[ind].OutID, "volume=", bio[ind].Withdraw, " inicial=", bio[ind].Volume)
 		var pilha []string = make([]string, 0)
 		for k, p := range vpath {
 			fmt.Println("step", k, p)
@@ -4067,7 +4068,6 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 						board_add_message("A"+devid+" Desenvase/Transferência abortado por volume não variar em 25s. Favor verificar equipamentos", "")
 						fmt.Println("ERROR RUN WITH DRAW: Desenvase abortado por volume nao variar em 25 seg", devid)
 					}
-
 					break
 				}
 			} else {
@@ -4077,9 +4077,11 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if untilempty {
 				if mustwaittime {
 					if t_elapsed >= waittime {
+						fmt.Println("DEBUG RUN WITH DRAW: Transferência UNTILEMPTY interrompida pois o tempo excedeu o tempo previsto", devid, "previsto =", waittime)
 						break
 					}
 				} else if vol_now == 0 {
+					fmt.Println("DEBUG RUN WITH DRAW: Transferência UNTILEMPTY interrompida pois volume atual ZERO", devid)
 					break
 				}
 			} else {
@@ -4094,23 +4096,24 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && mustwaittime && int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
+			if biofabrica.Useflowin && mustwaittime && rand.Intn(21) == 7 { // } int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
 				volout := t_elapsed / bio_emptying_rate
 				vol_tmp := float64(vol_bio_init) - volout
 				if vol_tmp < 0 {
 					vol_tmp = 0
 				}
+				bio[ind].VolInOut = vol_tmp
 				bio[ind].Volume = uint32(vol_tmp)
-				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout)
+				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout, "voltmp=", vol_tmp)
 				if ibc_ind >= 0 && vol_ibc_ini >= 0 {
 					ibc[ibc_ind].VolInOut = vol_ibc_ini + volout
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 					ibc[ibc_ind].OrgCode = bio[ind].OrgCode
 					ibc[ibc_ind].Organism = bio[ind].Organism
 					ibc[ibc_ind].MainStatus = mainstatus_org
+					scp_update_ibclevel(ibc[ibc_ind].IBCID)
 				}
 				scp_update_biolevel(bio[ind].BioreactorID)
-				scp_update_ibclevel(ibc[ibc_ind].IBCID)
 				// scp_update_screen_vol(bio[ind].BioreactorID)
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
@@ -5536,9 +5539,9 @@ func scp_fullstop_device(devid string, devtype string, check_status bool, cleara
 
 func scp_run_job_bio(bioid string, job string) bool {
 	if devmode {
-		fmt.Println("\n\nSCP RUN JOB SIMULANDO EXECUCAO", bioid, job)
+		fmt.Println("DEBUG SCP RUN JOB: SIMULANDO EXECUCAO", bioid, job)
 	} else {
-		fmt.Println("\n\nSCP RUN JOB EXECUTANDO", bioid, job)
+		fmt.Println("DEBUG SCP RUN JOB: EXECUTANDO", bioid, job)
 	}
 	if devmode || testmode {
 		bio_add_message(bioid, "C"+job, "")
@@ -6011,7 +6014,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				n := len(vpath)
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
-				fmt.Println("DEBUG", vpath)
+				// fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1, true) {
 					waitlist_add_message("ABiorreator "+bioid+" aguardando liberação da Linha", bioid+"ONWATERBUSY")
 					bio_add_message(bioid, "ABiorreator aguardando liberação da Linha", "ONWATERBUSY")
@@ -6534,7 +6537,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				n := len(vpath)
 				vpath = append(vpath[:n-1], watervalv)
 				vpath = append(vpath, "END")
-				fmt.Println("DEBUG", vpath)
+				// fmt.Println("DEBUG", vpath)
 				if !scp_turn_pump(scp_totem, totem, vpath, 1, !unlock_par) {
 					waitlist_add_message("A"+ibcid+" aguardando liberação da Linha", ibcid+"ONWATERBUSY")
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar bomba em", ibcid, valvs)
@@ -6610,7 +6613,7 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 					n := len(vpath)
 					vpath = append(vpath[:n-1], perisvalv)
 					vpath = append(vpath, "END")
-					fmt.Println("DEBUG", vpath)
+					// fmt.Println("DEBUG", vpath)
 					if test_path(vpath, 1) {
 						if set_valvs_value(vpath, 0, true) < 0 {
 							fmt.Println("ERROR SCP RUN JOB: ERRO ao fechar valvulas no path ", vpath)
@@ -6809,7 +6812,7 @@ func scp_clock() {
 				ind := get_bio_index(b.BioreactorID)
 				t_elapsed := time.Since(t_start).Minutes()
 				totalleft := bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1]
-				fmt.Println("CLOCK TOTAL LEFT", b.BioreactorID, totalleft)
+				fmt.Println("DEBUG SCP CLOCK: TOTAL LEFT BIO ", b.BioreactorID, totalleft)
 				if totalleft > 0 {
 					totalleft -= int(t_elapsed)
 					bio[ind].Timeleft[0] = int(totalleft / 60)
@@ -6823,6 +6826,7 @@ func scp_clock() {
 				ind := get_ibc_index(b.IBCID)
 				t_elapsed := time.Since(t_start).Minutes()
 				totalleft := ibc[ind].Timetotal[0]*60 + ibc[ind].Timetotal[1]
+				fmt.Println("DEBUG SCP CLOCK: TOTAL LEFT IBC ", b.IBCID, totalleft)
 				if totalleft > 0 {
 					totalleft -= int(t_elapsed)
 					ibc[ind].Timetotal[0] = int(totalleft / 60)
@@ -8311,9 +8315,17 @@ func scp_process_conn(conn net.Conn) {
 
 				case scp_par_withdraw:
 					vol, err := strconv.Atoi(subparams[1])
-					checkErr(err)
+					if err != nil {
+						fmt.Println("ERROR PUT BIORREACTOR: WITHDRAW: Volume passado para o desenvase invalido", bioid, subparams)
+						checkErr(err)
+					}
 					if err == nil {
+						fmt.Println("DEBUG PUT BIORREACTOR: WITHDRAW: Desenvase solicitado de=", bioid, " para=", bio[ind].OutID, "volume=", vol)
 						bio[ind].Withdraw = uint32(vol)
+						devout_type := get_scp_type(bio[ind].OutID)
+						if devout_type == scp_ibc {
+							bio[ind].Withdraw = bio[ind].Volume
+						}
 						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume == 0) {
 							if bio[ind].Status == bio_unloading {
 								bio_add_message(bioid, "EDesenvase em andamento no Biorreator. Aguarde", "")
