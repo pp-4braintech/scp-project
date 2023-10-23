@@ -8323,7 +8323,7 @@ func scp_process_conn(conn net.Conn) {
 						fmt.Println("DEBUG PUT BIORREACTOR: WITHDRAW: Desenvase solicitado de=", bioid, " para=", bio[ind].OutID, "volume=", vol)
 						bio[ind].Withdraw = uint32(vol)
 						devout_type := get_scp_type(bio[ind].OutID)
-						if devout_type == scp_ibc {
+						if devout_type == scp_ibc && vol != 0 {
 							bio[ind].Withdraw = bio[ind].Volume
 						}
 						if bio[ind].Status != bio_ready && (bio[ind].Status == bio_empty && bio[ind].Volume == 0) {
@@ -8334,6 +8334,7 @@ func scp_process_conn(conn net.Conn) {
 							bio_add_message(bioid, "ENão é possível fazer desenvase em um biorreator que não esteja PRONTO", "")
 							return
 						}
+						conn.Write([]byte(scp_ack))
 						if bio[ind].Withdraw > 0 {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
