@@ -226,7 +226,7 @@ func load_organisms(filename string) int {
 		checkErr(err)
 		return -1
 	}
-	organs = make(map[string]Organism, len(records))
+	orgs = make([]Organism, len(records))
 	for k, r := range records {
 		ind := r[0]
 		code := r[1]
@@ -244,7 +244,7 @@ func load_organisms(filename string) int {
 		ph2 := strings.Replace(r[13], " ", "", -1)
 		ph3 := strings.Replace(r[14], " ", "", -1)
 		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, temprange, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
-		organs[code] = org
+		orgs[k] = org
 		totalrecords = k
 	}
 	return totalrecords
