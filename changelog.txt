@@ -96,7 +96,9 @@ Histórico de Versões (recentes)
 1.2.34  -   Master.: Força o volume de Transferência (BIO / IBC) ser sempre o volume total, independente do que vier do Front (excessão se for 0)
 20231023             Várias mensagens de DEBUG foram adicionadas no run_withdraw
 
-1.2.35  -   Master.: Passa a considerar ranges diferentes de temperatura para os organismos.
-20231024             Carrega do arquivo de organismos tipo de organismo (B=bactéria e F=fungo) e também o intervalo de temperatura de cultivo.
-                     Corrige teste no refresh para identificar quando a falha é no painel de desenvase e também no TOTEM01
+1.2.35  -   Master.: Função grow_bio passa a considerar ranges diferentes de temperatura para os organismos.
+20231024             Passa a ler, do arquivo de organismos, tipo de organismo (B=bactéria e F=fungo) e também o intervalo de temperatura de cultivo.
+                     Corrige teste no refresh para identificar quando a falha é no painel de desenvase e também no TOTEM01.
+                     Alerta e desliga resistência em get_alldata se temperatura exceder TEMPMAX.
+                     Vários novos testes de segurança adicionados antes de ligar a resistência (função turn_heater).
 

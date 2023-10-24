@@ -3098,10 +3098,14 @@ func scp_get_alldata() {
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
 									fmt.Println("DEBUG SCP GET ALLDATA: Desligando resistencia por atingir temperatura maxima definida", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 									scp_turn_heater(b.BioreactorID, 0, false)
-								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].Volume > 0 && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
 									fmt.Println("DEBUG SCP GET ALLDATA: Ligando resistencia por temperatura ser inferior ao maximo - 5", b.BioreactorID, "tempnow=", t_tmp, "max-5=", bio[ind].TempMax-5)
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								}
+							} else if t_tmp > TEMPMAX {
+								fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
+								bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
+								scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 							}
 						}
 					}
@@ -4790,6 +4794,14 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 		fmt.Println("ERROR SCP TURN HEATER: Biorreator nao existe", bioid)
 		return false
 	}
+	if bio[ind].Temperature > TEMPMAX {
+		fmt.Println("ERROR SCP TURN HEATER: Temperatura do Biorreator acima do limite", bioid, " temp=", bio[ind].Temperature, "  TEMPMAX=", TEMPMAX)
+		return false
+	}
+	if bio[ind].Volume == 0 {
+		fmt.Println("ERROR SCP TURN HEATER: Nao é possível ligar resistencia com Biorreator VAZIO", bioid, " volume=", bio[ind].Volume)
+		return false
+	}
 	bio[ind].TempMax = maxtemp
 	devaddr := bio_cfg[bioid].Deviceaddr
 	heater_dev := bio_cfg[bioid].Heater
@@ -6011,6 +6023,9 @@ func scp_run_job_bio(bioid string, job string) bool {
 					checkErr(err)
 					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
 					return false
+				}
+				if bio[ind].Volume == 0 {
+					fmt.Println("ERROR SCP RUN JOB: Nao é possivel ligar resistencia com Biorreator VAZIO", bioid, "Volume=", bio[ind].Volume, temp_str, subpars)
 				}
 				if !scp_turn_heater(bioid, float32(temp_int), true) {
 					fmt.Println("ERROR SCP RUN JOB: ERROR ao ligar aquecedor em", bioid)
