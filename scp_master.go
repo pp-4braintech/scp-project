@@ -7402,7 +7402,7 @@ func scp_process_conn(conn net.Conn) {
 
 					case scp_par_getph:
 						var msg MsgReturn
-						if bio[ind].RegresPH[0] > 0 && bio[ind].RegresPH[1] > 0 {
+						if bio[ind].RegresPH[0] != 0 && bio[ind].RegresPH[1] != 0 {
 							phtmp := scp_get_ph(bioid)
 							if phtmp > 0 {
 								msgstr := fmt.Sprintf("PH Aferido: %2.1f")
@@ -8331,7 +8331,11 @@ func scp_process_conn(conn net.Conn) {
 									}
 								} else {
 									if bio[ind].Status == bio_circulate { // CHECAR se PRECISA TESTAR MUSTSTOP/PAUSE
-										bio[ind].Status = bio[ind].LastStatus
+										if bio[ind].LastStatus != bio_circulate {
+											bio[ind].Status = bio[ind].LastStatus
+										} else {
+											bio[ind].Status = bio_ready
+										}
 									}
 								}
 							} else {
