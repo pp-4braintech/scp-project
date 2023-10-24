@@ -1,25 +1,25 @@
-1,CS,Chromobacterium Subtsugae,360,2,1025DB,24,80,-1,-1,5-7.2,-1,-1
-2,PA,Priestia Aryabhattai,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1 
-3,BTK,Bacillus Thuringiensis Kurstaki,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-4,BTA,Bacillus Thuringiensis Aizawai,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-5,AB,Azospirillum Brasilense,360,2,1235iDB,48,80,80,-1,5-7.2,5-7.2,-1 
-6,BD,Bradyrhizobium Diazoefficiens,360,2,1235iDB,48,80,80,-1,5-7.2,5-7.2,-1
-7,PF,Pseudomonas Fluorescens,360,2,1025DB,24,80,-1,-1,5-7.2,-1,-1
-8,BF,Bacillus Firmus,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-9,BJ,Bradyrhizobium Japonicum,360,2,1235iDB,48,80,80,-1,5-7.2,5-7.2,-1
-10,BP,Bacillus Pumilus,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-11,BMG,Bacillus Megaterium,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-12,BL,Bacillus Licheniformis,360,2,1025DB,48,80,70,-1,5-7.2,5-7.2,-1
-13,BA,Bacillus Amyloliquefaciens,360,2, 1025DB, 48, 80, 70, -1,5-7.2, 5-7.2, -1
-14,BV,Bacillus Velezensis,360,2,1025DB, 48, 80, 70, -1, 5-7.2, 5-7.2, -1
-15,RT,Rhizobium Tropicci,360,2,1235iDB, 48, 80, 70, -1, 5-7.2, 5-7.2, -1
-16,BS,Bacillus Subtilis,360,2,1025DB, 48, 80, 70, -1, 5-7.2, 5-7.2, -1
-17,BMT,Bacillus Methylotropicus,360,2, 1025DB, 48, 80, 70, -1, 5-7.2, 5-7.2, -1
-18,PC,Pochonia Chlamydosporia,168,2, 1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5 
-19,TH,Trichoderma Harzianum,168,2, 1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-20,TA,Trichoderma Asperellum,168,2, 1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-21,IF,Isaria Fumosorosea,168,2, 1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-22,BB,Beauveria Bassiana,168,2, 1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-23,PL,Purpureocillium Lilacinum,168,2,1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-24,MA,Metarhizium Anisopliae,168,2,1035fDB, 72, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
-999,EMPTY,Sem Organismo,0,0,0,0,0,-1,-1,-1,-1,-1
+1,CS,Chromobacterium Subtsugae,B,360,2,1025DB,24,28-30,80,-1,-1,5-7.2,-1,-1
+2,PA,Priestia Aryabhattai,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1 
+3,BTK,Bacillus Thuringiensis Kurstaki,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+4,BTA,Bacillus Thuringiensis Aizawai,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+5,AB,Azospirillum Brasilense,B,360,2,1235iDB,48,28-30,80,80,-1,5-7.2,5-7.2,-1 
+6,BD,Bradyrhizobium Diazoefficiens,B,360,2,1235iDB,48,28-30,80,80,-1,5-7.2,5-7.2,-1
+7,PF,Pseudomonas Fluorescens,B,360,2,1025DB,24,28-30,80,-1,-1,5-7.2,-1,-1
+8,BF,Bacillus Firmus,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+9,BJ,Bradyrhizobium Japonicum,B,360,2,1235iDB,48,28-30,80,80,-1,5-7.2,5-7.2,-1
+10,BP,Bacillus Pumilus,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+11,BMG,Bacillus Megaterium,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+12,BL,Bacillus Licheniformis,B,360,2,1025DB,48,28-30,80,70,-1,5-7.2,5-7.2,-1
+13,BA,Bacillus Amyloliquefaciens,B,360,2, 1025DB, 48,28-30,80, 70, -1,5-7.2, 5-7.2, -1
+14,BV,Bacillus Velezensis,B,360,2,1025DB, 48,28-30, 80, 70, -1, 5-7.2, 5-7.2, -1
+15,RT,Rhizobium Tropicci,B,360,2,1235iDB, 48,28-30, 80, 70, -1, 5-7.2, 5-7.2, -1
+16,BS,Bacillus Subtilis,B,360,2,1025DB, 48,28-30, 80, 70, -1, 5-7.2, 5-7.2, -1
+17,BMT,Bacillus Methylotropicus,B,360,2, 1025DB, 48,28-30, 80, 70, -1, 5-7.2, 5-7.2, -1
+18,PC,Pochonia Chlamydosporia,F,168,2, 1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5 
+19,TH,Trichoderma Harzianum,F,168,2, 1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+20,TA,Trichoderma Asperellum,F,168,2, 1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+21,IF,Isaria Fumosorosea,F,168,2, 1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+22,BB,Beauveria Bassiana,F,168,2, 1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+23,PL,Purpureocillium Lilacinum,F,168,2,1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+24,MA,Metarhizium Anisopliae,F,168,2,1035fDB, 72,25-27, 75, 75, 65, 3.5-5.5, 3.5-5.5, 3.5-5.5
+999,EMPTY,Sem Organismo,N,0,0,0,0,0,0,-1,-1,-1,-1,-1

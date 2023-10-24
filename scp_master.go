@@ -39,7 +39,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.34" // 2023-10-23
+	scp_version = "1.2.35" // 2023-10-23
 
 	scp_on  = 1
 	scp_off = 0
@@ -261,7 +261,7 @@ const line_14 = "1_4"
 const line_23 = "2_3"
 const line_24 = "2_4"
 
-const TEMPMAX = 120
+const TEMPMAX = 80
 
 type MsgReturn struct {
 	Status  string
@@ -280,14 +280,17 @@ type Biofabrica_data struct {
 	LastUpdate   string
 	BFIP         string
 }
+
 type Organism struct {
 	Index      string
 	Code       string
 	Orgname    string
+	Orgtype    string
 	Lifetime   int
 	Prodvol    int
 	Cultmedium string
 	Timetotal  int
+	Temprange  string
 	Aero       [3]int
 	PH         [3]string
 }
@@ -822,20 +825,23 @@ func load_organisms(filename string) int {
 		ind := r[0]
 		code := r[1]
 		name := r[2]
-		lifetime, _ := strconv.Atoi(strings.Replace(r[3], " ", "", -1))
-		volume, _ := strconv.Atoi(strings.Replace(r[4], " ", "", -1))
-		medium := strings.Replace(r[5], " ", "", -1)
-		tottime, _ := strconv.Atoi(strings.Replace(r[6], " ", "", -1))
-		aero1, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
-		aero2, _ := strconv.Atoi(strings.Replace(r[8], " ", "", -1))
-		aero3, _ := strconv.Atoi(strings.Replace(r[9], " ", "", -1))
-		ph1 := strings.Replace(r[10], " ", "", -1)
-		ph2 := strings.Replace(r[11], " ", "", -1)
-		ph3 := strings.Replace(r[12], " ", "", -1)
-		org := Organism{ind, code, name, lifetime, volume, medium, tottime, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		otype := r[3]
+		lifetime, _ := strconv.Atoi(strings.Replace(r[4], " ", "", -1))
+		volume, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
+		medium := strings.Replace(r[6], " ", "", -1)
+		tottime, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
+		temprange := strings.Replace(r[8], " ", "", -1)
+		aero1, _ := strconv.Atoi(strings.Replace(r[9], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[10], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[11], " ", "", -1))
+		ph1 := strings.Replace(r[12], " ", "", -1)
+		ph2 := strings.Replace(r[13], " ", "", -1)
+		ph3 := strings.Replace(r[14], " ", "", -1)
+		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, temprange, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
 		organs[code] = org
 		totalrecords = k
 	}
+	fmt.Println("DEBUG LOAD ORGANISMS: Organismos lidos:", organs)
 	return totalrecords
 }
 
@@ -2290,12 +2296,11 @@ func scp_setup_devices(mustall bool) {
 								if strings.Contains(disp, "VBF03") || strings.Contains(disp, "VBF04") || strings.Contains(disp, "VBF05") {
 									err_local += "Painel Intermediário "
 									biofabrica.PIntStatus = bio_error
-								} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") ||
-									strings.Contains(disp, "PBF01") {
+								} else if strings.Contains(disp, "VBF06") || strings.Contains(disp, "VBF07") || strings.Contains(disp, "VBF08") || strings.Contains(disp, "VBF09") || strings.Contains(disp, "PBF01") || strings.Contains(disp, "FBF01") {
 									err_local += "Painel Desenvase "
 									biofabrica.POutStatus = bio_error
 								} else if len(disp) > 0 {
-									err_local += "Válvulas de Linha V1 e V2 ligadas ao TOTEM01"
+									err_local += "Dispositivo " + disp
 								}
 							}
 						}
@@ -2870,8 +2875,12 @@ func scp_refresh_status() {
 								biofabrica.Status = scp_fail
 								if strings.Contains(dev_id, "VBF03") || strings.Contains(dev_id, "VBF04") || strings.Contains(dev_id, "VBF05") {
 									biofabrica.PIntStatus = bio_error
-								} else if strings.Contains(dev_id, "VBF06") || strings.Contains(dev_id, "VBF07") || strings.Contains(dev_id, "VBF08") || strings.Contains(dev_id, "VBF09") {
+								} else if strings.Contains(dev_id, "VBF06") || strings.Contains(dev_id, "VBF07") || strings.Contains(dev_id, "VBF08") || strings.Contains(dev_id, "VBF09") || strings.Contains(dev_id, "FBF01") || strings.Contains(dev_id, "PBF01") {
 									biofabrica.POutStatus = bio_error
+								} else if strings.Contains(dev_id, "VBF01") || strings.Contains(dev_id, "VBF02") {
+									fmt.Println("DEBUG SCP REFRESH STATUS: FALHA no TOTEM01 por falha na válvula", dev_id)
+									ind := get_totem_index("TOTEM01")
+									totem[ind].Status = bio_error
 								}
 
 							default:
@@ -3087,8 +3096,10 @@ func scp_get_alldata() {
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
+									fmt.Println("DEBUG SCP GET ALLDATA: Desligando resistencia por atingir temperatura maxima definida", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 									scp_turn_heater(b.BioreactorID, 0, false)
 								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+									fmt.Println("DEBUG SCP GET ALLDATA: Ligando resistencia por temperatura ser inferior ao maximo - 5", b.BioreactorID, "tempnow=", t_tmp, "max-5=", bio[ind].TempMax-5)
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								}
 							}
@@ -5138,13 +5149,15 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 		bio[ind].Temprunning = false
 		return
 	}
-
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		if t_elapsed >= maxtime || !bio[ind].Temprunning {
 			break
 		}
 		if bio[ind].MustPause || bio[ind].MustStop {
+			break
+		}
+		if biofabrica.Critical != scp_ready {
 			break
 		}
 		if bio[ind].Temperature >= temp {
@@ -5155,6 +5168,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	}
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
+		bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "")
 	}
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
@@ -5216,10 +5230,27 @@ func scp_grow_bio(bioid string) bool {
 	time.Sleep(5 * time.Second)
 	vol_start := bio[ind].Volume
 	pday := -1
-	var minph, maxph, worktemp float64
+	var minph, maxph, worktemp_min, worktemp_max float64
+	var err error
 	var aero int
 	aero_prev := -1
-	worktemp = 28 // Preciso ser separado entre bactérias e fungos
+	worktemp_min = 28 // Valor Padrão para a temperatura de cultivo
+	worktemp_max = 28
+
+	temps := scp_splitparam(org.Temprange, "-")
+	worktemp_min, err = strconv.ParseFloat(temps[0], 32)
+	if err != nil {
+		fmt.Println("ERROR GROW BIO: Valor de tempetura minimo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
+		worktemp_min = 28
+	} else {
+		worktemp_max, err = strconv.ParseFloat(temps[1], 32)
+		if err != nil {
+			fmt.Println("ERROR GROW BIO: Valor de tempetura maximo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
+			worktemp_min = 28
+			worktemp_max = 28
+		}
+	}
+
 	t_start := time.Now()
 	t_start_ph := time.Now()
 
@@ -5232,7 +5263,7 @@ func scp_grow_bio(bioid string) bool {
 	ncontrol_foam := 0
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
-		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal)
+		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal, " tempmin=", worktemp_min, " tempmax=", worktemp_max)
 		if t_elapsed >= ttotal {
 			fmt.Println("DEBUG SCP GROW BIO: Biorreator terminando grow por tempo atingido", bioid)
 			break
@@ -5256,7 +5287,6 @@ func scp_grow_bio(bioid string) bool {
 				}
 				aero = org.Aero[t_day]
 				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
-				worktemp = 28
 				if control_foam {
 					scp_adjust_foam(bioid)
 					ncontrol_foam++
@@ -5306,12 +5336,20 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
-		fmt.Println("DEBUG SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, bio[ind].Temperature, float32(worktemp-bio_deltatemp))
-		if control_temp && !bio[ind].Temprunning && bio[ind].Temperature < float32(worktemp-bio_deltatemp) {
-			fmt.Println("WARN SCP GROW BIO: Ajustando temperatura", bioid, bio[ind].Temperature)
-			bio[ind].Temprunning = true
-			go scp_adjust_temperature(bioid, float32(worktemp), ttotal)
+
+		// Início da mudança para suportar ranges de temperatura e os mesmo diferentes por organismo
+		fmt.Println("DEBUG SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, "tempnow=", bio[ind].Temperature, "min=", worktemp_min, "max=", worktemp_max)
+		if control_temp && !bio[ind].Temprunning {
+			if bio[ind].Temperature < float32(worktemp_min) {
+				fmt.Println("WARN SCP GROW BIO: Temperatura abaixo do mínimo (", worktemp_min, "), ajustando temperatura", bioid, bio[ind].Temperature, " para:", worktemp_max)
+				bio[ind].Temprunning = true
+				go scp_adjust_temperature(bioid, float32(worktemp_max), ttotal)
+			} else if bio[ind].Temperature > float32(worktemp_max) {
+				fmt.Println("ERROR SCP GROW BIO: Temperatura acima do máximo no", bioid, bio[ind].Temperature, " máximo:", worktemp_max)
+				bio_add_message(bioid, "AAVISO: tempetura está acima do máximo ideal para o cultivo, favor verificar", "")
+			}
 		}
+
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
