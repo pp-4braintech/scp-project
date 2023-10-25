@@ -2840,6 +2840,10 @@ func scp_test_boot(main_id string, dev_type string) string {
 		if params[0] == scp_ack && len(params) > 1 {
 			if params[1] == scp_magicvalue || params[1] == "0" {
 				ok = true
+				if params[1] == "0" {
+					ret = scp_sendmsg_orch(cmd)
+					params = scp_splitparam(ret, "/")
+				}
 				break
 			}
 		}
