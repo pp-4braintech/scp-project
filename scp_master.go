@@ -2843,7 +2843,7 @@ func scp_test_boot(main_id string, dev_type string) string {
 				break
 			}
 		}
-		ret := scp_sendmsg_orch(cmd)
+		ret = scp_sendmsg_orch(cmd)
 		params = scp_splitparam(ret, "/")
 	}
 	if ok {
