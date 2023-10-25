@@ -2090,6 +2090,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",3/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+scp_magicport+",3/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				// cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 				nerr := 0
@@ -2172,6 +2173,7 @@ func scp_setup_devices(mustall bool) {
 					cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
 				}
 				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+scp_magicport+",3/END")
 				cmd = append(cmd, "CMD/"+ibcaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Levellow[1:]+",0/END")
 				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
@@ -2249,6 +2251,7 @@ func scp_setup_devices(mustall bool) {
 				for i := 0; i < len(tot.Peris_dev); i++ {
 					cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
 				}
+				cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+scp_magicport+",3/END")
 				cmd = append(cmd, "CMD/"+totemaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				nerr := 0
 				for k, c := range cmd {
@@ -2288,6 +2291,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = make([]string, 0)
 				if bf.Deviceport[0] != 'C' {
 					cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+					cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+scp_magicport+",3/END")
 					cmd = append(cmd, "CMD/"+bfaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				}
 
