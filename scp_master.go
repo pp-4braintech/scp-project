@@ -3422,13 +3422,13 @@ func scp_get_alldata() {
 											ibc[ind].VolInOut = 0
 										}
 										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
-										fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " NOVO volume =", ibc[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALLDATA: IBC", b.IBCID, " NOVO volume =", ibc[ind].VolInOut)
 										// scp_update_biolevel(b.BioreactorID)
 									}
 									lastvolout = vol_tmp
 									hasupdatevolout = true
 								} else {
-									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+									fmt.Println("ERROR SCP GET ALLDATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
 							}
 
@@ -3440,7 +3440,8 @@ func scp_get_alldata() {
 								}
 							}
 
-						} else if scp_onlyread_sensoribc {
+						}
+						if scp_onlyread_sensoribc {
 
 							var vol0 float64 = 1
 							var dint int
