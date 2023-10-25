@@ -8544,7 +8544,9 @@ func scp_process_conn(conn net.Conn) {
 							if get_scp_type(bio[ind].OutID) == scp_ibc {
 								ibc_ind := get_ibc_index(bio[ind].OutID)
 								if ibc_ind >= 0 {
-									if ibc[ibc_ind].Status == bio_empty || ibc[ibc_ind].OrgCode == bio[ind].OrgCode {
+									if ibc[ibc_ind].Status != bio_empty && ibc[ibc_ind].OrgCode != bio[ind].OrgCode && ibc[ind].IBCID != "IBC07" {
+										bio_add_message(bioid, "ENão é permitido fazer transferência do Biorreator para um IBC que não esteja vazio ou com o mesmo microrganismo", "")
+									} else {
 										if bio[ind].Volume+ibc[ibc_ind].Volume <= ibc_cfg[bio[ind].OutID].Maxvolume+bio_ibctransftol {
 											// bio[ind].Status = bio_unloading
 											bio[ind].MainStatus = mainstatus_org
@@ -8590,8 +8592,6 @@ func scp_process_conn(conn net.Conn) {
 										} else {
 											bio_add_message(bioid, "EAtual volume do "+bio[ind].OutID+" não suporte a transferência", "")
 										}
-									} else {
-										bio_add_message(bioid, "ENão é permitido fazer transferência do Biorreator para um IBC que não esteja vazio ou com o mesmo microrganismo", "")
 									}
 								} else {
 									fmt.Println("ERROR WITHDRAW: IBC destino não encontrado", bioid, bio[ind].OutID)
