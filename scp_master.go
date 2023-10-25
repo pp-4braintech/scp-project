@@ -3216,7 +3216,13 @@ func scp_get_alldata() {
 						testboot := scp_test_boot(b.BioreactorID, scp_bioreactor)
 						if testboot == scp_reboot {
 							fmt.Println("ERROR GET ALLDATA: Teste do Biorreator", b.BioreactorID, "retornou que houve BOOT. Mudando status para ERROR")
-							bio[ind].Status = bio_error
+							if bio[ind].Status != bio_error {
+								if bio[ind].Status == bio_pause {
+									bio[ind].UndoStatus = bio[ind].LastStatus
+								}
+								bio[ind].LastStatus = bio[ind].Status
+								bio[ind].Status = bio_error
+							}
 						} else if testboot == scp_err {
 							fmt.Println("ERROR GET ALLDATA: Teste do Biorreator", b.BioreactorID, "retornou ERRO no test de boot", testboot)
 						} else {
@@ -3513,7 +3519,10 @@ func scp_get_alldata() {
 						testboot := scp_test_boot(b.IBCID, scp_ibc)
 						if testboot == scp_reboot {
 							fmt.Println("ERROR GET ALLDATA: Teste do IBC", b.IBCID, "retornou que houve BOOT. Mudando status para ERROR")
-							ibc[ind].Status = bio_error
+							if ibc[ind].Status != bio_error {
+								ibc[ind].LastStatus = ibc[ind].Status
+								ibc[ind].Status = bio_error
+							}
 						} else if testboot == scp_err {
 							fmt.Println("ERROR GET ALLDATA: Teste do IBC", b.IBCID, "retornou ERRO no test de boot", testboot)
 						} else {
