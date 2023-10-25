@@ -2085,6 +2085,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",3/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/PUT/A7,7/END")
 				// cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 				nerr := 0
 				for k, c := range cmd {
@@ -7410,7 +7411,7 @@ func scp_process_conn(conn net.Conn) {
 						if bio[ind].RegresPH[0] != 0 && bio[ind].RegresPH[1] != 0 {
 							phtmp := scp_get_ph(bioid)
 							if phtmp > 0 {
-								msgstr := fmt.Sprintf("PH Aferido: %2.1f")
+								msgstr := fmt.Sprintf("%2.1f", phtmp)
 								msg = MsgReturn{scp_ack, msgstr}
 							} else {
 								msg = MsgReturn{scp_err, "Erro ao aferir PH. Sensor retornou valor inválido. Repita o processo e, se persistir o erro, entre em contato com o SAC"}
