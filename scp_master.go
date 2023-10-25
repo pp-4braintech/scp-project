@@ -80,6 +80,8 @@ const (
 	bio_noaddr = "FF:FFFFFF"
 )
 
+const scp_onlyread_sensoribc = true
+
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
 const scp_dev_valve = "VALVE"
@@ -3438,25 +3440,27 @@ func scp_get_alldata() {
 								}
 							}
 
-						} else {
+						} else if scp_onlyread_sensoribc {
 
-							var vol0 float64 = -1
+							var vol0 float64 = 1
 							var dint int
-							dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-							if dint <= 0 || dint > 1 {
-								dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
-							}
-							if dint >= 0 {
-								ibc[ind].Vol0 = dint
-							}
-							if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
-								fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
-							} else {
-								vol0 = float64(dint)
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
-							}
+
+							// dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
+							// if dint <= 0 || dint > 1 {
+							// 	dint, _ = scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0)
+							// }
+							// if dint >= 0 {
+							// 	ibc[ind].Vol0 = dint
+							// }
+							// if ibc[ind].Status == bio_cip && (ibc[ind].Valvs[0] == 1 || ibc[ind].Valvs[1] == 1) {
+							// 	fmt.Println("DEBUG GET ALLDATA: CIP EXECUTANDO - IGNORANDO VOLUME ZERO", b.IBCID)
+							// } else {
+							// 	vol0 = float64(dint)
+							// 	fmt.Println("DEBUG GET ALLDATA: Volume ZERO", b.IBCID, ibc_cfg[b.IBCID].Deviceaddr, dint, vol0)
+							// }
 
 							var vol1, vol1_pre float64
+
 							vol1 = -1
 							dint, vol1_pre = scp_get_volume(b.IBCID, scp_ibc, scp_dev_volusom)
 							if dint == 1 { // WORKARROUND para quando retornar valor do V0 no ULTRASSOM
@@ -3478,7 +3482,7 @@ func scp_get_alldata() {
 								vol1 = 10 * (math.Trunc(vol1_pre / 10))
 							}
 							ibc[ind].Vol1 = int32(vol1_pre)
-							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume USOM", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol1_pre, vol1)
 
 							var vol2, vol2_pre float64
 							vol2 = -1
@@ -3498,7 +3502,7 @@ func scp_get_alldata() {
 								vol2 = 10 * (math.Trunc(vol2_pre / 10))
 							}
 							ibc[ind].Vol2 = int32(vol2_pre)
-							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre)
+							fmt.Println("DEBUG GET ALLDATA: Volume LASER", b.IBCID, bio_cfg[b.IBCID].Deviceaddr, dint, vol2_pre, vol2)
 
 							// cmd2 := "CMD/" + ibcaddr + "/GET/" + v2dev + "/END"
 							// ret2 := scp_sendmsg_orch(cmd2)
@@ -3531,63 +3535,63 @@ func scp_get_alldata() {
 							// 	fmt.Println("ERROR GET ALLDATA: LASER", b.IBCID, ret2, params)
 							// }
 
-							var volc float64
-							volc = float64(ibc[ind].Volume)
-							if vol0 == 0 {
-								fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
-								volc = 0
-							} else if vol1 < 0 && vol2 < 0 {
-								fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
-							} else {
-								if ibc[ind].Valvs[3] == 1 { // Desenvase
-									if vol1 < 0 {
-										if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
-											volc = vol2
-										}
-									} else {
-										volc = vol1
-									}
-								} else if ibc[ind].Valvs[2] == 1 { // Carregando
-									if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
-										if vol1 < 0 {
-											if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
-												volc = vol2
-											}
-										} else {
-											volc = vol1
-										}
-									}
-								} else {
-									if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
-										fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
-									} else {
-										if vol1 >= 0 {
-											volc = vol1
-										} else if vol2 >= 0 {
-											volc = vol2
-										}
-									}
-								}
-							}
+							// var volc float64
+							// volc = float64(ibc[ind].Volume)
+							// if vol0 == 0 {
+							// 	fmt.Println("DEBUG GET ALLDATA: Volume ZERO DETECTADO", b.IBCID)
+							// 	volc = 0
+							// } else if vol1 < 0 && vol2 < 0 {
+							// 	fmt.Println("ERROR GET ALLDATA: IGNORANDO VOLUMES INVALIDOS", b.IBCID, vol1, vol2)
+							// } else {
+							// 	if ibc[ind].Valvs[3] == 1 { // Desenvase
+							// 		if vol1 < 0 {
+							// 			if vol2 >= 0 && vol2 < float64(ibc[ind].Volume) {
+							// 				volc = vol2
+							// 			}
+							// 		} else {
+							// 			volc = vol1
+							// 		}
+							// 	} else if ibc[ind].Valvs[2] == 1 { // Carregando
+							// 		if ibc[ind].Valvs[1] == 0 { // Sprayball desligado
+							// 			if vol1 < 0 {
+							// 				if vol2 >= 0 && vol2 > float64(ibc[ind].Volume) {
+							// 					volc = vol2
+							// 				}
+							// 			} else {
+							// 				volc = vol1
+							// 			}
+							// 		}
+							// 	} else {
+							// 		if ibc[ind].Status == bio_cip && ibc[ind].Valvs[1] == 1 { //  Se for CIP e Sptrayball ligado, ignorar
+							// 			fmt.Println("DEBUG GET ALLDATA: CIP+SPRAYBALL - IGNORANDO VOLUMES ", b.IBCID, vol1, vol2)
+							// 		} else {
+							// 			if vol1 >= 0 {
+							// 				volc = vol1
+							// 			} else if vol2 >= 0 {
+							// 				volc = vol2
+							// 			}
+							// 		}
+							// 	}
+							// }
 
-							if volc >= 0 {
-								ibc[ind].Volume = uint32(volc)
-								level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
-								level_int := uint8(level)
-								if level_int != ibc[ind].Level {
-									ibc[ind].Level = level_int
-								}
-								if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
-									ibc[ind].Status = bio_empty
-								}
-							}
-							if devmode && ibc[ind].Status == bio_update {
-								if ibc[ind].Volume == 0 {
-									ibc[ind].Status = bio_empty
-								} else {
-									ibc[ind].Status = bio_ready
-								}
-							}
+							// if volc >= 0 {
+							// 	ibc[ind].Volume = uint32(volc)
+							// 	level := (volc / float64(ibc_cfg[b.IBCID].Maxvolume)) * 10.0
+							// 	level_int := uint8(level)
+							// 	if level_int != ibc[ind].Level {
+							// 		ibc[ind].Level = level_int
+							// 	}
+							// 	if volc == 0 && vol0 == 0 && ibc[ind].Status != bio_loading && ibc[ind].Status != bio_cip {
+							// 		ibc[ind].Status = bio_empty
+							// 	}
+							// }
+							// if devmode && ibc[ind].Status == bio_update {
+							// 	if ibc[ind].Volume == 0 {
+							// 		ibc[ind].Status = bio_empty
+							// 	} else {
+							// 		ibc[ind].Status = bio_ready
+							// 	}
+							// }
 
 						}
 					}
