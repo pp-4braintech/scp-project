@@ -34,12 +34,14 @@ var net192 = false
 var testmode = false
 var autowithdraw = false
 
+const scp_onlyread_sensoribc = true
+
 const control_ph = true
 const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.35" // 2023-10-24
+	scp_version = "1.2.35" // 2023-10-25
 
 	scp_on  = 1
 	scp_off = 0
@@ -79,8 +81,6 @@ const (
 
 	bio_noaddr = "FF:FFFFFF"
 )
-
-const scp_onlyread_sensoribc = true
 
 const scp_dev_pump = "PUMP"
 const scp_dev_aero = "AERO"
