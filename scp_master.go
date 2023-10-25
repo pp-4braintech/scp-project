@@ -82,8 +82,8 @@ const (
 
 	bio_noaddr = "FF:FFFFFF"
 
-	scp_magicport  = "A7"
-	scp_magicvalue = "7"
+	scp_magicport  = "D77"
+	scp_magicvalue = "1"
 )
 
 const scp_dev_pump = "PUMP"
