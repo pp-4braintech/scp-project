@@ -82,7 +82,7 @@ const (
 
 	bio_noaddr = "FF:FFFFFF"
 
-	scp_magicport  = "D77"
+	scp_magicport  = "D51"
 	scp_magicvalue = "1"
 )
 
