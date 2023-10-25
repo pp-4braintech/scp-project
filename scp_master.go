@@ -63,6 +63,7 @@ const (
 	scp_stop     = "STOP"
 	scp_pause    = "PAUSE"
 	scp_fail     = "FAIL"
+	scp_reboot   = "BOOT"
 	scp_netfail  = "NETFAIL"
 	scp_ready    = "READY"
 	scp_sysstop  = "SYSSTOP"
@@ -80,6 +81,9 @@ const (
 	mainstatus_empty = "VAZIO"
 
 	bio_noaddr = "FF:FFFFFF"
+
+	scp_magicport  = "A7"
+	scp_magicvalue = "7"
 )
 
 const scp_dev_pump = "PUMP"
@@ -166,6 +170,8 @@ const scp_bioreactor = "BIOREACTOR"
 const scp_biofabrica = "BIOFABRICA"
 const scp_totem = "TOTEM"
 const scp_ibc = "IBC"
+const scp_wdpanel = "WDPANEL"
+const scp_intpanel = "INTPANEL"
 const scp_screen = "SCREEN"
 const scp_wdpanel = "WDPANEL"
 const scp_config = "CONFIG"
@@ -2085,7 +2091,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Levellow[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Emergency[1:]+",0/END")
 				cmd = append(cmd, "CMD/"+bioaddr+"/MOD/"+b.Heater[1:]+",3/END")
-				cmd = append(cmd, "CMD/"+bioaddr+"/PUT/A7,7/END")
+				cmd = append(cmd, "CMD/"+bioaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				// cmd = append(cmd, "CMD/"+b.Screenaddr+"/PUT/S200,1/END")
 				nerr := 0
 				for k, c := range cmd {
@@ -2167,6 +2173,7 @@ func scp_setup_devices(mustall bool) {
 					cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Valv_devs[i][1:]+",3/END")
 				}
 				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Levelhigh[1:]+",1/END")
+				cmd = append(cmd, "CMD/"+ibcaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+ib.Levellow[1:]+",0/END")
 				// cmd = append(cmd, "CMD/"+ibcaddr+"/MOD/"+b.Emergency[1:]+",1/END")
 
@@ -2243,7 +2250,7 @@ func scp_setup_devices(mustall bool) {
 				for i := 0; i < len(tot.Peris_dev); i++ {
 					cmd = append(cmd, "CMD/"+totemaddr+"/MOD/"+tot.Peris_dev[i][1:]+",3/END")
 				}
-
+				cmd = append(cmd, "CMD/"+totemaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				nerr := 0
 				for k, c := range cmd {
 					ret := scp_sendmsg_orch(c)
@@ -2282,6 +2289,7 @@ func scp_setup_devices(mustall bool) {
 				cmd = make([]string, 0)
 				if bf.Deviceport[0] != 'C' {
 					cmd = append(cmd, "CMD/"+bfaddr+"/MOD/"+bf.Deviceport[1:]+",3/END")
+					cmd = append(cmd, "CMD/"+bfaddr+"/PUT/"+scp_magicport+","+scp_magicvalue+"/END")
 				}
 
 				nerr := 0
@@ -2689,11 +2697,25 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		}
 	case scp_biofabrica:
 		if vol_type == scp_dev_volfluxo_out {
-			dev_addr = biofabrica_cfg["FBF01"].Deviceaddr
-			vol_dev = biofabrica_cfg["FBF01"].Deviceport
+			_, ok := biofabrica_cfg["FBF01"]
+			if ok {
+				dev_addr = biofabrica_cfg["FBF01"].Deviceaddr
+				vol_dev = biofabrica_cfg["FBF01"].Deviceport
+			} else {
+				fmt.Println("ERROR SCP GET VOLUME: Nao foi encontrados os dados do Fluxometro FBF01")
+				board_add_message("EFBF01 Não configurado. Favor corrigir em Configurações / Biofábrica", "")
+				return -1, -1
+			}
 		} else if vol_type == scp_dev_volfluxo_in1 {
-			dev_addr = biofabrica_cfg["FBF02"].Deviceaddr
-			vol_dev = biofabrica_cfg["FBF02"].Deviceport
+			_, ok := biofabrica_cfg["FBF02"]
+			if ok {
+				dev_addr = biofabrica_cfg["FBF02"].Deviceaddr
+				vol_dev = biofabrica_cfg["FBF02"].Deviceport
+			} else {
+				fmt.Println("ERROR SCP GET VOLUME: Nao foi encontrados os dados do Fluxometro FBF02")
+				board_add_message("EFBF02 Não configurado. Favor corrigir em Configurações / Biofábrica", "")
+				return -1, -1
+			}
 		} else {
 			fmt.Println("ERROR SCP GET VOLUME: VOL_TYPE invalido para biofabrica", main_id, vol_type)
 			return -1, -1
@@ -2784,6 +2806,53 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		volume = 0
 	}
 	return int(dint), volume
+}
+
+func scp_test_boot(main_id string, dev_type string) string {
+	var devaddr string
+	switch dev_type {
+	case scp_bioreactor:
+		devaddr = bio_cfg[main_id].Deviceaddr
+	case scp_ibc:
+		devaddr = ibc_cfg[main_id].Deviceaddr
+	case scp_totem:
+		devaddr = totem_cfg[main_id].Deviceaddr
+	case scp_wdpanel:
+		devaddr = biofabrica_cfg["PBF01"].Deviceaddr
+	case scp_intpanel:
+		devaddr = biofabrica_cfg["VBF03"].Deviceaddr
+	default:
+		devaddr = ""
+	}
+	if devaddr == "" {
+		fmt.Println("ERROR SCP TEST BOOT: Dispositivo invalido", main_id, dev_type)
+		return scp_err
+	}
+	cmd := "CMD/" + devaddr + "/GET/" + scp_magicport + "/END"
+	ret := scp_sendmsg_orch(cmd)
+	params := scp_splitparam(ret, "/")
+	ok := false
+	for i := 0; i < 3; i++ {
+		fmt.Println("DEBUG SCP TEST BOOT: Testando magicvalue no Dispositivo ", main_id, dev_type, "#", i, "cmd=", cmd, "ret=", ret)
+		if params[0] == scp_ack && len(params) > 1 {
+			if params[1] == scp_magicvalue || params[1] == "0" {
+				ok = true
+				break
+			}
+		}
+		ret := scp_sendmsg_orch(cmd)
+		params = scp_splitparam(ret, "/")
+	}
+	if ok {
+		if params[1] != scp_magicvalue {
+			fmt.Println("DEBUG SCP TEST BOOT: Dispositivo retornou valor 0 para magicvalue, indicio de reboot ", main_id, dev_type, params)
+			return scp_reboot
+		}
+	} else {
+		fmt.Println("ERROR SCP TEST BOOT: Dispositivo nao retornou valor valido para magicvalue ", main_id, dev_type, params)
+		return scp_err
+	}
+	return scp_ack
 }
 
 func scp_refresh_status() {
@@ -3032,11 +3101,20 @@ func scp_get_alldata() {
 				pi_addr := biofabrica_cfg["VBF03"].Deviceaddr
 				pi_port := biofabrica_cfg["VBF03"].Deviceport
 				if len(pi_addr) == 0 || len(pi_port) == 0 {
-					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF03 para teste do Painel Intermediario")
+					fmt.Println("ERROR GET ALLDATA: Erro ao encontrar configuracao de VBF03 para teste do Painel Intermediario")
 				} else {
-					cmd_pi := "CMD/" + pi_addr + "/GET/" + pi_port + "/END"
-					ret_pi := scp_sendmsg_orch(cmd_pi)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_pi, " ret=", ret_pi)
+					// cmd_pi := "CMD/" + pi_addr + "/GET/" + pi_port + "/END"
+					// ret_pi := scp_sendmsg_orch(cmd_pi)
+					// fmt.Println("DEBUG GET ALLDATA: Teste do Painel Intermediario  cmd=", cmd_pi, " ret=", ret_pi)
+					testboot := scp_test_boot(scp_biofabrica, scp_intpanel)
+					if testboot == scp_reboot {
+						fmt.Println("ERROR GET ALLDATA: Teste do Painel Intermediario retornou que houve BOOT. Mudando status para ERROR")
+						biofabrica.PIntStatus = bio_error
+					} else if testboot == scp_err {
+						fmt.Println("ERROR GET ALLDATA: Teste do Painel Intermediario retornou ERRO no test de boot", testboot)
+					} else {
+						fmt.Println("DEBUG GET ALLDATA: Teste do Painel Intermediario retornou ", testboot)
+					}
 				}
 
 				pd_addr := biofabrica_cfg["VBF07"].Deviceaddr
@@ -3044,9 +3122,18 @@ func scp_get_alldata() {
 				if len(pd_addr) == 0 || len(pd_port) == 0 {
 					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF07 para teste do Painel Desenvase")
 				} else {
-					cmd_pd := "CMD/" + pd_addr + "/GET/" + pd_port + "/END"
-					ret_pd := scp_sendmsg_orch(cmd_pd)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_pd, " ret=", ret_pd)
+					// cmd_pd := "CMD/" + pd_addr + "/GET/" + pd_port + "/END"
+					// ret_pd := scp_sendmsg_orch(cmd_pd)
+					// fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_pd, " ret=", ret_pd)
+					testboot := scp_test_boot(scp_biofabrica, scp_wdpanel)
+					if testboot == scp_reboot {
+						fmt.Println("ERROR GET ALLDATA: Teste do Painel de Desenvase retornou que houve BOOT. Mudando status para ERROR")
+						biofabrica.POutStatus = bio_error
+					} else if testboot == scp_err {
+						fmt.Println("ERROR GET ALLDATA: Teste do Painel de Desenvase retornou ERRO no test de boot", testboot)
+					} else {
+						fmt.Println("DEBUG GET ALLDATA: Teste do Painel de Desenvase retornou ", testboot)
+					}
 				}
 				t_start_test_pipd = time.Now()
 			}
@@ -3058,9 +3145,22 @@ func scp_get_alldata() {
 				if len(t1_addr) == 0 || len(t1_port) == 0 {
 					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de VBF01 para teste do TOTEM01")
 				} else {
-					cmd_t1 := "CMD/" + t1_addr + "/GET/" + t1_port + "/END"
-					ret_t1 := scp_sendmsg_orch(cmd_t1)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Intermediario  cmd=", cmd_t1, " ret=", ret_t1)
+					// cmd_t1 := "CMD/" + t1_addr + "/GET/" + t1_port + "/END"
+					// ret_t1 := scp_sendmsg_orch(cmd_t1)
+					// fmt.Println("DEBUG GET ALL DATA: Teste da Válvulva VBF01 no TOTEM01 cmd=", cmd_t1, " ret=", ret_t1)
+					testboot := scp_test_boot("TOTEM01", scp_totem)
+					if testboot == scp_reboot {
+						fmt.Println("ERROR GET ALLDATA: Teste do TOTEM01 retornou que houve BOOT. Mudando status para ERROR")
+						ind := get_totem_index("TOTEM01")
+						if ind >= 0 {
+							totem[ind].Status = bio_error
+							biofabrica.Status = scp_fail
+						}
+					} else if testboot == scp_err {
+						fmt.Println("ERROR GET ALLDATA: Teste do TOTEM01 retornou ERRO no test de boot", testboot)
+					} else {
+						fmt.Println("DEBUG GET ALLDATA: Teste do TOTEM01 retornou ", testboot)
+					}
 				}
 
 				t2_addr := totem_cfg["TOTEM02"].Deviceaddr
@@ -3068,9 +3168,21 @@ func scp_get_alldata() {
 				if len(t2_addr) == 0 || len(t2_port) == 0 {
 					fmt.Println("ERROR GET ALL DATA: Erro ao encontrar configuracao de TOTEM02 para teste")
 				} else {
-					cmd_t2 := "CMD/" + t2_addr + "/GET/" + t2_port + "/END"
-					ret_t2 := scp_sendmsg_orch(cmd_t2)
-					fmt.Println("DEBUG GET ALL DATA: Teste do Painel Desenvase  cmd=", cmd_t2, " ret=", ret_t2)
+					// cmd_t2 := "CMD/" + t2_addr + "/GET/" + t2_port + "/END"
+					// ret_t2 := scp_sendmsg_orch(cmd_t2)
+					// fmt.Println("DEBUG GET ALL DATA: Teste do TOTEM02 cmd=", cmd_t2, " ret=", ret_t2)
+					testboot := scp_test_boot("TOTEM02", scp_totem)
+					if testboot == scp_reboot {
+						fmt.Println("ERROR GET ALLDATA: Teste do TOTEM02 retornou que houve BOOT. Mudando status para ERROR")
+						ind := get_totem_index("TOTEM02")
+						if ind >= 0 {
+							totem[ind].Status = bio_error
+						}
+					} else if testboot == scp_err {
+						fmt.Println("ERROR GET ALLDATA: Teste do TOTEM02 retornou ERRO no test de boot", testboot)
+					} else {
+						fmt.Println("DEBUG GET ALLDATA: Teste do TOTEM02 retornou ", testboot)
+					}
 				}
 
 				t_start_test_totems = time.Now()
@@ -3093,7 +3205,20 @@ func scp_get_alldata() {
 					ind := get_bio_index(b.BioreactorID)
 					mustupdate_this := (mustupdate_bio && (bio_seq == ind)) || firsttime || bio[ind].Status == bio_update
 
+					if mustupdate_this || rand.Intn(21) == 7 {
+						testboot := scp_test_boot(b.BioreactorID, scp_bioreactor)
+						if testboot == scp_reboot {
+							fmt.Println("ERROR GET ALLDATA: Teste do Biorreator", b.BioreactorID, "retornou que houve BOOT. Mudando status para ERROR")
+							bio[ind].Status = bio_error
+						} else if testboot == scp_err {
+							fmt.Println("ERROR GET ALLDATA: Teste do Biorreator", b.BioreactorID, "retornou ERRO no test de boot", testboot)
+						} else {
+							fmt.Println("DEBUG GET ALLDATA: Teste do Biorreator", b.BioreactorID, "retornou ", testboot)
+						}
+					}
+
 					if mustupdate_this || b.Status == bio_producting || b.Status == bio_cip || b.Valvs[2] == 1 {
+
 						if rand.Intn(21) == 7 {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
@@ -3376,6 +3501,18 @@ func scp_get_alldata() {
 				if len(ibc_cfg[b.IBCID].Deviceaddr) > 0 && (b.Status != bio_nonexist && b.Status != bio_error) {
 					ind := get_ibc_index(b.IBCID)
 					mustupdate_this := (mustupdate_ibc && (ibc_seq == ind)) || firsttime || ibc[ind].Status == bio_update
+
+					if mustupdate_this || rand.Intn(21) == 7 {
+						testboot := scp_test_boot(b.IBCID, scp_ibc)
+						if testboot == scp_reboot {
+							fmt.Println("ERROR GET ALLDATA: Teste do IBC", b.IBCID, "retornou que houve BOOT. Mudando status para ERROR")
+							ibc[ind].Status = bio_error
+						} else if testboot == scp_err {
+							fmt.Println("ERROR GET ALLDATA: Teste do IBC", b.IBCID, "retornou ERRO no test de boot", testboot)
+						} else {
+							fmt.Println("DEBUG GET ALLDATA: Teste do IBC", b.IBCID, "retornou ", testboot)
+						}
+					}
 
 					if ind >= 0 && (mustupdate_this || b.Valvs[3] == 1 || b.Valvs[2] == 1) {
 						if devmode {

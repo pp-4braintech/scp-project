@@ -97,8 +97,10 @@ Histórico de Versões (recentes)
 20231023             Várias mensagens de DEBUG foram adicionadas no run_withdraw
 
 1.2.35  -   Master.: Função grow_bio passa a considerar ranges diferentes de temperatura para os organismos.
-20231024             Passa a ler, do arquivo de organismos, tipo de organismo (B=bactéria e F=fungo) e também o intervalo de temperatura de cultivo.
+20231025             Passa a ler, do arquivo de organismos, tipo de organismo (B=bactéria e F=fungo) e também o intervalo de temperatura de cultivo.
                      Corrige teste no refresh para identificar quando a falha é no painel de desenvase e também no TOTEM01.
                      Alerta e desliga resistência em get_alldata se temperatura exceder TEMPMAX.
                      Vários novos testes de segurança adicionados antes de ligar a resistência (função turn_heater).
-
+                     Corrigido problema de exibição do PH em Aferição 
+                     Criado magicvaleu e funções necessárias para verificar em get_alldata se dispositivo foi rebootado.
+                     Em get_volume testa se existe FBF01 e FBF02.
