@@ -104,3 +104,6 @@ Histórico de Versões (recentes)
                      Corrigido problema de exibição do PH em Aferição 
                      Criado magicvaleu e funções necessárias para verificar em get_alldata se dispositivo foi rebootado.
                      Em get_volume testa se existe FBF01 e FBF02.
+
+1.2.36  -   Master.: No alerta de temperatura acima do máximo, introduz um deltatemp de tolerância no limite superior.
+20231025             

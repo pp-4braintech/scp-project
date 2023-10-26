@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.35" // 2023-10-25
+	scp_version = "1.2.36" // 2023-10-26
 
 	scp_on  = 1
 	scp_off = 0
@@ -209,7 +209,7 @@ const time_cipline_clean = 30    // em segundos
 const scp_timeoutdefault = 60
 const scp_maxwaitvolume = 30 // em minutos
 
-const bio_deltatemp = 1.0 // variacao de temperatura maximo em percentual
+const bio_deltatemp = 1.5 // variacao de temperatura maximo em percentual
 const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 
 const bio_withdrawstep = 50
@@ -2843,6 +2843,7 @@ func scp_test_boot(main_id string, dev_type string) string {
 				if params[1] == "0" {
 					ret = scp_sendmsg_orch(cmd)
 					params = scp_splitparam(ret, "/")
+					fmt.Println("DEBUG SCP TEST BOOT: Testando NOVAMENTE magicvalue no Dispositivo ", main_id, dev_type, "#", i, "cmd=", cmd, "ret=", ret)
 				}
 				break
 			}
@@ -5515,9 +5516,10 @@ func scp_grow_bio(bioid string) bool {
 				fmt.Println("WARN SCP GROW BIO: Temperatura abaixo do mínimo (", worktemp_min, "), ajustando temperatura", bioid, bio[ind].Temperature, " para:", worktemp_max)
 				bio[ind].Temprunning = true
 				go scp_adjust_temperature(bioid, float32(worktemp_max), ttotal)
-			} else if bio[ind].Temperature > float32(worktemp_max) {
+			} else if bio[ind].Temperature > float32(worktemp_max)+bio_deltatemp {
 				fmt.Println("ERROR SCP GROW BIO: Temperatura acima do máximo no", bioid, bio[ind].Temperature, " máximo:", worktemp_max)
-				bio_add_message(bioid, "AAVISO: tempetura está acima do máximo ideal para o cultivo, favor verificar", "")
+				bio_add_message(bioid, "AAVISO: tempetura está acima do máximo ideal para o cultivo, favor verificar", "ERRMAXTEMP")
+				bio[ind].Temprunning = false
 			}
 		}
 
