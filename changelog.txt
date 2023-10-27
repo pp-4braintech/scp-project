@@ -106,4 +106,4 @@ Histórico de Versões (recentes)
                      Em get_volume testa se existe FBF01 e FBF02.
 
 1.2.36  -   Master.: No alerta de temperatura acima do máximo, introduz um deltatemp de tolerância no limite superior.
-20231025             
+20231025             Adequa Level em IBC setvolume 

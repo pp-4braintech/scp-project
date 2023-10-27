@@ -7887,6 +7887,7 @@ func scp_process_conn(conn net.Conn) {
 							} else {
 								ibc[ind].VolInOut = float64(newvolume)
 								ibc[ind].Volume = uint32(newvolume)
+								ibc[ind].Level = uint8(10 * float64(newvolume) / float64(ibc_cfg[ibcid].Maxvolume))
 								if newvolume == 0 {
 									ibc[ind].Status = bio_empty
 								} else if ibc[ind].Status == bio_empty {
