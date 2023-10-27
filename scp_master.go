@@ -2314,7 +2314,10 @@ func scp_setup_devices(mustall bool) {
 									err_local += "Painel Desenvase "
 									biofabrica.POutStatus = bio_error
 								} else if len(disp) > 0 {
-									err_local += "Dispositivo " + disp
+									if !strings.Contains(err_local, disp) {
+										err_local += " " + disp + " "
+
+									}
 								}
 							}
 						}
