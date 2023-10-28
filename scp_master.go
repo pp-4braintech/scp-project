@@ -2609,7 +2609,7 @@ func scp_get_temperature(bioid string) float64 {
 		tempfloat := mediana / 10.0
 
 		fmt.Println("DEBUG SCP GET TEMPERATURE: Lendo Temperatura do Biorreator", bioid, "cmd=", cmd_temp, "mediana=", mediana, "tempfloat=", tempfloat)
-		if tempfloat > 0 && tempfloat < 120 {
+		if tempfloat > 10 && tempfloat < 120 { // Mudei para ignorar temperaturas muito baixas
 			return tempfloat
 		} else {
 			fmt.Println("ERROR SCP GET TEMPERATURE: Retorno invalido, temperatura fora do range", bioid, tempfloat)
