@@ -235,6 +235,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
 					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 					if err != nil {
+						fmt.Println("ERROR MAIN NETWORK: GET Erro durante NewRequest ", client_id, bf_endpoint)
 						checkErr(err)
 						return
 					}
@@ -247,6 +248,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 					reqData, err := httputil.DumpRequest(req, true)
 					if err != nil {
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante DumpRequest ", client_id, bf_endpoint)
 						checkErr(err)
 						return
 					}
@@ -255,8 +257,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 					resp, err := client.Do(req)
 					if err != nil {
-						fmt.Println("ERRO no client.Do")
+						fmt.Println("ERROR MAIN NETWORK: GET Erro durante client.Do ", client_id, bf_endpoint)
 						checkErr(err)
+						http.Error(rw, "Erro ao Conectar com Biofabrica. Favor verificar Rede de Dados.", http.StatusGatewayTimeout)
 						return
 					}
 					defer resp.Body.Close()
@@ -281,8 +284,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					//Copy the response body to the actual response
 					_, err = io.Copy(rw, resp.Body)
 					if err != nil {
-						log.Println(err)
-						rw.Write([]byte("error"))
+						fmt.Println("ERROR MAIN NETWORK: GET Erro durante io.Copy ", client_id, bf_endpoint)
+						checkErr(err)
 						return
 					}
 				}
@@ -400,7 +403,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante client.Do ", client_id, bf_endpoint)
 						checkErr(err)
-						http.Error(rw, "Erro no cliente", http.StatusGatewayTimeout)
+						http.Error(rw, "Erro ao Conectar com Biofabrica. Favor verificar Rede de Dados.", http.StatusGatewayTimeout)
 						return
 					}
 					defer resp.Body.Close()
@@ -426,7 +429,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					//Copy the response body to the actual response
 					_, err = io.Copy(rw, resp.Body)
 					if err != nil {
-						log.Println(err)
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante io.Copy ", client_id, bf_endpoint)
+						checkErr(err)
 						rw.Write([]byte("error"))
 						return
 					}
@@ -514,6 +518,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
 			req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 			if err != nil {
+				fmt.Println("ERROR MAIN NETWORK: POST Erro durante NewRequest ", client_id, bf_endpoint)
 				checkErr(err)
 				return
 			}
@@ -526,6 +531,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 			reqData, err := httputil.DumpRequest(req, true)
 			if err != nil {
+				fmt.Println("ERROR MAIN NETWORK: POST Erro durante DumpRequest ", client_id, bf_endpoint)
 				checkErr(err)
 				return
 			}
@@ -534,8 +540,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 			resp, err := client.Do(req)
 			if err != nil {
-				fmt.Println("ERRO no client.Do")
+				fmt.Println("ERROR MAIN NETWORK: POST Erro durante client.Do ", client_id, bf_endpoint)
 				checkErr(err)
+				http.Error(rw, "Erro ao Conectar com Biofabrica. Favor verificar Rede de Dados.", http.StatusGatewayTimeout)
 				return
 			}
 			defer resp.Body.Close()
@@ -543,6 +550,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			//Get dump of our response
 			respData, err := httputil.DumpResponse(resp, true)
 			if err != nil {
+				fmt.Println("ERROR MAIN NETWORK: POST Erro durante DumpResponse ", client_id, bf_endpoint)
 				checkErr(err)
 				return
 			}
@@ -560,7 +568,8 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 			//Copy the response body to the actual response
 			_, err = io.Copy(rw, resp.Body)
 			if err != nil {
-				log.Println(err)
+				fmt.Println("ERROR MAIN NETWORK: POST Erro durante io.Copy ", client_id, bf_endpoint)
+				checkErr(err)
 				rw.Write([]byte("error"))
 				return
 			}
