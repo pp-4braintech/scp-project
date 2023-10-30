@@ -376,6 +376,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					bf_endpoint := fmt.Sprintf("http://%s:5000%s", bfs[ind].BFIP, endpoint)
 					req, err := http.NewRequest(r.Method, bf_endpoint, r.Body)
 					if err != nil {
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante NewRequest ", client_id, bf_endpoint)
 						checkErr(err)
 						return
 					}
@@ -383,11 +384,12 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					req.Header = r.Header.Clone()
 					req.URL.RawQuery = r.URL.RawQuery
 					client := http.Client{
-						Timeout: 10 * time.Second, // timeout era 5, mudei para 10 pois na aferição de PH havia problema
+						Timeout: 5 * time.Second, // timeout era 5, mudei para 10 pois na aferição de PH havia problema
 					}
 
 					reqData, err := httputil.DumpRequest(req, true)
 					if err != nil {
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante DumpRequest ", client_id, bf_endpoint)
 						checkErr(err)
 						return
 					}
@@ -396,8 +398,9 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 
 					resp, err := client.Do(req)
 					if err != nil {
-						fmt.Println("ERRO no client.Do")
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante client.Do ", client_id, bf_endpoint)
 						checkErr(err)
+						http.Error(rw, "Erro no cliente", http.StatusGatewayTimeout)
 						return
 					}
 					defer resp.Body.Close()
@@ -405,6 +408,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					//Get dump of our response
 					respData, err := httputil.DumpResponse(resp, true)
 					if err != nil {
+						fmt.Println("ERROR MAIN NETWORK: PUT Erro durante DumpResponse ", client_id, bf_endpoint)
 						checkErr(err)
 						return
 					}
