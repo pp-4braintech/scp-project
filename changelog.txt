@@ -110,4 +110,7 @@ Histórico de Versões (recentes)
                      Verifica se temperatura lida é maior do que 10 graus, caso contrário ignora
 
 1.2.37  -   Master.: Muda bio_deltavolzero parq 25 litros. CIP não estava dando erro no withdraw por volume não variar 25 segundos.
-20231031             Mantém somente a última mensagem de ajuste de PH 
+20231031             Mantém somente a última mensagem de ajuste de PH.
+                     Na calibração do PH 4, valida se mediada no PH 4 está em 4.3 +- 0.15 
+                     Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.15 em relação à mediana.
+                     Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
