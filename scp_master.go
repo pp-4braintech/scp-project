@@ -141,11 +141,13 @@ const scp_par_stopall = "STOPALL"
 const scp_par_upgrade = "SYSUPGRADE"
 const scp_par_lock = "LOCK"
 const scp_par_unlock = "UNLOCK"
+const scp_par_ph = "PH"
 const scp_par_bfdata = "BFDATA"
 const scp_par_loadbfdata = "LOADBFDATA"
 const scp_par_restore = "RESTORE"
 const scp_par_clenaperis = "CLEANPERIS"
 const scp_par_setvolume = "SETVOLUME"
+const scp_par_controlph = "CONTROLPH"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -160,6 +162,7 @@ const scp_job_stop = "STOP"
 const scp_job_done = "DONE"
 const scp_job_commit = "COMMIT"
 const scp_job_msg = "MSG"
+const scp_job_test = "TEST"
 
 const scp_msg_cloro = "CLORO"
 const scp_msg_meio = "MEIO"
@@ -346,6 +349,7 @@ type Bioreact struct {
 	Continue     bool
 	MainStatus   string
 	UndoStatus   string
+	PHControl    bool
 }
 
 type Bioreact_ETL struct {
@@ -381,6 +385,7 @@ type Bioreact_ETL struct {
 	PHref       [3]float64
 	RegresPH    [2]float64
 	MainStatus  string
+	PHControl   bool
 }
 
 type IBC struct {
@@ -5489,7 +5494,7 @@ func scp_grow_bio(bioid string) bool {
 			return false
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 10 {
+		if control_ph && bio[ind].PHControl && t_elapsed_ph >= 10 {
 			ph_tmp := scp_get_ph(bioid)
 			if ph_tmp > 0 {
 				bio[ind].PH = float32(ph_tmp)
@@ -5786,6 +5791,32 @@ func scp_run_job_bio(bioid string, job string) bool {
 				}
 			}
 		}
+
+	case scp_job_test:
+		if len(subpars) > 1 {
+			testpar := subpars[0]
+			switch testpar {
+			case scp_par_ph:
+				var ph_tmp float64
+				i := 0
+				for i = 0; i < 5; i++ {
+					ph_tmp = scp_get_ph(bioid)
+					if ph_tmp > 0 {
+						break
+					}
+				}
+				fmt.Println("DEBUG SCP RUN JOB: TEST: PH teste para ", bioid, " ph=", ph_tmp, " tentativas=", i)
+				if ph_tmp < 5 || ph_tmp > 8 {
+					fmt.Println("ERROR SCP RUN JOB: TEST: Valor de PH fora do intervalo 5 <= PH <= 8 - Desativando controle de PH")
+					bio[ind].PHControl = false
+				} else {
+					bio[ind].PHControl = true
+				}
+			default:
+				fmt.Println("ERROR SCP RUN JOB: TEST: Parametro invalido ", bioid, subpars)
+			}
+		}
+
 	case scp_job_org:
 		var orgcode string
 		if len(subpars) > 0 {
@@ -5815,6 +5846,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 			case scp_par_status:
 				biostatus := subpars[1]
 				bio[ind].Status = biostatus
+			case scp_par_controlph:
+				val_str := subpars[1]
+				val_bol, err := strconv.ParseBool(val_str)
+				if err != nil {
+					bio[ind].PHControl = val_bol
+				} else {
+					fmt.Println("ERROR SCP RUN JOG: SET: CONTROLPH com valor invalido", bioid, subpars)
+				}
 			case scp_par_step:
 				biostep_str := subpars[1]
 				biostep, _ := strconv.Atoi(biostep_str)
@@ -7571,7 +7610,10 @@ func scp_process_conn(conn net.Conn) {
 					case scp_par_getph:
 						var msg MsgReturn
 						if bio[ind].RegresPH[0] != 0 && bio[ind].RegresPH[1] != 0 {
+							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid)
+							time.Sleep(30 * time.Second)
 							phtmp := scp_get_ph(bioid)
+							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid, phtmp)
 							if phtmp > 0 {
 								msgstr := fmt.Sprintf("%2.1f", phtmp)
 								msg = MsgReturn{scp_ack, msgstr}

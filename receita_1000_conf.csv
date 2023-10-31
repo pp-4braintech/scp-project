@@ -2,6 +2,7 @@
 SET/STATUS,INICIANDO
 OFF/ALL,IGNORE
 SET/MAXSTEP,6
+SET/CONTROLPH,true
 SET/TOTALTIME,DEFAULT
 #
 # Ligando Aerador
@@ -18,6 +19,11 @@ OFF/WATER,TOTEM01
 #
 # Step concluido
 COMMIT/1
+#
+# ------------  CHECA PH da AGUA 
+TEST/PH
+COMMIT/101
+#
 #
 # Pede Cloro
 SET/STEP,2
