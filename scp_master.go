@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.36" // 2023-10-26
+	scp_version = "1.2.37" // 2023-10-31
 
 	scp_on  = 1
 	scp_off = 0
@@ -215,7 +215,7 @@ const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 const bio_withdrawstep = 50
 
 const bio_ibctransftol = 50 // Na transferenciapara IBC, este é o volume acima do máximo permitido no IBC
-const bio_deltavolzero = 33 // No withdraw, se nao variar em 25 segundos e for abaixo deste valor, zera o volume
+const bio_deltavolzero = 25 // No withdraw, se nao variar em 25 segundos e for abaixo deste valor, zera o volume
 const ibc_deltavolzero = 50 // idem para o IBC
 
 const bio_diametro = 1530  // em mm   era 1430
@@ -375,7 +375,7 @@ type Bioreact_ETL struct {
 	MustStop    bool
 	MustPause   bool
 	ShowVol     bool
-	Messages    []string
+	Messages    [5]string
 	PHref       [3]float64
 	RegresPH    [2]float64
 	MainStatus  string
