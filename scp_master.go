@@ -5282,7 +5282,8 @@ func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	}
 
 	if len(phstr) > 0 {
-		bio_add_message(bioid, "IAplicando "+phstr+" para corrigir PH", "")
+		bio_del_message(bioid, "BIO"+phstr)
+		bio_add_message(bioid, "IAplicando "+phstr+" para corrigir PH", "BIO"+phstr)
 	}
 	for n := 0; n < 20; n++ {
 		if bio[ind].MustPause || bio[ind].MustStop {
@@ -5498,7 +5499,8 @@ func scp_grow_bio(bioid string) bool {
 				if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
 					ntries_ph++
 					if ntries_ph > 5 {
-						bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "")
+						bio_del_message(bioid, "ERRPH")
+						bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
 						ntries_ph = 0
 					}
 				} else {
