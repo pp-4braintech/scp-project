@@ -114,3 +114,4 @@ Histórico de Versões (recentes)
                      Na calibração do PH 4, valida se mediada no PH 4 está em 4.3 +- 0.15 
                      Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.15 em relação à mediana.
                      Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
+                     Registra tempo gasto nas calibrações de PH.
