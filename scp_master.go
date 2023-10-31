@@ -273,7 +273,7 @@ const line_14 = "1_4"
 const line_23 = "2_3"
 const line_24 = "2_4"
 
-const TEMPMAX = 80
+const TEMPMAX = 65
 
 type MsgReturn struct {
 	Status  string

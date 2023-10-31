@@ -116,6 +116,7 @@ Histórico de Versões (recentes)
                      Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
                      Registra tempo gasto nas calibrações de PH.
                      Aguarda 30seg antes de iniciar aferição de PH.
+                     Muda TEMPMAX para 65.
                      Implementa o job TEST PH.
                      Implementa SET CONTROLPH
                      No início do cultivo, faz leitura do PH da água e, caso PH seja <5 ou >8, considera o sensor como estando com erro e passa a ignorar PH durante o cultivo.
