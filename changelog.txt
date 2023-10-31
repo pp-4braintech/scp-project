@@ -115,3 +115,8 @@ Histórico de Versões (recentes)
                      Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.15 em relação à mediana.
                      Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
                      Registra tempo gasto nas calibrações de PH.
+                     Implementa o job TEST PH.
+                     Implementa SET CONTROLPH
+                     No início do cultivo, faz leitura do PH da água e, caso PH seja <5 ou >8, considera o sensor como estando com erro e passa a ignorar PH durante o cultivo.
+            Front..: Não exibe o valor do PH caso a flag PHControl seja false.
+            _conf,,: Muda receitas de 1000 e 2000 para testar PH.
