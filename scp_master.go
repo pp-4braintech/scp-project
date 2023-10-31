@@ -2746,10 +2746,12 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	for i := 0; i < 3; i++ {
 		fmt.Println("DEBUG SCP GET VOLUME: step", i, "main_id=", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 		if params[0] == scp_ack {
-			dint, err = strconv.ParseInt(params[1], 10, 32)
-			if err == nil {
-				if dint > 1 || vol_type == scp_dev_vol0 {
-					break
+			if len(params) > 1 {
+				dint, err = strconv.ParseInt(params[1], 10, 32)
+				if err == nil {
+					if dint > 1 || vol_type == scp_dev_vol0 {
+						break
+					}
 				}
 			}
 		}
