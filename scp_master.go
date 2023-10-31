@@ -7747,7 +7747,7 @@ func scp_process_conn(conn net.Conn) {
 									msgjson, _ := json.Marshal(msg)
 									conn.Write([]byte(msgjson))
 								} else {
-									if delta0 > 0.15 || deltaN > 0.15 {
+									if delta0 > 0.1 || deltaN > 0.1
 										bio[ind].PHref[0] = 0
 										fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  dados variaram muito durante leitura", data)
 										msg := MsgReturn{scp_err, "Valor lido para o PH 4 oscilou muito durante leitura. REPETIR calibração sem tirar o sensor da solução teste."}

@@ -111,10 +111,11 @@ Histórico de Versões (recentes)
 
 1.2.37  -   Master.: Muda bio_deltavolzero para 25 litros. CIP não estava dando erro no withdraw por volume não variar 25 segundos.
 20231031             Mantém somente a última mensagem de ajuste de PH.
-                     Na calibração do PH 4, valida se mediada no PH 4 está em 4.3 +- 0.15 
-                     Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.15 em relação à mediana.
+                     Na calibração do PH 4, valida se mediana no PH 4 está em 4.3 +- 0.15 
+                     Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.1 em relação à mediana.
                      Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
                      Registra tempo gasto nas calibrações de PH.
+                     Aguarda 30seg antes de iniciar aferição de PH.
                      Implementa o job TEST PH.
                      Implementa SET CONTROLPH
                      No início do cultivo, faz leitura do PH da água e, caso PH seja <5 ou >8, considera o sensor como estando com erro e passa a ignorar PH durante o cultivo.
