@@ -109,7 +109,7 @@ Histórico de Versões (recentes)
 20231025             Adequa Level em IBC setvolume
                      Verifica se temperatura lida é maior do que 10 graus, caso contrário ignora
 
-1.2.37  -   Master.: Muda bio_deltavolzero parq 25 litros. CIP não estava dando erro no withdraw por volume não variar 25 segundos.
+1.2.37  -   Master.: Muda bio_deltavolzero para 25 litros. CIP não estava dando erro no withdraw por volume não variar 25 segundos.
 20231031             Mantém somente a última mensagem de ajuste de PH.
                      Na calibração do PH 4, valida se mediada no PH 4 está em 4.3 +- 0.15 
                      Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.15 em relação à mediana.
@@ -120,3 +120,4 @@ Histórico de Versões (recentes)
                      No início do cultivo, faz leitura do PH da água e, caso PH seja <5 ou >8, considera o sensor como estando com erro e passa a ignorar PH durante o cultivo.
             Front..: Não exibe o valor do PH caso a flag PHControl seja false.
             _conf,,: Muda receitas de 1000 e 2000 para testar PH.
+                     Muda CIP BIO para volume de 50L

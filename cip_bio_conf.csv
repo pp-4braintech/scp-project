@@ -11,9 +11,9 @@ MSG/Enchendo água e circulando por 90 segundos para uma primeira limpeza
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
-# Volume de 35L
+# Volume de 50L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -42,7 +42,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L ou 10seg
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -72,7 +72,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -102,7 +102,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -165,7 +165,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -210,7 +210,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,35
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -272,8 +272,8 @@ MSG/Enchendo água e fazendo enxague por 2 minutos
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
-# Volume de 35L
-WAIT/VOLUME,35
+# Volume de 50L
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -308,8 +308,8 @@ MSG/Enchendo água e fazendo enxague por 2 minutos
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
-# Volume de 35L
-WAIT/VOLUME,35
+# Volume de 50L
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -344,8 +344,8 @@ MSG/Enchendo água e fazendo enxague por 2 minutos
 # Agua pelo sprayball
 ON/WATER,TOTEM01
 #
-# Volume de 35L
-WAIT/VOLUME,35
+# Volume de 50L
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
