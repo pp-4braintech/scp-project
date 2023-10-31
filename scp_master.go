@@ -2761,7 +2761,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	// params := scp_splitparam(ret, "/")
 	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 	volume = -1
-	if params[0] == scp_ack && len(params) > 1{
+	if params[0] == scp_ack && len(params) > 1 {
 		dint, _ = strconv.ParseInt(params[1], 10, 32)
 		if vol_type == scp_dev_vol0 {
 			if dint != 0 && dint != 1 {
@@ -7749,7 +7749,7 @@ func scp_process_conn(conn net.Conn) {
 									msgjson, _ := json.Marshal(msg)
 									conn.Write([]byte(msgjson))
 								} else {
-									if delta0 > 0.1 || deltaN > 0.1
+									if delta0 > 0.1 || deltaN > 0.1 {
 										bio[ind].PHref[0] = 0
 										fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  dados variaram muito durante leitura", data)
 										msg := MsgReturn{scp_err, "Valor lido para o PH 4 oscilou muito durante leitura. REPETIR calibração sem tirar o sensor da solução teste."}
