@@ -2761,7 +2761,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	// params := scp_splitparam(ret, "/")
 	fmt.Println("DEBUG SCP GET VOLUME: ", main_id, dev_type, vol_type, " == CMD=", cmd, "  RET=", ret)
 	volume = -1
-	if params[0] == scp_ack {
+	if params[0] == scp_ack && len(params) > 1{
 		dint, _ = strconv.ParseInt(params[1], 10, 32)
 		if vol_type == scp_dev_vol0 {
 			if dint != 0 && dint != 1 {
