@@ -6417,6 +6417,9 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 				ibc[ind].Organism = organs[orgcode].Orgname
 				ibc[ind].Timetotal = [2]int{0, 0}
 				ibc[ind].MainStatus = mainstatus_org
+				if orgcode == "999" {
+					ibc[ind].Volume = 0
+				}
 			} else {
 				fmt.Println("ERROR SCP RUN JOB: Organismo nao existe", params)
 				return false
@@ -6589,7 +6592,11 @@ func scp_run_job_ibc(ibcid string, job string) bool {
 		// }
 
 	case scp_job_done:
-		ibc[ind].Status = bio_ready
+		if ibc[ind].Volume == 0 {
+			ibc[ind].Status = bio_empty
+		} else {
+			ibc[ind].Status = bio_ready
+		}
 		board_add_message("CProcesso concluído no "+ibcid, "")
 		ibc[ind].UndoQueue = []string{}
 		ibc[ind].RedoQueue = []string{}
@@ -7742,7 +7749,7 @@ func scp_process_conn(conn net.Conn) {
 							delta0 := math.Abs(data[0] - mediana)
 							deltaN := math.Abs(data[len(data)-1] - mediana)
 							if mediana > 0 {
-								if delta4 > 0.15 {
+								if delta4 > 0.7 { // Era 0.15 foi mudado para 0.7 até que testes mais conclusivos sobre os sensores sejam feitos
 									bio[ind].PHref[0] = 0
 									fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  com delta > 0.15 para a tensão de 4.3 Volts", delta4)
 									msg := MsgReturn{scp_err, "Valor lido para o PH 4 fora do intervalo esperado. Verificar cabos, sensor de PH e TEMPERATURA da solução teste."}

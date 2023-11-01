@@ -1,8 +1,8 @@
 #
 SET/STATUS,CIP
 OFF/ALL,IGNORE
-SET/MAXSTEP,4
-SET/TOTALTIME,60
+SET/MAXSTEP,7
+SET/TOTALTIME,66
 #
 # PASSO 1
 #
@@ -20,9 +20,9 @@ OFF/WATER,TOTEM02
 COMMIT/1
 #
 # Circula Agua 90s
-ON/PUMP,V1
+ON/PUMP,V2
 WAIT/TIME,90
-OFF/PUMP,V1
+OFF/PUMP,V2
 #
 # Step concluido
 COMMIT/2
@@ -132,6 +132,103 @@ COMMIT/10
 # Descarta Agua
 RUN/WITHDRAW,DROP
 #
+# ------------------- 3 Enxagues adicionados assim como no Biorreator
+#
+# PASSO 5
+#
+SET/STEP,5
+#MSG/Enchendo água e circulando por 120seg
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 100L
+WAIT/VOLUME,50,20,20
+SET/VOLUME,80
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/91
+#
+# Circula Agua 60s
+ON/PUMP,V1
+WAIT/TIME,60
+OFF/PUMP,V1
+#
+# Step concluido
+COMMIT/92
+#
+# Circula Agua 60s pelo Sprayball
+ON/PUMP,V2
+WAIT/TIME,60
+OFF/PUMP,V2
+#
+COMMIT/93
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# PASSO 6
+#
+SET/STEP,6
+#MSG/Enchendo água e circulando por 120seg
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 100L
+WAIT/VOLUME,50,20,20
+SET/VOLUME,80
+OFF/WATER,TOTEM02
+#
+# Step concluido
+COMMIT/94
+#
+# Circula Agua 60s
+ON/PUMP,V1
+WAIT/TIME,60
+OFF/PUMP,V1
+#
+# Step concluido
+COMMIT/95
+#
+# Circula Agua 60s
+ON/PUMP,V2
+WAIT/TIME,60
+OFF/PUMP,V2
+#
+COMMIT/96
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# PASSO 7
+#
+SET/STEP,7
+#MSG/Enchendo água e circulando por 60seg
+# Agua pelo sprayball
+ON/WATER,TOTEM02
+#
+# Volume de 100L
+WAIT/VOLUME,50,20,20
+SET/VOLUME,100
+OFF/WATER,TOTEM02
+#
+# Circula Agua 120s
+ON/PUMP,V2
+WAIT/TIME,120
+OFF/PUMP,V2
+#
+# Step concluido
+COMMIT/97
+#
+# Descarta Agua
+RUN/WITHDRAW,DROP
+#
+#
+# ------------------- Fim das alterações
+#
 # FINAL DO CIP
+SET/VOLUME,0
 ORG/EMPTY
 DONE/NOP
