@@ -8480,7 +8480,7 @@ func scp_process_conn(conn net.Conn) {
 				if ind >= 0 {
 					buf, err := json.Marshal(bio[ind])
 					checkErr(err)
-					bio_etl := make([]Bioreact_ETL, 0)
+					var bio_etl Bioreact_ETL
 					json.Unmarshal(buf, &bio_etl)
 					buf2, err2 := json.Marshal(bio_etl)
 					checkErr(err2)
