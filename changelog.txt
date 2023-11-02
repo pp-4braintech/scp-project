@@ -110,7 +110,7 @@ Histórico de Versões (recentes)
                      Verifica se temperatura lida é maior do que 10 graus, caso contrário ignora
 
 1.2.37  -   Master.: Muda bio_deltavolzero para 25 litros. CIP não estava dando erro no withdraw por volume não variar 25 segundos.
-20231031             Mantém somente a última mensagem de ajuste de PH.
+20231102             Mantém somente a última mensagem de ajuste de PH.
                      Na calibração do PH 4, valida se mediana no PH 4 está em 4.3 +- 0.15 - Foi alterado para 0.7 até que o intervalo seja validado em testes.
                      Na calibração do PH 4, valida se dados lidos para PH 4 (primeiro e último) não variaram mais do que 0.1 em relação à mediana.
                      Aguarda 30 segundos antes de começar as leituras de tensão para calibração de PH 4, 7 e 10.
@@ -121,7 +121,10 @@ Histórico de Versões (recentes)
                      Implementa SET CONTROLPH.
                      No início do cultivo, faz leitura do PH da água e, caso PH seja <5 ou >8, considera o sensor como estando com erro e passa a ignorar PH durante o cultivo.
                      Corrige problema de IBC retornando valor inválido para leitura volume (USOM e Laser).
+                     Cria um ETL_Macro para os dados de todos os Biorreatores, que não contém as Mensagens, que podem exceder o limite máximo do JSON enviado para o Front. Process_Conn GET passa a usar os diferentes ETL.
+                     Status reportado da biofábrica, adicionalmente, testa status de Pint e POut (painel intermediário e de desenvase).
             Front..: Não exibe o valor do PH caso a flag PHControl seja false.
+                     Na visualização de BIO e IBC, passa a usar Id= para especificar o equipamento. Desta forma, receberá a ETL que contém mais dados sobre o equipamento.
             _conf,,: Muda receitas de 1000 e 2000 para testar PH.
                      Muda CIP BIO para volume de 50L
                      CIP modificado acrescentando 3 ciclos de enxague no fim, assim como no biorreator.

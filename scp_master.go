@@ -381,11 +381,47 @@ type Bioreact_ETL struct {
 	MustStop    bool
 	MustPause   bool
 	ShowVol     bool
-	Messages    [5]string
+	Messages    []string
 	PHref       [3]float64
 	RegresPH    [2]float64
 	MainStatus  string
 	PHControl   bool
+}
+
+type Bioreact_ETL_Macro struct {
+	BioreactorID string
+	Status       string
+	OrgCode      string
+	Organism     string
+	// Vol0         int
+	// Vol1         int32
+	// Vol2         int32
+	VolInOut    float64
+	Volume      uint32
+	Level       uint8
+	Pumpstatus  bool
+	Aerator     bool
+	Valvs       [8]int
+	Perist      [5]int
+	Heater      bool
+	Temperature float32
+	TempMax     float32
+	PH          float32
+	Step        [2]int
+	Timeleft    [2]int
+	Timetotal   [2]int
+	Withdraw    uint32
+	OutID       string
+	// Vol_zero    [2]float32
+	LastStatus string
+	MustStop   bool
+	MustPause  bool
+	ShowVol    bool
+	// Messages    [5]string
+	PHref [3]float64
+	// RegresPH    [2]float64
+	MainStatus string
+	PHControl  bool
 }
 
 type IBC struct {
@@ -719,7 +755,7 @@ func get_bf_status() string {
 			ok = false
 		}
 	}
-	if biofabrica.Status != scp_ready {
+	if biofabrica.Status != scp_ready || biofabrica.PIntStatus != bio_ready || biofabrica.POutStatus != bio_ready {
 		ok = false
 	}
 	if ok {
@@ -8434,7 +8470,7 @@ func scp_process_conn(conn net.Conn) {
 			if params[2] == "END" {
 				buf, err := json.Marshal(bio)
 				checkErr(err)
-				bio_etl := make([]Bioreact_ETL, 0)
+				bio_etl := make([]Bioreact_ETL_Macro, 0)
 				json.Unmarshal(buf, &bio_etl)
 				buf2, err2 := json.Marshal(bio_etl)
 				checkErr(err2)
@@ -8444,7 +8480,11 @@ func scp_process_conn(conn net.Conn) {
 				if ind >= 0 {
 					buf, err := json.Marshal(bio[ind])
 					checkErr(err)
-					conn.Write([]byte(buf))
+					bio_etl := make([]Bioreact_ETL, 0)
+					json.Unmarshal(buf, &bio_etl)
+					buf2, err2 := json.Marshal(bio_etl)
+					checkErr(err2)
+					conn.Write([]byte(buf2))
 				} else {
 					conn.Write([]byte(scp_err))
 				}
