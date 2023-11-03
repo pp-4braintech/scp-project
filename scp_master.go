@@ -6026,6 +6026,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 			// }
 			// cmd2 := fmt.Sprintf("CMD/%s/GET/S451/END", scraddr)
 			waitlist_add_message("ABiorreator "+bioid+" aguardando "+msgask, bioid+"ASKPROD")
+			bio_del_message(bioid, "ASKPROD")
 			bio_add_message(bioid, "APor favor insira "+msgask+" e pressione PROSSEGUIR", "ASKPROD")
 			bio[ind].Continue = false
 			t_start := time.Now()
@@ -6053,6 +6054,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				if t_elapsed > scp_timeoutdefault {
 					fmt.Println("DEBUG SCP RUN JOB: Tempo maximo de ASK esgotado", bioid, t_elapsed, scp_maxtimewithdraw)
 					if !devmode {
+						bio_del_message(bioid, "ASKPROD")
 						// scp_sendmsg_orch(scrmain)
 						return testmode
 					}
