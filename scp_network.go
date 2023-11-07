@@ -387,7 +387,7 @@ func main_network(rw http.ResponseWriter, r *http.Request) {
 					req.Header = r.Header.Clone()
 					req.URL.RawQuery = r.URL.RawQuery
 					client := http.Client{
-						Timeout: 10 * time.Second, // timeout era 5, mudei para 10 pois na aferição de PH havia problema
+						Timeout: 90 * time.Second, // timeout era 5, mudei para 60 pois na aferição de PH havia problema
 					}
 
 					reqData, err := httputil.DumpRequest(req, true)

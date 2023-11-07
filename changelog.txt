@@ -125,6 +125,10 @@ Histórico de Versões (recentes)
                      Status reportado da biofábrica, adicionalmente, testa status de Pint e POut (painel intermediário e de desenvase).
             Front..: Não exibe o valor do PH caso a flag PHControl seja false.
                      Na visualização de BIO e IBC, passa a usar Id= para especificar o equipamento. Desta forma, receberá a ETL que contém mais dados sobre o equipamento.
-            _conf,,: Muda receitas de 1000 e 2000 para testar PH.
+            _conf..: Muda receitas de 1000 e 2000 para testar PH.
                      Muda CIP BIO para volume de 50L
                      CIP modificado acrescentando 3 ciclos de enxague no fim, assim como no biorreator.
+
+1.2.37  -   Master.: Grow não lia PH caso não tivesse de ajustar o PH
+20231102             Mudado para o delay na leitura do aferir PH caso não esteja produzindo
+            _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água 

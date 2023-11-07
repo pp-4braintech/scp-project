@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.37" // 2023-10-31
+	scp_version = "1.2.38" // 2023-11-07
 
 	scp_on  = 1
 	scp_off = 0
@@ -5532,24 +5532,26 @@ func scp_grow_bio(bioid string) bool {
 			return false
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && bio[ind].PHControl && t_elapsed_ph >= 10 {
+		if control_ph && t_elapsed_ph >= 10 {
 			ph_tmp := scp_get_ph(bioid)
 			if ph_tmp > 0 {
 				bio[ind].PH = float32(ph_tmp)
-				if bio[ind].PH < float32(minph-bio_deltaph) {
-					scp_adjust_ph(bioid, float32(minph))
-				} else if bio[ind].PH > float32(maxph+bio_deltaph) {
-					scp_adjust_ph(bioid, float32(maxph))
-				}
-				if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
-					ntries_ph++
-					if ntries_ph > 5 {
-						bio_del_message(bioid, "ERRPH")
-						bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+				if bio[ind].PHControl {
+					if bio[ind].PH < float32(minph-bio_deltaph) {
+						scp_adjust_ph(bioid, float32(minph))
+					} else if bio[ind].PH > float32(maxph+bio_deltaph) {
+						scp_adjust_ph(bioid, float32(maxph))
+					}
+					if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
+						ntries_ph++
+						if ntries_ph > 5 {
+							bio_del_message(bioid, "ERRPH")
+							bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+							ntries_ph = 0
+						}
+					} else {
 						ntries_ph = 0
 					}
-				} else {
-					ntries_ph = 0
 				}
 				lastph = bio[ind].PH
 			}
@@ -7658,7 +7660,9 @@ func scp_process_conn(conn net.Conn) {
 						var msg MsgReturn
 						if bio[ind].RegresPH[0] != 0 && bio[ind].RegresPH[1] != 0 {
 							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid)
-							time.Sleep(30 * time.Second)
+							if bio[ind].Status != bio_producting {
+								time.Sleep(15 * time.Second)
+							}
 							phtmp := scp_get_ph(bioid)
 							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid, phtmp)
 							if phtmp > 0 {
