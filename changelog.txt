@@ -131,5 +131,6 @@ Histórico de Versões (recentes)
 
 1.2.37  -   Master.: Grow não lia PH caso não tivesse de ajustar o PH
 20231102             Mudado para o delay na leitura do aferir PH caso não esteja produzindo
+                     Caso ativo, força término de adjust_temperature antes de fazer a leitura de PH
             Network: Muda os timeouts para evitar e
             _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água 
