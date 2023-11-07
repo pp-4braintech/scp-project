@@ -20,9 +20,15 @@ OFF/WATER,TOTEM01
 # Step concluido
 COMMIT/1
 #
-# ------------  CHECA PH da AGUA 
+# ------------  CHECA PH da AGUA
+MSG/Efetuando Validação de PH
+#OFF/AERO
+SET/STATUS,PRODUZINDO
 TEST/PH
+#ON/AERO,80
 COMMIT/101
+#
+# -------------------------------
 #
 #
 # Pede Cloro
