@@ -5535,6 +5535,10 @@ func scp_grow_bio(bioid string) bool {
 		if control_ph && t_elapsed_ph >= 10 {
 			ph_tmp := scp_get_ph(bioid)
 			if ph_tmp > 0 {
+				if bio[ind].Temprunning {
+					bio[ind].Temprunning = false
+					time.Sleep(20 * time.Second)
+				}
 				bio[ind].PH = float32(ph_tmp)
 				if bio[ind].PHControl {
 					if bio[ind].PH < float32(minph-bio_deltaph) {
