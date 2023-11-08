@@ -2888,12 +2888,13 @@ func scp_test_boot(main_id string, dev_type string) string {
 		if params[0] == scp_ack && len(params) > 1 {
 			if params[1] == scp_magicvalue || params[1] == "0" {
 				ok = true
-				if params[1] == "0" {
-					ret = scp_sendmsg_orch(cmd)
-					params = scp_splitparam(ret, "/")
-					fmt.Println("DEBUG SCP TEST BOOT: Testando NOVAMENTE magicvalue no Dispositivo ", main_id, dev_type, "#", i, "cmd=", cmd, "ret=", ret)
+				if params[1] != "0" {
+					break
+					// ret = scp_sendmsg_orch(cmd)
+					// params = scp_splitparam(ret, "/")
+					// fmt.Println("DEBUG SCP TEST BOOT: Testando NOVAMENTE magicvalue no Dispositivo ", main_id, dev_type, "#", i, "cmd=", cmd, "ret=", ret)
 				}
-				break
+				// break
 			}
 		}
 		ret = scp_sendmsg_orch(cmd)
@@ -5535,10 +5536,10 @@ func scp_grow_bio(bioid string) bool {
 		if control_ph && t_elapsed_ph >= 10 {
 			ph_tmp := scp_get_ph(bioid)
 			if ph_tmp > 0 {
-				if bio[ind].Temprunning {
-					bio[ind].Temprunning = false
-					time.Sleep(20 * time.Second)
-				}
+				// if bio[ind].Temprunning {
+				// 	bio[ind].Temprunning = false
+				// 	time.Sleep(20 * time.Second)
+				// }
 				bio[ind].PH = float32(ph_tmp)
 				if bio[ind].PHControl {
 					if bio[ind].PH < float32(minph-bio_deltaph) {
