@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.38" // 2023-11-07
+	scp_version = "1.2.39" // 2023-11-09
 
 	scp_on  = 1
 	scp_off = 0
@@ -5392,7 +5392,8 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	}
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
-		bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "")
+		bio_del_message(bioid, "ERROFFHEATER")
+		bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "ERROFFHEATER")
 	}
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)

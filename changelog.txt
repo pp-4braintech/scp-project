@@ -129,9 +129,12 @@ Histórico de Versões (recentes)
                      Muda CIP BIO para volume de 50L
                      CIP modificado acrescentando 3 ciclos de enxague no fim, assim como no biorreator.
 
-1.2.37  -   Master.: Grow não lia PH caso não tivesse de ajustar o PH, modificado.
-20231102             Mudado para o delay na leitura do aferir PH caso não esteja produzindo.
+1.2.38  -   Master.: Grow não lia PH caso não tivesse de ajustar o PH, modificado.
+20231107             Mudado para o delay na leitura do aferir PH caso não esteja produzindo.
                      Muda lógica de temperatura em get_alldata.
             Network: Muda os timeouts para evitar erro na aferição de PH.
             _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água
                      Tempo de CIP de Biorreator atualizado para 200 minutos 
+
+1.2.39  -   Master.: Novo algoritmo de calibração de PH considerando temperatura e regressão lineas múltipla (2 variáveis, Voltagem e Temperatura)
+20231110             Mudado para o delay na leitura do aferir PH caso não esteja produzindo.
