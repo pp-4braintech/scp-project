@@ -3286,17 +3286,19 @@ func scp_get_alldata() {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
-								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax {
+								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Status != bio_producting {
 									fmt.Println("DEBUG SCP GET ALLDATA: Desligando resistencia por atingir temperatura maxima definida", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 									scp_turn_heater(b.BioreactorID, 0, false)
-								} else if bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].Volume > 0 && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 {
+								} else if !bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].Volume > 0 && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 && bio[ind].Status != bio_producting {
 									fmt.Println("DEBUG SCP GET ALLDATA: Ligando resistencia por temperatura ser inferior ao maximo - 5", b.BioreactorID, "tempnow=", t_tmp, "max-5=", bio[ind].TempMax-5)
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
+								} else if bio[ind].Status == bio_producting && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Heater {
+									fmt.Println("ERROR SCP GET ALLDATA: Temperatura acima do máximo e resistencia ESTA LIGADA DURANTE CULTIVO", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
 							} else if t_tmp > TEMPMAX {
 								fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
 								bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
-								scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
+								scp_turn_heater(b.BioreactorID, 0, false)
 							}
 						}
 					}
