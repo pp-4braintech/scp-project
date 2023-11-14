@@ -741,6 +741,7 @@ func get_phdata(bioid string, phval float64) []byte {
 						min_temp = tmp_temperature
 					}
 				}
+				fmt.Println("DEBUG GET PHDATA:", bioid, " PH:", phval, " phvolt:", tmp_phvolt, " temp:", tmp_temperature)
 				data_ph = append(data_ph, tmp_phvolt)
 				data := []float64{phval, tmp_phvolt, tmp_temperature}
 				tmp_data = append(tmp_data, data)
