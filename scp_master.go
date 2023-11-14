@@ -25,6 +25,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sajari/regression"
 	"gonum.org/v1/gonum/stat"
 )
 
@@ -34,7 +35,7 @@ var net192 = false
 var testmode = false
 var autowithdraw = false
 
-const scp_onlyread_sensoribc = true
+const scp_onlyread_sensoribc = false
 
 const control_ph = true
 const control_temp = true
@@ -608,6 +609,9 @@ var biomutex sync.Mutex
 var waitlistmutex sync.Mutex
 var upgrademutex sync.Mutex
 
+var regres *regression.Regression
+var regres_data = [][]float64{}
+
 var withdrawrunning = false
 
 var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.27", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
@@ -680,6 +684,16 @@ func calc_PH(x float64, b0 float64, b1 float64) float64 {
 	return ph
 }
 
+func calc_PHregres(x float64, y float64) float64 {
+	prediction, err := regres.Predict([]float64{x, y})
+	if err != nil {
+		fmt.Println("ERROR CALC PHREGRES: ")
+		checkErr(err)
+		return -1
+	}
+	return prediction
+}
+
 func calc_mediana(x []float64) float64 {
 	var mediana float64
 	sort.Float64s(x)
@@ -698,6 +712,87 @@ func calc_mediana(x []float64) float64 {
 		return 0
 	}
 	return mediana
+}
+
+func get_phdata(bioid string, phval float64) []byte {
+	n := 0
+	var tmp_data = [][]float64{}
+	var data_ph = []float64{}
+	var max_temp, min_temp float64
+	for i := 0; i <= 1000; i++ {
+		if biofabrica.Critical != scp_ready {
+			fmt.Println("ERROR GET PHDATA: ", bioid, "Leitura interrompinda por ERRO CRITICO na Biofábrica", biofabrica.Critical)
+			msg := MsgReturn{scp_err, "Leitura interrompida pois Biofábrica com parada Crítica."}
+			msgjson, _ := json.Marshal(msg)
+			return []byte(msgjson)
+		}
+		tmp_phvolt := scp_get_ph_voltage(bioid)
+		if tmp_phvolt >= 2 && tmp_phvolt <= 5 {
+			tmp_temperature := scp_get_temperature(bioid)
+			if tmp_temperature > 10 && tmp_temperature < TEMPMAX {
+				if n == 0 {
+					max_temp = tmp_temperature
+					min_temp = tmp_temperature
+				} else {
+					if tmp_temperature > max_temp {
+						max_temp = tmp_temperature
+					}
+					if tmp_temperature < min_temp {
+						min_temp = tmp_temperature
+					}
+				}
+				data_ph = append(data_ph, tmp_phvolt)
+				data := []float64{phval, tmp_phvolt, tmp_temperature}
+				tmp_data = append(tmp_data, data)
+				n++
+			}
+		}
+		time.Sleep(5 * time.Second)
+		if max_temp >= 30 && min_temp <= 20 {
+			break
+		}
+	}
+	fmt.Println("DEBUG GET PHDATA: ", bioid, " PH:", phval, " Amostras:", n, " min_temp:", min_temp, " max_temp:", max_temp)
+	if min_temp > 20 || max_temp < 30 {
+		fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
+		msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
+		msgjson, _ := json.Marshal(msg)
+		return []byte(msgjson)
+	}
+
+	mediana := calc_mediana(data_ph)
+	if mediana > 0 {
+		// if false delta0 > 0.1 || deltaN > 0.1 {  Desativei, checar pois os dados devem variar muito
+		// 	// fmt.Println("ERROR GET PHDATA: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  dados variaram muito durante leitura", delta0, deltaN)
+		// 	msg := MsgReturn{scp_err, "Valor lido para o PH 4 oscilou muito durante leitura. REPETIR calibração sem tirar o sensor da solução teste."}
+		// 	msgjson, _ := json.Marshal(msg)
+		// 	return []byte(msgjson)
+		// } else {
+		fmt.Println("DEBUG GET PHDATA: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n)
+		regres_data = append(regres_data, tmp_data...)
+		m := fmt.Sprintf("Leituras do PH %02.1f feita com sucesso", phval)
+		msg := MsgReturn{scp_ack, m}
+		msgjson, _ := json.Marshal(msg)
+		return []byte(msgjson)
+		// }
+
+	}
+
+	fmt.Println("ERROR GET PHDATA: Valores INVALIDOS de PH 4", bioid, " Mediana=", mediana)
+	msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH"}
+	msgjson, _ := json.Marshal(msg)
+	return []byte(msgjson)
+}
+
+func calc_regresph(bioid string) {
+	regres = new(regression.Regression)
+	// regres.Train(regression.MakeDataPoints(regres_data, 0)...)
+	for _, d := range regres_data {
+		regres.Train(regression.DataPoint(d[0], d[1:]))
+	}
+	regres.Run()
+
+	fmt.Println("DEBUG CALC REGRESPH: Coeficientes", bioid, regres.GetCoeffs())
 }
 
 func checkErr(err error) {
@@ -2466,18 +2561,24 @@ func scp_get_ph(bioid string) float64 {
 	if ind >= 0 {
 		phvolt := scp_get_ph_voltage(bioid)
 		if phvolt >= 2 && phvolt <= 5 {
-			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
-				fmt.Println("ERROR SCP GET PH: Biorreator com PH NAO CALIBRADO", bioid)
-				return -1
-			}
-			b0 := bio[ind].RegresPH[0]
-			b1 := bio[ind].RegresPH[1]
-			ph := calc_PH(phvolt, b0, b1)
-			if (ph >= 0) && (ph <= 14) {
-				fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
-				return ph
+			// if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
+			// 	fmt.Println("ERROR SCP GET PH: Biorreator com PH NAO CALIBRADO", bioid)
+			// 	return -1
+			// }
+			temp := scp_get_temperature(bioid)
+			if temp > 10 && temp < TEMPMAX {
+				// b0 := bio[ind].RegresPH[0]
+				// b1 := bio[ind].RegresPH[1]
+				// ph := calc_PH(phvolt, b0, b1)
+				ph := calc_PHregres(phvolt, temp)
+				if (ph > 0) && (ph <= 14) {
+					fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+					return ph
+				} else {
+					fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+				}
 			} else {
-				fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+				fmt.Println("ERROR SCP GET PH: Valor INVALIDO de TEMPERATURA no Biorreator", bioid, "Temp=", temp)
 			}
 		} else {
 			fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PHVolt no Biorreator", bioid, "PHVolt=", phvolt)
@@ -7782,55 +7883,62 @@ func scp_process_conn(conn net.Conn) {
 							ph_start := time.Now()
 							fmt.Println("DEBUG CONFIG: Ajustando PH 4", bioid)
 							time.Sleep(30 * time.Second)
-							n := 0
-							var data []float64
-							for i := 0; i <= 7; i++ {
-								if biofabrica.Critical != scp_ready {
-									return
-								}
-								tmp := scp_get_ph_voltage(bioid)
-								if tmp >= 2 && tmp <= 5 {
-									data = append(data, tmp)
-									n++
-								}
-							}
-							mediana := calc_mediana(data)
-							delta4 := math.Abs(bio_ph4_voltage_ref - mediana)
-							delta0 := math.Abs(data[0] - mediana)
-							deltaN := math.Abs(data[len(data)-1] - mediana)
-							if mediana > 0 {
-								if delta4 > 0.7 { // Era 0.15 foi mudado para 0.7 até que testes mais conclusivos sobre os sensores sejam feitos
-									bio[ind].PHref[0] = 0
-									fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  com delta > 0.15 para a tensão de 4.3 Volts", delta4)
-									msg := MsgReturn{scp_err, "Valor lido para o PH 4 fora do intervalo esperado. Verificar cabos, sensor de PH e TEMPERATURA da solução teste."}
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-								} else {
-									if delta0 > 0.1 || deltaN > 0.1 {
-										bio[ind].PHref[0] = 0
-										fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  dados variaram muito durante leitura", data)
-										msg := MsgReturn{scp_err, "Valor lido para o PH 4 oscilou muito durante leitura. REPETIR calibração sem tirar o sensor da solução teste."}
-										msgjson, _ := json.Marshal(msg)
-										conn.Write([]byte(msgjson))
-									} else {
-										bio[ind].PHref[0] = mediana
-										fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
-										msg := MsgReturn{scp_ack, "Leitura do PH 4.0 feita com sucesso"}
-										msgjson, _ := json.Marshal(msg)
-										conn.Write([]byte(msgjson))
-									}
-								}
-
-							} else {
-								bio[ind].PHref[0] = 0
-								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4", bioid)
-								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH"}
-								bio_add_message(bioid, "E"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-							}
+							ret := get_phdata(bioid, 4)
 							ph_elapsed := time.Since(ph_start).Seconds()
 							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 4 = ", ph_elapsed, bioid)
+							conn.Write(ret)
+
+							// n := 0
+							// var data []float64
+							// for i := 0; i <= 7; i++ {
+							// 	if biofabrica.Critical != scp_ready {
+							// 		return
+							// 	}
+							// 	tmp_phvolt := scp_get_ph_voltage(bioid)
+							// 	if tmp_phvolt >= 2 && tmp_phvolt <= 5 {
+
+							// 		data = append(data, tmp)
+							// 		n++
+							// 	}
+							// }
+
+							// mediana := calc_mediana(data)
+							// delta4 := math.Abs(bio_ph4_voltage_ref - mediana)
+							// delta0 := math.Abs(data[0] - mediana)
+							// deltaN := math.Abs(data[len(data)-1] - mediana)
+							// if mediana > 0 {
+							// 	if delta4 > 0.7 { // Era 0.15 foi mudado para 0.7 até que testes mais conclusivos sobre os sensores sejam feitos
+							// 		bio[ind].PHref[0] = 0
+							// 		fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  com delta > 0.15 para a tensão de 4.3 Volts", delta4)
+							// 		msg := MsgReturn{scp_err, "Valor lido para o PH 4 fora do intervalo esperado. Verificar cabos, sensor de PH e TEMPERATURA da solução teste."}
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+							// 	} else {
+							// 		if delta0 > 0.1 || deltaN > 0.1 {
+							// 			bio[ind].PHref[0] = 0
+							// 			fmt.Println("ERROR CONFIG: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n, "  dados variaram muito durante leitura", data)
+							// 			msg := MsgReturn{scp_err, "Valor lido para o PH 4 oscilou muito durante leitura. REPETIR calibração sem tirar o sensor da solução teste."}
+							// 			msgjson, _ := json.Marshal(msg)
+							// 			conn.Write([]byte(msgjson))
+							// 		} else {
+							// 			bio[ind].PHref[0] = mediana
+							// 			fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 4", bio[ind].PHref[0], " amostras =", n)
+							// 			msg := MsgReturn{scp_ack, "Leitura do PH 4.0 feita com sucesso"}
+							// 			msgjson, _ := json.Marshal(msg)
+							// 			conn.Write([]byte(msgjson))
+							// 		}
+							// 	}
+
+							// } else {
+							// 	bio[ind].PHref[0] = 0
+							// 	fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 4", bioid)
+							// 	msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 4 inválidos. Favor checar painel, cabos e sensor de PH"}
+							// 	bio_add_message(bioid, "E"+msg.Message, "")
+							// 	msgjson, _ := json.Marshal(msg)
+							// 	conn.Write([]byte(msgjson))
+							// }
+							// ph_elapsed := time.Since(ph_start).Seconds()
+							// fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 4 = ", ph_elapsed, bioid)
 
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 4 com aerador ligado", bioid)
@@ -7846,45 +7954,50 @@ func scp_process_conn(conn net.Conn) {
 							ph_start := time.Now()
 							fmt.Println("DEBUG CONFIG: Ajustando PH 7", bioid)
 							time.Sleep(30 * time.Second)
-							n := 0
-							var data []float64
-							for i := 0; i <= 7; i++ {
-								if biofabrica.Critical != scp_ready {
-									return
-								}
-								tmp := scp_get_ph_voltage(bioid)
-								if tmp >= 2 && tmp <= 5 {
-									data = append(data, tmp)
-									n++
-								}
-							}
-							mediana := calc_mediana(data)
-							if mediana > 0 {
-								if math.Abs(mediana-bio[ind].PHref[0]) >= 0.2 {
-									bio[ind].PHref[1] = mediana
-									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
-									msg := MsgReturn{scp_ack, "Leitura do PH 7.0 feita com sucesso"}
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								} else {
-									bio[ind].PHref[1] = 0
-									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
-									bio_add_message(bioid, "E"+msg.Message, "")
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								}
-							} else {
-								bio[ind].PHref[1] = 0
-								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7", bioid)
-								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH"}
-								bio_add_message(bioid, "E"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-							}
+							ret := get_phdata(bioid, 4)
 							ph_elapsed := time.Since(ph_start).Seconds()
-							fmt.Println("DEBUG CONFIG: PH 7: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
+							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
+							conn.Write(ret)
+
+							// n := 0
+							// var data []float64
+							// for i := 0; i <= 7; i++ {
+							// 	if biofabrica.Critical != scp_ready {
+							// 		return
+							// 	}
+							// 	tmp := scp_get_ph_voltage(bioid)
+							// 	if tmp >= 2 && tmp <= 5 {
+							// 		data = append(data, tmp)
+							// 		n++
+							// 	}
+							// }
+							// mediana := calc_mediana(data)
+							// if mediana > 0 {
+							// 	if math.Abs(mediana-bio[ind].PHref[0]) >= 0.2 {
+							// 		bio[ind].PHref[1] = mediana
+							// 		fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 7", bio[ind].PHref[1], " amostras =", n)
+							// 		msg := MsgReturn{scp_ack, "Leitura do PH 7.0 feita com sucesso"}
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+
+							// 	} else {
+							// 		bio[ind].PHref[1] = 0
+							// 		msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
+							// 		bio_add_message(bioid, "E"+msg.Message, "")
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+
+							// 	}
+							// } else {
+							// 	bio[ind].PHref[1] = 0
+							// 	fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 7", bioid)
+							// 	msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 7 inválidos. Favor checar painel, cabos e sensor de PH"}
+							// 	bio_add_message(bioid, "E"+msg.Message, "")
+							// 	msgjson, _ := json.Marshal(msg)
+							// 	conn.Write([]byte(msgjson))
+							// }
+							// ph_elapsed := time.Since(ph_start).Seconds()
+							// fmt.Println("DEBUG CONFIG: PH 7: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
 
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 7 com aerador ligado", bioid)
@@ -7900,53 +8013,58 @@ func scp_process_conn(conn net.Conn) {
 							ph_start := time.Now()
 							fmt.Println("DEBUG CONFIG: Ajustando PH 10", bioid)
 							time.Sleep(30 * time.Second)
-							n := 0
-							var data []float64
-							for i := 0; i <= 7; i++ {
-								if biofabrica.Critical != scp_ready {
-									return
-								}
-								tmp := scp_get_ph_voltage(bioid)
-								if tmp >= 2 && tmp <= 5 {
-									data = append(data, tmp)
-									n++
-								}
-							}
-							mediana := calc_mediana(data)
-							if mediana > 0 {
-								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.2 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.4 {
-									bio[ind].PHref[2] = mediana
-									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
-									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
-									bio[ind].PHref[2] = 0
-									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
-									bio_add_message(bioid, "E"+msg.Message, "")
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								} else {
-									bio[ind].PHref[2] = 0
-									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"}
-									bio_add_message(bioid, "E"+msg.Message, "")
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								}
-							} else {
-								bio[ind].PHref[2] = 0
-								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10", bioid)
-								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"}
-								bio_add_message(bioid, "E"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-
-							}
+							ret := get_phdata(bioid, 4)
 							ph_elapsed := time.Since(ph_start).Seconds()
-							fmt.Println("DEBUG CONFIG: PH 10: Tempo decorrido para leitura de PH 10 = ", ph_elapsed, bioid)
+							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 10 = ", ph_elapsed, bioid)
+							conn.Write(ret)
+
+							// n := 0
+							// var data []float64
+							// for i := 0; i <= 7; i++ {
+							// 	if biofabrica.Critical != scp_ready {
+							// 		return
+							// 	}
+							// 	tmp := scp_get_ph_voltage(bioid)
+							// 	if tmp >= 2 && tmp <= 5 {
+							// 		data = append(data, tmp)
+							// 		n++
+							// 	}
+							// }
+							// mediana := calc_mediana(data)
+							// if mediana > 0 {
+							// 	if math.Abs(mediana-bio[ind].PHref[1]) >= 0.2 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.4 {
+							// 		bio[ind].PHref[2] = mediana
+							// 		fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
+							// 		msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+
+							// 	} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
+							// 		bio[ind].PHref[2] = 0
+							// 		msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
+							// 		bio_add_message(bioid, "E"+msg.Message, "")
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+
+							// 	} else {
+							// 		bio[ind].PHref[2] = 0
+							// 		msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"}
+							// 		bio_add_message(bioid, "E"+msg.Message, "")
+							// 		msgjson, _ := json.Marshal(msg)
+							// 		conn.Write([]byte(msgjson))
+
+							// 	}
+							// } else {
+							// 	bio[ind].PHref[2] = 0
+							// 	fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10", bioid)
+							// 	msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"}
+							// 	bio_add_message(bioid, "E"+msg.Message, "")
+							// 	msgjson, _ := json.Marshal(msg)
+							// 	conn.Write([]byte(msgjson))
+
+							// }
+							// ph_elapsed := time.Since(ph_start).Seconds()
+							// fmt.Println("DEBUG CONFIG: PH 10: Tempo decorrido para leitura de PH 10 = ", ph_elapsed, bioid)
 
 						} else {
 							fmt.Println("ERROR CONFIG: Tentativa de ajuste de PH 10 com aerador ligado", bioid)
@@ -7959,36 +8077,49 @@ func scp_process_conn(conn net.Conn) {
 
 					case scp_par_calibrate:
 						fmt.Println("DEBUG CONFIG: Calculando regressao linear para o PH", bioid)
-						if bio[ind].PHref[0] > 0 && bio[ind].PHref[1] > 0 && bio[ind].PHref[2] > 0 {
-							X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
-							y_data := []float64{4, 7, 10}
-							// Executa a regressao linear
-							b0, b1 := estimateB0B1(X_data, y_data)
-							bio[ind].RegresPH[0] = b0
-							bio[ind].RegresPH[1] = b1
-							if b0 == 0 && b1 == 0 {
-								fmt.Println("ERROR CONFIG: ", bioid, "Nao foi possivel efetuar Regressao Linear: b0=", b0, " b1=", b1)
-								msg := MsgReturn{scp_err, "Não foi possível efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
-								bio_add_message(bioid, "E"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-
-							} else {
-								fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
-								msg := MsgReturn{scp_ack, "Calibração do Sensor de PH efetuada"}
-								bio_add_message(bioid, "I"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-							}
+						if len(regres_data) > 100 {
+							calc_regresph(bioid)
+							msg := MsgReturn{scp_ack, "Calibração do Sensor de PH efetuada"}
+							bio_add_message(bioid, "I"+msg.Message, "")
+							msgjson, _ := json.Marshal(msg)
+							conn.Write([]byte(msgjson))
 						} else {
-							bio[ind].RegresPH[0] = 0
-							bio[ind].RegresPH[1] = 0
-							fmt.Println("ERROR CONFIG: ", bioid, "Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
-							msg := MsgReturn{scp_err, "Não foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
+							fmt.Println("ERROR CONFIG: ", bioid, "Nao foi possivel efetuar Regressao: Dados insuficientes:", len(regres_data))
+							msg := MsgReturn{scp_err, "Não foi possível efetuar a Calibração do Sensor de PH. Dados insuficientes."}
 							bio_add_message(bioid, "E"+msg.Message, "")
 							msgjson, _ := json.Marshal(msg)
 							conn.Write([]byte(msgjson))
 						}
+						// if bio[ind].PHref[0] > 0 && bio[ind].PHref[1] > 0 && bio[ind].PHref[2] > 0 {
+						// 	X_data := []float64{bio[ind].PHref[0], bio[ind].PHref[1], bio[ind].PHref[2]}
+						// 	y_data := []float64{4, 7, 10}
+						// 	// Executa a regressao linear
+						// 	b0, b1 := estimateB0B1(X_data, y_data)
+						// 	bio[ind].RegresPH[0] = b0
+						// 	bio[ind].RegresPH[1] = b1
+						// 	if b0 == 0 && b1 == 0 {
+						// 		fmt.Println("ERROR CONFIG: ", bioid, "Nao foi possivel efetuar Regressao Linear: b0=", b0, " b1=", b1)
+						// 		msg := MsgReturn{scp_err, "Não foi possível efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
+						// 		bio_add_message(bioid, "E"+msg.Message, "")
+						// 		msgjson, _ := json.Marshal(msg)
+						// 		conn.Write([]byte(msgjson))
+
+						// 	} else {
+						// 		fmt.Println("DEBUG CONFIG: Coeficientes da Regressao Linear: b0=", b0, " b1=", b1)
+						// 		msg := MsgReturn{scp_ack, "Calibração do Sensor de PH efetuada"}
+						// 		bio_add_message(bioid, "I"+msg.Message, "")
+						// 		msgjson, _ := json.Marshal(msg)
+						// 		conn.Write([]byte(msgjson))
+						// 	}
+						// } else {
+						// 	bio[ind].RegresPH[0] = 0
+						// 	bio[ind].RegresPH[1] = 0
+						// 	fmt.Println("ERROR CONFIG: ", bioid, "Nao e possivel fazer regressao linear, valores invalidos", bio[ind].PHref)
+						// 	msg := MsgReturn{scp_err, "Não foi possivel efetuar a Calibração do Sensor de PH. Verifique PHs 4, 7 e 10"}
+						// 	bio_add_message(bioid, "E"+msg.Message, "")
+						// 	msgjson, _ := json.Marshal(msg)
+						// 	conn.Write([]byte(msgjson))
+						// }
 					}
 				} else {
 					fmt.Println("ERROR CONFIG: Biorreator nao existe", bioid)
