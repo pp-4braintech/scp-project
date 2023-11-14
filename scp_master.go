@@ -611,6 +611,7 @@ var upgrademutex sync.Mutex
 
 var regres *regression.Regression
 var regres_data = [][]float64{}
+var regres_ready bool = false
 
 var withdrawrunning = false
 
@@ -685,6 +686,9 @@ func calc_PH(x float64, b0 float64, b1 float64) float64 {
 }
 
 func calc_PHregres(x float64, y float64) float64 {
+	if !regres_ready {
+		return -1
+	}
 	prediction, err := regres.Predict([]float64{x, y})
 	if err != nil {
 		fmt.Println("ERROR CALC PHREGRES: ")
@@ -715,6 +719,7 @@ func calc_mediana(x []float64) float64 {
 }
 
 func get_phdata(bioid string, phval float64) []byte {
+	regres_ready = false
 	n := 0
 	var tmp_data = [][]float64{}
 	var data_ph = []float64{}
@@ -794,6 +799,7 @@ func calc_regresph(bioid string) {
 	regres.Run()
 
 	fmt.Println("DEBUG CALC REGRESPH: Coeficientes", bioid, regres.GetCoeffs())
+	regres_ready = true
 }
 
 func checkErr(err error) {
