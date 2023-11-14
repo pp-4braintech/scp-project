@@ -1590,6 +1590,11 @@ func save_all_data(filename string) int {
 		ok = false
 	}
 
+	buf, _ = json.Marshal(regres)
+	if !save_one_data(localconfig_path+filename+"_PHregres.json", buf) {
+		ok = false
+	}
+
 	save_bf_data(localconfig_path + "bf_data.csv")
 
 	if !ok {
@@ -1725,6 +1730,27 @@ func load_all_data(filename string) int {
 		}
 	} else {
 		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de Schedule! Usando VAZIO.")
+		checkErr(err)
+		ok = false
+	}
+
+	if test_file(localconfig_path + filename + "_PHregres.json") {
+		dat, err = os.ReadFile(localconfig_path + filename + "_PHregres.json")
+	} else {
+		dat, err = os.ReadFile(localconfig_path + filename + "_PHregres.json.bak")
+		usebak = true
+	}
+	if err == nil {
+		err = json.Unmarshal([]byte(dat), &regres)
+		// fmt.Println("-- schedule data = ", schedule)
+		if err == nil {
+			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de PHregres.")
+		} else {
+			fmt.Println("ERROR LOAD ALL DATA: Falha ao recuperar dumpdata de PHregres. Dados corrompidos.")
+			ok = false
+		}
+	} else {
+		fmt.Println("ERROR LOAD ALL DATA: Nao foi possivel ler dumpdata de PHregres! Usando VAZIO.")
 		checkErr(err)
 		ok = false
 	}
