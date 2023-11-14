@@ -1741,7 +1741,7 @@ func load_all_data(filename string) int {
 		usebak = true
 	}
 	if err == nil {
-		err = json.Unmarshal([]byte(dat), &regres)
+		err = json.Unmarshal([]byte(dat), regres)
 		// fmt.Println("-- schedule data = ", schedule)
 		if err == nil {
 			fmt.Println("DEBUG LOAD ALL DATA: Sucesso ao recuperar dumpdata de PHregres.")
