@@ -135,6 +135,7 @@ Histórico de Versões (recentes)
                      Desliga leitura de USOM e LASER nos IBCs. Vários equipamentos estavam sem os sensores e com isto tendo intermitência.
                      Avisa quando não foi possível desligar a resistência.
                      Função get_alldata só liga resistência caso for CIP e bomba e válvulas estiverem ON e não houver erro na biofábrica.
+                     Função scp_panic criada para tratar casos de panic. Primeiro utiliza no scp_process_conn
             Network: Muda os timeouts para evitar erro na aferição de PH.
             _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água
                      Tempo de CIP de Biorreator atualizado para 200 minutos 

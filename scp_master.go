@@ -642,6 +642,18 @@ var biofabrica = Biofabrica{
 
 var biobak = bio // Salva status atual
 
+func scp_panic() {
+	err := recover()
+	if err != nil {
+		log.Println("PANIC SCP MASTER: ATENCAO panico ocorreu", err)
+		log.Println("PANIC SCP MASTER: DUMP BIO:", bio)
+		log.Println("PANIC SCP MASTER: DUMP IBC:", ibc)
+		log.Println("PANIC SCP MASTER: DUMP TOTEM:", totem)
+		log.Println("PANIC SCP MASTER: DUMP BIOFABRICA:", biofabrica)
+		log.Println("PANIC SCP MASTER: DUMP SCHED:", schedule)
+	}
+}
+
 func sumXYandXX(arrayX []float64, arrayY []float64, meanX float64, meanY float64) (float64, float64) {
 	resultXX := 0.0
 	resultXY := 0.0
@@ -7634,6 +7646,7 @@ func scp_process_conn(conn net.Conn) {
 		checkErr(err)
 		return
 	}
+	defer scp_panic()
 	//fmt.Printf("msg: %s\n", buf[:n])
 	params := scp_splitparam(string(buf[:n]), "/")
 	// fmt.Println(params)
@@ -8487,12 +8500,16 @@ func scp_process_conn(conn net.Conn) {
 		case scp_bioreactor:
 			if params[2] == "END" {
 				buf, err := json.Marshal(bio)
-				checkErr(err)
-				bio_etl := make([]Bioreact_ETL_Macro, 0)
-				json.Unmarshal(buf, &bio_etl)
-				buf2, err2 := json.Marshal(bio_etl)
-				checkErr(err2)
-				conn.Write([]byte(buf2))
+				if err != nil {
+					fmt.Println("ERROR GET: Falha no json.Marshal dos biorreatores")
+					checkErr(err)
+				} else {
+					bio_etl := make([]Bioreact_ETL_Macro, 0)
+					json.Unmarshal(buf, &bio_etl)
+					buf2, err2 := json.Marshal(bio_etl)
+					checkErr(err2)
+					conn.Write([]byte(buf2))
+				}
 			} else {
 				ind := get_bio_index(params[2])
 				if ind >= 0 {
@@ -9257,6 +9274,8 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go master_shutdown(sigs)
+
+	defer scp_panic()
 
 	localconfig_path = "/etc/scpd/"
 	addrs_type = make(map[string]DevAddrData, 0)
