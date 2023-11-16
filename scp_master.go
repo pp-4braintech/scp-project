@@ -148,6 +148,7 @@ const scp_par_restore = "RESTORE"
 const scp_par_clenaperis = "CLEANPERIS"
 const scp_par_setvolume = "SETVOLUME"
 const scp_par_controlph = "CONTROLPH"
+const scp_par_maxtemp = "MAXTEMP"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -5917,6 +5918,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 					bio[ind].PHControl = val_bol
 				} else {
 					fmt.Println("ERROR SCP RUN JOG: SET: CONTROLPH com valor invalido", bioid, subpars)
+				}
+			case scp_par_maxtemp:
+				val_str := subpars[1]
+				val_int, err := strconv.Atoi(val_str)
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: SET: Maxtemp com valor inválido", bioid, subpars)
+				} else {
+					bio[ind].TempMax = float32(val_int)
 				}
 			case scp_par_step:
 				biostep_str := subpars[1]
