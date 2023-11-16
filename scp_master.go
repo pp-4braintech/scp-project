@@ -5884,6 +5884,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 
 	case scp_job_org:
 		var orgcode string
+		orgcode = ""
 		if len(subpars) > 0 {
 			orgcode = subpars[0]
 			if len(organs[orgcode].Orgname) > 0 {
@@ -5901,8 +5902,10 @@ func scp_run_job_bio(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		board_add_message("CIniciando Cultivo "+organs[orgcode].Orgname+" no "+bioid, "")
-		bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname, "")
+		if len(orgcode) > 0 && orgcode != "EMPTY" {
+			board_add_message("CIniciando Cultivo "+organs[orgcode].Orgname+" no "+bioid, "")
+			bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname, "")
+		}
 
 	case scp_job_set:
 		if len(subpars) > 1 {
