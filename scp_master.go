@@ -7947,14 +7947,14 @@ func scp_process_conn(conn net.Conn) {
 							}
 							mediana := calc_mediana(data)
 							if mediana > 0 {
-								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.2 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.4 {
+								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.15 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.35 { // Alterado para permitir a calibração
 									bio[ind].PHref[2] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
 									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
 									msgjson, _ := json.Marshal(msg)
 									conn.Write([]byte(msgjson))
 
-								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.4 {
+								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.35 { // Alterado para permitir a calibração
 									bio[ind].PHref[2] = 0
 									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
 									bio_add_message(bioid, "E"+msg.Message, "")
