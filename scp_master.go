@@ -2913,7 +2913,7 @@ func scp_test_boot(main_id string, dev_type string) string {
 		ret = scp_sendmsg_orch(cmd)
 		params = scp_splitparam(ret, "/")
 	}
-	if ok {
+	if ok && len(params) > 1 {
 		if params[1] != scp_magicvalue {
 			fmt.Println("DEBUG SCP TEST BOOT: Dispositivo retornou valor 0 para magicvalue, indicio de reboot ", main_id, dev_type, params)
 			return scp_reboot
