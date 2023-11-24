@@ -138,7 +138,9 @@ Histórico de Versões (recentes)
                      Função scp_panic criada para tratar casos de panic. Primeiro utiliza no scp_process_conn.
                      Cria job SET MAXTEMP para definir temperatura máxima.
             Network: Muda os timeouts para evitar erro na aferição de PH.
-            _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água
-                     Tempo de CIP de Biorreator atualizado para 200 minutos 
-                     No CIP de Biorreator, usa SET MAXTEMP 0 para garantir que a resistência não seja ativada de forma incorreta
+            _conf..: Receita1000 e 2000 mudadas para desligar aerador no teste de PH da água.
+                     Tempo de CIP de Biorreator atualizado para 200 minutos.
+                     No CIP de Biorreator, usa SET MAXTEMP 0 para garantir que a resistência não seja ativada de forma incorreta.
     38b     Master.: Testa len da resposta para o magicvalue pois alguns equipamentos retornaram valor invalido.
+    38c     Master.: turn_aero liga aerador antes de abrir válvulas e aguarda 2 segundos.
+

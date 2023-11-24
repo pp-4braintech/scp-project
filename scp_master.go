@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.38b" // 2023-11-21
+	scp_version = "1.2.38c" // 2023-11-24
 
 	scp_on  = 1
 	scp_off = 0
@@ -4842,24 +4842,25 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
 
-	// if value == scp_off {
-	// 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
-	// 	ret0 := scp_sendmsg_orch(cmd0)
-	// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
-	// 	if !strings.Contains(ret0, scp_ack) && !devmode {
-	// 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret0)
-	// 		if changevalvs {
-	// 			set_valvs_value(dev_valvs, 1-value, false)
-	// 		}
-	// 		return false
-	// 	}
-	// 	bio[ind].Aerator = false
-	// 	cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-	// 	rets := scp_sendmsg_orch(cmds)
-	// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-	// 	if !strings.Contains(rets, scp_ack) && !devmode {
-	// 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
-	// 	}
+	if value == scp_on {
+		cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
+		ret0 := scp_sendmsg_orch(cmd0)
+		fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd0, "\tRET =", ret0)
+		if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", bioid, ret0)
+			if changevalvs {
+				set_valvs_value(dev_valvs, 1-value, false)
+			}
+			return false
+		}
+		bio[ind].Aerator = true
+		// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		// rets := scp_sendmsg_orch(cmds)
+		// fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		// if !strings.Contains(rets, scp_ack) && !devmode {
+		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
+		// }
+		time.Sleep(2000 * time.Millisecond)
 
 	// }
 
@@ -4877,7 +4878,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	}
 
 	if changevalvs {
-		tmax := 10 // (2 * scp_timewaitvalvs / 3) / 1000
+		tmax := 11 // (2 * scp_timewaitvalvs / 3) / 1000
 		for i := 0; i < tmax; i++ {
 			// if bio[ind].MustPause || bio[ind].MustStop {
 			// 	break
@@ -4889,7 +4890,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	aerovalue := int(255.0 * (float32(percent) / 100.0))
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
-	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
+	fmt.Println("DEBUG SCP TURN AERO: ",bioid,"CMD =", cmd1, "\tRET =", ret1)
 	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
@@ -4898,12 +4899,12 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		return false
 	}
 
-	if true {
+	if value == scp_off {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
-		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
+		fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", bioid, ret2)
 			if value == 1 && changevalvs {
 				set_valvs_value(dev_valvs, 0, false)
 			}
@@ -4914,7 +4915,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 			// ret1 = scp_sendmsg_orch(cmdoff)
 			return false
 		}
-		if value == 1 {
+		if value == scp_on {
 			bio[ind].Aerator = true
 		} else {
 			bio[ind].Aerator = false
@@ -4928,7 +4929,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	}
 
 	if changevalvs {
-		tmax := 5 //(scp_timewaitvalvs / 3) / 1000
+		tmax := 4 //(scp_timewaitvalvs / 3) / 1000
 		for i := 0; i < tmax; i++ {
 			// if bio[ind].MustPause || bio[ind].MustStop {
 			// 	break
