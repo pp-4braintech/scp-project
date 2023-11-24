@@ -608,6 +608,7 @@ var boardmutex sync.Mutex
 var biomutex sync.Mutex
 var waitlistmutex sync.Mutex
 var upgrademutex sync.Mutex
+var valvsmutext sync.Mutex
 
 var withdrawrunning = false
 
@@ -1271,7 +1272,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	var devaddr, valvaddr string
 	var ind int
 	id := devid + "/" + valvid
-	valvs[id] = value
+	// valvsmutext.Lock()
+	// valvs[id] = value
+	// valvsmutext.Unlock()
 	switch devtype {
 	case scp_donothing:
 		return true
@@ -1356,7 +1359,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		}
 	}
 	if setok || true {
+		valvsmutext.Lock()
 		valvs[id] = value
+		valvsmutext.Unlock()
 		switch devtype {
 		case scp_bioreactor:
 			if ind >= 0 {
@@ -1393,7 +1398,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 
 func get_valv_status(devid string, valvid string) int {
 	id := devid + "/" + valvid
+	valvsmutext.Lock()
 	value, ok := valvs[id]
+	valvsmutext.Unlock()
 	if ok {
 		return value
 	}
@@ -3904,7 +3911,9 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 	tot := 0
 	for _, p := range vlist {
 		if p != "END" {
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -3944,7 +3953,9 @@ func test_path(vpath []string, value int) bool {
 		if p == "END" {
 			break
 		}
+		valvsmutext.Lock()
 		val, ok := valvs[p]
+		valvsmutext.Unlock()
 		// fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
 		ret = ret && (val == value) && ok
 		// fmt.Println("ret final=", ret)
@@ -4198,7 +4209,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if p == "END" {
 				break
 			}
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -4541,7 +4554,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if p == "END" {
 				break
 			}
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -4860,7 +4875,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		// if !strings.Contains(rets, scp_ack) && !devmode {
 		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		// }
-		time.Sleep(2000 * time.Millisecond)
+		time.Sleep(3000 * time.Millisecond)
 
 	}
 
@@ -4926,17 +4941,27 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		// if !strings.Contains(rets, scp_ack) && !devmode {
 		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		// }
-	}
 
-	if changevalvs {
-		tmax := 4 //(scp_timewaitvalvs / 3) / 1000
-		for i := 0; i < tmax; i++ {
-			// if bio[ind].MustPause || bio[ind].MustStop {
-			// 	break
-			// }
-			time.Sleep(1000 * time.Millisecond)
+		if changevalvs {
+			tmax := 4 //(scp_timewaitvalvs / 3) / 1000
+			for i := 0; i < tmax; i++ {
+				// if bio[ind].MustPause || bio[ind].MustStop {
+				// 	break
+				// }
+				time.Sleep(1000 * time.Millisecond)
+			}
 		}
 	}
+
+	// if changevalvs {
+	// 	tmax := 4 //(scp_timewaitvalvs / 3) / 1000
+	// 	for i := 0; i < tmax; i++ {
+	// 		// if bio[ind].MustPause || bio[ind].MustStop {
+	// 		// 	break
+	// 		// }
+	// 		time.Sleep(1000 * time.Millisecond)
+	// 	}
+	// }
 
 	bio[ind].AeroRatio = percent
 

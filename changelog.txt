@@ -143,4 +143,5 @@ Histórico de Versões (recentes)
                      No CIP de Biorreator, usa SET MAXTEMP 0 para garantir que a resistência não seja ativada de forma incorreta.
     38b     Master.: Testa len da resposta para o magicvalue pois alguns equipamentos retornaram valor invalido.
     38c     Master.: turn_aero liga aerador antes de abrir válvulas e aguarda 2 segundos.
+                     Cria mutex para map de status das válvulas.
 
