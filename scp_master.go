@@ -4862,7 +4862,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		// }
 		time.Sleep(2000 * time.Millisecond)
 
-	// }
+	}
 
 	if changevalvs {
 		// musttest := value == 1
@@ -4890,7 +4890,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	aerovalue := int(255.0 * (float32(percent) / 100.0))
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
-	fmt.Println("DEBUG SCP TURN AERO: ",bioid,"CMD =", cmd1, "\tRET =", ret1)
+	fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd1, "\tRET =", ret1)
 	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
