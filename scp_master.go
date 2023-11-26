@@ -1272,9 +1272,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	var devaddr, valvaddr string
 	var ind int
 	id := devid + "/" + valvid
-	// valvsmutext.Lock()
-	// valvs[id] = value
-	// valvsmutext.Unlock()
+	valvsmutext.Lock()
+	valvs[id] = value
+	valvsmutext.Unlock()
 	switch devtype {
 	case scp_donothing:
 		return true
