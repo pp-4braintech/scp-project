@@ -5156,13 +5156,13 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 	// }
 
 	// musttest := value == 1
-	if test_path(valvs, 1-value) || !musttest {
+	if test_path(valvs, 1-value) || !musttest || true { // INVESTIGAR
 		if set_valvs_value(valvs, value, musttest) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR ao definir valor [", value, "] das valvulas", valvs)
 			return false
 		}
 	} else {
-		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs, "1-value=", 1-value)
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs, " 1-value=", 1-value)
 		return false
 	}
 
