@@ -8615,6 +8615,8 @@ func scp_process_conn(conn net.Conn) {
 		case scp_biofabrica:
 			// fmt.Println(params)
 			if params[2] == "END" {
+				biostr := mybf.BFName
+				biofabrica.BiofabricaID = strings.Replace(biostr, " ", "_", -1)
 				buf, err := json.Marshal(biofabrica)
 				checkErr(err)
 				conn.Write([]byte(buf))
