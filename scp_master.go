@@ -351,6 +351,7 @@ type Bioreact struct {
 	MainStatus   string
 	UndoStatus   string
 	PHControl    bool
+	PHReading    bool
 }
 
 type Bioreact_ETL struct {
@@ -615,12 +616,12 @@ var withdrawrunning = false
 var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.27", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR06", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR06", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
 }
 
 var ibc = []IBC{
@@ -2417,6 +2418,10 @@ func scp_setup_devices(mustall bool) {
 	finishedsetup = true
 }
 
+func set_phreading(ind int, value bool) {
+	bio[ind].PHReading = value
+}
+
 func scp_get_ph_voltage(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -2446,6 +2451,8 @@ func scp_get_ph_voltage(bioid string) float64 {
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 
 		n := 0
+		set_phreading(ind, true)
+		defer set_phreading(ind, false)
 		var data []float64
 		for i := 0; i <= 7; i++ {
 			ret_ph := scp_sendmsg_orch(cmd_ph)
@@ -2647,6 +2654,15 @@ func scp_update_screen(bioid string) {
 }
 
 func scp_get_temperature(bioid string) float64 {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP GET TEMPERATURE: Bioid não existe", bioid)
+		return -1
+	}
+	if bio[ind].PHReading {
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Leitura de temperatura interrompida pois Leitura de PH em curso", bioid)
+		return -2
+	}
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	tempdev := bio_cfg[bioid].Temp_dev
 	if len(bioaddr) > 0 {
@@ -2655,6 +2671,10 @@ func scp_get_temperature(bioid string) float64 {
 		n := 0
 		var data []float64
 		for i := 0; i <= 4; i++ {
+			if bio[ind].PHReading {
+				fmt.Println("DEBUG SCP GET TEMPERATURE: Leitura de temperatura interrompida pois Leitura de PH em curso", bioid)
+				return -2
+			}
 			ret_temp := scp_sendmsg_orch(cmd_temp)
 			params := scp_splitparam(ret_temp, "/")
 			if len(params) > 1 {
@@ -3317,9 +3337,14 @@ func scp_get_alldata() {
 									fmt.Println("ERROR SCP GET ALLDATA: Temperatura acima do máximo e resistencia ESTA LIGADA DURANTE CULTIVO", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
 							} else if t_tmp > TEMPMAX {
-								fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
-								bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
-								scp_turn_heater(b.BioreactorID, 0, false)
+								if t_tmp < 150 {
+									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
+									bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
+									scp_turn_heater(b.BioreactorID, 0, false)
+								} else {
+									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA ACIMA DO NORMAL", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
+								}
+
 							}
 						}
 					}
@@ -5156,7 +5181,7 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 	// }
 
 	// musttest := value == 1
-	if test_path(valvs, 1-value) || !musttest || true { // INVESTIGAR
+	if test_path(valvs, 1-value) || !musttest { // INVESTIGAR
 		if set_valvs_value(valvs, value, musttest) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR ao definir valor [", value, "] das valvulas", valvs)
 			return false
@@ -5436,7 +5461,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	}
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
-		bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "")
+		// bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "")
 	}
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)

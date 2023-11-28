@@ -145,6 +145,7 @@ Histórico de Versões (recentes)
     38c     Master.: turn_aero liga aerador antes de abrir válvulas e aguarda 2 segundos.
                      Cria mutex para map de status das válvulas.
     38d     Master.: Corrige problema durante o recircular.
+                     Leitura excludente de PH e Temperatura
             Front..: Corrige exibição do botão recircular 
 
 
