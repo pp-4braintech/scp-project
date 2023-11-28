@@ -144,4 +144,7 @@ Histórico de Versões (recentes)
     38b     Master.: Testa len da resposta para o magicvalue pois alguns equipamentos retornaram valor invalido.
     38c     Master.: turn_aero liga aerador antes de abrir válvulas e aguarda 2 segundos.
                      Cria mutex para map de status das válvulas.
+    38d     Master.: Corrige problema durante o recircular.
+            Front..: Corrige exibição do botão recircular 
+
 

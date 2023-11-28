@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.38c" // 2023-11-24
+	scp_version = "1.2.38d" // 2023-11-28
 
 	scp_on  = 1
 	scp_off = 0
@@ -5666,7 +5666,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 	for !stop {
 		time.Sleep(1 * time.Second)
 		n++
-		if period == 0 {
+		if period != 0 { // era ==
 			switch devtype {
 			case scp_bioreactor:
 				if bio[ind].Status != bio_circulate {
@@ -5688,11 +5688,11 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 	switch devtype {
 	case scp_bioreactor:
-		if bio[ind].Status != bio_pause {
+		if bio[ind].Status != bio_pause && bio[ind].Status != bio_error {
 			bio[ind].Status = bio[ind].LastStatus
 		}
 	case scp_ibc:
-		if ibc[ind].Status != bio_pause {
+		if ibc[ind].Status != bio_pause && ibc[ind].Status != bio_error {
 			ibc[ind].Status = ibc[ind].LastStatus
 		}
 	}
