@@ -771,7 +771,7 @@ func get_phdata(bioid string, phval float64) []byte {
 	var tmp_data = [][]float64{}
 	var data_ph = []float64{}
 	var max_temp, min_temp float64
-	for i := 0; i <= 1000; i++ {
+	for i := 0; i <= 10; i++ { // 1000
 		if biofabrica.Critical != scp_ready {
 			fmt.Println("ERROR GET PHDATA: ", bioid, "Leitura interrompinda por ERRO CRITICO na Biofábrica", biofabrica.Critical)
 			msg := MsgReturn{scp_err, "Leitura interrompida pois Biofábrica com parada Crítica."}
