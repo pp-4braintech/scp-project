@@ -807,12 +807,12 @@ func get_phdata(bioid string, phval float64) []byte {
 		}
 	}
 	fmt.Println("DEBUG GET PHDATA: ", bioid, " PH:", phval, " Amostras:", n, " min_temp:", min_temp, " max_temp:", max_temp)
-	if min_temp > 20 || max_temp < 30 {
-		fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
-		msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
-		msgjson, _ := json.Marshal(msg)
-		// return []byte(msgjson)
-	}
+	// if min_temp > 20 || max_temp < 30 {
+	// 	fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
+	// 	msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
+	// 	msgjson, _ := json.Marshal(msg)
+	// 	return []byte(msgjson)
+	// }
 
 	mediana := calc_mediana(data_ph)
 	if mediana > 0 {
