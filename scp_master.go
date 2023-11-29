@@ -771,7 +771,8 @@ func get_phdata(bioid string, phval float64) []byte {
 	n := 0
 	var tmp_data = [][]float64{}
 	var data_ph = []float64{}
-	var max_temp, min_temp float64
+	var max_temp, min_temp, last_temp float64
+	last_temp = -1
 	for i := 0; i <= 1000; i++ { // 1000
 		if biofabrica.Critical != scp_ready {
 			fmt.Println("ERROR GET PHDATA: ", bioid, "Leitura interrompinda por ERRO CRITICO na Biofábrica", biofabrica.Critical)
@@ -782,7 +783,10 @@ func get_phdata(bioid string, phval float64) []byte {
 		tmp_phvolt := scp_get_ph_voltage(bioid)
 		if tmp_phvolt >= 2 && tmp_phvolt <= 5 {
 			tmp_temperature := scp_get_temperature(bioid)
-			if tmp_temperature > 10 && tmp_temperature < TEMPMAX {
+			if last_temp == -1 {
+				last_temp = tmp_temperature
+			}
+			if tmp_temperature > 10 && tmp_temperature < TEMPMAX && math.Abs(last_temp-tmp_temperature) < 1 {
 				if n == 0 {
 					max_temp = tmp_temperature
 					min_temp = tmp_temperature
@@ -799,6 +803,7 @@ func get_phdata(bioid string, phval float64) []byte {
 				data := []float64{phval, tmp_phvolt, tmp_temperature}
 				tmp_data = append(tmp_data, data)
 				n++
+				last_temp = tmp_temperature
 			}
 		}
 		time.Sleep(10 * time.Second)
