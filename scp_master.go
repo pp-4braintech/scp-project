@@ -807,7 +807,7 @@ func get_phdata(bioid string, phval float64) []byte {
 		}
 	}
 	fmt.Println("DEBUG GET PHDATA: ", bioid, " PH:", phval, " Amostras:", n, " min_temp:", min_temp, " max_temp:", max_temp)
-	if min_temp > 20 || max_temp < 30 {
+	if min_temp > 22 || max_temp < 30 {
 		fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
 		// msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
 		// msgjson, _ := json.Marshal(msg)
@@ -2854,6 +2854,10 @@ func scp_get_temperature(bioid string) float64 {
 			} else {
 				fmt.Println("ERROR GET TEMPERATURE: Valor retornado =", bioid, ret_temp, "passo=", i)
 			}
+		}
+		if n < 3 {
+			fmt.Println("ERROR GET TEMPERATURE: Numero de dados insuficiente =", bioid, "passos=", n, "amostras=", data)
+			return -3
 		}
 		mediana := calc_mediana(data)
 		tempfloat := mediana / 10.0
