@@ -801,7 +801,7 @@ func get_phdata(bioid string, phval float64) []byte {
 				n++
 			}
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 		if max_temp >= 30 && min_temp <= 22 {
 			break
 		}
