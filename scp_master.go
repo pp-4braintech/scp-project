@@ -772,7 +772,7 @@ func get_phdata(bioid string, phval float64) []byte {
 	var tmp_data = [][]float64{}
 	var data_ph = []float64{}
 	var max_temp, min_temp float64
-	for i := 0; i <= 10; i++ { // 1000
+	for i := 0; i <= 1000; i++ { // 1000
 		if biofabrica.Critical != scp_ready {
 			fmt.Println("ERROR GET PHDATA: ", bioid, "Leitura interrompinda por ERRO CRITICO na Biofábrica", biofabrica.Critical)
 			msg := MsgReturn{scp_err, "Leitura interrompida pois Biofábrica com parada Crítica."}
@@ -782,7 +782,7 @@ func get_phdata(bioid string, phval float64) []byte {
 		tmp_phvolt := scp_get_ph_voltage(bioid)
 		if tmp_phvolt >= 2 && tmp_phvolt <= 5 {
 			tmp_temperature := scp_get_temperature(bioid)
-			if tmp_temperature > 5 && tmp_temperature < TEMPMAX {
+			if tmp_temperature > 10 && tmp_temperature < TEMPMAX {
 				if n == 0 {
 					max_temp = tmp_temperature
 					min_temp = tmp_temperature
@@ -807,12 +807,12 @@ func get_phdata(bioid string, phval float64) []byte {
 		}
 	}
 	fmt.Println("DEBUG GET PHDATA: ", bioid, " PH:", phval, " Amostras:", n, " min_temp:", min_temp, " max_temp:", max_temp)
-	// if min_temp > 20 || max_temp < 30 {
-	// 	fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
-	// 	msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
-	// 	msgjson, _ := json.Marshal(msg)
-	// 	return []byte(msgjson)
-	// }
+	if min_temp > 20 || max_temp < 30 {
+		fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
+		// msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
+		// msgjson, _ := json.Marshal(msg)
+		// return []byte(msgjson)
+	}
 
 	mediana := calc_mediana(data_ph)
 	if mediana > 0 {
