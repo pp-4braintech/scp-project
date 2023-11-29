@@ -149,6 +149,7 @@ const scp_par_restore = "RESTORE"
 const scp_par_clenaperis = "CLEANPERIS"
 const scp_par_setvolume = "SETVOLUME"
 const scp_par_controlph = "CONTROLPH"
+const scp_par_maxtemp = "MAXTEMP"
 
 // const scp_par_version = "SYSVERSION"
 
@@ -351,6 +352,7 @@ type Bioreact struct {
 	MainStatus   string
 	UndoStatus   string
 	PHControl    bool
+	PHReading    bool
 }
 
 type Bioreact_ETL struct {
@@ -608,6 +610,7 @@ var boardmutex sync.Mutex
 var biomutex sync.Mutex
 var waitlistmutex sync.Mutex
 var upgrademutex sync.Mutex
+var valvsmutext sync.Mutex
 
 var regres *regression.Regression
 var regres_data = [][]float64{}
@@ -618,12 +621,12 @@ var withdrawrunning = false
 var mybf = Biofabrica_data{"bf999", "Nao Configurado", "ERRO", "HA", "Hubio Agro", "", "1.2.27", [2]float64{-15.9236672, -53.1827026}, "", "192.168.0.23"}
 
 var bio = []Bioreact{
-	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
-	{"BIOR06", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true},
+	{"BIOR01", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR02", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR03", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR04", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR05", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
+	{"BIOR06", bio_update, "", "", 0, 0, 0, 0, 0, 0, false, false, 0, [8]int{0, 0, 0, 0, 0, 0, 0, 0}, [5]int{0, 0, 0, 0, 0}, false, 0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, [2]int{0, 0}, 0, "OUT", []string{}, []string{}, []string{}, []string{}, [2]float32{0, 0}, "", false, false, true, []string{}, [3]float64{0, 0, 0}, [2]float64{0, 0}, false, false, false, "", "", true, false},
 }
 
 var ibc = []IBC{
@@ -646,6 +649,18 @@ var biofabrica = Biofabrica{
 }
 
 var biobak = bio // Salva status atual
+
+func scp_panic() {
+	err := recover()
+	if err != nil {
+		log.Println("PANIC SCP MASTER: ATENCAO panico ocorreu", err)
+		log.Println("PANIC SCP MASTER: DUMP BIO:", bio)
+		log.Println("PANIC SCP MASTER: DUMP IBC:", ibc)
+		log.Println("PANIC SCP MASTER: DUMP TOTEM:", totem)
+		log.Println("PANIC SCP MASTER: DUMP BIOFABRICA:", biofabrica)
+		log.Println("PANIC SCP MASTER: DUMP SCHED:", schedule)
+	}
+}
 
 func sumXYandXX(arrayX []float64, arrayY []float64, meanX float64, meanY float64) (float64, float64) {
 	resultXX := 0.0
@@ -1360,7 +1375,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 	var devaddr, valvaddr string
 	var ind int
 	id := devid + "/" + valvid
+	valvsmutext.Lock()
 	valvs[id] = value
+	valvsmutext.Unlock()
 	switch devtype {
 	case scp_donothing:
 		return true
@@ -1445,7 +1462,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 		}
 	}
 	if setok || true {
+		valvsmutext.Lock()
 		valvs[id] = value
+		valvsmutext.Unlock()
 		switch devtype {
 		case scp_bioreactor:
 			if ind >= 0 {
@@ -1482,7 +1501,9 @@ func set_valv_status(devtype string, devid string, valvid string, value int) boo
 
 func get_valv_status(devid string, valvid string) int {
 	id := devid + "/" + valvid
+	valvsmutext.Lock()
 	value, ok := valvs[id]
+	valvsmutext.Unlock()
 	if ok {
 		return value
 	}
@@ -2525,6 +2546,10 @@ func scp_setup_devices(mustall bool) {
 	finishedsetup = true
 }
 
+func set_phreading(ind int, value bool) {
+	bio[ind].PHReading = value
+}
+
 func scp_get_ph_voltage(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
@@ -2554,6 +2579,8 @@ func scp_get_ph_voltage(bioid string) float64 {
 		cmd_ph := "CMD/" + bioaddr + "/GET/" + phdev + "/END"
 
 		n := 0
+		set_phreading(ind, true)
+		defer set_phreading(ind, false)
 		var data []float64
 		for i := 0; i <= 7; i++ {
 			ret_ph := scp_sendmsg_orch(cmd_ph)
@@ -2761,6 +2788,15 @@ func scp_update_screen(bioid string) {
 }
 
 func scp_get_temperature(bioid string) float64 {
+	ind := get_bio_index(bioid)
+	if ind < 0 {
+		fmt.Println("ERROR SCP GET TEMPERATURE: Bioid não existe", bioid)
+		return -1
+	}
+	if bio[ind].PHReading {
+		fmt.Println("DEBUG SCP GET TEMPERATURE: Leitura de temperatura interrompida pois Leitura de PH em curso", bioid)
+		return -2
+	}
 	bioaddr := bio_cfg[bioid].Deviceaddr
 	tempdev := bio_cfg[bioid].Temp_dev
 	if len(bioaddr) > 0 {
@@ -2769,6 +2805,10 @@ func scp_get_temperature(bioid string) float64 {
 		n := 0
 		var data []float64
 		for i := 0; i <= 4; i++ {
+			if bio[ind].PHReading {
+				fmt.Println("DEBUG SCP GET TEMPERATURE: Leitura de temperatura interrompida pois Leitura de PH em curso", bioid)
+				return -2
+			}
 			ret_temp := scp_sendmsg_orch(cmd_temp)
 			params := scp_splitparam(ret_temp, "/")
 			if len(params) > 1 {
@@ -3034,7 +3074,7 @@ func scp_test_boot(main_id string, dev_type string) string {
 		ret = scp_sendmsg_orch(cmd)
 		params = scp_splitparam(ret, "/")
 	}
-	if ok {
+	if ok && len(params) > 1 {
 		if params[1] != scp_magicvalue {
 			fmt.Println("DEBUG SCP TEST BOOT: Dispositivo retornou valor 0 para magicvalue, indicio de reboot ", main_id, dev_type, params)
 			return scp_reboot
@@ -3418,21 +3458,27 @@ func scp_get_alldata() {
 
 						if rand.Intn(21) == 7 {
 							t_tmp := scp_get_temperature(b.BioreactorID)
-							if (t_tmp >= 0) && (t_tmp <= TEMPMAX) {
+							if (t_tmp >= 10) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Status != bio_producting {
 									fmt.Println("DEBUG SCP GET ALLDATA: Desligando resistencia por atingir temperatura maxima definida", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 									scp_turn_heater(b.BioreactorID, 0, false)
-								} else if !bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].Volume > 0 && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 && bio[ind].Status != bio_producting {
-									fmt.Println("DEBUG SCP GET ALLDATA: Ligando resistencia por temperatura ser inferior ao maximo - 5", b.BioreactorID, "tempnow=", t_tmp, "max-5=", bio[ind].TempMax-5)
+								} else if !bio[ind].Heater && bio[ind].Pumpstatus && bio[ind].Valvs[5] == 1 && (bio[ind].Valvs[7] == 1 || bio[ind].Valvs[3] == 1) && biofabrica.Critical == scp_ready &&
+									bio[ind].Volume > 0 && bio[ind].TempMax > 0 && float32(t_tmp) <= bio[ind].TempMax-5 && bio[ind].Status == bio_cip {
+									fmt.Println("DEBUG SCP GET ALLDATA: Ligando resistencia por temperatura ser inferior ao maximo - 5 no CIP", b.BioreactorID, "tempnow=", t_tmp, "max-5=", bio[ind].TempMax-5)
 									scp_turn_heater(b.BioreactorID, bio[ind].TempMax, true)
 								} else if bio[ind].Status == bio_producting && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Heater {
 									fmt.Println("ERROR SCP GET ALLDATA: Temperatura acima do máximo e resistencia ESTA LIGADA DURANTE CULTIVO", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
 							} else if t_tmp > TEMPMAX {
-								fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
-								bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
-								scp_turn_heater(b.BioreactorID, 0, false)
+								if t_tmp < 150 {
+									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
+									bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
+									scp_turn_heater(b.BioreactorID, 0, false)
+								} else {
+									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA ACIMA DO NORMAL", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
+								}
+
 							}
 						}
 					}
@@ -4024,7 +4070,9 @@ func set_valvs_value(vlist []string, value int, abort_on_error bool) int {
 	tot := 0
 	for _, p := range vlist {
 		if p != "END" {
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -4064,8 +4112,10 @@ func test_path(vpath []string, value int) bool {
 		if p == "END" {
 			break
 		}
+		valvsmutext.Lock()
 		val, ok := valvs[p]
-		// fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
+		valvsmutext.Unlock()
+		fmt.Println("step", p, "ret=", ret, "val=", val, "ok=", ok)
 		ret = ret && (val == value) && ok
 		// fmt.Println("ret final=", ret)
 	}
@@ -4318,7 +4368,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if p == "END" {
 				break
 			}
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -4661,7 +4713,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if p == "END" {
 				break
 			}
+			valvsmutext.Lock()
 			val, ok := valvs[p]
+			valvsmutext.Unlock()
 			if ok {
 				sub := scp_splitparam(p, "/")
 				dtype := get_scp_type(sub[0])
@@ -4962,26 +5016,27 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	aerodev := bio_cfg[bioid].Aero_dev
 	dev_valvs := []string{bioid + "/V1", bioid + "/V2"}
 
-	// if value == scp_off {
-	// 	cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
-	// 	ret0 := scp_sendmsg_orch(cmd0)
-	// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd0, "\tRET =", ret0)
-	// 	if !strings.Contains(ret0, scp_ack) && !devmode {
-	// 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret0)
-	// 		if changevalvs {
-	// 			set_valvs_value(dev_valvs, 1-value, false)
-	// 		}
-	// 		return false
-	// 	}
-	// 	bio[ind].Aerator = false
-	// 	cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
-	// 	rets := scp_sendmsg_orch(cmds)
-	// 	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
-	// 	if !strings.Contains(rets, scp_ack) && !devmode {
-	// 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
-	// 	}
+	if value == scp_on {
+		cmd0 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
+		ret0 := scp_sendmsg_orch(cmd0)
+		fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd0, "\tRET =", ret0)
+		if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", bioid, ret0)
+			if changevalvs {
+				set_valvs_value(dev_valvs, 1-value, false)
+			}
+			return false
+		}
+		bio[ind].Aerator = true
+		// cmds := fmt.Sprintf("CMD/%s/PUT/S271,%d/END", scraddr, value)
+		// rets := scp_sendmsg_orch(cmds)
+		// fmt.Println("DEBUG SCP TURN AERO: CMD =", cmds, "\tRET =", rets)
+		// if !strings.Contains(rets, scp_ack) && !devmode {
+		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
+		// }
+		time.Sleep(3000 * time.Millisecond)
 
-	// }
+	}
 
 	if changevalvs {
 		// musttest := value == 1
@@ -4997,7 +5052,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	}
 
 	if changevalvs {
-		tmax := 10 // (2 * scp_timewaitvalvs / 3) / 1000
+		tmax := 11 // (2 * scp_timewaitvalvs / 3) / 1000
 		for i := 0; i < tmax; i++ {
 			// if bio[ind].MustPause || bio[ind].MustStop {
 			// 	break
@@ -5009,7 +5064,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 	aerovalue := int(255.0 * (float32(percent) / 100.0))
 	cmd1 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerodev, aerovalue)
 	ret1 := scp_sendmsg_orch(cmd1)
-	fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd1, "\tRET =", ret1)
+	fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd1, "\tRET =", ret1)
 	if !strings.Contains(ret1, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
 		fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir ", percent, "% aerador", ret1)
 		if changevalvs {
@@ -5018,12 +5073,12 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		return false
 	}
 
-	if true {
+	if value == scp_off {
 		cmd2 := fmt.Sprintf("CMD/%s/PUT/%s,%d/END", devaddr, aerorele, value)
 		ret2 := scp_sendmsg_orch(cmd2)
-		fmt.Println("DEBUG SCP TURN AERO: CMD =", cmd2, "\tRET =", ret2)
+		fmt.Println("DEBUG SCP TURN AERO: ", bioid, "CMD =", cmd2, "\tRET =", ret2)
 		if !strings.Contains(ret2, scp_ack) && !devmode && biofabrica.Critical != scp_netfail && bio[ind].Status != bio_error {
-			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", ret2)
+			fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao definir valor[", value, "] rele aerador ", bioid, ret2)
 			if value == 1 && changevalvs {
 				set_valvs_value(dev_valvs, 0, false)
 			}
@@ -5034,7 +5089,7 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 			// ret1 = scp_sendmsg_orch(cmdoff)
 			return false
 		}
-		if value == 1 {
+		if value == scp_on {
 			bio[ind].Aerator = true
 		} else {
 			bio[ind].Aerator = false
@@ -5045,17 +5100,27 @@ func scp_turn_aero(bioid string, changevalvs bool, value int, percent int, mustt
 		// if !strings.Contains(rets, scp_ack) && !devmode {
 		// 	fmt.Println("ERROR SCP TURN AERO:", bioid, " ERROR ao mudar aerador na screen ", scraddr, rets)
 		// }
-	}
 
-	if changevalvs {
-		tmax := 5 //(scp_timewaitvalvs / 3) / 1000
-		for i := 0; i < tmax; i++ {
-			// if bio[ind].MustPause || bio[ind].MustStop {
-			// 	break
-			// }
-			time.Sleep(1000 * time.Millisecond)
+		if changevalvs {
+			tmax := 4 //(scp_timewaitvalvs / 3) / 1000
+			for i := 0; i < tmax; i++ {
+				// if bio[ind].MustPause || bio[ind].MustStop {
+				// 	break
+				// }
+				time.Sleep(1000 * time.Millisecond)
+			}
 		}
 	}
+
+	// if changevalvs {
+	// 	tmax := 4 //(scp_timewaitvalvs / 3) / 1000
+	// 	for i := 0; i < tmax; i++ {
+	// 		// if bio[ind].MustPause || bio[ind].MustStop {
+	// 		// 	break
+	// 		// }
+	// 		time.Sleep(1000 * time.Millisecond)
+	// 	}
+	// }
 
 	bio[ind].AeroRatio = percent
 
@@ -5139,11 +5204,11 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 		fmt.Println("ERROR SCP TURN HEATER: Biorreator nao existe", bioid)
 		return false
 	}
-	if bio[ind].Temperature > TEMPMAX {
-		fmt.Println("ERROR SCP TURN HEATER: Temperatura do Biorreator acima do limite", bioid, " temp=", bio[ind].Temperature, "  TEMPMAX=", TEMPMAX)
+	if bio[ind].Temperature > TEMPMAX && value {
+		fmt.Println("ERROR SCP TURN HEATER: Não é possível LIGAR - Temperatura do Biorreator acima do limite", bioid, " temp=", bio[ind].Temperature, "  TEMPMAX=", TEMPMAX)
 		return false
 	}
-	if bio[ind].Volume == 0 {
+	if bio[ind].Volume == 0 && value {
 		fmt.Println("ERROR SCP TURN HEATER: Nao é possível ligar resistencia com Biorreator VAZIO", bioid, " volume=", bio[ind].Volume)
 		return false
 	}
@@ -5163,6 +5228,10 @@ func scp_turn_heater(bioid string, maxtemp float32, value bool) bool {
 	fmt.Println("DEBUG SCP TURN HEATER: CMD =", cmd0, "\tRET =", ret0)
 	if !strings.Contains(ret0, scp_ack) && !devmode && biofabrica.Critical != scp_netfail {
 		fmt.Println("ERROR SCP TURN HEATER:", bioid, " ERROR ao definir valor[", value, "] aquecedor ", ret0)
+		if !value {
+			bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência. Verificar IMEDIATAMENTE o Biorreator", "")
+			board_add_message("EATENÇÃO: Falha ao desligar resistência. Verificar IMEDIATAMENTE o Biorreator", "")
+		}
 		return false
 	}
 	bio[ind].Heater = value
@@ -5246,13 +5315,13 @@ func scp_turn_pump(devtype string, main_id string, valvs []string, value int, mu
 	// }
 
 	// musttest := value == 1
-	if test_path(valvs, 1-value) || !musttest {
+	if test_path(valvs, 1-value) || !musttest { // INVESTIGAR
 		if set_valvs_value(valvs, value, musttest) < 0 {
 			fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR ao definir valor [", value, "] das valvulas", valvs)
 			return false
 		}
 	} else {
-		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs, "1-value=", 1-value)
+		fmt.Println("ERROR SCP TURN PUMP:", devtype, " ERROR nas valvulas", valvs, " 1-value=", 1-value)
 		return false
 	}
 
@@ -5526,8 +5595,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	}
 	if !scp_turn_heater(bioid, temp, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha GRAVE ao desligar aquecedor", bioid)
-		bio_del_message(bioid, "ERROFFHEATER")
-		bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "ERROFFHEATER")
+		// bio_add_message(bioid, "EATENÇÃO: Falha ao desligar resistência do Biorreator. Favor entrar em contato com o SAC", "")
 	}
 	if !scp_turn_pump(scp_bioreactor, bioid, valvs, 0, false) {
 		fmt.Println("ERROR SCP ADJUST TEMP: Falha ao fechar valvulas e desligar bomba", bioid, valvs)
@@ -5757,7 +5825,7 @@ func scp_circulate(devtype string, main_id string, period int) {
 	for !stop {
 		time.Sleep(1 * time.Second)
 		n++
-		if period == 0 {
+		if period != 0 { // era ==
 			switch devtype {
 			case scp_bioreactor:
 				if bio[ind].Status != bio_circulate {
@@ -5779,11 +5847,11 @@ func scp_circulate(devtype string, main_id string, period int) {
 	}
 	switch devtype {
 	case scp_bioreactor:
-		if bio[ind].Status != bio_pause {
+		if bio[ind].Status != bio_pause && bio[ind].Status != bio_error {
 			bio[ind].Status = bio[ind].LastStatus
 		}
 	case scp_ibc:
-		if ibc[ind].Status != bio_pause {
+		if ibc[ind].Status != bio_pause && ibc[ind].Status != bio_error {
 			ibc[ind].Status = ibc[ind].LastStatus
 		}
 	}
@@ -6001,6 +6069,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 
 	case scp_job_org:
 		var orgcode string
+		orgcode = ""
 		if len(subpars) > 0 {
 			orgcode = subpars[0]
 			if len(organs[orgcode].Orgname) > 0 {
@@ -6018,8 +6087,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 			fmt.Println("ERROR SCP RUN JOB: Falta parametros em", scp_job_org, params)
 			return false
 		}
-		board_add_message("CIniciando Cultivo "+organs[orgcode].Orgname+" no "+bioid, "")
-		bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname, "")
+		if len(orgcode) > 0 {
+			if orgcode != "EMPTY" {
+				board_add_message("CIniciando Cultivo "+organs[orgcode].Orgname+" no "+bioid, "")
+				bio_add_message(bioid, "CIniciando Cultivo de "+organs[orgcode].Orgname, "")
+			} else {
+				bio[ind].MainStatus = mainstatus_empty
+			}
+		}
 
 	case scp_job_set:
 		if len(subpars) > 1 {
@@ -6035,6 +6110,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 					bio[ind].PHControl = val_bol
 				} else {
 					fmt.Println("ERROR SCP RUN JOG: SET: CONTROLPH com valor invalido", bioid, subpars)
+				}
+			case scp_par_maxtemp:
+				val_str := subpars[1]
+				val_int, err := strconv.Atoi(val_str)
+				if err != nil {
+					fmt.Println("ERROR SCP RUN JOB: SET: Maxtemp com valor inválido", bioid, subpars)
+				} else {
+					bio[ind].TempMax = float32(val_int)
 				}
 			case scp_par_step:
 				biostep_str := subpars[1]
@@ -7764,6 +7847,7 @@ func scp_process_conn(conn net.Conn) {
 		checkErr(err)
 		return
 	}
+	defer scp_panic()
 	//fmt.Printf("msg: %s\n", buf[:n])
 	params := scp_splitparam(string(buf[:n]), "/")
 	// fmt.Println(params)
@@ -8047,6 +8131,51 @@ func scp_process_conn(conn net.Conn) {
 							fmt.Println("DEBUG CONFIG: Ajustando PH 10", bioid)
 							time.Sleep(30 * time.Second)
 							ret := get_phdata(bioid, 4)
+							n := 0
+							var data []float64
+							for i := 0; i <= 7; i++ {
+								if biofabrica.Critical != scp_ready {
+									return
+								}
+								tmp := scp_get_ph_voltage(bioid)
+								if tmp >= 2 && tmp <= 5 {
+									data = append(data, tmp)
+									n++
+								}
+							}
+							mediana := calc_mediana(data)
+							if mediana > 0 {
+								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.15 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.35 { // Alterado para permitir a calibração
+									bio[ind].PHref[2] = mediana
+									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
+									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
+								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.35 { // Alterado para permitir a calibração
+									bio[ind].PHref[2] = 0
+									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
+									bio_add_message(bioid, "E"+msg.Message, "")
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
+								} else {
+									bio[ind].PHref[2] = 0
+									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"}
+									bio_add_message(bioid, "E"+msg.Message, "")
+									msgjson, _ := json.Marshal(msg)
+									conn.Write([]byte(msgjson))
+
+								}
+							} else {
+								bio[ind].PHref[2] = 0
+								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10", bioid)
+								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"}
+								bio_add_message(bioid, "E"+msg.Message, "")
+								msgjson, _ := json.Marshal(msg)
+								conn.Write([]byte(msgjson))
+
+							}
 							ph_elapsed := time.Since(ph_start).Seconds()
 							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 10 = ", ph_elapsed, bioid)
 							conn.Write(ret)
@@ -8647,12 +8776,16 @@ func scp_process_conn(conn net.Conn) {
 		case scp_bioreactor:
 			if params[2] == "END" {
 				buf, err := json.Marshal(bio)
-				checkErr(err)
-				bio_etl := make([]Bioreact_ETL_Macro, 0)
-				json.Unmarshal(buf, &bio_etl)
-				buf2, err2 := json.Marshal(bio_etl)
-				checkErr(err2)
-				conn.Write([]byte(buf2))
+				if err != nil {
+					fmt.Println("ERROR GET: Falha no json.Marshal dos biorreatores")
+					checkErr(err)
+				} else {
+					bio_etl := make([]Bioreact_ETL_Macro, 0)
+					json.Unmarshal(buf, &bio_etl)
+					buf2, err2 := json.Marshal(bio_etl)
+					checkErr(err2)
+					conn.Write([]byte(buf2))
+				}
 			} else {
 				ind := get_bio_index(params[2])
 				if ind >= 0 {
@@ -8691,6 +8824,8 @@ func scp_process_conn(conn net.Conn) {
 		case scp_biofabrica:
 			// fmt.Println(params)
 			if params[2] == "END" {
+				biostr := mybf.BFName
+				biofabrica.BiofabricaID = strings.Replace(biostr, " ", "_", -1)
 				buf, err := json.Marshal(biofabrica)
 				checkErr(err)
 				conn.Write([]byte(buf))
@@ -9417,6 +9552,8 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go master_shutdown(sigs)
+
+	defer scp_panic()
 
 	localconfig_path = "/etc/scpd/"
 	addrs_type = make(map[string]DevAddrData, 0)
