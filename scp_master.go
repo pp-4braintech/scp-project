@@ -733,6 +733,38 @@ func calc_mediana(x []float64) float64 {
 	return mediana
 }
 
+func save_phdata(filename string) int {
+	filecsv, err := os.Create(filename)
+	if err != nil {
+		checkErr(err)
+		return -1
+	}
+	defer filecsv.Close()
+	n := 0
+	csvwriter := csv.NewWriter(filecsv)
+	for _, d := range regres_data {
+		s := ""
+		for _, c := range d {
+			tmp := fmt.Sprintf("%f", c)
+			if len(s) > 0 {
+				s += "," + tmp
+			} else {
+				s = tmp
+			}
+		}
+		csvstr := scp_splitparam(s, ",")
+		// fmt.Println("DEBUG SAVE", csvstr)
+		err = csvwriter.Write(csvstr)
+		if err != nil {
+			checkErr(err)
+		} else {
+			n++
+		}
+	}
+	csvwriter.Flush()
+	return n
+}
+
 func get_phdata(bioid string, phval float64) []byte {
 	regres_ready = false
 	n := 0
@@ -789,7 +821,7 @@ func get_phdata(bioid string, phval float64) []byte {
 		// 	msgjson, _ := json.Marshal(msg)
 		// 	return []byte(msgjson)
 		// } else {
-		fmt.Println("DEBUG GET PHDATA: ", bioid, "Mediana Voltagem PH 4", mediana, " amostras =", n)
+		fmt.Println("DEBUG GET PHDATA: ", bioid, "Mediana Voltagem PH", phval, "=", mediana, " amostras =", n)
 		regres_data = append(regres_data, tmp_data...)
 		m := fmt.Sprintf("Leituras do PH %02.1f feita com sucesso", phval)
 		msg := MsgReturn{scp_ack, m}
@@ -8004,6 +8036,7 @@ func scp_process_conn(conn net.Conn) {
 							ph_elapsed := time.Since(ph_start).Seconds()
 							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 4 = ", ph_elapsed, bioid)
 							conn.Write(ret)
+							save_phdata(execpath + "phdata.csv")
 
 							// n := 0
 							// var data []float64
@@ -8071,10 +8104,11 @@ func scp_process_conn(conn net.Conn) {
 							ph_start := time.Now()
 							fmt.Println("DEBUG CONFIG: Ajustando PH 7", bioid)
 							time.Sleep(30 * time.Second)
-							ret := get_phdata(bioid, 4)
+							ret := get_phdata(bioid, 7)
 							ph_elapsed := time.Since(ph_start).Seconds()
-							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
+							fmt.Println("DEBUG CONFIG: PH 7: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
 							conn.Write(ret)
+							save_phdata(execpath + "phdata.csv")
 
 							// n := 0
 							// var data []float64
@@ -8130,55 +8164,11 @@ func scp_process_conn(conn net.Conn) {
 							ph_start := time.Now()
 							fmt.Println("DEBUG CONFIG: Ajustando PH 10", bioid)
 							time.Sleep(30 * time.Second)
-							ret := get_phdata(bioid, 4)
-							n := 0
-							var data []float64
-							for i := 0; i <= 7; i++ {
-								if biofabrica.Critical != scp_ready {
-									return
-								}
-								tmp := scp_get_ph_voltage(bioid)
-								if tmp >= 2 && tmp <= 5 {
-									data = append(data, tmp)
-									n++
-								}
-							}
-							mediana := calc_mediana(data)
-							if mediana > 0 {
-								if math.Abs(mediana-bio[ind].PHref[1]) >= 0.15 && math.Abs(mediana-bio[ind].PHref[0]) >= 0.35 { // Alterado para permitir a calibração
-									bio[ind].PHref[2] = mediana
-									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
-									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								} else if math.Abs(mediana-bio[ind].PHref[0]) < 0.35 { // Alterado para permitir a calibração
-									bio[ind].PHref[2] = 0
-									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 4. Favor checar solução de teste, painel, cabos e sensor de PH"}
-									bio_add_message(bioid, "E"+msg.Message, "")
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								} else {
-									bio[ind].PHref[2] = 0
-									msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 muito próximos do PH 7. Favor checar solução de teste, painel, cabos e sensor de PH"}
-									bio_add_message(bioid, "E"+msg.Message, "")
-									msgjson, _ := json.Marshal(msg)
-									conn.Write([]byte(msgjson))
-
-								}
-							} else {
-								bio[ind].PHref[2] = 0
-								fmt.Println("ERROR CONFIG: Valores INVALIDOS de PH 10", bioid)
-								msg := MsgReturn{scp_err, "ERRO na calibração: Dados de PH 10 inválidos. Favor checar painel, cabos e sensor de PH"}
-								bio_add_message(bioid, "E"+msg.Message, "")
-								msgjson, _ := json.Marshal(msg)
-								conn.Write([]byte(msgjson))
-
-							}
+							ret := get_phdata(bioid, 10)
 							ph_elapsed := time.Since(ph_start).Seconds()
-							fmt.Println("DEBUG CONFIG: PH 4: Tempo decorrido para leitura de PH 10 = ", ph_elapsed, bioid)
+							fmt.Println("DEBUG CONFIG: PH 7: Tempo decorrido para leitura de PH 7 = ", ph_elapsed, bioid)
 							conn.Write(ret)
+							save_phdata(execpath + "phdata.csv")
 
 							// n := 0
 							// var data []float64
