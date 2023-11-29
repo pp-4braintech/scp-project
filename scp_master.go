@@ -802,7 +802,7 @@ func get_phdata(bioid string, phval float64) []byte {
 			}
 		}
 		time.Sleep(10 * time.Second)
-		if max_temp >= 30 && min_temp <= 22 {
+		if max_temp >= 30 && min_temp <= 22 && n > 350 {
 			break
 		}
 	}
@@ -2855,7 +2855,7 @@ func scp_get_temperature(bioid string) float64 {
 				fmt.Println("ERROR GET TEMPERATURE: Valor retornado =", bioid, ret_temp, "passo=", i)
 			}
 		}
-		if n < 3 {
+		if n < 4 {
 			fmt.Println("ERROR GET TEMPERATURE: Numero de dados insuficiente =", bioid, "passos=", n, "amostras=", data)
 			return -3
 		}
