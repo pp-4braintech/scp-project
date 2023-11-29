@@ -741,6 +741,7 @@ func save_phdata(filename string) int {
 	}
 	defer filecsv.Close()
 	n := 0
+	fmt.Println("DEBUG SAVE PHDATA: regres_data=", regres_data)
 	csvwriter := csv.NewWriter(filecsv)
 	for _, d := range regres_data {
 		s := ""
@@ -781,7 +782,7 @@ func get_phdata(bioid string, phval float64) []byte {
 		tmp_phvolt := scp_get_ph_voltage(bioid)
 		if tmp_phvolt >= 2 && tmp_phvolt <= 5 {
 			tmp_temperature := scp_get_temperature(bioid)
-			if tmp_temperature > 10 && tmp_temperature < TEMPMAX {
+			if tmp_temperature > 5 && tmp_temperature < TEMPMAX {
 				if n == 0 {
 					max_temp = tmp_temperature
 					min_temp = tmp_temperature
@@ -810,7 +811,7 @@ func get_phdata(bioid string, phval float64) []byte {
 		fmt.Println("ERROR GET PHDATA: ", bioid, "Variação da Temperatura não foi suficiente, deveria estar entre 20 e 30")
 		msg := MsgReturn{scp_err, "ERRO na calibração: Temperatura não variou entre 20 e 30 graus. Favor repetir processo."}
 		msgjson, _ := json.Marshal(msg)
-		return []byte(msgjson)
+		// return []byte(msgjson)
 	}
 
 	mediana := calc_mediana(data_ph)
