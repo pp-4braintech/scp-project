@@ -806,8 +806,8 @@ func get_phdata(bioid string, phval float64) []byte {
 				last_temp = tmp_temperature
 			}
 		}
-		time.Sleep(10 * time.Second)
-		if max_temp >= 30 && min_temp <= 22 && n > 350 {
+		time.Sleep(20 * time.Second)
+		if max_temp >= 30 && min_temp <= 22 && n > 200 {
 			break
 		}
 	}
@@ -2620,7 +2620,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 		set_phreading(ind, true)
 		defer set_phreading(ind, false)
 		var data []float64
-		for i := 0; i <= 7; i++ {
+		for i := 0; i <= 12; i++ {
 			ret_ph := scp_sendmsg_orch(cmd_ph)
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
@@ -3111,6 +3111,12 @@ func scp_test_boot(main_id string, dev_type string) string {
 					// fmt.Println("DEBUG SCP TEST BOOT: Testando NOVAMENTE magicvalue no Dispositivo ", main_id, dev_type, "#", i, "cmd=", cmd, "ret=", ret)
 				}
 				// break
+			} else {
+				n, err := strconv.Atoi(params[1])
+				if err != nil || n > 10 {
+					fmt.Println("ERROR SCP TEST BOOT: Testando magicvalue no Dispositivo ", main_id, dev_type, " ret=", ret)
+					return scp_err
+				}
 			}
 		}
 		ret = scp_sendmsg_orch(cmd)
