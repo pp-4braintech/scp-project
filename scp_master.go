@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.38d" // 2023-11-28
+	scp_version = "1.2.40" // 2023-12-01
 
 	scp_on  = 1
 	scp_off = 0
@@ -229,6 +229,8 @@ const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
 
 const bio_ph4_voltage_ref = 4.3
+const bio_ph_mintemp = 26
+const bio_ph_maxtemp = 30
 
 const flow_corfactor_out = 1.1
 const flow_corfactor_in1 = 1.1
@@ -2454,7 +2456,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 		set_phreading(ind, true)
 		defer set_phreading(ind, false)
 		var data []float64
-		for i := 0; i <= 7; i++ {
+		for i := 0; i <= 10; i++ {
 			ret_ph := scp_sendmsg_orch(cmd_ph)
 			params := scp_splitparam(ret_ph, "/")
 			if len(params) > 1 {
@@ -2670,7 +2672,7 @@ func scp_get_temperature(bioid string) float64 {
 
 		n := 0
 		var data []float64
-		for i := 0; i <= 4; i++ {
+		for i := 0; i <= 5; i++ {
 			if bio[ind].PHReading {
 				fmt.Println("DEBUG SCP GET TEMPERATURE: Leitura de temperatura interrompida pois Leitura de PH em curso", bioid)
 				return -2
@@ -2687,6 +2689,10 @@ func scp_get_temperature(bioid string) float64 {
 			} else {
 				fmt.Println("ERROR GET TEMPERATURE: Valor retornado =", bioid, ret_temp, "passo=", i)
 			}
+		}
+		if n < 4 {
+			fmt.Println("ERROR GET TEMPERATURE: Numero de dados insuficiente =", bioid, "passos=", n, "amostras=", data)
+			return -3
 		}
 		mediana := calc_mediana(data)
 		tempfloat := mediana / 10.0
@@ -5363,7 +5369,7 @@ func pop_first_undojob(devtype string, main_id string, remove bool) string {
 
 func scp_adjust_ph(bioid string, ph float32) { //  ATENCAO - MUDAR PH
 	ind := get_bio_index(bioid)
-	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, bio[ind].PH, ph)
+	fmt.Println("DEBUG SCP ADJUST PH: Ajustando PH", bioid, "PH:", bio[ind].PH, "ALVO:", ph)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
 
 	if !bio[ind].Heater {
@@ -5606,30 +5612,35 @@ func scp_grow_bio(bioid string) bool {
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
 		if control_ph && t_elapsed_ph >= 10 {
 			ph_tmp := scp_get_ph(bioid)
-			if ph_tmp > 0 {
+			if ph_tmp > 2 {
 				// if bio[ind].Temprunning {
 				// 	bio[ind].Temprunning = false
 				// 	time.Sleep(20 * time.Second)
 				// }
-				bio[ind].PH = float32(ph_tmp)
-				if bio[ind].PHControl {
-					if bio[ind].PH < float32(minph-bio_deltaph) {
-						scp_adjust_ph(bioid, float32(minph))
-					} else if bio[ind].PH > float32(maxph+bio_deltaph) {
-						scp_adjust_ph(bioid, float32(maxph))
-					}
-					if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
-						ntries_ph++
-						if ntries_ph > 5 {
-							bio_del_message(bioid, "ERRPH")
-							bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
+					bio[ind].PH = float32(ph_tmp)
+					if bio[ind].PHControl {
+						if bio[ind].PH < float32(minph-bio_deltaph) {
+							scp_adjust_ph(bioid, float32(minph))
+						} else if bio[ind].PH > float32(maxph+bio_deltaph) {
+							scp_adjust_ph(bioid, float32(maxph))
+						}
+						if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
+							ntries_ph++
+							if ntries_ph > 5 {
+								fmt.Println("ERROR SCP GROW BIO: PH: 5 tentativas de ajustar PH sem sucesso", bioid, "PH:", ph_tmp, "MIN:", minph, "MAX:", maxph)
+								bio_del_message(bioid, "ERRPH")
+								bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+								ntries_ph = 0
+							}
+						} else {
 							ntries_ph = 0
 						}
-					} else {
-						ntries_ph = 0
 					}
+					lastph = bio[ind].PH
+				} else {
+					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", ph_tmp, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
-				lastph = bio[ind].PH
 			}
 			t_start_ph = time.Now()
 		}
