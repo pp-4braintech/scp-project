@@ -8013,6 +8013,7 @@ func scp_process_conn(conn net.Conn) {
 									bio[ind].PHref[2] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
 									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
+									bio[ind].PHControl = true
 									msgjson, _ := json.Marshal(msg)
 									conn.Write([]byte(msgjson))
 
