@@ -5617,8 +5617,8 @@ func scp_grow_bio(bioid string) bool {
 				// 	bio[ind].Temprunning = false
 				// 	time.Sleep(20 * time.Second)
 				// }
+				bio[ind].PH = float32(ph_tmp)
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
-					bio[ind].PH = float32(ph_tmp)
 					if bio[ind].PHControl {
 						if bio[ind].PH < float32(minph-bio_deltaph) {
 							scp_adjust_ph(bioid, float32(minph))
@@ -5702,21 +5702,18 @@ func scp_circulate(devtype string, main_id string, period int) {
 	for !stop {
 		time.Sleep(1 * time.Second)
 		n++
-		if period != 0 { // era ==
-			switch devtype {
-			case scp_bioreactor:
-				if bio[ind].Status != bio_circulate {
-					stop = true
-				}
-			case scp_ibc:
-				if ibc[ind].Status != bio_circulate {
-					stop = true
-				}
-			}
-		} else {
-			if n >= period*60 {
+		switch devtype {
+		case scp_bioreactor:
+			if bio[ind].Status != bio_circulate {
 				stop = true
 			}
+		case scp_ibc:
+			if ibc[ind].Status != bio_circulate {
+				stop = true
+			}
+		}
+		if period > 0 && n >= period*60 {
+			stop = true
 		}
 	}
 	if !scp_turn_pump(devtype, main_id, valvs, 0, false) {
