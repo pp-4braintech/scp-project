@@ -229,8 +229,8 @@ const ibc_v1_zero = 2652.0 // em mm   2647
 const ibc_v2_zero = 2652.0 // em mm
 
 const bio_ph4_voltage_ref = 4.3
-const bio_ph_mintemp = 26
-const bio_ph_maxtemp = 30
+const bio_ph_mintemp = 27.5
+const bio_ph_maxtemp = 29.5
 
 const flow_corfactor_out = 1.1
 const flow_corfactor_in1 = 1.1
