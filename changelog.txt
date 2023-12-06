@@ -153,4 +153,7 @@ Histórico de Versões (recentes)
 
 1.2.40  -   Master.: Aumenta o número de amostras do PH para 11.
 20231115             Aumenta o número de amostras da Temperatura para 6 com no mínimo 4 bem sucedidas.
+                     Corrige problema no scp_circulate que impedia parada no tempo estipulado
+                     Implementa controle de PH somente entre bio_ph_mintemp e bio_ph_maxtemp
+            Front..: Exibe icone com link para atendimento remoto
 
