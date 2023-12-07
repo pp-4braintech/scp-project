@@ -353,6 +353,7 @@ type Bioreact struct {
 	MainStatus   string
 	UndoStatus   string
 	PHControl    bool
+	PHShow       bool
 	PHReading    bool
 }
 
@@ -390,6 +391,7 @@ type Bioreact_ETL struct {
 	RegresPH    [2]float64
 	MainStatus  string
 	PHControl   bool
+	PHShow      bool
 }
 
 type Bioreact_ETL_Macro struct {
@@ -5560,6 +5562,7 @@ func scp_grow_bio(bioid string) bool {
 	lastph := float32(0)
 	ntries_ph := 0
 	ncontrol_foam := 0
+	bio[ind].PHShow = bio[ind].PHControl
 	for {
 		t_elapsed := time.Since(t_start).Minutes()
 		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal, " tempmin=", worktemp_min, " tempmax=", worktemp_max)
@@ -5620,6 +5623,7 @@ func scp_grow_bio(bioid string) bool {
 				bio[ind].PH = float32(ph_tmp)
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
 					if bio[ind].PHControl {
+						bio[ind].PHShow = true
 						if bio[ind].PH < float32(minph-bio_deltaph) {
 							scp_adjust_ph(bioid, float32(minph))
 						} else if bio[ind].PH > float32(maxph+bio_deltaph) {
@@ -5639,6 +5643,7 @@ func scp_grow_bio(bioid string) bool {
 					}
 					lastph = bio[ind].PH
 				} else {
+					bio[ind].PHShow = false
 					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", ph_tmp, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
 			}
@@ -5933,6 +5938,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				if ph_tmp < 5 || ph_tmp > 8 {
 					fmt.Println("ERROR SCP RUN JOB: TEST: Valor de PH fora do intervalo 5 <= PH <= 8 - Desativando controle de PH")
 					bio[ind].PHControl = false
+					bio[ind].PHShow = false
 				} else {
 					bio[ind].PHControl = true
 				}
@@ -8010,7 +8016,6 @@ func scp_process_conn(conn net.Conn) {
 									bio[ind].PHref[2] = mediana
 									fmt.Println("DEBUG CONFIG: ", bioid, "Mediana Voltagem PH 10", bio[ind].PHref[2], " amostras =", n)
 									msg := MsgReturn{scp_ack, "Leitura do PH 10.0 feita com sucesso"}
-									bio[ind].PHControl = true
 									msgjson, _ := json.Marshal(msg)
 									conn.Write([]byte(msgjson))
 
@@ -8071,6 +8076,8 @@ func scp_process_conn(conn net.Conn) {
 								msg := MsgReturn{scp_ack, "Calibração do Sensor de PH efetuada"}
 								bio_add_message(bioid, "I"+msg.Message, "")
 								msgjson, _ := json.Marshal(msg)
+								bio[ind].PHControl = true
+								bio[ind].PHShow = true
 								conn.Write([]byte(msgjson))
 							}
 						} else {
