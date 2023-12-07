@@ -2532,7 +2532,7 @@ func scp_get_phmed(bioid string) float64 {
 				ph := calc_PH(phvolt, b0, b1)
 				if (ph > 2) && (ph <= 14) {
 					fmt.Println("DEBUG SCP GET PHmed: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt, "amosta=", n)
-					data = append(data, phvolt)
+					data = append(data, ph)
 					n++
 				} else {
 					fmt.Println("ERROR SCP GET PHmed: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
@@ -5688,7 +5688,7 @@ func scp_grow_bio(bioid string) bool {
 			return false
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 10 {
+		if control_ph && t_elapsed_ph >= 5 { ////////  VOLTAR PARA 10
 			ph_tmp := scp_get_phmed(bioid)
 			if ph_tmp > 2 {
 				// if bio[ind].Temprunning {
