@@ -214,7 +214,7 @@ const scp_timeoutdefault = 60
 const scp_maxwaitvolume = 30 // em minutos
 
 const bio_deltatemp = 1.5 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.0   // variacao de ph maximo em valor absoluto  -  ERA 0.1
+const bio_deltaph = 0.5   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 
 const bio_withdrawstep = 50
 
@@ -2426,7 +2426,7 @@ func set_phreading(ind int, value bool) {
 	bio[ind].PHReading = value
 }
 
-func scp_get_ph_voltage(bioid string) float64 {
+func scp_get_ph_voltage(bioid string, checkaero bool) float64 {
 	ind := get_bio_index(bioid)
 	if ind < 0 {
 		fmt.Println("ERROR SCP GET PH VOLTAGE: Biorreator NAO ENCONTRO", bioid)
@@ -2441,7 +2441,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 	aeroratio := bio[ind].AeroRatio
 
 	if len(bioaddr) > 0 {
-		if aerostatus {
+		if aerostatus && checkaero {
 			if bio[ind].Status != bio_producting {
 				return -1
 			}
@@ -2476,7 +2476,7 @@ func scp_get_ph_voltage(bioid string) float64 {
 		phfloat := mediana / 100.0
 
 		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
-		if aerostatus {
+		if aerostatus && checkaero {
 			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
@@ -2492,10 +2492,85 @@ func scp_get_ph_voltage(bioid string) float64 {
 	return -1
 }
 
+func scp_get_phmed(bioid string) float64 {
+	ind := get_bio_index(bioid)
+	if ind >= 0 {
+		bioaddr := bio_cfg[bioid].Deviceaddr
+		aerostatus := bio[ind].Aerator
+		if bio[ind].Status == bio_producting {
+			aerostatus = true
+		}
+		aeroratio := bio[ind].AeroRatio
+		if len(bioaddr) > 0 {
+			if aerostatus {
+				if bio[ind].Status != bio_producting {
+					return -1
+				}
+				if !scp_turn_aero(bioid, true, 0, 0, false) {
+					fmt.Println("ERROR SCP GET PHmed: Erro ao desligar Aerador do Biorreator", bioid)
+					scp_turn_aero(bioid, false, 1, aeroratio, false)
+					return -1
+				}
+				time.Sleep(scp_timewaitbeforeph * time.Millisecond)
+			}
+		} else {
+			fmt.Println("ERROR SCP GET PHmed: ADDR Biorreator nao existe", bioid)
+			return -1
+		}
+
+		var data []float64
+		n := 0
+		for i := 0; i <= 5; i++ {
+			phvolt := scp_get_ph_voltage(bioid, false)
+			if phvolt >= 2 && phvolt <= 5 {
+				if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
+					fmt.Println("ERROR SCP GET PHmed: Biorreator com PH NAO CALIBRADO", bioid)
+					return -1
+				}
+				b0 := bio[ind].RegresPH[0]
+				b1 := bio[ind].RegresPH[1]
+				ph := calc_PH(phvolt, b0, b1)
+				if (ph > 2) && (ph <= 14) {
+					fmt.Println("DEBUG SCP GET PHmed: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt, "amosta=", n)
+					data = append(data, phvolt)
+					n++
+				} else {
+					fmt.Println("ERROR SCP GET PHmed: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+				}
+			} else {
+				fmt.Println("ERROR SCP GET PHmed: Valor INVALIDO de PHVolt no Biorreator", bioid, "PHVolt=", phvolt)
+			}
+			time.Sleep(1700 * time.Millisecond)
+		}
+
+		if aerostatus {
+			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
+				fmt.Println("ERROR SCP GET PHmed: Erro ao religar Aerador do Biorreator", bioid)
+			}
+		}
+
+		if n > 3 {
+			mediana := calc_mediana(data)
+			if math.Abs(mediana-data[0]) < 0.3 && math.Abs(mediana-data[len(data)-1]) < 0.3 {
+				fmt.Println("DEBUG SCP GET PHmed: Biorreator", bioid, " PHmed=", mediana)
+				return mediana
+			} else {
+				fmt.Println("ERROR SCP GET PHmed: Variacao nos dados superior a 0.3 dados. Nao e possivel calcular PHmed", bioid, "mediana=", mediana, " data=", data)
+			}
+		} else {
+			fmt.Println("ERROR SCP GET PHmed: Numero insuficiente de dados para calcular o PHmed", bioid, "n=", n, " data=", data)
+		}
+
+	} else {
+		fmt.Println("ERROR SCP GET PHmed: Biorreator nao existe", bioid)
+	}
+	return -1
+}
+
 func scp_get_ph(bioid string) float64 {
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
-		phvolt := scp_get_ph_voltage(bioid)
+		phvolt := scp_get_ph_voltage(bioid, true)
 		if phvolt >= 2 && phvolt <= 5 {
 			if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
 				fmt.Println("ERROR SCP GET PH: Biorreator com PH NAO CALIBRADO", bioid)
@@ -5614,7 +5689,7 @@ func scp_grow_bio(bioid string) bool {
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
 		if control_ph && t_elapsed_ph >= 10 {
-			ph_tmp := scp_get_ph(bioid)
+			ph_tmp := scp_get_phmed(bioid)
 			if ph_tmp > 2 {
 				// if bio[ind].Temprunning {
 				// 	bio[ind].Temprunning = false
@@ -7886,7 +7961,7 @@ func scp_process_conn(conn net.Conn) {
 								if biofabrica.Critical != scp_ready {
 									return
 								}
-								tmp := scp_get_ph_voltage(bioid)
+								tmp := scp_get_ph_voltage(bioid, true)
 								if tmp >= 2 && tmp <= 5 {
 									data = append(data, tmp)
 									n++
@@ -7950,7 +8025,7 @@ func scp_process_conn(conn net.Conn) {
 								if biofabrica.Critical != scp_ready {
 									return
 								}
-								tmp := scp_get_ph_voltage(bioid)
+								tmp := scp_get_ph_voltage(bioid, true)
 								if tmp >= 2 && tmp <= 5 {
 									data = append(data, tmp)
 									n++
@@ -8004,7 +8079,7 @@ func scp_process_conn(conn net.Conn) {
 								if biofabrica.Critical != scp_ready {
 									return
 								}
-								tmp := scp_get_ph_voltage(bioid)
+								tmp := scp_get_ph_voltage(bioid, true)
 								if tmp >= 2 && tmp <= 5 {
 									data = append(data, tmp)
 									n++

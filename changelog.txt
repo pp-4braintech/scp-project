@@ -156,4 +156,5 @@ Histórico de Versões (recentes)
                      Corrige problema no scp_circulate que impedia parada no tempo estipulado
                      Implementa controle de PH somente entre bio_ph_mintemp e bio_ph_maxtemp
             Front..: Exibe icone com link para atendimento remoto
+                     PH passa a ser exibido em função da variável PHShow
 
