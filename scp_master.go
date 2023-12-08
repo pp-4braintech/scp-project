@@ -2610,27 +2610,30 @@ func scp_update_allph() {
 	// var aerostatus map[string]bool
 	var aeroratio map[string]int
 	for _, b := range bio {
+		fmt.Println("DEBUG SCP UPDATE ALLPH: Testando biorreator", b.BioreactorID)
 		ind := get_bio_index(b.BioreactorID)
 		if ind >= 0 {
 			aero := bio[ind].Aerator
 			if bio[ind].Status == bio_producting {
+				fmt.Println("DEBUG SCP UPDATE ALLPH: Lendo PH de Biorreator produzindo", bio[ind].BioreactorID)
 				wg.Add(1)
 				go func() {
-					scp_update_ph(b.BioreactorID)
+					scp_update_ph(bio[ind].BioreactorID)
 					wg.Done()
 				}()
 			} else if aero {
-				aeroratio[b.BioreactorID] = bio[ind].AeroRatio
-				if !scp_turn_aero(b.BioreactorID, true, 0, 0, false) {
-					fmt.Println("ERROR SCP UPDATE ALLPH: Erro ao desligar Aerador do Biorreator", b.BioreactorID)
-					scp_turn_aero(b.BioreactorID, false, 1, aeroratio[b.BioreactorID], false)
+				fmt.Println("DEBUG SCP UPDATE ALLPH: Desligando Aerador de Biorreator", bio[ind].BioreactorID, bio[ind].Status)
+				aeroratio[bio[ind].BioreactorID] = bio[ind].AeroRatio
+				if !scp_turn_aero(bio[ind].BioreactorID, true, 0, 0, false) {
+					fmt.Println("ERROR SCP UPDATE ALLPH: Erro ao desligar Aerador do Biorreator", bio[ind].BioreactorID)
+					scp_turn_aero(b.BioreactorID, false, 1, aeroratio[bio[ind].BioreactorID], false)
 				}
 			}
 		}
 	}
 	fmt.Println("DEBUG SCP UPDATE ALLPH: Aguardando todas as leituras de PH")
 	wg.Wait()
-	fmt.Println("ERROR SCP UPDATE ALLPH: Leituras concluidas. Religando aeradores se necessario")
+	fmt.Println("DEBUG SCP UPDATE ALLPH: Leituras concluidas. Religando aeradores se necessario")
 
 	for b, r := range aeroratio {
 		wg.Add(1)
