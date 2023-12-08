@@ -185,7 +185,7 @@ const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
-const scp_refreshallph = 5 // Intervalo no qual todos os PHs são lidos, em minutos
+const scp_refreshallph = 10 // Intervalo no qual todos os PHs são lidos, em minutos
 const scp_refreshwait = 50
 const scp_refresstatus = 15
 const scp_refresscreens = 10 // em segundossss
@@ -2546,7 +2546,7 @@ func scp_get_phmed(bioid string) float64 {
 		}
 
 		if aerostatus {
-			time.Sleep(scp_timewaitbeforeph * 1.5 * time.Millisecond)
+			time.Sleep(scp_timewaitbeforeph * time.Millisecond)
 			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PHmed: Erro ao religar Aerador do Biorreator", bioid)
 			}
