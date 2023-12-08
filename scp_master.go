@@ -185,7 +185,7 @@ const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
-const scp_refreshallph = 10 // em minutos
+const scp_refreshallph = 5 // Intervalo no qual todos os PHs são lidos, em minutos
 const scp_refreshwait = 50
 const scp_refresstatus = 15
 const scp_refresscreens = 10 // em segundossss
