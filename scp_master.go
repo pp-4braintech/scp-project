@@ -2513,7 +2513,7 @@ func scp_get_phmed(bioid string) float64 {
 					scp_turn_aero(bioid, false, 1, aeroratio, false)
 					return -1
 				}
-				time.Sleep(scp_timewaitbeforeph * time.Millisecond)
+				time.Sleep(scp_timewaitbeforeph * 1.5 * time.Millisecond)
 			}
 		} else {
 			fmt.Println("ERROR SCP GET PHmed: ADDR Biorreator nao existe", bioid)
