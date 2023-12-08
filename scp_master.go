@@ -2546,6 +2546,7 @@ func scp_get_phmed(bioid string) float64 {
 		}
 
 		if aerostatus {
+			time.Sleep(scp_timewaitbeforeph * 1.5 * time.Millisecond)
 			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PHmed: Erro ao religar Aerador do Biorreator", bioid)
 			}
