@@ -5753,7 +5753,7 @@ func scp_grow_bio(bioid string) bool {
 						if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
 							ntries_ph++
 							if ntries_ph > 5 {
-								fmt.Println("ERROR SCP GROW BIO: PH: 5 tentativas de ajustar PH sem sucesso", bioid, "PH:", ph_tmp, "MIN:", minph, "MAX:", maxph)
+								fmt.Println("ERROR SCP GROW BIO: PH: 5 tentativas de ajustar PH sem sucesso", bioid, "PH:", bio[ind].PH, "MIN:", minph, "MAX:", maxph)
 								bio_del_message(bioid, "ERRPH")
 								bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
 								ntries_ph = 0
@@ -5765,7 +5765,7 @@ func scp_grow_bio(bioid string) bool {
 					lastph = bio[ind].PH
 				} else {
 					bio[ind].PHShow = false
-					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", ph_tmp, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
+					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", bio[ind].PH, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
 			}
 			t_start_ph = time.Now()
