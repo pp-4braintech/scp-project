@@ -185,6 +185,7 @@ const scp_donothing = "NOTHING"
 const scp_orch_addr = ":7007"
 const scp_ipc_name = "/tmp/scp_master.sock"
 
+const scp_refreshallph = 10 // em minutos
 const scp_refreshwait = 50
 const scp_refresstatus = 15
 const scp_refresscreens = 10 // em segundossss
@@ -2597,11 +2598,51 @@ func scp_get_ph(bioid string) float64 {
 func scp_update_ph(bioid string) {
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
-		phtmp := scp_get_ph(bioid)
-		if phtmp >= 0 {
+		phtmp := scp_get_phmed(bioid)
+		if phtmp > 2 && phtmp < 14 {
 			bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
 		}
 	}
+}
+
+func scp_update_allph() {
+	var wg sync.WaitGroup
+	// var aerostatus map[string]bool
+	var aeroratio map[string]int
+	for _, b := range bio {
+		ind := get_bio_index(b.BioreactorID)
+		if ind >= 0 {
+			aero := bio[ind].Aerator
+			if bio[ind].Status == bio_producting {
+				wg.Add(1)
+				go func() {
+					scp_update_ph(b.BioreactorID)
+					wg.Done()
+				}()
+			} else if aero {
+				aeroratio[b.BioreactorID] = bio[ind].AeroRatio
+				if !scp_turn_aero(b.BioreactorID, true, 0, 0, false) {
+					fmt.Println("ERROR SCP UPDATE ALLPH: Erro ao desligar Aerador do Biorreator", b.BioreactorID)
+					scp_turn_aero(b.BioreactorID, false, 1, aeroratio[b.BioreactorID], false)
+				}
+			}
+		}
+	}
+	fmt.Println("DEBUG SCP UPDATE ALLPH: Aguardando todas as leituras de PH")
+	wg.Wait()
+	fmt.Println("ERROR SCP UPDATE ALLPH: Leituras concluidas. Religando aeradores se necessario")
+
+	for b, r := range aeroratio {
+		wg.Add(1)
+		go func() {
+			if !scp_turn_aero(b, true, 1, r, false) {
+				fmt.Println("ERROR SCP UPDATE ALLPH: Erro ao religar Aerador do Biorreator", b)
+			}
+			wg.Done()
+		}()
+	}
+	fmt.Println("DEBUG SCP UPDATE ALLPH: Todos os estados restaurados")
+
 }
 
 func scp_update_screen_vol(bioid string) {
@@ -3155,6 +3196,7 @@ func scp_sync_functions() {
 	t_start_screens_full := time.Now()
 	t_start_version := time.Now()
 	t_start_setup := time.Now()
+	t_start_updateph := time.Now()
 
 	n_bio := 0
 	for {
@@ -3189,10 +3231,10 @@ func scp_sync_functions() {
 			t_elapsed_screens_full := uint32(time.Since(t_start_screens_full).Seconds())
 			if t_elapsed_screens >= scp_refresscreens {
 				if t_elapsed_screens_full > scp_refresscreens*12 {
-					scp_update_screen(bio[n_bio].BioreactorID)
+					// scp_update_screen(bio[n_bio].BioreactorID)
 					t_start_screens_full = time.Now()
 				} else {
-					scp_update_screen(bio[n_bio].BioreactorID)
+					// scp_update_screen(bio[n_bio].BioreactorID)
 				}
 				n_bio++
 				if n_bio >= len(bio) {
@@ -3200,6 +3242,15 @@ func scp_sync_functions() {
 				}
 				t_start_screens = time.Now()
 			}
+
+			t_elapsed_updateph := uint32(time.Since(t_start_updateph).Minutes())
+			if t_elapsed_updateph >= scp_refreshallph {
+				if finishedsetup && biofabrica.Critical != scp_netfail && biofabrica.Critical != scp_stopall {
+					scp_update_allph()
+				}
+				t_start_updateph = time.Now()
+			}
+
 			if !schedrunning {
 				go scp_scheduler()
 			}
@@ -5636,7 +5687,6 @@ func scp_grow_bio(bioid string) bool {
 
 	lastph := float32(0)
 	ntries_ph := 0
-	nerr_ph := 0
 	ncontrol_foam := 0
 	bio[ind].PHShow = bio[ind].PHControl
 	for {
@@ -5688,16 +5738,10 @@ func scp_grow_bio(bioid string) bool {
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
+
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 5 { ////////  VOLTAR PARA 10
-			ph_tmp := scp_get_phmed(bioid)
-			if ph_tmp > 2 {
-				// if bio[ind].Temprunning {
-				// 	bio[ind].Temprunning = false
-				// 	time.Sleep(20 * time.Second)
-				// }
-				nerr_ph = 0
-				bio[ind].PH = float32(ph_tmp)
+		if control_ph && t_elapsed_ph >= 10 { ////////  VOLTAR PARA 10
+			if bio[ind].PH != lastph {
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
 					if bio[ind].PHControl {
 						bio[ind].PHShow = true
@@ -5723,15 +5767,55 @@ func scp_grow_bio(bioid string) bool {
 					bio[ind].PHShow = false
 					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", ph_tmp, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
-			} else {
-				nerr_ph++
-				if nerr_ph > 5 {
-					fmt.Println("ERROR SCP GROW BIO: PH: Cancelando ajuste de PH depois 5 tentativas de ler PH sem sucesso", bioid, " PH:", ph_tmp)
-					bio[ind].PHControl = false
-				}
 			}
 			t_start_ph = time.Now()
 		}
+
+		// t_elapsed_ph := time.Since(t_start_ph).Minutes()
+		// if control_ph && t_elapsed_ph >= 10 { ////////  VOLTAR PARA 10
+		// 	ph_tmp := scp_get_phmed(bioid)
+		// 	if ph_tmp > 2 {
+		// 		// if bio[ind].Temprunning {
+		// 		// 	bio[ind].Temprunning = false
+		// 		// 	time.Sleep(20 * time.Second)
+		// 		// }
+		// 		nerr_ph = 0
+		// 		bio[ind].PH = float32(ph_tmp)
+		// 		if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
+		// 			if bio[ind].PHControl {
+		// 				bio[ind].PHShow = true
+		// 				if bio[ind].PH < float32(minph-bio_deltaph) {
+		// 					scp_adjust_ph(bioid, float32(minph))
+		// 				} else if bio[ind].PH > float32(maxph+bio_deltaph) {
+		// 					scp_adjust_ph(bioid, float32(maxph))
+		// 				}
+		// 				if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
+		// 					ntries_ph++
+		// 					if ntries_ph > 5 {
+		// 						fmt.Println("ERROR SCP GROW BIO: PH: 5 tentativas de ajustar PH sem sucesso", bioid, "PH:", ph_tmp, "MIN:", minph, "MAX:", maxph)
+		// 						bio_del_message(bioid, "ERRPH")
+		// 						bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+		// 						ntries_ph = 0
+		// 					}
+		// 				} else {
+		// 					ntries_ph = 0
+		// 				}
+		// 			}
+		// 			lastph = bio[ind].PH
+		// 		} else {
+		// 			bio[ind].PHShow = false
+		// 			fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", ph_tmp, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
+		// 		}
+		// 	} else {
+		// 		nerr_ph++
+		// 		if nerr_ph > 5 {
+		// 			fmt.Println("ERROR SCP GROW BIO: PH: Cancelando ajuste de PH depois 5 tentativas de ler PH sem sucesso", bioid, " PH:", ph_tmp)
+		// 			bio[ind].PHControl = false
+		// 		}
+		// 	}
+		// 	t_start_ph = time.Now()
+		// }
+
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
