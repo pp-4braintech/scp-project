@@ -2601,7 +2601,13 @@ func scp_update_ph(bioid string) {
 	if ind >= 0 {
 		phtmp := scp_get_phmed(bioid)
 		if phtmp > 2 && phtmp < 14 {
-			bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
+			if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
+				bio[ind].PHShow = true
+			} else {
+				bio[ind].PHShow = false
+			}
+			// bio[ind].PH = float32(math.Trunc(phtmp*10) / 10.0)
+			bio[ind].PH = float32(phtmp)
 		}
 	}
 }
@@ -5748,7 +5754,7 @@ func scp_grow_bio(bioid string) bool {
 			if bio[ind].PH != lastph {
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
 					if bio[ind].PHControl {
-						bio[ind].PHShow = true
+						// bio[ind].PHShow = true
 						if bio[ind].PH < float32(minph-bio_deltaph) {
 							scp_adjust_ph(bioid, float32(minph))
 						} else if bio[ind].PH > float32(maxph+bio_deltaph) {
@@ -5768,7 +5774,7 @@ func scp_grow_bio(bioid string) bool {
 					}
 					lastph = bio[ind].PH
 				} else {
-					bio[ind].PHShow = false
+					// bio[ind].PHShow = false
 					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", bio[ind].PH, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
 			}
