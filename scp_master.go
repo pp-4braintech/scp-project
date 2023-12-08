@@ -5688,7 +5688,7 @@ func scp_grow_bio(bioid string) bool {
 			return false
 		}
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 10 { ////////  VOLTAR PARA 10
+		if control_ph && t_elapsed_ph >= 5 { ////////  VOLTAR PARA 10
 			ph_tmp := scp_get_phmed(bioid)
 			if ph_tmp > 2 {
 				// if bio[ind].Temprunning {
