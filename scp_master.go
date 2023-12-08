@@ -2494,6 +2494,7 @@ func scp_get_ph_voltage(bioid string, checkaero bool) float64 {
 }
 
 func scp_get_phmed(bioid string) float64 {
+	fmt.Println("DEBUG SCP GET PHmed: Lendo PHmed de", bioid)
 	ind := get_bio_index(bioid)
 	if ind >= 0 {
 		bioaddr := bio_cfg[bioid].Deviceaddr
@@ -3486,11 +3487,11 @@ func scp_get_alldata() {
 						}
 					}
 
-					if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
-						if rand.Intn(15) == 7 {
-							go scp_update_ph(b.BioreactorID)
-						}
-					}
+					// if (mustupdate_this || b.Valvs[1] == 1) && (b.Status == bio_ready || b.Status == bio_empty) {
+					// 	if rand.Intn(15) == 7 {
+					// 		go scp_update_ph(b.BioreactorID)
+					// 	}
+					// }
 
 					// if rand.Intn(7) == 3 && (b.Status == bio_producting || b.Status == bio_cip || b.Status == bio_circulate || b.Status == bio_loading || b.Status == bio_unloading) {
 					// 	fmt.Println("DEBUG SCP GET ALL DATA: Verificando botao de emergencia do", b.BioreactorID)
