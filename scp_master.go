@@ -877,6 +877,54 @@ func load_tasks_conf(filename string) []string {
 	return tasks
 }
 
+func load_phdefs(filename string) bool {
+	file, err := os.Open(filename)
+	if err != nil {
+		checkErr(err)
+		return false
+	}
+	defer file.Close()
+	records, err := csv.NewReader(file).ReadAll()
+	if err != nil {
+		checkErr(err)
+		return false
+	}
+	ok := false
+	var ph_regres [2]float64 = [2]float64{0, 0}
+	for k, r := range records {
+		ph_r1_str := r[0]
+		if ph_r1_str != "#" {
+			ph_r1, err := strconv.ParseFloat(ph_r1_str, 64)
+			if err == nil {
+				ph_regres[0] = ph_r1
+				ph_r2_str := r[1]
+				ph_r2, err := strconv.ParseFloat(ph_r2_str, 64)
+				if err == nil {
+					ph_regres[1] = ph_r2
+					ok = true
+					break
+				}
+			}
+			fmt.Println("ERROR LOAD PHDEFS: Valores de parametros de PH invalidos no arquivo", filename, " linha:", k)
+		}
+	}
+
+	if ok {
+		fmt.Println("DEBUG LOAD PHDEFS: Alterando as equacoes de PH dos biorreatores com base nos valores lidos:", ph_regres)
+		for _, b := range bio {
+			ind := get_bio_index(b.BioreactorID)
+			if ind >= 0 {
+				fmt.Println("DEBUG LOAD PHDEFS: Alterando RegresPH do ", bio[ind].BioreactorID)
+				bio[ind].RegresPH[0] = ph_regres[0]
+				bio[ind].RegresPH[1] = ph_regres[1]
+			} else {
+				fmt.Println("ERROR LOAD PHDEFS: Biorreator nao encontrado ", b.BioreactorID)
+			}
+		}
+	}
+	return ok
+}
+
 func load_organisms(filename string) int {
 	var totalrecords int
 	file, err := os.Open(filename)
@@ -7947,7 +7995,7 @@ func scp_process_conn(conn net.Conn) {
 							if bio[ind].Status != bio_producting {
 								time.Sleep(15 * time.Second)
 							}
-							phtmp := scp_get_ph(bioid)
+							phtmp := scp_get_phmed(bioid)
 							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid, phtmp)
 							if phtmp > 0 {
 								msgstr := fmt.Sprintf("%2.1f", phtmp)
@@ -9615,6 +9663,19 @@ func main() {
 
 	valvs = make(map[string]int, 0)
 	load_all_data(data_filename)
+
+	phref_filename := execpath + "scp_phdefs.csv"
+	if test_file(phref_filename) {
+		if !load_phdefs(phref_filename) {
+			fmt.Println("ERROR MAIN: Arquivo de PHDEFS encontrado mas não foi possível ler dados", phref_filename)
+		} else {
+			err := os.Remove(phref_filename)
+			if err != nil {
+				checkErr(err)
+				fmt.Println("ERROR MAIN: Arquivo de PHDEFS encontrado, foi lido mas nao pode ser removido", phref_filename)
+			}
+		}
+	}
 
 	if biofabrica.Critical == scp_ready {
 		fmt.Println("ERROR MAIN: Arquivo de recuperacao estava com status READY. Biofabrica nao teve shutddown correto.")
