@@ -6598,7 +6598,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				}
 			case scp_par_heater:
 				temp_str := subpars[1]
-				temp_int, err := strconv.Atoi(temp_str)
+				temp_int, err := strconv.Atoi(strings.Replace(temp_str, " ", "", -1))
 				if err != nil || temp_int <= 0 {
 					checkErr(err)
 					fmt.Println("ERROR SCP RUN JOB: Parametro de temperatura invalido", bioid, temp_str, subpars)
