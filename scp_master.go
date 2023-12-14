@@ -2665,6 +2665,7 @@ func scp_update_allph() {
 	var wg sync.WaitGroup
 	// var aerostatus map[string]bool
 	var aeroratio map[string]int
+	aeroratio = make(map[string]int)
 	for _, b := range bio {
 		fmt.Println("DEBUG SCP UPDATE ALLPH: Testando biorreator", b.BioreactorID)
 		ind := get_bio_index(b.BioreactorID)
@@ -3274,7 +3275,7 @@ func scp_sync_functions() {
 
 			t_elapsed_setup := uint32(time.Since(t_start_setup).Hours())
 			if t_elapsed_setup >= scp_timetosetup {
-				scp_setup_devices(true)
+				// scp_setup_devices(true)
 				t_start_setup = time.Now()
 			}
 
@@ -7993,7 +7994,7 @@ func scp_process_conn(conn net.Conn) {
 						if bio[ind].RegresPH[0] != 0 && bio[ind].RegresPH[1] != 0 {
 							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid)
 							if bio[ind].Status != bio_producting {
-								time.Sleep(15 * time.Second)
+								time.Sleep(11 * time.Second)
 							}
 							phtmp := scp_get_phmed(bioid)
 							fmt.Println("DEBUG SCP PROCESS CONN: GETPH: Aferindo PH", bioid, phtmp)
