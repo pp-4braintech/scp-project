@@ -6165,13 +6165,14 @@ func scp_run_job_bio(bioid string, job string) bool {
 			switch testpar {
 			case scp_par_ph:
 				var ph_tmp float64
-				i := 0
-				for i = 0; i < 5; i++ {
-					ph_tmp = scp_get_ph(bioid)
-					if ph_tmp > 1 {
-						break
-					}
-				}
+				// i := 0
+				// for i = 0; i < 5; i++ {
+				// 	ph_tmp = scp_get_ph(bioid)
+				// 	if ph_tmp > 1 {
+				// 		break
+				// 	}
+				// }
+				ph_tmp = scp_get_phmed(bioid)
 				fmt.Println("DEBUG SCP RUN JOB: TEST: PH teste para ", bioid, " ph=", ph_tmp, " tentativas=", i)
 				if ph_tmp < 5 || ph_tmp > 8 {
 					fmt.Println("ERROR SCP RUN JOB: TEST: Valor de PH fora do intervalo 5 <= PH <= 8 - Desativando controle de PH")
