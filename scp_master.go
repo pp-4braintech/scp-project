@@ -2695,6 +2695,7 @@ func scp_update_allph() {
 	for b, r := range aeroratio {
 		wg.Add(1)
 		go func() {
+			fmt.Println("DEBUG SCP UPDATE ALLPH: Restaurando aerador de", b)
 			if !scp_turn_aero(b, true, 1, r, false) {
 				fmt.Println("ERROR SCP UPDATE ALLPH: Erro ao religar Aerador do Biorreator", b)
 			}
