@@ -2666,6 +2666,16 @@ func scp_update_allph() {
 	// var aerostatus map[string]bool
 	var aeroratio map[string]int
 	aeroratio = make(map[string]int)
+	tot := 0
+	for _, b := range bio {
+		if b.Status == bio_producting {
+			tot++
+		}
+	}
+	if tot == 0 {
+		fmt.Println("DEBUG SCP UPDATE ALLPH: Nenhum Biorreator para ler PH")
+		return
+	}
 	for _, b := range bio {
 		fmt.Println("DEBUG SCP UPDATE ALLPH: Testando biorreator", b.BioreactorID)
 		ind := get_bio_index(b.BioreactorID)
