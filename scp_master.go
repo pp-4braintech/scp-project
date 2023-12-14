@@ -6173,7 +6173,7 @@ func scp_run_job_bio(bioid string, job string) bool {
 				// 	}
 				// }
 				ph_tmp = scp_get_phmed(bioid)
-				fmt.Println("DEBUG SCP RUN JOB: TEST: PH teste para ", bioid, " ph=", ph_tmp, " tentativas=", i)
+				fmt.Println("DEBUG SCP RUN JOB: TEST: PH teste para ", bioid, " ph=", ph_tmp)
 				if ph_tmp < 5 || ph_tmp > 8 {
 					fmt.Println("ERROR SCP RUN JOB: TEST: Valor de PH fora do intervalo 5 <= PH <= 8 - Desativando controle de PH")
 					bio[ind].PHControl = false
