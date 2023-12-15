@@ -5813,7 +5813,7 @@ func scp_grow_bio(bioid string) bool {
 		}
 
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 11 { ////////  VOLTAR PARA 10
+		if control_ph && t_elapsed_ph >= 8 { ////////  VOLTAR PARA 10
 			t_elapsed_phupdate := time.Since(bio[ind].PHLastUpdate).Minutes()
 			if bio[ind].PH != lastph || t_elapsed_phupdate <= 7 {
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
