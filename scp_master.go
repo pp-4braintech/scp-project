@@ -5771,21 +5771,21 @@ func scp_grow_bio(bioid string) bool {
 		if t_day != pday {
 			var err error
 			if t_day > len(org.PH) {
-				fmt.Println("ERROR SCP GROW BIO: Dia de cultivo invalido", t_day, org)
+				fmt.Println("ERROR SCP GROW BIO: Dia de cultivo invalido", bioid, t_day, org)
 			} else {
 				vals := scp_splitparam(org.PH[t_day], "-")
 				minph, err = strconv.ParseFloat(vals[0], 32)
 				if err != nil {
 					checkErr(err)
-					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
+					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", bioid, vals, org)
 				}
 				maxph, err = strconv.ParseFloat(vals[1], 32)
 				if err != nil {
 					checkErr(err)
-					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", vals, org)
+					fmt.Println("ERROR SCP GROW BIO: Valor de PH invalido", bioid, vals, org)
 				}
 				aero = org.Aero[t_day]
-				fmt.Println("\n\nDEBUG SCP GROW BIO: Day", t_day, " - Parametros de PH", minph, maxph)
+				fmt.Println("\n\nDEBUG SCP GROW BIO: ", bioid, " Day", t_day, " - Parametros de PH", minph, maxph)
 				if control_foam {
 					scp_adjust_foam(bioid)
 					ncontrol_foam++
@@ -5825,19 +5825,19 @@ func scp_grow_bio(bioid string) bool {
 							ntries_ph++
 							if ntries_ph > 5 {
 								fmt.Println("ERROR SCP GROW BIO: PH: 5 tentativas de ajustar PH sem sucesso", bioid, "PH:", bio[ind].PH, "MIN:", minph, "MAX:", maxph)
-								bio_del_message(bioid, "ERRPH")
-								bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
+								// bio_del_message(bioid, "ERRPH")
+								// bio_add_message(bioid, "EVárias tentativas de ajustar PH foram feitas e não houve variação. Verifique níveis de PH+ , PH- , magueiras e sensor de PH", "ERRPH")
 								ntries_ph = 0
 							}
 						} else {
 							ntries_ph = 0
 						}
 					}
-					lastph = bio[ind].PH
 				} else {
 					// bio[ind].PHShow = false
 					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", bio[ind].PH, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
+				lastph = bio[ind].PH
 			}
 			t_start_ph = time.Now()
 		}
@@ -9569,7 +9569,7 @@ func system_upgrade() {
 func master_shutdown(sigs chan os.Signal) {
 	<-sigs
 	fmt.Println("WARN SCP MASTER Shutdown started... Necessario aguardar cerca de 60 segundos...")
-	board_add_message("EDESLIGAMENTO DO SISTEMA Solicitado", "")
+	board_add_message("ADESLIGAMENTO DO SISTEMA Solicitado", "")
 	biofabrica.Critical = scp_stopall
 	scp_emergency_pause()
 	save_all_data(data_filename)
