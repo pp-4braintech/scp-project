@@ -215,7 +215,7 @@ const scp_timeoutdefault = 60
 const scp_maxwaitvolume = 30 // em minutos
 
 const bio_deltatemp = 1.5 // variacao de temperatura maximo em percentual
-const bio_deltaph = 0.5   // variacao de ph maximo em valor absoluto  -  ERA 0.1
+const bio_deltaph = 0.3   // variacao de ph maximo em valor absoluto  -  ERA 0.1
 
 const bio_withdrawstep = 50
 
@@ -5811,15 +5811,23 @@ func scp_grow_bio(bioid string) bool {
 		}
 
 		t_elapsed_ph := time.Since(t_start_ph).Minutes()
-		if control_ph && t_elapsed_ph >= 10 { ////////  VOLTAR PARA 10
+		if control_ph && t_elapsed_ph >= 11 { ////////  VOLTAR PARA 10
 			if bio[ind].PH != lastph {
 				if bio[ind].Temperature >= bio_ph_mintemp && bio[ind].Temperature <= bio_ph_maxtemp {
 					if bio[ind].PHControl {
 						// bio[ind].PHShow = true
 						if bio[ind].PH < float32(minph-bio_deltaph) {
-							scp_adjust_ph(bioid, float32(minph))
+							if !bio[ind].PHReading {
+								scp_adjust_ph(bioid, float32(minph))
+							} else {
+								fmt.Println("DEBUG SCP GROW BIO: Era necessario ajustar PH mas abortado pois leitura de PH em curso", bioid, " PH:", bio[ind].PH, " ALVO:", minph)
+							}
 						} else if bio[ind].PH > float32(maxph+bio_deltaph) {
-							scp_adjust_ph(bioid, float32(maxph))
+							if !bio[ind].PHReading {
+								scp_adjust_ph(bioid, float32(maxph))
+							} else {
+								fmt.Println("DEBUG SCP GROW BIO: Era necessario ajustar PH mas abortado pois leitura de PH em curso", bioid, " PH:", bio[ind].PH, " ALVO:", maxph)
+							}
 						}
 						if math.Abs(float64(lastph)-float64(bio[ind].PH)) < 0.1 {
 							ntries_ph++
