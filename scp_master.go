@@ -5849,6 +5849,8 @@ func scp_grow_bio(bioid string) bool {
 					fmt.Println("DEBUG SCP GROW BIO: PH: Temperatura fora do range, PH ignorado", bioid, "PHLIDO:", bio[ind].PH, "TEMP:", bio[ind].Temperature, "MINTEMP:", bio_ph_mintemp, "MAXTEMP:", bio_ph_maxtemp)
 				}
 				lastph = bio[ind].PH
+			} else {
+				fmt.Println("DEBUG SCP GROW BIO: Nada a fazer depois Teste do PH do Biorreator", bioid, " PH:", bio[ind].PH, " lastph=", lastph, " t_elapsed_phupdate=", t_elapsed_phupdate)
 			}
 			t_start_ph = time.Now()
 		}
