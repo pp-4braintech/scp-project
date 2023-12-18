@@ -136,7 +136,7 @@ type Organism struct {
 	Prodvol    int
 	Cultmedium string
 	Timetotal  int
-	Temprange  string
+	Temprange  [3]string
 	Aero       [3]int
 	PH         [3]string
 }
@@ -236,15 +236,17 @@ func load_organisms(filename string) int {
 		volume, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
 		medium := strings.Replace(r[6], " ", "", -1)
 		tottime, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
-		temprange := strings.Replace(r[8], " ", "", -1)
-		aero1, _ := strconv.Atoi(strings.Replace(r[9], " ", "", -1))
-		aero2, _ := strconv.Atoi(strings.Replace(r[10], " ", "", -1))
-		aero3, _ := strconv.Atoi(strings.Replace(r[11], " ", "", -1))
-		ph1 := strings.Replace(r[12], " ", "", -1)
-		ph2 := strings.Replace(r[13], " ", "", -1)
-		ph3 := strings.Replace(r[14], " ", "", -1)
-		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, temprange, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
-		orgs[k] = org
+		temprange1 := strings.Replace(r[8], " ", "", -1)
+		temprange2 := strings.Replace(r[9], " ", "", -1)
+		temprange3 := strings.Replace(r[10], " ", "", -1)
+		aero1, _ := strconv.Atoi(strings.Replace(r[11], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[12], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[13], " ", "", -1))
+		ph1 := strings.Replace(r[14], " ", "", -1)
+		ph2 := strings.Replace(r[15], " ", "", -1)
+		ph3 := strings.Replace(r[16], " ", "", -1)
+		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, [3]string{temprange1, temprange2, temprange3}, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		organs[code] = org
 		totalrecords = k
 	}
 	return totalrecords

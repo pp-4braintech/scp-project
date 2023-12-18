@@ -306,7 +306,7 @@ type Organism struct {
 	Prodvol    int
 	Cultmedium string
 	Timetotal  int
-	Temprange  string
+	Temprange  [3]string
 	Aero       [3]int
 	PH         [3]string
 }
@@ -949,14 +949,16 @@ func load_organisms(filename string) int {
 		volume, _ := strconv.Atoi(strings.Replace(r[5], " ", "", -1))
 		medium := strings.Replace(r[6], " ", "", -1)
 		tottime, _ := strconv.Atoi(strings.Replace(r[7], " ", "", -1))
-		temprange := strings.Replace(r[8], " ", "", -1)
-		aero1, _ := strconv.Atoi(strings.Replace(r[9], " ", "", -1))
-		aero2, _ := strconv.Atoi(strings.Replace(r[10], " ", "", -1))
-		aero3, _ := strconv.Atoi(strings.Replace(r[11], " ", "", -1))
-		ph1 := strings.Replace(r[12], " ", "", -1)
-		ph2 := strings.Replace(r[13], " ", "", -1)
-		ph3 := strings.Replace(r[14], " ", "", -1)
-		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, temprange, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
+		temprange1 := strings.Replace(r[8], " ", "", -1)
+		temprange2 := strings.Replace(r[9], " ", "", -1)
+		temprange3 := strings.Replace(r[10], " ", "", -1)
+		aero1, _ := strconv.Atoi(strings.Replace(r[11], " ", "", -1))
+		aero2, _ := strconv.Atoi(strings.Replace(r[12], " ", "", -1))
+		aero3, _ := strconv.Atoi(strings.Replace(r[13], " ", "", -1))
+		ph1 := strings.Replace(r[14], " ", "", -1)
+		ph2 := strings.Replace(r[15], " ", "", -1)
+		ph3 := strings.Replace(r[16], " ", "", -1)
+		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, [3]string{temprange1, temprange2, temprange3}, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
 		organs[code] = org
 		totalrecords = k
 	}
@@ -5731,27 +5733,12 @@ func scp_grow_bio(bioid string) bool {
 	vol_start := bio[ind].Volume
 	pday := -1
 	var minph, maxph, worktemp_min, worktemp_max float64
-	var err error
 	var aero int
 	aero_prev := -1
 	worktemp_min = 28 // Valor Padrão para a temperatura de cultivo
 	worktemp_max = 28
 
-	temps := scp_splitparam(org.Temprange, "-")
-	worktemp_min, err = strconv.ParseFloat(temps[0], 32)
-	if err != nil {
-		fmt.Println("ERROR GROW BIO: Valor de tempetura minimo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
-		worktemp_min = 28
-	} else {
-		worktemp_max, err = strconv.ParseFloat(temps[1], 32)
-		if err != nil {
-			fmt.Println("ERROR GROW BIO: Valor de tempetura maximo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
-			worktemp_min = 28
-			worktemp_max = 28
-		}
-	}
-
-	t_start := time.Now()
+	// t_start := time.Now()
 	t_start_ph := time.Now()
 
 	// if control_foam {
@@ -5763,13 +5750,22 @@ func scp_grow_bio(bioid string) bool {
 	ncontrol_foam := 0
 	bio[ind].PHShow = bio[ind].PHControl
 	for {
-		t_elapsed := time.Since(t_start).Minutes()
-		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal, " tempmin=", worktemp_min, " tempmax=", worktemp_max)
+		// t_elapsed := time.Since(t_start).Minutes()
+		t_total := float64(bio[ind].Timetotal[0]*60 + bio[ind].Timetotal[1])
+		t_left := float64(bio[ind].Timeleft[0]*60 + bio[ind].Timeleft[1])
+		t_elapsed := 0.0
+		if t_total >= t_left {
+			t_elapsed = math.Abs(t_total - t_left)
+		} else {
+			t_elapsed = 0
+		}
+		t_day := int(t_elapsed / (60 * 24))
+
+		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal, " tleft=", t_left, " t_day=", t_day)
 		if t_elapsed >= ttotal {
 			fmt.Println("DEBUG SCP GROW BIO: Biorreator terminando grow por tempo atingido", bioid)
 			break
 		}
-		t_day := int(t_elapsed / (60 * 24))
 		if t_day != pday {
 			var err error
 			if t_day > len(org.PH) {
@@ -5792,9 +5788,27 @@ func scp_grow_bio(bioid string) bool {
 					scp_adjust_foam(bioid)
 					ncontrol_foam++
 				}
+
+				temps := scp_splitparam(org.Temprange[t_day], "-")
+				worktemp_min, err = strconv.ParseFloat(temps[0], 32)
+				if err != nil {
+					fmt.Println("ERROR GROW BIO: Valor de tempetura minimo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
+					worktemp_min = 28
+				} else {
+					worktemp_max, err = strconv.ParseFloat(temps[1], 32)
+					if err != nil {
+						fmt.Println("ERROR GROW BIO: Valor de tempetura maximo para o cultivo INVALIDO:", bioid, temps, " - Assumindo 28 graus para mínimo e máximo")
+						worktemp_min = 28
+						worktemp_max = 28
+					}
+				}
+
 			}
 			pday = t_day
 		}
+
+		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " tempmin=", worktemp_min, " tempmax=", worktemp_max, " phmin=", minph, " phmax=", maxph)
+
 		if bio[ind].MustPause || bio[ind].MustStop {
 			return false
 		}
