@@ -246,7 +246,7 @@ func load_organisms(filename string) int {
 		ph2 := strings.Replace(r[15], " ", "", -1)
 		ph3 := strings.Replace(r[16], " ", "", -1)
 		org := Organism{ind, code, name, otype, lifetime, volume, medium, tottime, [3]string{temprange1, temprange2, temprange3}, [3]int{aero1, aero2, aero3}, [3]string{ph1, ph2, ph3}}
-		organs[code] = org
+		orgs[k] = org
 		totalrecords = k
 	}
 	return totalrecords
