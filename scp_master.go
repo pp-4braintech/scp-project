@@ -5761,7 +5761,7 @@ func scp_grow_bio(bioid string) bool {
 		}
 		t_day := int(t_elapsed / (60 * 24))
 
-		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", ttotal, " tleft=", t_left, " t_day=", t_day)
+		fmt.Println("DEBUG SCP GROW BIO: ", bioid, " t_elapsed=", t_elapsed, " ttotal=", t_total, " tleft=", t_left, " t_day=", t_day)
 		if t_elapsed >= ttotal {
 			fmt.Println("DEBUG SCP GROW BIO: Biorreator terminando grow por tempo atingido", bioid)
 			break
