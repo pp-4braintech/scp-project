@@ -1264,6 +1264,16 @@ func load_biofabrica_conf(filename string) int {
 			board_add_message("EATENÇÃO: Fluxometro de entrada e Válvula 01 não presentes nas configurações. Acionar time de suporte", "")
 		}
 	}
+	_, ok = biofabrica_cfg["FBF03"]
+	if !ok {
+		vbf03, okt := biofabrica_cfg["VBF03"]
+		if okt {
+			board_add_message("AFluxometro intermediário não presente nas configurações. Corrigindo problema automaticamente. Favor verificar configurações da Biofábrica", "")
+			biofabrica_cfg["FBF03"] = Biofabrica_cfg{"FBF03", vbf03.Deviceaddr, "C7"}
+		} else {
+			board_add_message("EATENÇÃO: Fluxometro intermediario e Válvula 03 não presentes nas configurações. Acionar time de suporte", "")
+		}
+	}
 	return totalrecords
 }
 
