@@ -3922,7 +3922,7 @@ func scp_get_alldata() {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_in1
-									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do INFLUXO/Totem01 =", vol_tmp, lastvolin)
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										ibcvolin := vol_tmp - lastvolin
@@ -3935,7 +3935,7 @@ func scp_get_alldata() {
 									hasupdatevolin = true
 									count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
 									if count >= 0 {
-										fmt.Println("DEBUG SCP GET ALL DATA: Atualizando volume vindo do FLUXINT =", vol_tmp, lastvolint)
+										fmt.Println("DEBUG SCP GET ALL DATA: Atualizando volume vindo do INFLUXO =", vol_tmp, lastvolint)
 										biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 										lastvolint = vol_tmp
 										hasupdatevolint = true
@@ -3943,11 +3943,11 @@ func scp_get_alldata() {
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
-							} else if biofabrica.Useflowint && b.Valvs[2] == 1 && biofabrica.Valvs[0] == 1 && biofabrica.Valvs[2] == 1 {
+							} else if biofabrica.Useflowint && b.Valvs[2] == 1 && biofabrica.Valvs[0] == 1 && biofabrica.Valvs[2] == 1 { //  && biofabrica.Valvs[0] == 1 && biofabrica.Valvs[2] == 1
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_in1
-									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do Totem02/VOLINT =", vol_tmp, lastvolint)
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do INTFLUXO =", vol_tmp, lastvolint)
 									biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolint && lastvolint > 0 {
 										ibcvolin := vol_tmp - lastvolint
@@ -3959,13 +3959,13 @@ func scp_get_alldata() {
 									lastvolint = vol_tmp
 									hasupdatevolint = true
 								} else {
-									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INTFLUXO", count, vol_tmp)
 								}
 							} else if b.Valvs[3] == 1 && (biofabrica.Valvs[6] == 1 || biofabrica.Valvs[7] == 1 || biofabrica.Valvs[8] == 1) {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_out
-									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do OUTFLUXO =", vol_tmp, lastvolout)
 									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolout && lastvolout > 0 {
 										ibcvolout := vol_tmp - lastvolout
@@ -3984,7 +3984,7 @@ func scp_get_alldata() {
 									lastvolout = vol_tmp
 									hasupdatevolout = true
 								} else {
-									fmt.Println("ERROR SCP GET ALLDATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+									fmt.Println("ERROR SCP GET ALLDATA: Valor invalido ao ler Volume OUTFLUXO", count, vol_tmp)
 								}
 							}
 
@@ -4700,25 +4700,32 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 				fmt.Println("DEBUG RUN WITHDRAW 12: Tempo maximo de withdraw esgotado", t_elapsed, maxtime)
 				break
 			}
-			if biofabrica.Useflowin && mustwaittime && rand.Intn(21) == 7 { // } int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
-				volout := t_elapsed / bio_emptying_rate
-				vol_tmp := float64(vol_bio_init) - volout
-				if vol_tmp < 0 {
-					vol_tmp = 0
-				}
-				bio[ind].VolInOut = vol_tmp
-				bio[ind].Volume = uint32(vol_tmp)
-				fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout, "voltmp=", vol_tmp)
-				if ibc_ind >= 0 && vol_ibc_ini >= 0 {
-					ibc[ibc_ind].VolInOut = vol_ibc_ini + volout
+			if biofabrica.Useflowin && rand.Intn(21) == 7 { // } int32(t_elapsed)%7 == 0 { // depois testar rand.Intn(21) == 7
+				if mustwaittime {
+					volout := t_elapsed / bio_emptying_rate
+					vol_tmp := float64(vol_bio_init) - volout
+					if vol_tmp < 0 {
+						vol_tmp = 0
+					}
+					bio[ind].VolInOut = vol_tmp
+					bio[ind].Volume = uint32(vol_tmp)
+					fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", volout, "voltmp=", vol_tmp)
+					if ibc_ind >= 0 && vol_ibc_ini >= 0 {
+						ibc[ibc_ind].VolInOut = vol_ibc_ini + volout
+						ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
+						ibc[ibc_ind].OrgCode = bio[ind].OrgCode
+						ibc[ibc_ind].Organism = bio[ind].Organism
+						ibc[ibc_ind].MainStatus = mainstatus_org
+						scp_update_ibclevel(ibc[ibc_ind].IBCID)
+					}
+					scp_update_biolevel(bio[ind].BioreactorID)
+					// scp_update_screen_vol(bio[ind].BioreactorID)
+				} else if ibc_ind >= 0 && vol_ibc_ini >= 0 {
+					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_out)
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
-					ibc[ibc_ind].OrgCode = bio[ind].OrgCode
-					ibc[ibc_ind].Organism = bio[ind].Organism
-					ibc[ibc_ind].MainStatus = mainstatus_org
 					scp_update_ibclevel(ibc[ibc_ind].IBCID)
 				}
-				scp_update_biolevel(bio[ind].BioreactorID)
-				// scp_update_screen_vol(bio[ind].BioreactorID)
+
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
