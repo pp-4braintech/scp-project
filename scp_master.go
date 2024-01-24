@@ -41,7 +41,7 @@ const control_temp = true
 const control_foam = true
 
 const (
-	scp_version = "1.2.40" // 2023-12-18
+	scp_version = "1.2.41" // 2024-01-09
 
 	scp_on  = 1
 	scp_off = 0
@@ -97,6 +97,7 @@ const scp_dev_volusom = "VOLUSOM"
 const scp_dev_vollaser = "VOLLASER"
 const scp_dev_volfluxo_out = "VOLFLUXO_OUT"
 const scp_dev_volfluxo_in1 = "VOLFLUXO_IN1"
+const scp_dev_volfluxo_int = "VOLFLUXO_INT"
 const scp_dev_heater = "HEATER"
 const scp_dev_all = "ALL"
 
@@ -235,8 +236,10 @@ const bio_ph_maxtemp = 29.5
 
 const flow_corfactor_out = 1.1
 const flow_corfactor_in1 = 1.1
+const flow_corfactor_int = 1.1
 const flow_ratio = 0.03445 * flow_corfactor_out
 const flow_ratio_in1 = 0.036525556 * flow_corfactor_in1
+const flow_ratio_int = 0.036525556 * flow_corfactor_int
 
 const bio_emptying_rate = 50.0 / 100.0
 
@@ -511,9 +514,13 @@ type Biofabrica struct {
 	VolumeIn1    float64
 	VolIn1Part   float64
 	LastCountIn1 uint32
+	VolumeInt    float64
+	VolIntPart   float64
+	LastCountInt uint32
 	TestMode     bool
 	TechMode     bool
 	Useflowin    bool
+	Useflowint   bool
 	PIntStatus   string
 	POutStatus   string
 	Critical     string
@@ -646,7 +653,7 @@ var totem = []Totem{
 }
 
 var biofabrica = Biofabrica{
-	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, false, false, true, "", "", "", "", "",
+	"BIOFABRICA001", [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}, false, []string{}, []string{}, scp_ready, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, false, true, false, "", "", "", "", "",
 }
 
 var biobak = bio // Salva status atual
@@ -3014,6 +3021,16 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 				board_add_message("EFBF02 Não configurado. Favor corrigir em Configurações / Biofábrica", "")
 				return -1, -1
 			}
+		} else if vol_type == scp_dev_volfluxo_int {
+			_, ok := biofabrica_cfg["FBF03"]
+			if ok {
+				dev_addr = biofabrica_cfg["FBF03"].Deviceaddr
+				vol_dev = biofabrica_cfg["FBF03"].Deviceport
+			} else {
+				fmt.Println("ERROR SCP GET VOLUME: Nao foi encontrados os dados do Fluxometro FBF03")
+				board_add_message("EFBF03 Não configurado. Favor corrigir em Configurações / Biofábrica", "")
+				return -1, -1
+			}
 		} else {
 			fmt.Println("ERROR SCP GET VOLUME: VOL_TYPE invalido para biofabrica", main_id, vol_type)
 			return -1, -1
@@ -3069,7 +3086,7 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 	}
 	var area, dfloat float64
 	area = math.Pi * math.Pow(bio_diametro/2000.0, 2)
-	if vol_type != scp_dev_volfluxo_out && vol_type != scp_dev_volfluxo_in1 {
+	if vol_type != scp_dev_volfluxo_out && vol_type != scp_dev_volfluxo_in1 && vol_type != scp_dev_volfluxo_int {
 		switch vol_type {
 		case scp_dev_volusom:
 			switch dev_type {
@@ -3099,6 +3116,12 @@ func scp_get_volume(main_id string, dev_type string, vol_type string) (int, floa
 		}
 		volume = (float64(dint) * flow_ratio_in1) + biofabrica.VolIn1Part
 		biofabrica.LastCountIn1 = uint32(dint)
+	} else if vol_type == scp_dev_volfluxo_int {
+		if dint < int64(biofabrica.LastCountInt) {
+			biofabrica.VolIntPart += float64(math.MaxUint16) * flow_ratio_int
+		}
+		volume = (float64(dint) * flow_ratio_int) + biofabrica.VolIntPart
+		biofabrica.LastCountInt = uint32(dint)
 	}
 
 	if volume < 0 {
@@ -3399,8 +3422,10 @@ func scp_get_alldata() {
 	t_start_test_totems := time.Now()
 	t_start_setup := time.Now()
 	lastvolin := float64(-1)
+	lastvolint := float64(-1)
 	lastvolout := float64(-1)
 	hasupdatevolin := false
+	hasupdatevolint := false
 	hasupdatevolout := false
 	firsttime := true
 	bio_seq := 0
@@ -3513,6 +3538,7 @@ func scp_get_alldata() {
 			}
 
 			hasupdatevolin = false
+			hasupdatevolint = false
 			hasupdatevolout = false
 
 			for _, b := range bio {
@@ -3555,7 +3581,7 @@ func scp_get_alldata() {
 								} else if bio[ind].Status == bio_producting && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Heater {
 									fmt.Println("ERROR SCP GET ALLDATA: Temperatura acima do máximo e resistencia ESTA LIGADA DURANTE CULTIVO", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
-							} else if t_tmp > TEMPMAX {
+							} else if t_tmp > TEMPMAX && t_tmp < 64000 {
 								if t_tmp < 150 {
 									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA CRÍTICA - Desligando resistencia e alertando", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax, " TEMPMAX=", TEMPMAX)
 									bio_add_message(b.BioreactorID, "EATENÇÃO: Temperatura do Biorreator Crítica!!! Verificar", "")
@@ -3563,7 +3589,13 @@ func scp_get_alldata() {
 								} else {
 									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA ACIMA DO NORMAL", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
-
+							} else {
+								bio[ind].Temperature = -1
+								fmt.Println("ERROR SCP GET ALLDATA: Temperatura INVALIDA - ERRO NO SENSOR", b.BioreactorID, "tempnow=", t_tmp)
+								bio_add_message(b.BioreactorID, "EATENÇÃO: Falha no SENSOR DE TEMPERATURA. Favor acionar SAC", "")
+								if bio[ind].Heater && bio[ind].Status != bio_producting {
+									scp_turn_heater(b.BioreactorID, 0, false)
+								}
 							}
 						}
 					}
@@ -3609,7 +3641,7 @@ func scp_get_alldata() {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_in1
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do Totem01 =", vol_tmp, lastvolin)
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do INFLUXO / Totem01 =", vol_tmp, lastvolin)
 									biofabrica.VolumeIn1 = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolin && lastvolin > 0 {
 										biovolin := vol_tmp - lastvolin
@@ -3627,7 +3659,7 @@ func scp_get_alldata() {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_out)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_out
-									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do FLUXOUT =", vol_tmp, lastvolout)
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do OUTFLUXO =", vol_tmp, lastvolout)
 									biofabrica.VolumeOut = bio_escala * (math.Trunc(vol_tmp / bio_escala))
 									if vol_tmp > lastvolout && lastvolout > 0 {
 										biovolout := vol_tmp - lastvolout
@@ -3641,8 +3673,36 @@ func scp_get_alldata() {
 									}
 									lastvolout = vol_tmp
 									hasupdatevolout = true
+									count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+									if count >= 0 {
+										fmt.Println("DEBUG SCP GET ALL DATA: Atualizando volume vindo do OUTFLUXO =", vol_tmp, lastvolint)
+										biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+										lastvolint = vol_tmp
+										hasupdatevolint = true
+									}
 								} else {
-									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INTFLUXO", count, vol_tmp)
+								}
+							} else if biofabrica.Useflowint && b.Valvs[4] == 1 && b.Valvs[5] == 1 && b.Pumpstatus && biofabrica.Valvs[2] == 1 {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+								if count >= 0 {
+									vol_tmp = vol_tmp // * flow_corfactor_out
+									fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " usando volume vindo do INTFLUXO =", vol_tmp, lastvolint)
+									biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolint && lastvolint > 0 {
+										biovolint := vol_tmp - lastvolint
+										bio[ind].VolInOut -= biovolint
+										if bio[ind].VolInOut < 0 {
+											bio[ind].VolInOut = 0
+										}
+										bio[ind].Volume = uint32(bio[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: Biorreator", b.BioreactorID, " NOVO volume =", bio[ind].VolInOut)
+										scp_update_biolevel(b.BioreactorID)
+									}
+									lastvolint = vol_tmp
+									hasupdatevolint = true
+								} else {
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INTFLUXO", count, vol_tmp)
 								}
 							}
 
@@ -3858,7 +3918,7 @@ func scp_get_alldata() {
 								scp_get_volume(b.IBCID, scp_ibc, scp_dev_vol0) // força a ler algo só pra atualizar se houver falha
 							}
 
-							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 {
+							if b.Valvs[2] == 1 && biofabrica.Valvs[1] == 1 && biofabrica.Valvs[3] == 1 {
 								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_in1)
 								if count >= 0 {
 									vol_tmp = vol_tmp // * flow_corfactor_in1
@@ -3873,6 +3933,31 @@ func scp_get_alldata() {
 									}
 									lastvolin = vol_tmp
 									hasupdatevolin = true
+									count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+									if count >= 0 {
+										fmt.Println("DEBUG SCP GET ALL DATA: Atualizando volume vindo do FLUXINT =", vol_tmp, lastvolint)
+										biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+										lastvolint = vol_tmp
+										hasupdatevolint = true
+									}
+								} else {
+									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+								}
+							} else if biofabrica.Useflowint && b.Valvs[2] == 1 && biofabrica.Valvs[0] == 1 && biofabrica.Valvs[2] == 1 {
+								count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+								if count >= 0 {
+									vol_tmp = vol_tmp // * flow_corfactor_in1
+									fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " usando volume vindo do Totem02/VOLINT =", vol_tmp, lastvolint)
+									biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+									if vol_tmp > lastvolint && lastvolint > 0 {
+										ibcvolin := vol_tmp - lastvolint
+										ibc[ind].VolInOut += ibcvolin
+										ibc[ind].Volume = uint32(ibc[ind].VolInOut)
+										fmt.Println("DEBUG SCP GET ALL DATA: IBC", b.IBCID, " NOVO volume =", ibc[ind].VolInOut)
+										// scp_update_biolevel(b.BioreactorID)
+									}
+									lastvolint = vol_tmp
+									hasupdatevolint = true
 								} else {
 									fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
 								}
@@ -4099,6 +4184,18 @@ func scp_get_alldata() {
 
 				} else {
 					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INFLUXO", count, vol_tmp)
+				}
+			}
+
+			if !hasupdatevolint && biofabrica.Useflowint && (mustupdate_ibc || biofabrica.Valvs[2] == 1 || biofabrica.Valvs[3] == 1) {
+				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+				if count >= 0 {
+					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do INTFLUXO =", vol_tmp)
+					biofabrica.VolumeInt = bio_escala * (math.Trunc(vol_tmp / bio_escala))
+					lastvolint = vol_tmp
+
+				} else {
+					fmt.Println("ERROR SCP GET ALL DATA: Valor invalido ao ler Volume INTFLUXO", count, vol_tmp)
 				}
 			}
 
@@ -4372,7 +4469,12 @@ func scp_run_linecip(lines string) bool {
 			return false
 		}
 
-		time.Sleep(time.Duration(time_cipline_clean) * time.Millisecond)
+		for i := 0; i < time_cipline_clean; i++ {
+			time.Sleep(1 * time.Second)
+			if biofabrica.Critical != scp_ready {
+				break
+			}
+		}
 
 		if !scp_turn_pump(scp_totem, totem_str, vpath, 0, false) {
 			fmt.Println("ERROR SCP RUN LINEWASH: Falha ao fechar valvulvas e desligar bomba do totem", totem, vpath)
@@ -4539,9 +4641,14 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			if ibc_ind >= 0 {
 				vol_ibc_ini = float64(ibc[ibc_ind].VolInOut)
 				ibc[ibc_ind].MainStatus = mainstatus_org
+				ibc[ibc_ind].OrgCode = bio[ind].OrgCode
+				ibc[ibc_ind].Organism = bio[ind].Organism
+				ibc[ibc_ind].MainStatus = mainstatus_org
 			}
 			// bio[ind].ShowVol = false
-			mustwaittime = true
+			// DESLIGADO PARA USO DO FLUXOMETRO INTERMEDIARIO
+			mustwaittime = !biofabrica.Useflowint
+			// mustwaittime = true
 			waittime = float64(bio[ind].Volume)*bio_emptying_rate + 20
 		}
 		t_last_volchange := time.Now()
@@ -5645,7 +5752,7 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 	fmt.Println("DEBUG SCP ADJUST TEMP: Ajustando Temperatura", bioid, bio[ind].Temperature, temp)
 	valvs := []string{bioid + "/V4", bioid + "/V6"}
 	t_start := time.Now()
-	if bio[ind].Temperature < temp {
+	if bio[ind].Temperature > 0 && bio[ind].Temperature < temp {
 		if !scp_turn_pump(scp_bioreactor, bioid, valvs, 1, true) {
 			fmt.Println("ERROR SCP ADJUST TEMP: Falha ao abrir valvulas e ligar bomba", bioid, valvs)
 			bio[ind].Temprunning = false
@@ -5674,6 +5781,10 @@ func scp_adjust_temperature(bioid string, temp float32, maxtime float64) {
 		}
 		if bio[ind].Temperature >= temp {
 			fmt.Println("WARN SCP ADJUST TEMP: Temperatura >= limite em", bioid, bio[ind].Temperature, "/", temp)
+			break
+		}
+		if bio[ind].Temperature < 0 {
+			fmt.Println("ERROR SCP ADJUST TEMP: Falha no SENSOR DE TEMPERATURA", bioid, bio[ind].Temperature, "/", temp)
 			break
 		}
 		time.Sleep(2 * time.Second)
@@ -9746,6 +9857,11 @@ func main() {
 	biofabrica.Version = scp_version
 	biofabrica.LastVersion = scp_null
 	biofabrica.Useflowin = true
+
+	d, v := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
+	if d >= 0 && v >= 0 {
+		biofabrica.Useflowint = true
+	}
 
 	routerok := tcp_host_isalive(mainrouter, "80", pingmax)
 	for {
