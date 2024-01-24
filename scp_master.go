@@ -2544,13 +2544,15 @@ func scp_get_ph_voltage(bioid string, checkaero bool) float64 {
 		mediana := calc_mediana(data)
 		phfloat := mediana / 100.0
 
-		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
+		fmt.Println("DEBUG SCP GET PH VOLTAGE: Lendo Voltagem/Valor PH do Biorreator", bioid, cmd_ph, "- mediana =", mediana, " phfloat=", phfloat)
 		if aerostatus && checkaero {
 			if !scp_turn_aero(bioid, true, 1, aeroratio, false) {
 				fmt.Println("ERROR SCP GET PH VOLTAGE: Erro ao religar Aerador do Biorreator", bioid)
 			}
 		}
 		if phfloat >= 3.0 && phfloat <= 5.0 {
+			return phfloat
+		} else if phfloat >= 10.0 && phfloat <= 140.0 {
 			return phfloat
 		} else {
 			fmt.Println("ERROR SCP GET PH VOLTAGE: Valor invalido de PH Voltage", bioid, phfloat)
@@ -4659,7 +4661,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			t_elapsed = time.Since(t_start).Seconds()
 			vol_out = int64(vol_ini - vol_now)
 			vol_bio_out_now := biofabrica.VolumeOut - vol_bio_out_start
-			if bio[ind].Withdraw == 0 {
+			if bio[ind].Withdraw == 0 || biofabrica.Critical != scp_ready {
 				break
 			}
 			if vol_now == vol_bio_last {
@@ -4720,7 +4722,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					}
 					scp_update_biolevel(bio[ind].BioreactorID)
 					// scp_update_screen_vol(bio[ind].BioreactorID)
-				} else if ibc_ind >= 0 && vol_ibc_ini >= 0 {
+				} else if biofabrica.Useflowint && ibc_ind >= 0 && vol_ibc_ini >= 0 {
 					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_out)
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 					scp_update_ibclevel(ibc[ibc_ind].IBCID)
