@@ -4189,7 +4189,7 @@ func scp_get_alldata() {
 				}
 			}
 
-			if !hasupdatevolint && biofabrica.Useflowint && (mustupdate_ibc || biofabrica.Valvs[2] == 1 || biofabrica.Valvs[3] == 1) {
+			if !hasupdatevolint && biofabrica.Useflowint && (biofabrica.Valvs[2] == 1 || biofabrica.Valvs[3] == 1) {
 				count, vol_tmp := scp_get_volume(scp_biofabrica, scp_biofabrica, scp_dev_volfluxo_int)
 				if count >= 0 {
 					fmt.Println("DEBUG SCP GET ALL DATA: Volume lido na entrada vindo do INTFLUXO =", vol_tmp)
@@ -4723,7 +4723,9 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 					scp_update_biolevel(bio[ind].BioreactorID)
 					// scp_update_screen_vol(bio[ind].BioreactorID)
 				} else if biofabrica.Useflowint && ibc_ind >= 0 && vol_ibc_ini >= 0 {
-					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_out)
+					vol_tmp := float64(vol_ibc_ini) + float64(vol_out)
+					fmt.Println("DEBUG RUN WITHDRAW: Desenvase de:", bio[ind].BioreactorID, "para:", bio[ind].OutID, "/", ibc_ind, "volout=", vol_out, "voltmp=", vol_tmp)
+					ibc[ibc_ind].VolInOut = vol_tmp
 					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
 					scp_update_ibclevel(ibc[ibc_ind].IBCID)
 				}
@@ -5879,6 +5881,7 @@ func scp_grow_bio(bioid string) bool {
 	ntries_ph := 0
 	ncontrol_foam := 0
 	bio[ind].PHShow = bio[ind].PHControl
+	bio[ind].Temprunning = false
 	for {
 		// t_elapsed := time.Since(t_start).Minutes()
 		t_total := float64(bio[ind].Timetotal[0]*60 + bio[ind].Timetotal[1])
