@@ -3591,7 +3591,7 @@ func scp_get_alldata() {
 								} else {
 									fmt.Println("ERROR SCP GET ALLDATA: TEMPERATURA ACIMA DO NORMAL", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 								}
-							} else {
+							} else if t_tmp != -2 {
 								bio[ind].Temperature = -1
 								fmt.Println("ERROR SCP GET ALLDATA: Temperatura INVALIDA - ERRO NO SENSOR", b.BioreactorID, "tempnow=", t_tmp)
 								bio_add_message(b.BioreactorID, "EATENÇÃO: Falha no SENSOR DE TEMPERATURA. Favor acionar SAC", "")
@@ -6054,7 +6054,7 @@ func scp_grow_bio(bioid string) bool {
 		// Início da mudança para suportar ranges de temperatura e os mesmo diferentes por organismo
 		fmt.Println("DEBUG SCP GROW BIO: dados de temp", bioid, control_temp, bio[ind].Temprunning, "tempnow=", bio[ind].Temperature, "min=", worktemp_min, "max=", worktemp_max)
 		if control_temp && !bio[ind].Temprunning {
-			if bio[ind].Temperature < float32(worktemp_min) {
+			if bio[ind].Temperature > 0 && bio[ind].Temperature < float32(worktemp_min) {
 				fmt.Println("WARN SCP GROW BIO: Temperatura abaixo do mínimo (", worktemp_min, "), ajustando temperatura", bioid, bio[ind].Temperature, " para:", worktemp_max)
 				bio[ind].Temprunning = true
 				go scp_adjust_temperature(bioid, float32(worktemp_max), ttotal)
