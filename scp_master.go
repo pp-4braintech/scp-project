@@ -243,6 +243,8 @@ const flow_ratio_int = 0.036525556 * flow_corfactor_int
 
 const bio_emptying_rate = 50.0 / 100.0
 
+const bio_empty_voltol = 200
+
 // const scp_join = "JOIN"
 const data_filename = "dumpdata"
 
@@ -4733,7 +4735,7 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 			time.Sleep(scp_refreshwait * time.Millisecond)
 		}
-		if abort_due_novolchange_mustzero {
+		if abort_due_novolchange_mustzero && bio[ind].Volume <= bio_empty_voltol {
 			bio[ind].VolInOut = 0
 			bio[ind].Volume = 0
 		}
@@ -4746,22 +4748,30 @@ func scp_run_withdraw(devtype string, devid string, linewash bool, untilempty bo
 			}
 		}
 		if biofabrica.Useflowin && untilempty {
-			if bio[ind].Withdraw != 0 {
-				bio[ind].Volume = 0
-				bio[ind].VolInOut = 0
-				if ibc_ind >= 0 {
-					ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_bio_init)
-					ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
+			if !biofabrica.Useflowint {
+				if bio[ind].Withdraw != 0 {
+					bio[ind].Volume = 0
+					bio[ind].VolInOut = 0
+					if ibc_ind >= 0 {
+						ibc[ibc_ind].VolInOut = vol_ibc_ini + float64(vol_bio_init)
+						ibc[ibc_ind].Volume = uint32(ibc[ibc_ind].VolInOut)
+					}
+				} else if mustwaittime {
+					volout := t_elapsed / bio_emptying_rate
+					vol_tmp := float64(vol_bio_init) - volout
+					if vol_tmp < 0 {
+						vol_tmp = 0
+					}
+					bio[ind].VolInOut = vol_tmp
+					bio[ind].Volume = uint32(vol_tmp)
 				}
-			} else if mustwaittime {
-				volout := t_elapsed / bio_emptying_rate
-				vol_tmp := float64(vol_bio_init) - volout
-				if vol_tmp < 0 {
-					vol_tmp = 0
+			} else {
+				if bio[ind].Withdraw != 0 && bio[ind].Volume <= bio_empty_voltol {
+					bio[ind].Volume = 0
+					bio[ind].VolInOut = 0
 				}
-				bio[ind].VolInOut = vol_tmp
-				bio[ind].Volume = uint32(vol_tmp)
 			}
+
 		}
 		if bio[ind].Volume == 0 {
 			if !bio[ind].MustPause && !bio[ind].MustStop {
