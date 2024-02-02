@@ -2605,12 +2605,17 @@ func scp_get_phmed(bioid string) float64 {
 				b1 := bio[ind].RegresPH[1]
 				ph := calc_PH(phvolt, b0, b1)
 				if (ph > 2) && (ph <= 14) {
-					fmt.Println("DEBUG SCP GET PHmed: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt, "amosta=", n)
+					fmt.Println("DEBUG SCP GET PHmed: SENSOR ANALOGICO Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt, "amosta=", n)
 					data = append(data, ph)
 					n++
 				} else {
-					fmt.Println("ERROR SCP GET PHmed: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+					fmt.Println("ERROR SCP GET PHmed: SENSOR ANALOGICO Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
 				}
+			} else if phvolt >= 10 && phvolt <= 140 {
+				ph := phvolt / 10.0
+				fmt.Println("DEBUG SCP GET PHmed: SENSOR DIGITAL Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt, "amosta=", n)
+				data = append(data, ph)
+				n++
 			} else {
 				fmt.Println("ERROR SCP GET PHmed: Valor INVALIDO de PHVolt no Biorreator", bioid, "PHVolt=", phvolt)
 			}
@@ -2655,11 +2660,15 @@ func scp_get_ph(bioid string) float64 {
 			b1 := bio[ind].RegresPH[1]
 			ph := calc_PH(phvolt, b0, b1)
 			if (ph >= 0) && (ph <= 14) {
-				fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+				fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " SENSOR ANALOGICO PH=", ph, "PHVolt=", phvolt)
 				return ph
 			} else {
-				fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
+				fmt.Println("ERROR SCP GET PH: SENSOR ANALOGICO Valor INVALIDO de PH no Biorreator", bioid, " PH=", ph, "PHVolt=", phvolt)
 			}
+		} else if phvolt >= 10 && phvolt <= 140 {
+			ph := phvolt / 10.0
+			fmt.Println("DEBUG SCP GET PH: Biorreator", bioid, " SENSOR DIGITAL PH=", ph, "PHVolt=", phvolt)
+			return ph
 		} else {
 			fmt.Println("ERROR SCP GET PH: Valor INVALIDO de PHVolt no Biorreator", bioid, "PHVolt=", phvolt)
 		}
