@@ -2535,7 +2535,7 @@ func scp_get_ph_voltage(bioid string, checkaero bool) float64 {
 			if len(params) > 1 {
 				phint, err := strconv.Atoi(params[1])
 				fmt.Println("DEBUG GET PH VOLTAGE: Valor retornado =", bioid, phint, "passo=", i)
-				if err == nil && phint >= 300 && phint <= 500 {
+				if err == nil && ((phint >= 300 && phint <= 500) || (phint >= 1000 && phint <= 14000)) {
 					data = append(data, float64(phint))
 					n++
 				}
@@ -2596,6 +2596,7 @@ func scp_get_phmed(bioid string) float64 {
 		n := 0
 		for i := 0; i <= 5; i++ {
 			phvolt := scp_get_ph_voltage(bioid, false)
+			fmt.Println("DEBUG GET PHMED: Biorreator ", bioid, " ph_voltage =", phvolt)
 			if phvolt >= 2 && phvolt <= 5 {
 				if bio[ind].RegresPH[0] == 0 && bio[ind].RegresPH[1] == 0 {
 					fmt.Println("ERROR SCP GET PHmed: Biorreator com PH NAO CALIBRADO", bioid)
@@ -5865,6 +5866,7 @@ func scp_grow_bio(bioid string) bool {
 		fmt.Println("ERROR SCP GROW BIO: Biorreator nao encontrado", bioid)
 		return false
 	}
+	bio[ind].Temprunning = false
 	orgid := bio[ind].OrgCode
 	org, ok := organs[orgid]
 	if !ok {
@@ -5901,7 +5903,6 @@ func scp_grow_bio(bioid string) bool {
 	ntries_ph := 0
 	ncontrol_foam := 0
 	bio[ind].PHShow = bio[ind].PHControl
-	bio[ind].Temprunning = false
 	for {
 		// t_elapsed := time.Since(t_start).Minutes()
 		t_total := float64(bio[ind].Timetotal[0]*60 + bio[ind].Timetotal[1])
