@@ -3575,6 +3575,7 @@ func scp_get_alldata() {
 							t_tmp := scp_get_temperature(b.BioreactorID)
 							if (t_tmp >= 10) && (t_tmp <= TEMPMAX) {
 								bio[ind].Temperature = float32(t_tmp)
+								bio_del_message(b.BioreactorID, "ERRTEMPSENSE")
 								if bio[ind].Heater && float32(t_tmp) >= bio[ind].TempMax && bio[ind].Status != bio_producting {
 									fmt.Println("DEBUG SCP GET ALLDATA: Desligando resistencia por atingir temperatura maxima definida", b.BioreactorID, "tempnow=", t_tmp, "max=", bio[ind].TempMax)
 									scp_turn_heater(b.BioreactorID, 0, false)
@@ -3596,7 +3597,7 @@ func scp_get_alldata() {
 							} else if t_tmp != -2 {
 								bio[ind].Temperature = -1
 								fmt.Println("ERROR SCP GET ALLDATA: Temperatura INVALIDA - ERRO NO SENSOR", b.BioreactorID, "tempnow=", t_tmp)
-								bio_add_message(b.BioreactorID, "EATENÇÃO: Falha no SENSOR DE TEMPERATURA. Favor acionar SAC", "")
+								bio_add_message(b.BioreactorID, "EATENÇÃO: Falha no SENSOR DE TEMPERATURA. Se persistir, favor acionar SAC", "ERRTEMPSENSE")
 								if bio[ind].Heater && bio[ind].Status != bio_producting {
 									scp_turn_heater(b.BioreactorID, 0, false)
 								}
