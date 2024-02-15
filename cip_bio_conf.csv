@@ -14,7 +14,8 @@ ON/WATER,TOTEM01
 #
 # Volume de 50L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,50
+#WAIT/VOLUME,50   foi mudado pra teste
+WAIT/VOLUME,350
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -72,7 +73,7 @@ MSG/Enchendo água e circulando por 4 minutos
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-#WAIT/VOLUME,25,15,15
+#WAIT/VOLUME,25,15,15turn_pump
 WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
@@ -166,7 +167,8 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-WAIT/VOLUME,50
+#WAIT/VOLUME,50  foi mudado
+WAIT/VOLUME,350
 OFF/WATER,TOTEM01
 #
 # Step concluido
