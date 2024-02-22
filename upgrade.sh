@@ -11,7 +11,7 @@ fi
 
 cd /home/scpadm/scp-project
 
-cp scp_*.go /tmp/
+cp scp_* /tmp/
 rm -f scp_master scp_orch scp_back scp_agent
 git config --global --add safe.directory /home/scpadm/scp-project
 git stash
@@ -19,11 +19,7 @@ git pull
 if [ $? -ne 0 ] 
     then
         echo "Nao foi possivel fazer a atualizacao"
-        cp /tmp/scp_*.go . 
-        go build scp_master.go
-        go build scp_orch.go
-        go build scp_back.go
-        go build scp_agent.go
+        cp /tmp/scp_* . 
         exit 1
 fi
 
@@ -58,18 +54,14 @@ echo "Parando Master"
 systemctl stop scp_master
 
 echo "Restartando Orquestrador"
-go build scp_orch.go
 systemctl restart scp_orch
 
 echo "Restartando Back End"
-go build scp_back.go
 systemctl restart scp_back
 
 echo "Restartando Back Agent"
-go build scp_agent.go
 systemctl restart scp_agent
 
 echo "Restardando Master"
-go build scp_master.go
 sleep 60
 systemctl start scp_master

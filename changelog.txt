@@ -146,6 +146,15 @@ Histórico de Versões (recentes)
                      Cria mutex para map de status das válvulas.
     38d     Master.: Corrige problema durante o recircular.
                      Leitura excludente de PH e Temperatura
-            Front..: Corrige exibição do botão recircular 
+            Front..: Corrige exibição do botão recircular
 
+1.2.39  -   Master.: Vários testes do modelo de regressão 2 váriaveis para o PH
+20231130             
+
+1.2.40  -   Master.: Aumenta o número de amostras do PH para 11.
+20231115             Aumenta o número de amostras da Temperatura para 6 com no mínimo 4 bem sucedidas.
+                     Corrige problema no scp_circulate que impedia parada no tempo estipulado
+                     Implementa controle de PH somente entre bio_ph_mintemp e bio_ph_maxtemp
+            Front..: Exibe icone com link para atendimento remoto
+                     PH passa a ser exibido em função da variável PHShow
 
