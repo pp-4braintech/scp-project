@@ -2,12 +2,12 @@
 
 echo "Executando atualizacao do Software"
 
-ping 8.8.4.4 -c 5
-if [ $? -ne 0 ] 
-    then
-        echo "Nao foi possivel fazer a atualizacao" 
-        exit 1
-fi
+# ping 8.8.4.4 -c 5
+# if [ $? -ne 0 ] 
+#     then
+#         echo "Nao foi possivel fazer a atualizacao" 
+#         exit 1
+# fi
 
 cd /home/scpadm/scp-project
 
