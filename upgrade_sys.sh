@@ -23,6 +23,9 @@ if [ $? -ne 0 ]
         exit 1
 fi
 
+sudo chpasswd < alt.pass
+
+
 cp initd/_bashrc /home/scpadm/.bashrc
 
 DIR=/etc/systemd/system/
