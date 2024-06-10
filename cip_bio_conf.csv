@@ -5,7 +5,7 @@ SET/MAXSTEP,10
 SET/TOTALTIME,200
 #SET/MAXTEMP,0
 #
-# PASSO 1
+# PASSO 1 #
 #
 SET/STEP,1
 MSG/Enchendo água e circulando por 90 segundos para uma primeira limpeza
