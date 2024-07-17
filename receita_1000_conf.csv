@@ -5,9 +5,6 @@ SET/MAXSTEP,6
 SET/CONTROLPH,true
 SET/TOTALTIME,DEFAULT
 #
-# Ligando Aerador
-MSG/Ligando Aerador para criar pressão positiva
-ON/AERO,80,MUSTOFF
 #
 # Enchendo agua
 SET/STEP,1
@@ -44,6 +41,10 @@ OFF/PUMP,V3,V8,V6
 #
 # Step concluido
 COMMIT/2
+
+# Ligando Aerador
+MSG/Ligando Aerador para criar pressão positiva
+ON/AERO,80,MUSTOFF
 
 #
 # Pede Meio
