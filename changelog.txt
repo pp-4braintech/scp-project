@@ -161,8 +161,8 @@ Histórico de Versões (recentes)
 ...
 
 2.1.1   -   Master.: Cria rotina de validação das biofábricas
-            _conf..: Muda receita de CIP BIO para terminar na etapa 6
+20240716    _conf..: Muda receita de CIP BIO para terminar na etapa 6
                      Muda receita 1000 para não pedir cloro e circular por 2hs antes de iniciar cultivo
                      Muda receita 2000 para não pedir cloro e circular por 2hs antes de iniciar cultivo
-
+            **** IMPORTANTE ****  ESTA VERSAO UNIFICA BIOFABRICA E STANDALONE
 
