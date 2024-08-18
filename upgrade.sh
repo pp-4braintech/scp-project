@@ -74,6 +74,14 @@ systemctl stop scp_master
 echo "Restartando Orquestrador"
 systemctl restart scp_orch
 
+if [ -e "$DIRETC$FILESTDA" ] 
+    then
+        echo "Restartando SlaveUSB"
+        systemctl restart scp_slaveusb
+    else 
+        echo "OK"
+fi
+
 echo "Restartando Back End"
 systemctl restart scp_back
 
