@@ -40,7 +40,7 @@ fi
 
 DIRETC=/etc/scpd/
 FILESTDA=scp_standalone.flag
-FILESERV=scp_salveusb.service
+FILESERV=scp_slaveusb.service
 
 if [ -e "$DIRETC$FILESTDA" ] 
     then
