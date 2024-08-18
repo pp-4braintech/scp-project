@@ -31,7 +31,6 @@ FILEAGENT=scp_agent.service
 if [ -e "$DIRSYS$FILEAGENT" ] 
     then
         echo "SCP AGENT OK"
-
     else
         echo "Criando SCP AGENT"
         cp /home/scpadm/scp-project/initd/scp_agent.service /etc/systemd/system/scp_agent.service
@@ -53,6 +52,7 @@ if [ -e "$DIRETC$FILESTDA" ]
                 cp /home/scpadm/scp-project/initd/scp_slaveusb.service /etc/systemd/system/scp_slaveusb.service
                 systemctl enable scp_slaveusb
                 systemctl start scp_slaveusb
+        fi
     else 
         echo "MODO BIOFABRICA"
 fi
