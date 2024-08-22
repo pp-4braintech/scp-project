@@ -60,7 +60,15 @@ fi
 echo "Atualizando Front End"
 
 rm -rf /var/www/html/*
-cp build10.zip /var/www/html
+if [ -e "$DIRETC$FILESTDA" ] 
+    then 
+        echo "COPIANDO BUILD 127 - StandAlone"
+        cp build127.zip /var/www/html/build10.zip
+    else
+        echo "COPIANDO BUILD 10 - Biofabrica"
+        cp build10.zip /var/www/html
+fi
+
 cd /var/www/html
 unzip build10.zip
 mv build10/* .
