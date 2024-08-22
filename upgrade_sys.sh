@@ -63,7 +63,13 @@ fi
 echo "Atualizando Front End"
 
 rm -rf /var/www/html/*
-cp build10.zip /var/www/html
+if [ -e "$DIRETC$FILESTDA" ] 
+    then 
+        cp build10.zip /var/www/html
+    else
+        cp build127.zip /var/www/html/build10.zip
+fi
+
 cd /var/www/html
 unzip build10.zip
 mv build10/* .
