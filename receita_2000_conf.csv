@@ -68,16 +68,28 @@ COMMIT/94
 #
 # ------------- FIM DA MUDANCA
 #
-# Circula Meio
-# TEMPO ALTERADO de 20seg para 60seg (PEDIDO DO Zé 19/10/23)
-MSG/Circulando MEIO por 60 segundos
+# ------------- CRIA NOVA FUNCAO WARMUP
+#
+#
+MSG/Circulando MEIO e Ajustando PH por uma hora
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
-WAIT/TIME,60
+RUN/WARMUP
 OFF/PUMP,V4,V6
+COMMIT/4
+#
+# ------------- FIM DA MUDANCA 
+#
+# Circula Meio
+# TEMPO ALTERADO de 20seg para 60seg (PEDIDO DO Zé 19/10/23)
+#MSG/Circulando MEIO por 60 segundos
+#SET/STATUS,CIRCULANDO
+#ON/PUMP,V4,V6
+#WAIT/TIME,60
+#OFF/PUMP,V4,V6
 #
 # Step concluido
-COMMIT/4
+#COMMIT/4
 #
 # Pede Inoculo
 SET/STEP,4
