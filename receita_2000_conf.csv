@@ -71,11 +71,16 @@ COMMIT/94
 # ------------- CRIA NOVA FUNCAO WARMUP
 #
 #
-MSG/Circulando MEIO e Ajustando PH por uma hora
+SET/STEP,4
+MSG/Circulando MEIO por 60 segundos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
-RUN/WARMUP
+WAIT/TIME,60
 OFF/PUMP,V4,V6
+COMMIT/41
+#
+MSG/WARMUP por uma hora
+RUN/WARMUP
 COMMIT/4
 #
 # ------------- FIM DA MUDANCA 
@@ -92,7 +97,7 @@ COMMIT/4
 #COMMIT/4
 #
 # Pede Inoculo
-SET/STEP,4
+SET/STEP,5
 #MSG/!Por favor adicione INÓCULO
 SET/STATUS,AGUARDANDO
 ASK/INOCULO,WAIT
@@ -110,7 +115,7 @@ COMMIT/5
 # Inicia ciclo de Producao
 MSG/Iniciando ciclo de Produção
 SET/STATUS,PRODUZINDO
-SET/STEP,5
+SET/STEP,6
 RUN/GROW
 #
 # Step concluido
