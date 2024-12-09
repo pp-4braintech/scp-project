@@ -1,7 +1,7 @@
 #
 SET/STATUS,CIP
 OFF/ALL,IGNORE
-SET/MAXSTEP,10
+SET/MAXSTEP,8
 SET/TOTALTIME,200
 #SET/MAXTEMP,0
 #
@@ -14,8 +14,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 50L
 #WAIT/VOLUME,25,15,15
-#WAIT/VOLUME,50   foi mudado pra teste
-WAIT/VOLUME,350
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -73,7 +72,7 @@ MSG/Enchendo água e circulando por 4 minutos
 ON/WATER,TOTEM01
 #
 # Volume de 25L
-#WAIT/VOLUME,25,15,15turn_pump
+#WAIT/VOLUME,25,15,15
 WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
@@ -167,8 +166,7 @@ ON/WATER,TOTEM01
 #
 # Volume de 25L
 #WAIT/VOLUME,25,15,15
-#WAIT/VOLUME,50  foi mudado
-WAIT/VOLUME,350
+WAIT/VOLUME,50
 OFF/WATER,TOTEM01
 #
 # Step concluido
@@ -265,130 +263,45 @@ MSG/Descartando água
 RUN/WITHDRAW,DROP
 #
 #
-# --------------     NOVOs ENXAGUEs AO FIM (Pedido pelo Zé em 18/10/23)
 #
-# PASSO 7  (NOVO)
+# TODOS OS PASSOS APOS O 6 FORAM REMOVIDOS A PEDIDO DO ZE (17/07/24)
+#
+# NOVO PASSO INSERIDO A PEDIDO DO VITOR DE QUALIDADE (09/12/24)
 #
 SET/STATUS,CIP
 SET/STEP,7
-MSG/Enchendo água e fazendo enxague por 2 minutos 
+MSG/Enchendo água
+#
 # Agua pelo sprayball
 ON/WATER,TOTEM01
-#
-# Volume de 50L
-WAIT/VOLUME,50
+# Volume de 250L
+WAIT/VOLUME,250
 OFF/WATER,TOTEM01
+COMMIT/71
 #
-# Step concluido
+MSG/Circulando por 5 minutos
+ON/PUMP,V4,V6
+WAIT/TIME,300
+OFF/PUMP,V4,V6
+COMMIT/72
+#
+MSG/Circulando por 5 minutos pelo sprayball
+ON/PUMP,V3,V8,V6
+WAIT/TIME,300
+OFF/PUMP,V3,V8,V6
+COMMIT/73
+#
+MSG/Circulando por 5 minutos pelo aerador
+ON/PUMP,V2,V8,V6
+WAIT/TIME,300
+OFF/PUMP,V2,V8,V6
+COMMIT/74
+#
+MSG/Descartando água
+RUN/WITHDRAW,DROP
+#
 COMMIT/20
-#
-# Circula Agua 60s pelo sprayball
-ON/PUMP,V3,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V3,V8,V6
-#
-# Step concluido
-COMMIT/4
-#
-# Circula Agua pelo aerador
-ON/PUMP,V2,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V2,V8,V6
-#
-# Step concluido
-COMMIT/21
-#
-# Descarta Agua
-MSG/Descartando água
-RUN/WITHDRAW,DROP
-#
-#
-# PASSO 8  (NOVO)
-#
-SET/STATUS,CIP
 SET/STEP,8
-MSG/Enchendo água e fazendo enxague por 2 minutos 
-# Agua pelo sprayball
-ON/WATER,TOTEM01
-#
-# Volume de 50L
-WAIT/VOLUME,50
-OFF/WATER,TOTEM01
-#
-# Step concluido
-COMMIT/22
-#
-# Circula Agua 60s pelo sprayball
-ON/PUMP,V3,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V3,V8,V6
-#
-# Step concluido
-COMMIT/4
-#
-# Circula Agua pelo aerador
-ON/PUMP,V2,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V2,V8,V6
-#
-# Step concluido
-COMMIT/23
-#
-# Descarta Agua
-MSG/Descartando água
-RUN/WITHDRAW,DROP
-#
-#
-# PASSO 9  (NOVO)
-#
-SET/STATUS,CIP
-SET/STEP,9
-MSG/Enchendo água e fazendo enxague por 2 minutos 
-# Agua pelo sprayball
-ON/WATER,TOTEM01
-#
-# Volume de 50L
-WAIT/VOLUME,50
-OFF/WATER,TOTEM01
-#
-# Step concluido
-COMMIT/24
-#
-# Circula Agua 60s pelo sprayball
-ON/PUMP,V3,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V3,V8,V6
-#
-# Step concluido
-COMMIT/25
-#
-# Circula Agua pelo aerador
-ON/PUMP,V2,V8,V6
-WAIT/TIME,60
-OFF/PUMP,V2,V8,V6
-#
-# Step concluido
-COMMIT/26
-#
-# Descarta Agua
-MSG/Descartando água
-RUN/WITHDRAW,DROP
-#
-# -------------------- FIM DAS MUDANCAS
-#
-# FINAL
-#
-SET/STATUS,CIP
-SET/STEP,10
-#
-# Liga aerador por 30min = 1800seg  //  FOI ACORDADO QUE ELE FICARIA LIGADO DIRETO
-MSG/CIP terminado. Aerador permanecerá ligado. Para para-lo pressione o botão DESLIGAR
-ON/AERO,80
-# WAIT/TIME,1800
-# OFF/AERO
-#
-# Fim do CIP
-COMMIT/27
 SET/STATUS,VAZIO
 ORG/EMPTY
 DONE/NOP
