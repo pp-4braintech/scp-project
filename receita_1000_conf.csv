@@ -5,9 +5,6 @@ SET/MAXSTEP,6
 SET/CONTROLPH,true
 SET/TOTALTIME,DEFAULT
 #
-# Ligando Aerador
-MSG/Ligando Aerador para criar pressão positiva
-ON/AERO,80,MUSTOFF
 #
 # Enchendo agua
 SET/STEP,1
@@ -20,35 +17,35 @@ OFF/WATER,TOTEM01
 # Step concluido
 COMMIT/1
 #
-# ------------  CHECA PH da AGUA
-MSG/Efetuando Validação de PH
+# ------------  CHECA PH da AGUA - DESNECESSARIO COM NOVOS SENSORES
+#MSG/Efetuando Validação de PH
 #OFF/AERO
-SET/STATUS,PRODUZINDO
-TEST/PH
+#SET/STATUS,PRODUZINDO
+#TEST/PH
 #ON/AERO,80
-COMMIT/101
+#COMMIT/101
 #
 # -------------------------------
 #
+# ---- NAO PEDE MAIS CLORO E CIRCULA AGUA POR 2HS AUMENTANDO TEMPERATURA PARA 27 - MUDANCA PEDIDA PELO ZE EM 17/07/24
 #
-# Pede Cloro
+#
 SET/STEP,2
-#MSG/!Por favor adicione CLORO
-SET/STATUS,AGUARDANDO
-ASK/CLORO,WAIT
+MSG/Circulando AGUA por 2 horas
+SET/STATUS,CIRCULANDO
+ON/PUMP,V3,V8,V6
+ON/HEATER,27
+WAIT/TIME,7200
+OFF/HEATER
+OFF/PUMP,V3,V8,V6
 #
 # Step concluido
 COMMIT/2
-#
-# Circula Cloro
-MSG/Circulando CLORO por 20 minutos
-SET/STATUS,CIRCULANDO
-ON/PUMP,V4,V6
-WAIT/TIME,1200
-OFF/PUMP,V4,V6
-#
-# Step concluido
-COMMIT/3
+
+# Ligando Aerador
+MSG/Ligando Aerador para criar pressão positiva
+ON/AERO,80,MUSTOFF
+
 #
 # Pede Meio
 SET/STEP,3
@@ -71,19 +68,37 @@ COMMIT/94
 #
 # ------------- FIM DA MUDANCA
 #
-# Circula Meio
-# TEMPO ALTERADO de 20seg para 60seg (PEDIDO DO Zé 19/10/23)
-MSG/Circulando MEIO por 60 segundos
+# ------------- CRIA NOVA FUNCAO WARMUP
+#
+#
+SET/STEP,4
+MSG/Circulando MEIO por 5 minutos
 SET/STATUS,CIRCULANDO
 ON/PUMP,V4,V6
-WAIT/TIME,60
+WAIT/TIME,300
 OFF/PUMP,V4,V6
+COMMIT/41
 #
-# Step concluido
+SET/STATUS,PRODUZINDO
+MSG/WARMUP por uma hora
+RUN/WARMUP
 COMMIT/4
 #
+# ------------- FIM DA MUDANCA 
+#
+# Circula Meio
+# TEMPO ALTERADO de 20seg para 60seg (PEDIDO DO Zé 19/10/23)
+#MSG/Circulando MEIO por 60 segundos
+#SET/STATUS,CIRCULANDO
+#ON/PUMP,V4,V6
+#WAIT/TIME,60
+#OFF/PUMP,V4,V6
+#
+# Step concluido
+#COMMIT/4
+#
 # Pede Inoculo
-SET/STEP,4
+SET/STEP,5
 #MSG/!Por favor adicione INÓCULO
 SET/STATUS,AGUARDANDO
 ASK/INOCULO,WAIT
@@ -101,7 +116,7 @@ COMMIT/5
 # Inicia ciclo de Producao
 MSG/Iniciando ciclo de Produção
 SET/STATUS,PRODUZINDO
-SET/STEP,5
+SET/STEP,6
 RUN/GROW
 #
 # Step concluido
