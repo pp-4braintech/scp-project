@@ -45,7 +45,7 @@ FILESERV=scp_slaveusb.service
 if [ -e "$DIRETC$FILESTDA" ] 
     then
 	echo "STANDALONE COPIANDO START BROWSE"
-	cp /home/scpadm/scp-project/initd/start_browser.sh /home/scpadm/scp-project/
+	cp /home/scpadm/scp-project/initd/start_browser.sh /home/scpadm/.
 
         if [ -e "$DIRSYS$FILESERV" ] 
             then
